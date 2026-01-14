@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "EnemySlime.h"
 #include "MathUtils.h"
 #include "Player.h"

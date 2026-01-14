@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "Misc.h"
 #include "GpuResourceUtils.h"
 #include "ModelRenderer.h"

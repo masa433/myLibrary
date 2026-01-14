@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "SubMixSource.h"
 #include <xapofx.h>  // XAudio2CreateReverb
 

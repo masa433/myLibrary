@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "Graphics.h"
 #include "Model.h"
 #include "ResourceManager.h"

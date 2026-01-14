@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include <math.h>
 #include <Xinput.h>
 #include "System/GamePad.h"

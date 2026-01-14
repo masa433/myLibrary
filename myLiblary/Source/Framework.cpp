@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "Framework.h"
 #include "System/Input.h"
 #include "System/Graphics.h"

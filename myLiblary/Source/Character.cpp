@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include"Character.h"
 #include <Collision.h>
 #include <Stage.h>

@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "Misc.h"
 #include "AudioSource.h"
 #include"Audio.h"

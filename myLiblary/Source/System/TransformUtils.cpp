@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "TransformUtils.h"
 
 // 行列からヨー、ピッチ、ロールを行列を計算する。

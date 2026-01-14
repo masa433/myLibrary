@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "Audio3D.h"
 #include <cassert>
 #include <combaseapi.h>

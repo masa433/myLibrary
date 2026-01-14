@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "ProjectileStraight.h"
 
 ProjectileStraight::ProjectileStraight(ProjectileManager* manager) :

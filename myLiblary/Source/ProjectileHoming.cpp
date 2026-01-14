@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "ProjectileHoming.h"
 
 ProjectileHoming::ProjectileHoming(ProjectileManager* manager) :Projectile(manager)

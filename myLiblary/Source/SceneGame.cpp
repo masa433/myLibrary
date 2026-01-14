@@ -1,4 +1,4 @@
-#include "../pch.h"
+#include "pch.h"
 #include "System/Misc.h"
 #include "System/Graphics.h"
 #include "SceneGame.h"
