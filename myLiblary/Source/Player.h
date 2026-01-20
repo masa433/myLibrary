@@ -98,6 +98,19 @@ private:
 
 	Model* model = nullptr;
 
+	std::unique_ptr<Model> bat = nullptr;
+
+	// バット専用のトランスフォーム情報
+	DirectX::XMFLOAT3 batPosition = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT3 batAngle = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT3 batScale = { 1.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT4X4 batTransform = {
+		1,0,0,0,
+		0,1,0,0,
+		0,0,1,0,
+		0,0,0,1
+	};
+
 	float moveSpeed = 20.0f;
 
 	float turnSpeed = DirectX::XMConvertToRadians(720);

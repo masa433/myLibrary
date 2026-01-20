@@ -17,6 +17,7 @@
 #include "Pitcher.h"
 
 
+
 //シャドウマップ用定数
 CONST LONG SHADOWMAP_WIDTH{ 1280 };
 CONST LONG SHADOWMAP_HEIGHT{ 720 };
@@ -121,7 +122,7 @@ void SceneGame::Initialize()
 	// カメラコントローラー初期化
 	cameraController = new CameraController();
 
-
+	freeCameraController->SyncCameraToController(camera);
 
 	ShadowMapInit();
 
@@ -165,12 +166,21 @@ void SceneGame::Finalize()
 
 void SceneGame::Update(float elapsedTime)
 {
+	Camera& camera = Camera::Instance(); // 取得を追加
+
+
 	// カメラコントローラー更新処理
 	DirectX::XMFLOAT3 target = Player::Instance().GetPosition();
 	target.y += 0.5f;
 	cameraController->SetTarget(target);
 	cameraController->Update(elapsedTime);
 
+#ifdef _DEBUG
+	// カメラ更新処理
+	freeCameraController->Update();
+	freeCameraController->SyncControllerToCamera(camera);
+
+#endif
 	// ステージ更新処理
 	stage->Update(elapsedTime);
 

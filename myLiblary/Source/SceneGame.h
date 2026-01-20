@@ -6,7 +6,7 @@
 #include "System/AudioSource.h"
 #include "System/Audio.h"
 #include "System/Sprite.h"
-
+#include "System/FreeCameraController.h"
 
 // ÉQÅ[ÉÄÉVÅ[Éì
 class SceneGame : public Scene
@@ -37,7 +37,9 @@ public:
 private:
 	std::unique_ptr<Stage> stage = nullptr;
 	//Player* player = nullptr;
+	Camera* camera = nullptr;
 	CameraController* cameraController = nullptr;
+	std::unique_ptr<FreeCameraController> freeCameraController = std::make_unique<FreeCameraController>();
 	//AudioSource* gameBGM = nullptr;
 	DirectX::XMFLOAT3 lightDirection = { 0.0f, -1.0f, -1.0f };
 	DirectX::XMFLOAT3   cameraPosition = {};

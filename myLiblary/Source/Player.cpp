@@ -22,6 +22,10 @@ void Player::Initialize()
 	height = 9.0f;
 	angle.y = DirectX::XMConvertToRadians(90.0f);
 	
+	bat = std::make_unique<Model>("Data/Model/bat/bat.gltf");
+	batScale = { 1.0f,1.0f,1.0f };
+	batPosition = { 0.0f, 0.0f, 0.0f };
+	batAngle = { 0.0f, 0.0f, 17.7f };
 
 	//AudioManager::Instance().GetSound(SoundList::GameBGM)->Play(false, 1.0f);
 
@@ -79,6 +83,36 @@ void Player::Update(float elapsedTime)
 	}
 
 
+	const char* handName = "mixamorig:LeftHand";
+
+	// バットのローカル行列を計算（バット専用の変数を使用）
+	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(batScale.x, batScale.y, batScale.z);
+	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(batAngle.x, batAngle.y, batAngle.z);
+	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(batPosition.x, batPosition.y, batPosition.z);
+	DirectX::XMMATRIX batLocalMatrix = S * R * T;
+
+	for (const Model::Node& node : model->GetNodes())
+	{
+		if (strcmp(node.name, handName) == 0)
+		{
+			// 左手ノードの行列を取得
+			DirectX::XMMATRIX leftHandMatrix = DirectX::XMLoadFloat4x4(&node.globalTransform);
+
+			// プレイヤーのワールド行列を取得
+			DirectX::XMMATRIX playerWorldMatrix = DirectX::XMLoadFloat4x4(&transform);
+
+			// バットのワールド行列を計算
+			DirectX::XMMATRIX batWorldMatrix = batLocalMatrix * leftHandMatrix * playerWorldMatrix;
+
+			// バットの行列を保存（batTransform に保存）
+			DirectX::XMStoreFloat4x4(&batTransform, batWorldMatrix);
+
+			// ボーンが見つかったらループを抜ける
+			break;
+		}
+	}
+
+
 	//移動入力処理
 	InputMove(elapsedTime);
 
@@ -98,6 +132,8 @@ void Player::Update(float elapsedTime)
 
 	//モデル行列更新
 	model->UpdateTransform();
+
+	bat->UpdateTransform();
 
 	model->UpdateAnimation(elapsedTime);
 
@@ -169,6 +205,7 @@ void Player::Render(const RenderContext& rc,ModelRenderer*renderer)
 	if (model == nullptr) return;  // モデルがnullptrの場合は描画しない
 
 	renderer->Render(rc, transform, model, ShaderId::Lambert);
+	renderer->Render(rc, batTransform, bat.get(), ShaderId::Lambert);
 
 	//弾丸描画処理
 	projectileManager.Render(rc, renderer);
@@ -210,6 +247,14 @@ void Player::DrawDebugGUI()
 			angle.z = DirectX::XMConvertToRadians(a.z);
 			//スケール
 			ImGui::InputFloat3("Scale", &scale.x);
+
+			//バットのトランスフォーム
+			ImGui::Separator();
+			ImGui::Text("Bat Transform");
+			ImGui::DragFloat3("Bat Position", &batPosition.x);
+			ImGui::DragFloat3("Bat Angle", &batAngle.x);
+			ImGui::DragFloat3("Bat Scale", &batScale.x);
+
 		}
 	}
 	ImGui::End();

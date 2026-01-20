@@ -213,6 +213,9 @@
     <ClInclude Include="Source\Pitcher.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\System\FreeCameraController.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\imgui-docking\imgui.cpp">
@@ -385,6 +388,9 @@
     </ClCompile>
     <ClCompile Include="Source\Pitcher.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\System\FreeCameraController.cpp">
+      <Filter>Source\System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
