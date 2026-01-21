@@ -373,6 +373,7 @@ void SceneGame::DrawGUI()
 	}
 
 	net->DrawImGui();
+	Pitcher::Instance().DrawImGui();
 
 	//// ウィンドウの位置とサイズを設定
 	//ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiCond_Once);

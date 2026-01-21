@@ -50,4 +50,17 @@ private:
 private:
 
 	std::unique_ptr<Model>	pitcher = nullptr;
+
+	std::unique_ptr<Model> ball = nullptr;
+
+	// ボール専用のトランスフォーム情報
+	DirectX::XMFLOAT3 ballPosition = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT3 ballAngle = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT3 ballScale = { 1.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT4X4 ballTransform = {
+		1,0,0,0,
+		0,1,0,0,
+		0,0,1,0,
+		0,0,0,1
+	};
 };

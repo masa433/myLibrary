@@ -131,4 +131,8 @@ private:
 
 	int health;  // プレイヤーの体力
 	bool isDead = false;  // プレイヤーが死亡したかどうか
+
+	float swingHeight = 0.5f; // スイングの高さ（0.0～1.0）
+	float swingTimer = 0.0f;  // スイングアニメーションの進行時間
+	float swingDuration = 0.5f; // スイング全体の時間
 };
