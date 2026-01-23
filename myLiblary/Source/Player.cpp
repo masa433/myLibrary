@@ -84,6 +84,36 @@ void Player::Update(float elapsedTime)
 	}
 
 
+	
+
+
+	//移動入力処理
+	InputMove(elapsedTime);
+
+	
+	
+	//ジャンプ入力処理
+	InputJump();
+
+	//速力処理更新
+	UpdateVelocity(elapsedTime);
+
+	//プレイヤーと敵との衝突処理
+	CollisionPlayerVsEnemies();
+
+	//オブジェクト行列を更新
+	UpdateTransform();
+
+	//モデル行列更新
+	model->UpdateTransform();
+
+	bat->UpdateTransform();
+
+	model->UpdateAnimation(elapsedTime);
+
+	ModifyLeftArmBone();
+	ModifyRightArmBone();
+
 	const char* handName = "mixamorig:LeftHandMiddle1";
 
 	// バットのローカル行列を計算（バット専用の変数を使用）
@@ -113,31 +143,6 @@ void Player::Update(float elapsedTime)
 		}
 	}
 
-
-	//移動入力処理
-	InputMove(elapsedTime);
-
-	
-	
-	//ジャンプ入力処理
-	InputJump();
-
-	//速力処理更新
-	UpdateVelocity(elapsedTime);
-
-	//プレイヤーと敵との衝突処理
-	CollisionPlayerVsEnemies();
-
-	//オブジェクト行列を更新
-	UpdateTransform();
-
-	//モデル行列更新
-	model->UpdateTransform();
-
-	bat->UpdateTransform();
-
-	model->UpdateAnimation(elapsedTime);
-
 	//弾丸更新処理
 	projectileManager.Update(elapsedTime);
 
@@ -158,6 +163,93 @@ void Player::Update(float elapsedTime)
 		}
 	}
 
+}
+
+void Player::ModifyLeftArmBone()
+{
+	const char* shoulderName = "mixamorig:LeftArm";
+
+	for (Model::Node& node : model->GetNodes())
+	{
+		if (strcmp(node.name, shoulderName) == 0)
+		{
+			// ローカル行列を取得
+			DirectX::XMMATRIX localMatrix = DirectX::XMLoadFloat4x4(&node.localTransform);
+
+			// X軸回転行列を作成（腕を上下に動かす）
+			DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationX(armAngleOffset);
+
+			// 回転を適用
+			DirectX::XMMATRIX newLocalMatrix = rotationMatrix * localMatrix;
+
+			// 保存
+			DirectX::XMStoreFloat4x4(&node.localTransform, newLocalMatrix);
+
+			// グローバル行列を再計算
+			UpdateNodeGlobal(node);
+
+			// 子ボーンも再帰的に更新
+			UpdateChildrenGlobal(node);
+
+			break;
+		}
+	}
+}
+
+void Player::ModifyRightArmBone()
+{
+	const char* shoulderName = "mixamorig:RightShoulder";
+
+	for (Model::Node& node : model->GetNodes())
+	{
+		if (strcmp(node.name, shoulderName) == 0)
+		{
+			// ローカル行列を取得
+			DirectX::XMMATRIX localMatrix = DirectX::XMLoadFloat4x4(&node.localTransform);
+
+			// X軸回転行列を作成（腕を上下に動かす）
+			DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationX(armAngleOffset);
+
+			// 回転を適用
+			DirectX::XMMATRIX newLocalMatrix = rotationMatrix * localMatrix;
+
+			// 保存
+			DirectX::XMStoreFloat4x4(&node.localTransform, newLocalMatrix);
+
+			// グローバル行列を再計算
+			UpdateNodeGlobal(node);
+
+			// 子ボーンも再帰的に更新
+			UpdateChildrenGlobal(node);
+
+			break;
+		}
+	}
+}
+
+void Player::UpdateNodeGlobal(Model::Node& node)
+{
+	DirectX::XMMATRIX localMatrix = DirectX::XMLoadFloat4x4(&node.localTransform);
+
+	if (node.parent != nullptr)
+	{
+		DirectX::XMMATRIX parentGlobal = DirectX::XMLoadFloat4x4(&node.parent->globalTransform);
+		DirectX::XMMATRIX globalMatrix = localMatrix * parentGlobal;
+		DirectX::XMStoreFloat4x4(&node.globalTransform, globalMatrix);
+	}
+	else
+	{
+		DirectX::XMStoreFloat4x4(&node.globalTransform, localMatrix);
+	}
+}
+
+void Player::UpdateChildrenGlobal(Model::Node& node)
+{
+	for (Model::Node* child : node.children)
+	{
+		UpdateNodeGlobal(*child);
+		UpdateChildrenGlobal(*child); // 再帰的に子の子も更新
+	}
 }
 
 void Player::OnLanding() 
@@ -640,27 +732,15 @@ void Player::SetBattingIdleState()
 
 void Player::UpdateBattingIdleState(float elapsedTime)
 {
+	
+
 	// Zキーでスイング
 	if (GetAsyncKeyState('Z') & 0x8000)
 	{
-		// マウスカーソルの位置を取得
-		Mouse& mouse = Input::Instance().GetMouse();
-		float mouseY = mouse.GetPositionY(); // スクリーン座標のY座標
-
-		// スクリーン高さを取得
-		Graphics& graphics = Graphics::Instance();
-		float screenHeight = static_cast<float>(graphics.GetScreenHeight());
-
-		// マウスY座標を正規化（0.0～1.0）
-		// 画面上部 = 1.0（高いスイング）、画面下部 = 0.0（低いスイング）
-		swingHeight = mouseY / screenHeight; // ← 修正：1.0f を削除
-
-		// 範囲を制限
-		swingHeight = std::clamp(swingHeight, 0.0f, 1.0f);
-
 		SetSwingState();
 	}
 }
+
 void Player::SetSwingState() 
 {
 	state = State::BatSwing;
@@ -669,15 +749,25 @@ void Player::SetSwingState()
 
 void Player::UpdateSwingState(float elapsedTime) 
 {
-	// バットの角度をスイング高さに応じて調整
-	// swingHeight: 0.0（低い）～ 1.0（高い）
-	float targetAngleY = DirectX::XMConvertToRadians(-45.0f + swingHeight * 90.0f); // -45°〜+45°
-	batAngle.y = targetAngleY;
+	// マウスカーソルの位置を取得
+	Mouse& mouse = Input::Instance().GetMouse();
+	float mouseY = mouse.GetPositionY();
+
+	Graphics& graphics = Graphics::Instance();
+	float screenHeight = static_cast<float>(graphics.GetScreenHeight());
+
+	// マウスY座標を正規化（0.0～1.0）
+	swingHeight = mouseY / screenHeight;
+	swingHeight = std::clamp(swingHeight, 0.0f, 1.0f);
+
+	// 腕の角度オフセットを計算（-45°〜+45°の範囲）
+	armAngleOffset = DirectX::XMConvertToRadians(-45.0f + swingHeight * 90.0f);
 
 	// アニメーション終了したら待機状態へ
 	if (!model->IsPlayAnimation())
 	{
 		SetBattingIdleState();
+		armAngleOffset = 0.0f; // 腕の角度オフセットをリセット
 	}
 }
 

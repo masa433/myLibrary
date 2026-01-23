@@ -67,6 +67,14 @@ private:
 
 	void Die();
 
+	void ModifyLeftArmBone();
+
+	void ModifyRightArmBone();
+
+	void UpdateNodeGlobal(Model::Node& node);
+
+	void UpdateChildrenGlobal(Model::Node& node);
+
 protected:
 	//着地したときに呼ばれる
 	void OnLanding() override;
@@ -135,4 +143,5 @@ private:
 	float swingHeight = 0.5f; // スイングの高さ（0.0～1.0）
 	float swingTimer = 0.0f;  // スイングアニメーションの進行時間
 	float swingDuration = 0.5f; // スイング全体の時間
+	float armAngleOffset = 0.0f; // 腕の角度オフセット（追加）
 };
