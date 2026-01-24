@@ -79,6 +79,9 @@ void Player::Update(float elapsedTime)
 	case State::BatSwing:
 		UpdateSwingState(elapsedTime);
 		break;
+	case State::BatSwingReverse:
+		UpdateSwingReverseState(elapsedTime);
+		break;
 	default:
 		break;
 	}
@@ -732,10 +735,8 @@ void Player::SetBattingIdleState()
 
 void Player::UpdateBattingIdleState(float elapsedTime)
 {
-	
-
 	// Zキーでスイング
-	if (GetAsyncKeyState('Z') & 0x8000)
+	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
 	{
 		SetSwingState();
 	}
@@ -744,10 +745,13 @@ void Player::UpdateBattingIdleState(float elapsedTime)
 void Player::SetSwingState() 
 {
 	state = State::BatSwing;
+	isSwingForward = true;
+	swingStartTime = 0.0f;
+	model->SetAnimationSpeed(1.3f);
 	model->PlayAnimation(Swing, false);
 }
 
-void Player::UpdateSwingState(float elapsedTime) 
+void Player::UpdateSwingState(float elapsedTime)
 {
 	// マウスカーソルの位置を取得
 	Mouse& mouse = Input::Instance().GetMouse();
@@ -763,13 +767,38 @@ void Player::UpdateSwingState(float elapsedTime)
 	// 腕の角度オフセットを計算（-45°〜+45°の範囲）
 	armAngleOffset = DirectX::XMConvertToRadians(-45.0f + swingHeight * 90.0f);
 
-	// アニメーション終了したら待機状態へ
+	// スイング開始からの経過時間を更新
+	swingStartTime += elapsedTime;
+
+	if (swingStartTime >= swingDuration - 0.4f) 
+	{
+		model->SetAnimationSpeed(0.7f); // 再生速度を少し遅くする
+	}
+
+	// 順再生が終わったら逆再生を開始
+	if (swingStartTime>=swingDuration)
+	{
+		state = State::BatSwingReverse;
+		model->SetAnimationSpeed(0.7f); // 再生速度を遅くする
+		model->PlayAnimation(Swing, false, 0.2f, true); // 逆再生
+	}
+}
+
+void Player::UpdateSwingReverseState(float elapsedTime)
+{
+	// 腕の角度オフセットを維持
+	// （逆再生中もマウス位置で調整したい場合は UpdateSwingState() と同じ処理）
+
+	// 逆再生が終わったら待機状態へ
 	if (!model->IsPlayAnimation())
 	{
 		SetBattingIdleState();
+		model->SetAnimationSpeed(1.0f); // 再生速度をリセット
 		armAngleOffset = 0.0f; // 腕の角度オフセットをリセット
 	}
 }
+
+
 
 
 

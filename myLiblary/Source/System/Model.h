@@ -37,13 +37,17 @@ public:
 	void UpdateAnimation(float elapsedTime);
 
 	//アニメーション再生
-	void PlayAnimation(int index, bool loop, float blendSecond = 0.2f);
+	void PlayAnimation(int index, bool loop, float blendSecond = 0.2f,bool reverse = false);
 
 	//アニメーション再生中か
 	bool IsPlayAnimation() const;
 
 	//現在のアニメーション再生時間取得
 	float GetCurrentAnimationSeconds() const { return currentAnimationSeconds; }
+
+	// アニメーション再生速度設定（追加）
+	void SetAnimationSpeed(float speed) { animationSpeed = speed; }
+	float GetAnimationSpeed() const { return animationSpeed; }
 
 	//ノード検索
 	Node* FindNode(const char* name);
@@ -57,4 +61,6 @@ private:
 	bool	animationEndFlag = false;
 	float	animationBlendTime = 0.0f;
 	float	animationBlendSeconds = 0.0f;
+	bool    animationReverseFlag = false;
+	float	animationSpeed = 1.0f;//再生速度
 };

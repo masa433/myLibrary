@@ -68,6 +68,9 @@ void Model::UpdateAnimation(float elapsedTime)
 	// 再生中でないなら処理しない
 	if (!IsPlayAnimation()) return;
 
+	//再生速度適用
+	elapsedTime *= animationSpeed;
+
 	// ブレンド率の計算
 	float blendRate = 1.0f;
 	if (animationBlendTime < animationBlendSeconds)
@@ -80,7 +83,6 @@ void Model::UpdateAnimation(float elapsedTime)
 		blendRate = animationBlendTime / animationBlendSeconds;
 		blendRate *= blendRate;
 	}
-
 
 	// 指定のアニメーションデータを取得
 	const std::vector<ModelResource::Animation>& animations = resource->GetAnimations();
@@ -158,11 +160,18 @@ void Model::UpdateAnimation(float elapsedTime)
 		return;
 	}
 
-	// 時間経過
-	currentAnimationSeconds += elapsedTime;
+	// 時間経過（逆再生対応）
+	if (animationReverseFlag)
+	{
+		currentAnimationSeconds -= elapsedTime; // 逆再生の場合は時間を減らす
+	}
+	else
+	{
+		currentAnimationSeconds += elapsedTime; // 通常再生の場合は時間を増やす
+	}
 
 	// 再生時間が終端時間を超えたら
-	if (currentAnimationSeconds >= animation.secondsLength)
+	if (!animationReverseFlag && currentAnimationSeconds >= animation.secondsLength)
 	{
 		// 再生時間を巻き戻す
 		if (animationLoopFlag)
@@ -176,10 +185,25 @@ void Model::UpdateAnimation(float elapsedTime)
 			animationEndFlag = true;
 		}
 	}
+	// 逆再生で開始時間を下回ったら
+	else if (animationReverseFlag && currentAnimationSeconds <= 0.0f)
+	{
+		// 再生時間を巻き戻す
+		if (animationLoopFlag)
+		{
+			currentAnimationSeconds += animation.secondsLength;
+		}
+		// 再生終了時間にする
+		else
+		{
+			currentAnimationSeconds = 0.0f;
+			animationEndFlag = true;
+		}
+	}
 }
 
 // アニメーション再生
-void Model::PlayAnimation(int index, bool loop, float blendSeconds)
+void Model::PlayAnimation(int index, bool loop, float blendSeconds,bool reverse)
 {
 	currentAnimationIndex = index;
 	currentAnimationSeconds = 0.0f;
@@ -187,6 +211,19 @@ void Model::PlayAnimation(int index, bool loop, float blendSeconds)
 	animationEndFlag = false;
 	animationBlendTime = 0.0f;
 	animationBlendSeconds = blendSeconds;
+	animationReverseFlag = reverse;
+
+	// 逆再生の場合は終端時間から開始
+		if (animationReverseFlag)
+		{
+			const std::vector<ModelResource::Animation>& animations = resource->GetAnimations();
+			const ModelResource::Animation& animation = animations.at(currentAnimationIndex);
+			currentAnimationSeconds = animation.secondsLength;
+		}
+		else
+		{
+			currentAnimationSeconds = 0.0f;
+		}
 }
 
 // アニメーション再生中か

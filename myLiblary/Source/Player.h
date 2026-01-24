@@ -82,13 +82,15 @@ protected:
 private:
 	enum class State 
 	{
-		BatSwing,
 		BatIdle,
+		BatSwing,
+		BatSwingReverse,//逆再生用
 	};
 	
 	enum Animation 
 	{
 		BattingIdle,
+		Homerun,
 		Swing,
 	};
 
@@ -101,6 +103,8 @@ private:
 	void SetBattingIdleState();
 
 	void UpdateBattingIdleState(float elapsedTime);
+
+	void UpdateSwingReverseState(float elapsedTime);
 
 private:
 
@@ -141,7 +145,8 @@ private:
 	bool isDead = false;  // プレイヤーが死亡したかどうか
 
 	float swingHeight = 0.5f; // スイングの高さ（0.0～1.0）
-	float swingTimer = 0.0f;  // スイングアニメーションの進行時間
-	float swingDuration = 0.5f; // スイング全体の時間
 	float armAngleOffset = 0.0f; // 腕の角度オフセット（追加）
+	bool isSwingForward = true; // スイングが通常再生か逆再生か
+	float swingStartTime = 0.0f; // スイング開始時間
+	const float swingDuration = 0.6f; // スイングアニメーションの総時間
 };
