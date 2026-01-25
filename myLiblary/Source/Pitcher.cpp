@@ -34,6 +34,14 @@ void Pitcher::Update(float elapsedTime)
 		break;
 	}
 
+	// モデル行列更新
+	pitcher->UpdateTransform();
+
+	ball->UpdateTransform();
+
+	// ピッチング状態の更新処理
+	pitcher->UpdateAnimation(elapsedTime);
+
 	const char* handName = "mixamorig:RightHandMiddle1";
 
 	// バットのローカル行列を計算（バット専用の変数を使用）
@@ -67,13 +75,7 @@ void Pitcher::Update(float elapsedTime)
 	// オブジェクト行列を更新
 	UpdateTransform();
 
-	// モデル行列更新
-	pitcher->UpdateTransform();
-
-	ball->UpdateTransform();
-
-	// ピッチング状態の更新処理
-	pitcher->UpdateAnimation(elapsedTime);
+	
 }
 
 void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)

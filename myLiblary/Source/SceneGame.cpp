@@ -168,6 +168,7 @@ void SceneGame::Update(float elapsedTime)
 {
 	Camera& camera = Camera::Instance(); // 取得を追加
 
+	elapsedTime *= timeScale;
 
 	// カメラコントローラー更新処理
 	DirectX::XMFLOAT3 target = Player::Instance().GetPosition();
@@ -387,6 +388,23 @@ void SceneGame::DrawGUI()
 		}
 	}
 	ImGui::End();
+
+	// タイムスケール制御
+	if (ImGui::Begin("Time Control", nullptr, ImGuiWindowFlags_None))
+	{
+		ImGui::SliderFloat("Time Scale", &timeScale, 0.0f, 2.0f);
+		if (ImGui::Button(u8"一時停止 (0.0)"))
+		{
+			timeScale = 0.0f;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(u8"通常速度 (1.0)"))
+		{
+			timeScale = 1.0f;
+		}
+	}
+	ImGui::End();
+
 	ImGui::ColorEdit3("shadow_color", &shadow_color.x);
 	ImGui::SliderFloat("shadow_bias", &shadow_bias, 0.0f, +0.01f);
 	if (ImGui::TreeNode("texture"))

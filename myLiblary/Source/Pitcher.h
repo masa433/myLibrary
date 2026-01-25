@@ -63,4 +63,6 @@ private:
 		0,0,1,0,
 		0,0,0,1
 	};
+
+	DirectX::XMFLOAT3 ballOriginOffset;//М┤У_Т▓Ро
 };

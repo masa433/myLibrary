@@ -44,6 +44,7 @@ private:
 	DirectX::XMFLOAT3 lightDirection = { 0.0f, -1.0f, -1.0f };
 	DirectX::XMFLOAT3   cameraPosition = {};
 	std::unique_ptr<Object> net = nullptr;
+	float timeScale = 1.0f;
 
 private:
 	// シャドウマップ用定数バッファ
