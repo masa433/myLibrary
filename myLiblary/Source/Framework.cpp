@@ -33,6 +33,12 @@ Framework::Framework(HWND hWnd)
 	// グラフィックス初期化
 	Graphics::Instance().Initialize(hWnd);
 
+	// フルスクリーン設定がTRUEの場合、初期化後にフルスクリーンに切り替え
+	if (FULLSCREEN)
+	{
+		Graphics::Instance().StylizeWindow(true);
+	}
+
 	// IMGUI初期化
 	ImGuiRenderer::Initialize(hWnd, Graphics::Instance().GetDevice(), Graphics::Instance().GetDeviceContext());
 
@@ -66,6 +72,13 @@ Framework::~Framework()
 // 更新処理
 void Framework::Update(float elapsedTime)
 {
+	// Alt+Enterでフルスクリーン切り替え
+	if ((GetAsyncKeyState(VK_RETURN) & 1) && (GetAsyncKeyState(VK_MENU) & 0x8000))
+	{
+		Graphics::Instance().StylizeWindow(!Graphics::Instance().IsFullScreen());
+	}
+
+
 	// インプット更新処理
 	Input::Instance().Update();
 
@@ -77,7 +90,7 @@ void Framework::Update(float elapsedTime)
 	SceneManager::Instance().Update(elapsedTime);
 
 	// オーディオ更新処理
-	
+
 }
 
 // 描画処理
@@ -202,6 +215,15 @@ LRESULT CALLBACK Framework::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LP
 		// Here we reset everything based on the new window dimensions.
 		timer.Start();
 		break;
+	case WM_SIZE:
+	{
+		RECT clientRect{};
+		GetClientRect(hWnd, &clientRect);
+		Graphics::Instance().OnSizeChanged(
+			static_cast<UINT>(clientRect.right - clientRect.left),
+			clientRect.bottom - clientRect.top);
+		break;
+	}
 	default:
 		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}

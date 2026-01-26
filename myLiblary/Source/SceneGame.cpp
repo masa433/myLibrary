@@ -168,6 +168,7 @@ void SceneGame::Update(float elapsedTime)
 {
 	Camera& camera = Camera::Instance(); // 取得を追加
 
+	
 	elapsedTime *= timeScale;
 
 	// カメラコントローラー更新処理

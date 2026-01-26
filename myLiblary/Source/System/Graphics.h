@@ -4,6 +4,7 @@
 #include "RenderState.h"
 #include "ShapeRenderer.h"
 #include "ModelRenderer.h"
+#include <dxgi1_6.h>
 
 // グラフィックス
 class Graphics
@@ -59,11 +60,21 @@ public:
 	//ミューテックス取得(排他制御用オブジェクト)
 	std::mutex& GetMutex() { return mutex; }
 
+	// フルスクリーン関連
+	bool IsFullScreen() const { return fullscreenMode; }
+	void StylizeWindow(bool fullscreen);
+	void OnSizeChanged(UINT width, UINT height);
+
+private:
+	void CreateSwapChain();
+	void AcquireHighPerformanceAdapter(IDXGIFactory6* dxgiFactory6, IDXGIAdapter3** dxgiAdapter3);
+
+
 public:
 	HWND											hWnd = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11Device>			device;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext>		dc;
-	Microsoft::WRL::ComPtr<IDXGISwapChain>			swapchain;
+	Microsoft::WRL::ComPtr<IDXGISwapChain1>			swapchain;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>	renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>	depthStencilView;
 	D3D11_VIEWPORT									viewport;
@@ -76,4 +87,11 @@ public:
 	std::unique_ptr<ModelRenderer>					modelRenderer;
 
 	std::mutex mutex;
+
+	// フルスクリーン関連
+	bool fullscreenMode = false;
+	bool tearingSupported = false;
+	RECT windowedRect = {};
+	Microsoft::WRL::ComPtr<IDXGIFactory6> dxgiFactory6;
+	Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter;
 };
