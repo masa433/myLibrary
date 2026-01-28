@@ -4,9 +4,9 @@
 Object::Object()
 {
 	net = std::make_unique<Model>("Data/Model/field/net.mdl");
-	rotation.y = DirectX::XMConvertToRadians(-90.0f);
-	position.y = -5.7f;
-	scale = { 2.0f,2.0f,2.0f };
+	
+	position.z = 17.0f;
+	scale = { 1.5f,1.5f,1.5f };
 }
 
 Object::~Object()

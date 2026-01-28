@@ -18,10 +18,10 @@ void Player::Initialize()
 	model = new Model("Data/Model/player/Bot.mdl");
 
 	//モデルが大きいのでスケーリング
-	scale.x = scale.y = scale.z = 0.05f;
+	scale.x = scale.y = scale.z = 0.03f;
 	radius = 4.0f;
 	height = 9.0f;
-	angle.y = DirectX::XMConvertToRadians(90.0f);
+	angle.y = DirectX::XMConvertToRadians(180.0f);
 	
 	bat = std::make_unique<Model>("Data/Model/bat/bat.gltf");
 	batScale = { 1.2f,1.2f,1.2f };
@@ -32,7 +32,7 @@ void Player::Initialize()
 
 	hitEffect = new Effect("Data/Effect/Hit.efk");
 	health = 5;
-	position =DirectX::XMFLOAT3(-73.0f, 0.0f, 6.0f);
+	position =DirectX::XMFLOAT3(3.6f, 0.0f, 66.0f);
 	velocity = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 	isDead = false;
 

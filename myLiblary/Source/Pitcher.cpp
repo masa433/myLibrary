@@ -5,9 +5,9 @@ void Pitcher::Initialize()
 {
 	pitcher = std::make_unique<Model>("Data/Model/pitcher/pitcher.mdl");
 
-	scale.x = scale.y = scale.z = 0.05f;
-	position = { 20.5f, 0.0f, 0.0f };
-	angle.y = DirectX::XMConvertToRadians(-90.0f);
+	scale.x = scale.y = scale.z = 0.03f;
+	position = { 0.5f, 1.3f, 6.7f };
+	//angle.y = DirectX::XMConvertToRadians(-90.0f);
 
 	ball = std::make_unique<Model>("Data/Model/ball/ball.gltf");
 	ballScale = { 0.05f, 0.05f, 0.05f };
