@@ -365,6 +365,11 @@ void SceneGame::Render()
 // GUI描画
 void SceneGame::DrawGUI()
 {
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.f);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(1.0f, 1.0f, 1.0f, 0.1f);
+	style.Colors[ImGuiCol_TitleBg] = ImVec4(1.0f, 1.0f, 1.0f, 0.1f);
 	// プレイヤーデバッグ描画
 	Player::Instance().DrawDebugGUI();
 	//Player::Instance().ShowControlPanel();
