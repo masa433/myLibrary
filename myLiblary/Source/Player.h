@@ -50,23 +50,6 @@ private:
 	//移動入力処理
 	void InputMove(float elapsedTime);
 
-	
-
-	//プレイヤーとエネミーとの衝突処理
-	void CollisionPlayerVsEnemies();
-
-	//弾丸入力処理
-	void InputProjectile();
-
-	//弾丸と敵の衝突処理
-	void CollisionProjectilesVsEnemies();
-
-	void CollisionEnemiesProjectilesVsPlayer();
-
-	void ApplyDamage(int damage, float invincibleTime);
-
-	void Die();
-
 	void ModifyLeftArmBone();
 
 	void ModifyRightArmBone();
