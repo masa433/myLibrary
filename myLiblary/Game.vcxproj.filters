@@ -19,6 +19,9 @@
     <Filter Include="Source\System">
       <UniqueIdentifier>{bdca9bd5-7c86-4bde-986d-9cf51f91eb5a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External\ImGuizmo">
+      <UniqueIdentifier>{560bf31f-70dc-4454-9ea2-2b3a1da3f33b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\imgui-docking\imconfig.h">
@@ -216,6 +219,18 @@
     <ClInclude Include="Source\System\FreeCameraController.h">
       <Filter>Source\System</Filter>
     </ClInclude>
+    <ClInclude Include="External\ImGuizmo\ImCurveEdit.h">
+      <Filter>External\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGuizmo\ImGradient.h">
+      <Filter>External\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGuizmo\ImGuizmo.h">
+      <Filter>External\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGuizmo\ImSequencer.h">
+      <Filter>External\ImGuizmo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\imgui-docking\imgui.cpp">
@@ -391,6 +406,18 @@
     </ClCompile>
     <ClCompile Include="Source\System\FreeCameraController.cpp">
       <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGuizmo\ImCurveEdit.cpp">
+      <Filter>External\ImGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGuizmo\ImGradient.cpp">
+      <Filter>External\ImGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGuizmo\ImGuizmo.cpp">
+      <Filter>External\ImGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGuizmo\ImSequencer.cpp">
+      <Filter>External\ImGuizmo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -10,6 +10,7 @@
 #include "SceneManager.h"
 #include "SceneTitle.h"
 #include <System/Graphics.h>
+#include <ImGuizmo.h>
 
 
 //初期化
@@ -37,6 +38,26 @@ void Player::Initialize()
 	isDead = false;
 
 	SetBattingIdleState();
+
+	//頭ノード取得
+	const char* headName = "mixamorig:Head";
+	Model::Node* headNode = model->FindNode(headName);
+
+	//ローカル前方ベクトル計算
+	{
+		DirectX::XMMATRIX WorldTransform = DirectX::XMLoadFloat4x4(&headNode->globalTransform);
+		DirectX::XMMATRIX InverseWorldTransform = DirectX::XMMatrixInverse(nullptr, WorldTransform);
+		DirectX::XMVECTOR HeadWorldForward = DirectX::XMVectorSet(0, 0, 1, 0);
+		DirectX::XMVECTOR HeadLocalForward = DirectX::XMVector3TransformNormal(HeadWorldForward, InverseWorldTransform);
+
+		HeadLocalForward = DirectX::XMVector3Normalize(HeadLocalForward);
+		DirectX::XMStoreFloat3(&headLocalForward, HeadLocalForward);
+
+	}
+
+	// ターゲット位置
+	targetPosition = { 0, 2, 1 };
+
 }
 
 //終了化
@@ -87,14 +108,9 @@ void Player::Update(float elapsedTime)
 	}
 
 
-	
-
-
 	//移動入力処理
 	InputMove(elapsedTime);
 
-	
-	
 	//ジャンプ入力処理
 	InputJump();
 
@@ -143,6 +159,48 @@ void Player::Update(float elapsedTime)
 		}
 	}
 
+	//頭ノード取得
+	const char* headName = "mixamorig:Head";
+	Model::Node* headNode = model->FindNode(headName);
+
+	// 頭がターゲット位置を正面に捉えるように回転させる
+	{
+		//ターゲットまでのベクトルをローカル空間に変換
+		DirectX::XMMATRIX HeadWorldTransform = DirectX::XMLoadFloat4x4(&headNode->globalTransform);
+		DirectX::XMMATRIX InverseHeadWorldTransform = DirectX::XMMatrixInverse(nullptr, HeadWorldTransform);
+		DirectX::XMVECTOR TargetWorldPosition = DirectX::XMVectorSet(targetPosition.x, targetPosition.y, targetPosition.z, 1);
+		DirectX::XMVECTOR TargetLocalPosition = DirectX::XMVector3TransformCoord(TargetWorldPosition, InverseHeadWorldTransform);
+		DirectX::XMVECTOR HeadToTargetLocal = DirectX::XMVectorSubtract(TargetLocalPosition, DirectX::XMVectorSet(0, 0, 0, 1));
+		HeadToTargetLocal = DirectX::XMVector3Normalize(HeadToTargetLocal);
+
+
+		// ローカル空間での回転軸と回転角を求める
+		DirectX::XMVECTOR HeadLocalForwardVec = DirectX::XMLoadFloat3(&headLocalForward);
+		DirectX::XMVECTOR RotationAxis = DirectX::XMVector3Cross(HeadLocalForwardVec, HeadToTargetLocal);
+		RotationAxis = DirectX::XMVector3Normalize(RotationAxis);
+		DirectX::XMVECTOR Dot = DirectX::XMVector3Dot(HeadLocalForwardVec, HeadToTargetLocal);
+		float RotationAngle = acosf(DirectX::XMVectorGetX(Dot));
+
+		// 回転を表すクォータニオンを作成
+		DirectX::XMVECTOR SinHalfAngle = DirectX::XMVectorSet(sinf(RotationAngle * 0.5f), sinf(RotationAngle * 0.5f), sinf(RotationAngle * 0.5f), sinf(RotationAngle * 0.5f));
+		DirectX::XMVECTOR CosHalfAngle = DirectX::XMVectorSet(cosf(RotationAngle * 0.5f), cosf(RotationAngle * 0.5f), cosf(RotationAngle * 0.5f), cosf(RotationAngle * 0.5f));
+		DirectX::XMVECTOR RotationQuat = DirectX::XMVectorSet(
+			DirectX::XMVectorGetX(RotationAxis) * DirectX::XMVectorGetX(SinHalfAngle),
+			DirectX::XMVectorGetY(RotationAxis) * DirectX::XMVectorGetY(SinHalfAngle),
+			DirectX::XMVectorGetZ(RotationAxis) * DirectX::XMVectorGetZ(SinHalfAngle),
+			DirectX::XMVectorGetX(CosHalfAngle)
+		);
+		// 頭ノードの回転に合成
+		DirectX::XMVECTOR HeadRotation = DirectX::XMLoadFloat4(&headNode->rotate);
+		DirectX::XMVECTOR NewHeadRotation = DirectX::XMQuaternionMultiply(RotationQuat, HeadRotation);
+		DirectX::XMStoreFloat4(&headNode->rotate, NewHeadRotation);
+
+		// ワールド行列更新
+		
+		UpdateNodeGlobal(*headNode);
+
+
+	}
 
 }
 
@@ -274,10 +332,11 @@ void Player::InputJump()
 
 
 //描画処理
-void Player::Render(const RenderContext& rc,ModelRenderer*renderer) 
+void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
 {
 	if (model == nullptr) return;  // モデルがnullptrの場合は描画しない
 
+	// モデル描画
 	renderer->Render(rc, transform, model, ShaderId::Lambert);
 	renderer->Render(rc, batTransform, bat.get(), ShaderId::Lambert);
 
@@ -332,6 +391,20 @@ void Player::DrawDebugGUI()
 			// スイング高さを表示（追加）
 			ImGui::Separator();
 			ImGui::Text("Swing Height: %.2f", swingHeight);
+		}
+
+		// ルックアット設定（追加）
+		if (ImGui::CollapsingHeader("Look At Target", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::DragFloat3("Target Position", &targetPosition.x, 0.1f, -100.0f, 100.0f);
+
+			// プレイヤーの前方にターゲットを配置するボタン
+			if (ImGui::Button("Set Target Front"))
+			{
+				targetPosition.x = position.x + sinf(angle.y) * 10.0f;
+				targetPosition.y = position.y + height * 0.8f;
+				targetPosition.z = position.z + cosf(angle.y) * 10.0f;
+			}
 		}
 	}
 	ImGui::End();
@@ -399,7 +472,7 @@ void Player::SetBattingIdleState()
 void Player::UpdateBattingIdleState(float elapsedTime)
 {
 	// Zキーでスイング
-	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+	if (GetAsyncKeyState('Z') & 0x8000)
 	{
 		SetSwingState();
 	}

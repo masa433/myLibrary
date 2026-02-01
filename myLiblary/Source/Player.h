@@ -132,4 +132,8 @@ private:
 	bool isSwingForward = true; // スイングが通常再生か逆再生か
 	float swingStartTime = 0.0f; // スイング開始時間
 	const float swingDuration = 0.6f; // スイングアニメーションの総時間
+
+
+	DirectX::XMFLOAT3					headLocalForward = { 0, 0, 1 };
+	DirectX::XMFLOAT3					targetPosition = { 0, 0, 0 };
 };
