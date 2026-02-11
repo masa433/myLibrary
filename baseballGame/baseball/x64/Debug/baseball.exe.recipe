@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\x64\Debug\baseball.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\blur_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\fullscreen_quad_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\fullscreen_quad_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\gltf_model_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\gltf_model_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\luminance_extraction_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\ShapeRendererPS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\ShapeRendererVS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\sprite_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\sprite_vs.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

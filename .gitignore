@@ -40,10 +40,11 @@
 # debug information files
 *.dwo
 
-myLiblary/.vs/
-/myLiblary/bin/
-/myLiblary/obj/
-/myLiblary/Data/Shader/
-/myLiblary/Tools/
-/myLiblary/External/
-/myLiblary/Data/
+/baseballGame/.vs/
+/baseballGame/environments/
+/baseballGame/obj/
+/baseballGame/Data/Shader/
+/baseballGame/Tools/
+/baseballGame/External/
+/baseballGame/resources/
+/baseballGame/reflection_capture_tool/

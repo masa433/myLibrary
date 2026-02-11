@@ -1,0 +1,272 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{9f64f4ff-d9e0-43d7-88e1-13e6d3656a89}</UniqueIdentifier>
+      <Extensions>hlsl;hlsli</Extensions>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{5d2ed881-4062-49d0-a1ce-86240074d016}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="framework.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sprite.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sprite_batch.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="framebuffer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="fullscreen_quad.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="gltf_model.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="scene_game.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="camera_controller.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="stage.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="game_object.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="game_pad.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="input.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="mouse.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderState.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Pitcher.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="shapeRenderer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_impl_dx11.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_impl_win32.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_ja_gryph_ranges.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="collision.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="high_resolution_timer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="misc.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="sprite.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="sprite_batch.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="framebuffer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="fullscreen_quad.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gltf_model.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="scene_game.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="scene.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="camera_controller.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="stage.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="game_object.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="input.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="game_pad.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="mouse.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderContext.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderState.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Pitcher.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="shapeRenderer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui_impl_dx11.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui_impl_win32.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imstb_rectpack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imstb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imstb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="collision.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="sprite.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="fullscreen_quad.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="gltf_model.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="bidirectional_reflectance_distribution_function.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="image_based_lighting.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ShapeRenderer.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="sprite_vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="sprite_ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="fullscreen_quad_vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="fullscreen_quad_ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="luminance_extraction_ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="blur_ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="gltf_model_vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="gltf_model_ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ShapeRendererPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ShapeRendererVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
