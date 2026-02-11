@@ -109,6 +109,9 @@
     <ClCompile Include="collision.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="strikeZone.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -214,6 +217,9 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="collision.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="strikeZone.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

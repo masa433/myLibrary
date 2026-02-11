@@ -3,6 +3,7 @@
 #include "gltf_model.h"
 #include <DirectXMath.h>
 #include "RenderContext.h"
+#include "sprite.h"
 
 enum class State 
 {
@@ -97,4 +98,7 @@ private:
 	float swingWidth = 5.0f;
     float armAngleOffset = 0.0f; // 腕の角度オフセット（追加）
     float swingStartTime = 0.0f; // スイング開始からの経過時間
+
+    float batSwingOffset = 0.0f; // バットのスイング幅オフセット（追加）
+
 };

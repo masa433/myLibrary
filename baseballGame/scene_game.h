@@ -50,7 +50,6 @@ public:
 	// GUI描画処理
 	void DrawGUI() override;
 
-	void RenderStrikeZone();
 
     // 定数バッファ構造体
     struct scene_constants
@@ -65,11 +64,5 @@ public:
 
 
 
-    // ストライクゾーン表示用スプライト
-    std::unique_ptr<sprite> strikeZoneSprite;
-    bool showStrikeZoneImage = true;
-    DirectX::XMFLOAT2 spritePosition = { 525.0f, 330.0f };
-    DirectX::XMFLOAT2 spriteScale = { 0.2f, 0.25f };
-    DirectX::XMFLOAT4 spriteTint = { 1.0f, 1.0f, 1.0f, 1.0f };
-
+ 
 };
