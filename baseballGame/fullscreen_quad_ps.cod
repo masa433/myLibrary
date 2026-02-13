@@ -39,7 +39,7 @@ dcl_output o0.xyzw
 //   v2.x <- pin.texcoord.x; v2.y <- pin.texcoord.y; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 11 "C:\Users\2240021\Desktop\myLibrary\baseballGame\fullscreen_quad_ps.hlsl"
+#line 11 "C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\fullscreen_quad_ps.hlsl"
 sample_indexable(texture2d)(float,float,float,float) o0.xyzw, v2.xyxx, t0.xyzw, s1
 ret 
 // Approximately 2 instruction slots used

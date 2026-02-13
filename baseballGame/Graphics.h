@@ -54,18 +54,6 @@ public:
 	// シェイプレンダラ取得
 	ShapeRenderer* GetShapeRenderer() const { return shapeRenderer.get(); }
 
-	// ビュー行列取得
-	DirectX::XMMATRIX GetViewMatrix() const { return viewMatrix; }
-
-	// プロジェクション行列取得
-	DirectX::XMMATRIX GetProjectionMatrix() const { return projectionMatrix; }
-
-	// ビュー行列の設定
-	void SetViewMatrix(const DirectX::XMMATRIX& matrix) { viewMatrix = matrix; }
-
-	// プロジェクション行列の設定
-	void SetProjectionMatrix(const DirectX::XMMATRIX& matrix) { projectionMatrix = matrix; }
-
 private:
 	HWND											hWnd = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11Device>			device;
@@ -80,7 +68,4 @@ private:
 
 	std::unique_ptr<RenderState>					renderState;
 	std::unique_ptr<ShapeRenderer>					shapeRenderer;
-
-	DirectX::XMMATRIX								viewMatrix;
-	DirectX::XMMATRIX								projectionMatrix;
 };

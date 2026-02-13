@@ -38,10 +38,6 @@ void Player::Initialize()
     batPosition = { 8.0f, 0.0f, 4.0f };
     batAngle = { 0.0f, 0.0f, 20.6f };
 
-
-	//デフォルトのマウスカーソル非表示
-    //ShowCursor(false);
-
 }
 
 // 解放
@@ -74,8 +70,6 @@ void Player::Update(float elapsedTime)
 
 	// バットとボールの当たり判定
     CheckBatAndBallCollision(elapsedTime);
-
-
 }
 
 void Player::CheckBatAndBallCollision(float elapsedTime)
@@ -182,7 +176,7 @@ void Player::HandleInput(float elapsedTime)
     }
 
     // スペースキーでスイング
-    if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+    if (GetAsyncKeyState(VK_SPACE) & 0x8000)
     {
         if (current_state != State::Swinging)
         {
@@ -312,8 +306,6 @@ void Player::Render(RenderContext& rc)
         batHeight,             // 高さ
         { 1.0f, 0.0f, 0.0f, 1.0f } // 色
     );
-
-
 }
 
 void Player::DrawGUI() 

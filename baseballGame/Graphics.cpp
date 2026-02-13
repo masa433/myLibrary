@@ -127,21 +127,6 @@ void Graphics::Initialize(HWND hWnd)
 
 	// レンダラ生成
 	shapeRenderer = std::make_unique<ShapeRenderer>(device.Get());
-
-	// ビュー行列の設定
-	viewMatrix = DirectX::XMMatrixLookAtLH(
-		DirectX::XMVectorSet(0.0f, 0.0f, -5.0f, 1.0f), // カメラ位置
-		DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),  // 注視点
-		DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)   // 上方向
-	);
-
-	// プロジェクション行列の設定
-	projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(
-		DirectX::XMConvertToRadians(45.0f), // 視野角
-		screenWidth / screenHeight,        // アスペクト比
-		0.1f,                              // ニアクリップ
-		1000.0f                            // ファークリップ
-	);
 }
 
 // クリア

@@ -6,7 +6,6 @@
 #include "gltf_model.h"
 #include "game_object.h"
 #include "RenderContext.h"
-#include "sprite.h"
 
 class Pitcher : public GameObject
 {
@@ -27,8 +26,6 @@ public:
 
 		void UpdateAnimation(float elapsedTime);
 
-
-
 public:
 		const DirectX::XMFLOAT3& GetBallPosition() const { return ballWorldPosition; }
 		const DirectX::XMFLOAT3& GetBallScale() const { return ballWorldScale; }
@@ -36,12 +33,6 @@ public:
 		const DirectX::XMFLOAT3& GetBallVelocity() const { return ballVelocity; }
 		void SetBallVelocity(const DirectX::XMFLOAT3& velocity) { ballVelocity = velocity; }
 		const float GetBallDebugRadius() const { return ballDebugRadius; }
-
-		DirectX::XMFLOAT2 GetBallScreenPosition(
-			const DirectX::XMMATRIX& view,
-			const DirectX::XMMATRIX& proj,
-			float screenWidth,
-			float screenHeight);
 
 private:
 	// モデル関連
@@ -80,7 +71,7 @@ private:
 		float ballSpeedKmh = 150.0f; // 投球速度（km/h） - デバッグ可能
 		float launchAngleDegrees = -2.0f; // 発射角度（度）
 		DirectX::XMFLOAT3 rotationSpeed = { 0.0f, 0.0f, 0.0f }; // 回転速度（度/秒）
-		DirectX::XMFLOAT3 throwDirection = { -0.02f, -0.2f, 1.0f }; // 投球方向
+		DirectX::XMFLOAT3 throwDirection = { 0.0f, -0.2f, 1.0f }; // 投球方向
 
 		// 変化球パラメータ
 		float horizontalBreak = 0.0f; // 横方向の変化量（正:右、負:左）
@@ -89,16 +80,4 @@ private:
 
 		float ballDebugRadius = 0.15f; // デフォルトのスケール倍率
 		float reducedRadius = 0.0f;
-
-		bool ballSpriteVisible = false;
-
-		// ===== ゲーム式投球用 =====
-		DirectX::XMFLOAT3 curveStart;
-		DirectX::XMFLOAT3 curveControl;
-		DirectX::XMFLOAT3 curveEnd;
-
-		float curveT = 0.0f;
-		float pitchDuration = 1.3f; // ボール到達時間（秒）
-		int pitchType = 0;
-
 };

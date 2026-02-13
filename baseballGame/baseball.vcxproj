@@ -224,7 +224,6 @@
     <ClCompile Include="sprite.cpp" />
     <ClCompile Include="sprite_batch.cpp" />
     <ClCompile Include="stage.cpp" />
-    <ClCompile Include="strikeZone.cpp" />
     <ClCompile Include="texture.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -262,7 +261,6 @@
     <ClInclude Include="sprite.h" />
     <ClInclude Include="sprite_batch.h" />
     <ClInclude Include="stage.h" />
-    <ClInclude Include="strikeZone.h" />
     <ClInclude Include="texture.h" />
   </ItemGroup>
   <ItemGroup>

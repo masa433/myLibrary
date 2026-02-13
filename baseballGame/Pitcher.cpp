@@ -3,17 +3,8 @@
 #include <Windows.h>
 #include "Graphics.h"
 #include <algorithm>
-#include <random>
-#include "strikeZone.h"
+#include "scene_game.h"
 
-// ランダムな値を生成する関数
-float GenerateRandomFloat(float min, float max)
-{
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_real_distribution<float> dis(min, max);
-	return dis(gen);
-}
 
 // 初期化
 void Pitcher::Initialize() 
@@ -37,7 +28,6 @@ void Pitcher::Initialize()
 
 	rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
-
 }
 
 void Pitcher::Uninitialize() 
@@ -45,8 +35,9 @@ void Pitcher::Uninitialize()
 }
 
 // 更新
-void Pitcher::Update(float elapsedTime)
+void Pitcher::Update(float elapsedTime) 
 {
+	
 	UpdateAnimation(elapsedTime);
 
 	// 位置更新
@@ -54,68 +45,7 @@ void Pitcher::Update(float elapsedTime)
 
 	AttachBallToHand(elapsedTime);
 
-	// ===== 3D値をUI座標へ変換 =====
-	{
-		auto& zone = strikeZone::Instance();
 
-		if (isBallThrown)
-		{
-			// 投球進行度 0～1
-			float t = curveT;
-
-			// ストライクゾーンの表示位置とサイズ
-			DirectX::XMFLOAT2 zonePos = zone.spritePosition;
-			DirectX::XMFLOAT2 zoneScale = zone.spriteScale;
-
-			float zoneWidth = zoneScale.x;
-			float zoneHeight = zoneScale.y;
-
-			// 3DのX,YをそのままUI範囲へ正規化
-			float normalizedX = (ballWorldPosition.x + 0.5f); // -0.5～0.5想定
-			float normalizedY = (ballWorldPosition.y - 0.5f); // 高さ補正
-
-			DirectX::XMFLOAT2 screenPos;
-
-			// スクリーン座標を計算
-			screenPos.x = zonePos.x + normalizedX * zoneWidth;
-			screenPos.y = zonePos.y - normalizedY * zoneHeight;
-
-			// スプライトの位置を更新
-			zone.SetBallScreenPosition(screenPos);
-			zone.SetBallVisible(true);
-		}
-		else
-		{
-			zone.SetBallVisible(false);
-		}
-	}
-}
-
-DirectX::XMFLOAT2 Pitcher::GetBallScreenPosition(
-	const DirectX::XMMATRIX& view,
-	const DirectX::XMMATRIX& proj,
-	float screenWidth,
-	float screenHeight)
-{
-	using namespace DirectX;
-
-	XMVECTOR worldPos = XMLoadFloat3(&ballWorldPosition);
-
-	// 3D位置を2Dスクリーン座標に変換
-	XMVECTOR projected = XMVector3Project(
-		worldPos,
-		0.0f, 0.0f,
-		screenWidth, screenHeight,
-		0.0f, 1.0f,
-		proj,
-		view,
-		XMMatrixIdentity()
-	);
-
-	XMFLOAT3 screen;
-	XMStoreFloat3(&screen, projected);
-
-	return XMFLOAT2(screen.x, screen.y);
 }
 
 // 描画
@@ -143,7 +73,6 @@ void Pitcher::Render(RenderContext& rc)
 	// ShapeRenderer で描画
 	shapeRenderer->DrawSphere(ballPosition, reducedRadius, { 1, 0, 0, 1 }); // スケールを適用
 	shapeRenderer->Render(rc.context, rc.camera->GetView(), rc.camera->GetProjection());
-	
 	
 }
 
@@ -267,12 +196,6 @@ void Pitcher::DrawGUI()
 #endif
 }
 
-//イージング関数
-float Easing(float t) 
-{
-	return t * t;
-}
-
 //アタッチメント処理
 void Pitcher::AttachBallToHand(float elapsedTime)
 {
@@ -320,96 +243,70 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 	}
 	else
 	{
-		curveT += elapsedTime / pitchDuration;
+		//投球開始位置からの距離を計算
+		float distanceTravel = sqrtf(
+			(ballWorldPosition.x - ballStartPosition.x) * (ballWorldPosition.x - ballStartPosition.x) +
+			(ballWorldPosition.z - ballStartPosition.z) * (ballWorldPosition.z - ballStartPosition.z)
+		);
 
-		if (curveT > 1.0f)
-			curveT = 1.0f;
-
-		float t = curveT;
-		float oneMinusT = 1.0f - t;
-
-		// ホームプレートまでの残り距離を計算
-		float remainingDistance = curveEnd.z - (oneMinusT * oneMinusT * curveStart.z +
-			2 * oneMinusT * t * curveControl.z +
-			t * t * curveEnd.z);
-
-		// 変化開始のタイミング
-		if (remainingDistance <= 40.0f)
+		//変化が始まる距離を超えたら変化する
+		float breakFactor = 0.0f;
+		if (distanceTravel > breakStartDistance) 
 		{
-			float breakFactor = Easing((40.0f - remainingDistance) / 40.0f); // イージング関数で変化量を計算
-
-			// 変化量を徐々に増加
-			switch (pitchType)
-			{
-			case 1: // スライダー
-				curveControl.x -= breakFactor * GenerateRandomFloat(0.1f, 0.5f); // 横方向の変化を滑らかに増加
-				break;
-
-			case 2: // カーブ
-				curveControl.y -= breakFactor * GenerateRandomFloat(0.1f, 0.5f); // 縦方向の変化を滑らかに増加
-				break;
-
-			case 3: // チェンジアップ
-				curveControl.y -= breakFactor * GenerateRandomFloat(0.1f, 0.5f); // 縦方向の変化を滑らかに増加
-				break;
-
-			case 4: // フォーク
-				curveControl.y -= breakFactor * GenerateRandomFloat(0.1f, 0.5f); // 縦方向の変化を滑らかに増加
-				break;
-			}
+			breakFactor = (std::min)(1.0f, (distanceTravel - breakStartDistance) / 10.0f);
 		}
 
-		// 2次ベジェ補間
-		ballWorldPosition.x =
-			oneMinusT * oneMinusT * curveStart.x +
-			2 * oneMinusT * t * curveControl.x +
-			t * t * curveEnd.x;
+		//重力を適用
+		ballVelocity.y += gravity * elapsedTime;
 
-		ballWorldPosition.y =
-			oneMinusT * oneMinusT * curveStart.y +
-			2 * oneMinusT * t * curveControl.y +
-			t * t * curveEnd.y;
+		//変化の加速度
+		float ballAccelerationX = horizontalBreak * breakFactor * elapsedTime;
+		float ballAccelerationY = verticalBreak * breakFactor * elapsedTime;
 
-		ballWorldPosition.z =
-			oneMinusT * oneMinusT * curveStart.z +
-			2 * oneMinusT * t * curveControl.z +
-			t * t * curveEnd.z;
+		ballVelocity.x += ballAccelerationX;
+		ballVelocity.y += ballAccelerationY;
 
-		// 回転（演出）
+		// 空気抵抗
+		float airResistance = 0.99999f;
+		ballVelocity.x *= airResistance;
+		ballVelocity.z *= airResistance;
+
+		// 位置を更新
+		ballWorldPosition.x += ballVelocity.x * elapsedTime;
+		ballWorldPosition.y += ballVelocity.y * elapsedTime;
+		ballWorldPosition.z += ballVelocity.z * elapsedTime;
+
+		// ボールの回転を更新
 		ballWorldAngle.x += rotationSpeed.x * elapsedTime;
 		ballWorldAngle.y += rotationSpeed.y * elapsedTime;
 		ballWorldAngle.z += rotationSpeed.z * elapsedTime;
+		
 
-		// ワールド行列更新
-		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(
-			ballWorldScale.x,
-			ballWorldScale.y,
-			ballWorldScale.z);
+		// ボールのワールド行列を更新
+		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(ballWorldScale.x, ballWorldScale.y, ballWorldScale.z);
+		DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(ballWorldAngle.x, ballWorldAngle.y, ballWorldAngle.z);
+		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(ballWorldPosition.x, ballWorldPosition.y, ballWorldPosition.z);
+		DirectX::XMMATRIX ballWorldMatrix = S * R * T;
+		DirectX::XMStoreFloat4x4(&ballWorldTransform, ballWorldMatrix);
 
-		DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(
-			ballWorldAngle.x,
-			ballWorldAngle.y,
-			ballWorldAngle.z);
-
-		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(
-			ballWorldPosition.x,
-			ballWorldPosition.y,
-			ballWorldPosition.z);
-
-		DirectX::XMStoreFloat4x4(&ballWorldTransform, S * R * T);
-
-		// 到達したらリセット
-		if (curveT >= 1.0f)
+		// 地面に落ちたらリセット
+		if (ballWorldPosition.y < 0.0f)
 		{
 			isBallThrown = false;
 			animation_time = 0.0f;
+			ballVelocity = { 0.0f, 0.0f, 0.0f };
 		}
 	}
 }
 
-// アニメーション更新 
-void Pitcher::UpdateAnimation(float elapsedTime) {
-	if (!pitcher || pitcher->animations.empty()) { return; }
+// アニメーション更新
+void Pitcher::UpdateAnimation(float elapsedTime)
+{
+	if (!pitcher || pitcher->animations.empty())
+	{
+		return;
+	}
+
 	if (animation_playing)
 	{
 		animation_time += elapsedTime;
@@ -428,57 +325,29 @@ void Pitcher::UpdateAnimation(float elapsedTime) {
 			// ボールを投げる
 			isBallThrown = true;
 
+			// km/hからm/sに変換
+			float speedMs = ballSpeedKmh ;
 
-			// ランダムな球種を設定
-			int randomPitchType = static_cast<int>(GenerateRandomFloat(0, 4)); // 0～4のランダムな整数
-			// ===== ゲーム式投球開始 =====
-			curveT = 0.0f;
-			curveStart = ballWorldPosition;
+			// 発射角度を適用
+			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
 
-			// ホームベース位置
-			float homePlateZ = 80.0f;
+			// 方向ベクトルを設定
+			throwDirection.y = sinf(launchAngleRadians);
+			throwDirection.z = cosf(launchAngleRadians);
 
-			curveEnd.z = homePlateZ;
-			curveEnd.x = GenerateRandomFloat(-0.4f, 0.2f);
-			curveEnd.y = GenerateRandomFloat(0.5f, 2.0f);
+			// 正規化
+			DirectX::XMVECTOR dir = DirectX::XMLoadFloat3(&throwDirection);
+			dir = DirectX::XMVector3Normalize(dir);
+			DirectX::XMFLOAT3 normalizedDir;
+			DirectX::XMStoreFloat3(&normalizedDir, dir);
 
-			// 中間制御点（基本は中央）
-			curveControl.x = (curveStart.x + curveEnd.x) * 0.5f;
-			curveControl.y = (curveStart.y + curveEnd.y) * 0.5f;
-			curveControl.z = (curveStart.z + curveEnd.z) * 0.5f;
+			// 速度ベクトルを設定（m/s単位）
+			ballVelocity.x = normalizedDir.x * speedMs;
+			ballVelocity.y = normalizedDir.y * speedMs;
+			ballVelocity.z = normalizedDir.z * speedMs;
 
-			// 球種ごとの変化
-			pitchType = randomPitchType;
-
-			switch (pitchType)
-			{
-			case 0: // ストレート
-				OutputDebugStringA("Fastball Pitch Selected\n");
-				break;
-
-			case 1: // スライダー
-				curveControl.x += 1.5f;
-				OutputDebugStringA("Slider Pitch Selected\n");
-				break;
-
-			case 2: // カーブ
-				curveControl.y += 3.0f;
-				OutputDebugStringA("Curve Pitch Selected\n");
-				break;
-
-			case 3: // チェンジアップ
-				curveControl.y -= 1.5f;
-				OutputDebugStringA("Changeup Pitch Selected\n");
-				break;
-
-			case 4: // フォーク
-				curveControl.y -= 2.5f;
-				OutputDebugStringA("Forkball Pitch Selected\n");
-				break;
-			}
-
-			// 回転は演出だけ残す
-			ballWorldScale = { 3.0f,3.0f,3.0f };
+			// 投げた瞬間のボールのスケールと角度を設定
+			ballWorldScale = { 3.0f, 3.0f, 3.0f };
 			ballWorldAngle = ballAngle;
 		}
 
@@ -492,5 +361,3 @@ void Pitcher::UpdateAnimation(float elapsedTime) {
 		pitcher->animate(current_animation_index, animation_time, animated_nodes);
 	}
 }
-
-

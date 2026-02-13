@@ -9,7 +9,6 @@
 #include "Graphics.h"
 #include "RenderContext.h"
 #include "misc.h"
-#include "strikeZone.h"
 
 
 scene_game::scene_game()
@@ -38,8 +37,8 @@ void scene_game::initialize()
         camera_far_z
     );
     camera.SetLookAt(
-        { 0, 3.45f, 64.5f },
-        { 0, 0.0f, 0.0f },
+        { 0, 4.7f, 66.0f },
+        { 0, -0.5f, 0.05f },
         { 0, 1, 0 }
     );
     cameraController.SyncCameraToController(camera);
@@ -61,10 +60,9 @@ void scene_game::initialize()
 
 	// ピッチャーの初期化
     Pitcher::Instance().Initialize();
-    
-	// ストライクゾーンの初期化
-    strikeZone::Instance().Initialize();
 
+    //ストライクゾーンの初期化
+    strikeZoneSprite = std::make_unique<sprite>(device, L"./resources/sprite/strikeZone.png");
 }
 
 void scene_game::update(float elapsed_time)
@@ -84,10 +82,70 @@ void scene_game::update(float elapsed_time)
 	// ピッチャーの更新
     Pitcher::Instance().Update(elapsed_time);
 
-	// ストライクゾーンの更新
-	strikeZone::Instance().Update(elapsed_time);
+#ifdef USE_IMGUI
+    if (ImGui::CollapsingHeader("Camera"))
+    {
+        DirectX::XMFLOAT3 eye = camera.GetEye();
+        DirectX::XMFLOAT3 focus = camera.GetFocus();
 
+        if (ImGui::DragFloat3("Camera Position", &eye.x, -50.0f, 100.0f))
+        {
+            camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
+            cameraController.SyncCameraToController(camera);
+        }
 
+        if (ImGui::DragFloat3("Camera Focus", &focus.x, -50.0f, 100.0f))
+        {
+            camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
+            cameraController.SyncCameraToController(camera);
+        }
+
+        ImGui::SliderFloat("Near Z", &camera_near_z, 0.1f, 100.0f);
+        ImGui::SliderFloat("Far Z", &camera_far_z, 100.0f, 10000.0f);
+
+        camera.SetPerspectiveFov(
+            DirectX::XMConvertToRadians(45),
+            Graphics::Instance().GetScreenWidth() / Graphics::Instance().GetScreenHeight(),
+            camera_near_z,
+            camera_far_z
+		);
+        
+    }
+
+    if (ImGui::CollapsingHeader("Light"))
+    {
+        DirectionalLight dirLight = light.GetDirectionalLight();
+        if (ImGui::SliderFloat3("Light Direction", &dirLight.direction.x, -1.0f, 1.0f))
+        {
+            light.SetDirectionalLight(dirLight);
+        }
+    }
+
+    // ストライクゾーン画像の制御
+    if (ImGui::CollapsingHeader("Strike Zone Image"))
+    {
+        ImGui::Checkbox("Show Image", &showStrikeZoneImage);
+        ImGui::DragFloat2("Screen Position", &spritePosition.x, 1.0f, 0.0f, 2000.0f);
+        ImGui::DragFloat2("Scale", &spriteScale.x, 0.01f, 0.1f, 5.0f);
+        ImGui::ColorEdit4("Tint", &spriteTint.x);
+    }
+
+    // タイムスケール制御
+    if (ImGui::Begin("Time Control", nullptr, ImGuiWindowFlags_None))
+    {
+        ImGui::SliderFloat("Time Scale", &timeScale, 0.0f, 2.0f);
+        if (ImGui::Button(u8"一時停止 (0.0)"))
+        {
+            timeScale = 0.0f;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(u8"通常速度 (1.0)"))
+        {
+            timeScale = 1.0f;
+        }
+    }
+    ImGui::End();
+#endif
 }
 
 void scene_game::render(float elapsedTime)
@@ -133,19 +191,39 @@ void scene_game::render(float elapsedTime)
     rc.camera = &camera;
     rc.light = &light;
 
-    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
     // ステージの描画
     stage::Instance().render(rc);
+
+    // プレイヤーの描画
+	dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+    Player::Instance().Render(rc);
 
     // ピッチャーの描画
 	Pitcher::Instance().Render(rc);
 
-    // プレイヤーの描画
-    Player::Instance().Render(rc);
+    // 2Dスプライトの描画（画面に重ねて表示）
+    if (showStrikeZoneImage && strikeZoneSprite)
+    {
+        // 深度テストを無効化（2D描画用）
+        dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::WriteOnly), 0);
 
-    // ストライクゾーンの描画
-	strikeZone::Instance().Render(rc);
-   
+        // テクスチャのサイズを取得
+        float textureWidth = static_cast<float>(strikeZoneSprite->texture2d_desc.Width);
+        float textureHeight = static_cast<float>(strikeZoneSprite->texture2d_desc.Height);
+
+        strikeZoneSprite->render(
+            dc,
+            spritePosition.x,                    // X座標
+            spritePosition.y,                    // Y座標
+            textureWidth * spriteScale.x,        // 幅
+            textureHeight * spriteScale.y,       // 高さ
+            spriteTint.x, spriteTint.y, spriteTint.z, spriteTint.w,  // 色
+            0.0f                                 // 回転角度
+        );
+
+        // 深度テストを戻す
+        dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+    }
 }
 
 void scene_game::uninitialize()
@@ -164,64 +242,5 @@ void scene_game::DrawGUI()
 	// ピッチャーのGUI描画
 	Pitcher::Instance().DrawGUI();
 
-	//ストライクゾーンのGUI描画
-	strikeZone::Instance().DrawGUI();
   
-#ifdef USE_IMGUI
-    if (ImGui::CollapsingHeader("Camera"))
-    {
-        DirectX::XMFLOAT3 eye = camera.GetEye();
-        DirectX::XMFLOAT3 focus = camera.GetFocus();
-
-        if (ImGui::DragFloat3("Camera Position", &eye.x, -50.0f, 100.0f))
-        {
-            camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
-            cameraController.SyncCameraToController(camera);
-        }
-
-        if (ImGui::DragFloat3("Camera Focus", &focus.x, -50.0f, 100.0f))
-        {
-            camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
-            cameraController.SyncCameraToController(camera);
-        }
-
-        ImGui::SliderFloat("Near Z", &camera_near_z, 0.1f, 100.0f);
-        ImGui::SliderFloat("Far Z", &camera_far_z, 100.0f, 10000.0f);
-
-        camera.SetPerspectiveFov(
-            DirectX::XMConvertToRadians(45),
-            Graphics::Instance().GetScreenWidth() / Graphics::Instance().GetScreenHeight(),
-            camera_near_z,
-            camera_far_z
-        );
-
-    }
-
-    if (ImGui::CollapsingHeader("Light"))
-    {
-        DirectionalLight dirLight = light.GetDirectionalLight();
-        if (ImGui::SliderFloat3("Light Direction", &dirLight.direction.x, -1.0f, 1.0f))
-        {
-            light.SetDirectionalLight(dirLight);
-        }
-    }
-
-
-
-    // タイムスケール制御
-    if (ImGui::Begin("Time Control", nullptr, ImGuiWindowFlags_None))
-    {
-        ImGui::SliderFloat("Time Scale", &timeScale, 0.0f, 2.0f);
-        if (ImGui::Button(u8"一時停止 (0.0)"))
-        {
-            timeScale = 0.0f;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button(u8"通常速度 (1.0)"))
-        {
-            timeScale = 1.0f;
-        }
-    }
-    ImGui::End();
-#endif
 }
