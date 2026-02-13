@@ -1,6 +1,5 @@
 ﻿  Pitcher.cpp
-  framework.cpp
-  main.cpp
+  Player.cpp
   scene_game.cpp
   コードを生成中...
-  baseball.vcxproj -> C:\Users\2240021\Desktop\ゲープロⅢ - 課題用\baseballGame\x64\Debug\baseball.exe
+  baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe
