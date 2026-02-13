@@ -48,20 +48,17 @@ void Pitcher::Update(float elapsedTime)
 	// ストライク/ボールの判定
 	if (isBallThrown && !hasBeenJudged)
 	{
-		// ボールがストライクゾーンの手前に到達したかを確認
-		if (ballWorldPosition.z >= (strikeZonePosition.z - strikeZoneSize.z / 2.0f))
+		// ボールがストライクゾーン内に入ったかを確認
+		if (IsBallInStrikeZone())
 		{
-			if (IsBallInStrikeZone())
-			{
-				OutputDebugStringA("Strike!\n");
-			}
-			else
-			{
-				OutputDebugStringA("Ball!\n");
-			}
-
-			// 判定済みフラグを設定
-			hasBeenJudged = true;
+			OutputDebugStringA("Strike!\n");
+			hasBeenJudged = true; // 判定済みフラグを設定
+		}
+		else if (ballWorldPosition.z > strikeZonePosition.z + strikeZoneSize.z / 2.0f)
+		{
+			// ボールがストライクゾーン外を通過した場合
+			OutputDebugStringA("Ball!\n");
+			hasBeenJudged = true; // 判定済みフラグを設定
 		}
 	}
 
@@ -76,7 +73,7 @@ void Pitcher::Update(float elapsedTime)
 bool Pitcher::IsBallInStrikeZone() const
 {
 	// ストライクゾーンの最小値と最大値を計算
-	float tolerance = 0.3f; // 変化球の影響を考慮した許容範囲
+	float tolerance = 0.1f; // 変化球の影響を考慮した許容範囲
 	float strikeZoneMinX = strikeZonePosition.x - strikeZoneSize.x / 2.0f - 0.3f - tolerance;
 	float strikeZoneMaxX = strikeZonePosition.x + strikeZoneSize.x / 2.0f + 0.3f + tolerance;
 	float strikeZoneMinY = strikeZonePosition.y - strikeZoneSize.y / 2.0f - 0.3f - tolerance;
@@ -108,21 +105,21 @@ void Pitcher::Render(RenderContext& rc)
 	ShapeRenderer* shapeRenderer = Graphics::Instance().GetShapeRenderer();
 	const DirectX::XMFLOAT3& ballPosition = Pitcher::Instance().GetBallPosition(); // ボールの位置を取得
 	const DirectX::XMFLOAT3& ballScale = Pitcher::Instance().GetBallScale();       // ボールのスケールを取得
-
+	float tolerance = 0.1f; // 変化球の影響を考慮した許容範囲
 	// ストライクゾーンの範囲を描画
 	DirectX::XMFLOAT3 strikeZoneMin = {
-		strikeZonePosition.x - strikeZoneSize.x / 2.0f - 0.3f,
-		strikeZonePosition.y - strikeZoneSize.y / 2.0f - 0.3f,
-		strikeZonePosition.z - strikeZoneSize.z / 2.0f - 0.3f
+		strikeZonePosition.x - strikeZoneSize.x / 2.0f - 0.3f - tolerance,
+		strikeZonePosition.y - strikeZoneSize.y / 2.0f - 0.3f - tolerance,
+		strikeZonePosition.z - strikeZoneSize.z / 2.0f - 0.3f - tolerance
 	};
 	DirectX::XMFLOAT3 strikeZoneMax = {
-		strikeZonePosition.x + strikeZoneSize.x / 2.0f + 0.3f,
-		strikeZonePosition.y + strikeZoneSize.y / 2.0f + 0.3f,
-		strikeZonePosition.z + strikeZoneSize.z / 2.0f + 0.3f
+		strikeZonePosition.x + strikeZoneSize.x / 2.0f + 0.3f + tolerance,
+		strikeZonePosition.y + strikeZoneSize.y / 2.0f + 0.3f + tolerance,
+		strikeZonePosition.z + strikeZoneSize.z / 2.0f + 0.3f + tolerance
 	};
 
 	// ストライクゾーンを描画（緑色の半透明ボックス）
-	shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, { 0, 1, 0, 0.5f });
+	shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
 
 	// strikeZoneMin を赤い球体で描画
 	shapeRenderer->DrawSphere(strikeZoneMin, 0.1f, { 1, 0, 0, 1 }); // 半径 0.1f の赤い球体
@@ -443,9 +440,9 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 
 			PitchType selectedPitchType;
 
-			if (randomValue <= 0.9f) // 50%の確率でストレート
+			if (randomValue <= 0.5f) // 50%の確率でストレート
 			{
-				selectedPitchType = PitchType::VerticalSlider;
+				selectedPitchType = PitchType::Fastball;
 			}
 			else // 残り50%の確率で他の球種をランダムに選択
 			{
