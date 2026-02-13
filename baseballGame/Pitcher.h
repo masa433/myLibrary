@@ -34,6 +34,7 @@ public:
 		void SetBallVelocity(const DirectX::XMFLOAT3& velocity) { ballVelocity = velocity; }
 		const float GetBallDebugRadius() const { return ballDebugRadius; }
 
+		bool IsBallInStrikeZone() const;
 private:
 	// モデル関連
 		std::unique_ptr<gltf_model> pitcher;
@@ -69,15 +70,35 @@ private:
 		bool isBallThrown = false; // ボールが投げられたか
 		// ボール投球制御
 		float ballSpeedKmh = 150.0f; // 投球速度（km/h） - デバッグ可能
-		float launchAngleDegrees = -2.0f; // 発射角度（度）
+		float launchAngleDegrees = -2.5f; // 発射角度（度）
 		DirectX::XMFLOAT3 rotationSpeed = { 0.0f, 0.0f, 0.0f }; // 回転速度（度/秒）
 		DirectX::XMFLOAT3 throwDirection = { -0.02f, -0.2f, 1.0f }; // 投球方向
 
 		// 変化球パラメータ
 		float horizontalBreak = 0.0f; // 横方向の変化量（正:右、負:左）
 		float verticalBreak = 0.0f;   // 縦方向の変化量（正:上、負:下）
-		float breakStartDistance = 10.0f; // 変化が始まる距離
+		float breakStartDistance = 15.0f; // 変化が始まる距離
 
 		float ballDebugRadius = 0.15f; // デフォルトのスケール倍率
 		float reducedRadius = 0.0f;
+
+		enum class PitchType 
+		{
+			Fastball,//ストレート
+			Slider,//スライダー
+			Curveball,//カーブ
+			Changeup,//チェンジアップ
+			Forkball,//フォーク
+			TwoSeam,//ツーシーム
+			Cutter,//カットボール
+			Sinker,//シンカー
+			VerticalSlider,//縦スライダー	
+			Splitter,//スプリット
+			SlowCurve,//スローカーブ
+		};
+
+		//ストライクゾーンの判定
+		DirectX::XMFLOAT3 strikeZonePosition = { 0.14f, 2.55f, 57.0f }; // ストライクゾーンの中心位置
+		DirectX::XMFLOAT3 strikeZoneSize = { 0.6f, 0.8f, 0.7f }; // ストライクゾーンのサイズ（幅、高さ、奥行き）
+		bool hasBeenJudged = false; // 判定済みフラグ
 };
