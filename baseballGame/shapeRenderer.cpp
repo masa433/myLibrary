@@ -149,10 +149,10 @@ void ShapeRenderer::DrawCylinder(
     DirectX::XMMATRIX S = DirectX::XMMatrixScaling(radius, height, radius);
 
     // 高さ方向にオフセットを追加（基準点を底面にする）
-    DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(0.0f, height * 0.5f, 0.0f);
+    //DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(0.0f, height * 0.5f, 0.0f);
 
     // ワールド行列を保存
-    DirectX::XMStoreFloat4x4(&instance.worldTransform, S * T * worldMatrix);
+    DirectX::XMStoreFloat4x4(&instance.worldTransform, S *  worldMatrix);
 }
 
 // 線描画

@@ -6,6 +6,7 @@
 #include "gltf_model.h"
 #include "game_object.h"
 #include "RenderContext.h"
+#include "physxManager.h"
 
 class Pitcher : public GameObject
 {
@@ -33,6 +34,7 @@ public:
 		const DirectX::XMFLOAT3& GetBallVelocity() const { return ballVelocity; }
 		void SetBallVelocity(const DirectX::XMFLOAT3& velocity) { ballVelocity = velocity; }
 		const float GetBallDebugRadius() const { return ballDebugRadius; }
+		const float GetReducedRadius() const { return reducedRadius; }
 
 		bool IsBallInStrikeZone() const;
 private:
@@ -102,4 +104,6 @@ private:
 		DirectX::XMFLOAT3 strikeZoneSize = { 0.6f, 0.8f, 0.1f }; // ストライクゾーンのサイズ（幅、高さ、奥行き）
 		DirectX::XMFLOAT4 strikeZoneColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // ストライクゾーンの色（透明度付き）
 		bool hasBeenJudged = false; // 判定済みフラグ
+
+		physx::PxRigidDynamic* ballActor = nullptr; // ボールのコライダー
 };

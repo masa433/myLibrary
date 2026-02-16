@@ -123,12 +123,13 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\imgui;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>.\External\DirectXTK-main\DirectXTK-main\Bin\Desktop_2019\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\External\DirectXTK-main\DirectXTK-main\Bin\Desktop_2019\x64\Debug;.\External\PhysX-main\PhysX-main\physx\bin\win.x86_64.vc143.mt\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXExtensions_static_64.lib;PhysXPvdSDK_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -177,7 +178,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\imgui;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -185,8 +186,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>.\External\DirectXTK-main\DirectXTK-main\Bin\Desktop_2019\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\External\DirectXTK-main\DirectXTK-main\Bin\Desktop_2019\x64\Release;.\External\PhysX-main\PhysX-main\physx\bin\win.x86_64.vc143.mt\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXExtensions_static_64.lib;PhysXPvdSDK_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -215,6 +216,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="framework.cpp" />
     <ClCompile Include="mouse.cpp" />
+    <ClCompile Include="physxManager.cpp" />
     <ClCompile Include="Pitcher.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="RenderState.cpp" />
@@ -250,6 +252,7 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="misc.h" />
     <ClInclude Include="mouse.h" />
+    <ClInclude Include="physxManager.h" />
     <ClInclude Include="Pitcher.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="RenderContext.h" />

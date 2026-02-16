@@ -9,6 +9,7 @@
 #include "Graphics.h"
 #include "RenderContext.h"
 #include "misc.h"
+#include "physxManager.h"
 
 
 scene_game::scene_game()
@@ -52,6 +53,9 @@ void scene_game::initialize()
     HRESULT hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, constant_buffer.GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
+    // 物理エンジンの初期化
+    PhysXManager::Instance().Initialize();
+
     // ステージの初期化
     stage::Instance().initialize();
 
@@ -60,6 +64,7 @@ void scene_game::initialize()
 
 	// ピッチャーの初期化
     Pitcher::Instance().Initialize();
+
 
     //ストライクゾーンの初期化
     strikeZoneSprite = std::make_unique<sprite>(device, L"./resources/sprite/strikeZone.png");
@@ -73,6 +78,9 @@ void scene_game::update(float elapsed_time)
     cameraController.Update();
     cameraController.SyncControllerToCamera(camera);
 
+    // 物理エンジンの更新
+    PhysXManager::Instance().Update(elapsed_time);
+
     // ステージの更新
     stage::Instance().update(elapsed_time);
 
@@ -81,6 +89,7 @@ void scene_game::update(float elapsed_time)
 
 	// ピッチャーの更新
     Pitcher::Instance().Update(elapsed_time);
+
 
 #ifdef USE_IMGUI
     if (ImGui::CollapsingHeader("Camera"))
@@ -232,6 +241,7 @@ void scene_game::uninitialize()
     Player::Instance().Uninitialize();
     stage::Instance().uninitialize();
     Pitcher::Instance().Uninitialize();
+    PhysXManager::Instance().Uninitialize();
 }
 
 void scene_game::DrawGUI()

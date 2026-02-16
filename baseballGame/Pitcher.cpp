@@ -29,6 +29,20 @@ void Pitcher::Initialize()
 
 	rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
+	// ボールのコライダーを作成
+	physx::PxSphereGeometry ballGeometry(ballWorldScale.x / 2.0f);
+	physx::PxTransform ballTransform(physx::PxVec3(ballWorldPosition.x, ballWorldPosition.y, ballWorldPosition.z));
+	ballActor = PhysXManager::Instance().GetPhysics()->createRigidDynamic(ballTransform);
+	if (!ballActor)
+		throw std::runtime_error("Failed to create ball actor!");
+
+	physx::PxShape* ballShape = PhysXManager::Instance().GetPhysics()->createShape(ballGeometry, *PhysXManager::Instance().GetDefaultMaterial());
+	if (!ballShape)
+		throw std::runtime_error("Failed to create ball shape!");
+
+	ballActor->attachShape(*ballShape);
+	PhysXManager::Instance().AddActor(ballActor);
+
 }
 
 void Pitcher::Uninitialize() 

@@ -1,0 +1,91 @@
+﻿  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\blur_ps.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\blur_ps.cso
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\fullscreen_quad_ps.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\fullscreen_quad_ps.cso
+C:\Users\2240021\Desktop\myLibrary\baseballGame\fullscreen_quad_vs.hlsl(3,11-43): warning X3578: Output value 'main' is not completely initialized
+  
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\fullscreen_quad_vs.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\fullscreen_quad_vs.cso
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cso
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_vs.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_vs.cso
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\luminance_extraction_ps.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\luminance_extraction_ps.cso
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\ShapeRendererPS.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\ShapeRendererPS.cso
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\ShapeRendererVS.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\ShapeRendererVS.cso
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_ps.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_ps.cso
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_vs.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_vs.cso
+  camera.cpp
+  camera_controller.cpp
+  collision.cpp
+  imgui.cpp
+  imgui_draw.cpp
+  imgui_impl_dx11.cpp
+  imgui_impl_win32.cpp
+  imgui_ja_gryph_ranges.cpp
+  imgui_widgets.cpp
+  framebuffer.cpp
+  fullscreen_quad.cpp
+  game_object.cpp
+  game_pad.cpp
+  gltf_model.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\External\tinygltf-release\tinygltf-release\tiny_gltf.h(3218,15): warning C4244: '引数': 'std::streamoff' から 'const unsigned int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'gltf_model.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model.cpp(439,47): warning C4018: '<': signed と unsigned の数値を比較しようとしました。
+  Graphics.cpp
+  input.cpp
+  main.cpp
+  framework.cpp
+  mouse.cpp
+  physxManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\External\PhysX-main\PhysX-main\physx\include\foundation\windows\PxWindowsIntrinsics.h(93,2): error C3861: '_BitScanReverse64': 識別子が見つかりませんでした
+  (ソース ファイル 'physxManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\External\PhysX-main\PhysX-main\physx\include\foundation\windows\PxWindowsIntrinsics.h(115,2): error C3861: '_BitScanForward64': 識別子が見つかりませんでした
+  (ソース ファイル 'physxManager.cpp' をコンパイルしています)
+  
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\winnt.h(169,1): error C1189: #error:  "No Target Architecture"
+  (ソース ファイル 'physxManager.cpp' をコンパイルしています)
+  
+  コードを生成中...
+  コンパイル中...
+  Pitcher.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\External\PhysX-main\PhysX-main\physx\include\foundation\windows\PxWindowsIntrinsics.h(93,2): error C3861: '_BitScanReverse64': 識別子が見つかりませんでした
+  (ソース ファイル 'Pitcher.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\External\PhysX-main\PhysX-main\physx\include\foundation\windows\PxWindowsIntrinsics.h(115,2): error C3861: '_BitScanForward64': 識別子が見つかりませんでした
+  (ソース ファイル 'Pitcher.cpp' をコンパイルしています)
+  
+  Player.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\External\PhysX-main\PhysX-main\physx\include\foundation\windows\PxWindowsIntrinsics.h(93,2): error C3861: '_BitScanReverse64': 識別子が見つかりませんでした
+  (ソース ファイル 'Player.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\External\PhysX-main\PhysX-main\physx\include\foundation\windows\PxWindowsIntrinsics.h(115,2): error C3861: '_BitScanForward64': 識別子が見つかりませんでした
+  (ソース ファイル 'Player.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Player.cpp(526,55): warning C4018: '<': signed と unsigned の数値を比較しようとしました。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Player.cpp(552,36): warning C4018: '>=': signed と unsigned の数値を比較しようとしました。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Player.cpp(579,36): warning C4018: '>=': signed と unsigned の数値を比較しようとしました。
+  RenderState.cpp
+  scene_game.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\External\PhysX-main\PhysX-main\physx\include\foundation\windows\PxWindowsIntrinsics.h(93,2): error C3861: '_BitScanReverse64': 識別子が見つかりませんでした
+  (ソース ファイル 'scene_game.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\External\PhysX-main\PhysX-main\physx\include\foundation\windows\PxWindowsIntrinsics.h(115,2): error C3861: '_BitScanForward64': 識別子が見つかりませんでした
+  (ソース ファイル 'scene_game.cpp' をコンパイルしています)
+  
+  shader.cpp
+  shapeRenderer.cpp
+  sprite.cpp
+  sprite_batch.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_batch.cpp(101,18): warning C4244: '初期化中': 'UINT' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_batch.cpp(102,19): warning C4244: '初期化中': 'UINT' から 'float' への変換です。データが失われる可能性があります。
+  stage.cpp
+  texture.cpp
+  コードを生成中...

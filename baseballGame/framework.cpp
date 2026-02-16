@@ -4,7 +4,6 @@
 #include "input.h"
 
 
-
 // 垂直同期間隔設定
 static const int syncInterval = 1;
 
@@ -30,7 +29,7 @@ framework::framework(HWND hwnd) : hwnd(hwnd)
 
 
 
-
+	
 	sceneGame.initialize();
 
 
@@ -52,6 +51,8 @@ void framework::update(float elapsed_time/*Elapsed seconds from last frame*/)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 #endif
+
+
 
 	sceneGame.update(elapsed_time);
 
@@ -87,7 +88,9 @@ bool framework::uninitialize()
 
 framework::~framework()
 {
+	
 	sceneGame.uninitialize();
+
 
 	ReleaseDC(hwnd, hDC);
 }

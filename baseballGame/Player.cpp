@@ -4,9 +4,11 @@
 #include "Graphics.h"
 #include "Pitcher.h"
 #include <algorithm>
+#include <stdexcept>
 #include "stage.h"
 #include "collision.h"
 #include "input.h"
+#include "physxManager.h"
 
 // 初期化
 void Player::Initialize()
@@ -38,6 +40,19 @@ void Player::Initialize()
     batPosition = { 8.0f, 0.0f, 4.0f };
     batAngle = { 0.0f, 0.0f, 20.6f };
 
+    // バットのコライダーを作成
+    physx::PxCapsuleGeometry batGeometry(batRadius, batHeight / 2.0f);
+    physx::PxTransform batTransform(physx::PxVec3(batPosition.x, batPosition.y, batPosition.z));
+    batActor = PhysXManager::Instance().GetPhysics()->createRigidDynamic(batTransform);
+    if (!batActor)
+        throw std::runtime_error("Failed to create bat actor!");
+
+    physx::PxShape* batShape = PhysXManager::Instance().GetPhysics()->createShape(batGeometry, *PhysXManager::Instance().GetDefaultMaterial());
+    if (!batShape)
+        throw std::runtime_error("Failed to create bat shape!");
+
+    batActor->attachShape(*batShape);
+    PhysXManager::Instance().AddActor(batActor);
 }
 
 // 解放
@@ -48,6 +63,8 @@ void Player::Uninitialize()
 // プレイヤー固有の更新処理
 void Player::Update(float elapsedTime)
 {
+
+
     // キー入力による移動処理
     HandleInput(elapsedTime);
 
@@ -93,7 +110,7 @@ void Player::CheckBatAndBallCollision(float elapsedTime)
 
     // ボールの位置と半径を取得
     const DirectX::XMFLOAT3& ballPosition = Pitcher::Instance().GetBallPosition();
-    float ballRadius = Pitcher::Instance().GetBallDebugRadius();
+    float ballRadius = Pitcher::Instance().GetReducedRadius();
 
     // バットの半径と高さにスケールを適用
     float scaledBatRadius = batRadius * extractedScale;

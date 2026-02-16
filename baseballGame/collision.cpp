@@ -90,86 +90,37 @@ bool collision::IntersectSphereVsCylinder(
 	float cylinderHeight,
 	DirectX::XMFLOAT3& outCylinderPosition)
 {
+	// 球の中心が円柱の上端より上の場合、当たっていない
+	if (spherePosition.y > cylinderPosition.y + cylinderHeight + sphereRadius) {
+		return false;
+	}
+
+	// 球の中心が円柱の下端より下の場合、当たっていない
+	if (spherePosition.y < cylinderPosition.y - sphereRadius) {
+		return false;
+	}
+
 	// XZ平面での距離チェック
-	float vx = spherePosition.x - cylinderPosition.x;
-	float vz = spherePosition.z - cylinderPosition.z;
+	float vx = cylinderPosition.x - spherePosition.x;
+	float vz = cylinderPosition.z - spherePosition.z;
+	float combinedRadius = sphereRadius + cylinderRadius;
 	float distanceXZ = sqrt(vx * vx + vz * vz);
 
-	// Y軸方向の最も近い点を計算（円柱は底面が cylinderPosition.y）
-	float closestY = spherePosition.y;
-	if (closestY < cylinderPosition.y) {
-		closestY = cylinderPosition.y; // 底面
-	}
-	else if (closestY > cylinderPosition.y + cylinderHeight) {
-		closestY = cylinderPosition.y + cylinderHeight; // 上面
+	// XZ平面上で距離が半径の合計より大きい場合、当たっていない
+	if (distanceXZ > combinedRadius) {
+		return false;
 	}
 
-	// Y軸方向の距離
-	float dy = spherePosition.y - closestY;
+	// XZ平面で単位ベクトル化
+	vx /= distanceXZ;
+	vz /= distanceXZ;
 
-	// 球が円柱の側面と当たる場合の判定
-	if (closestY == spherePosition.y) {
-		// 球の中心が円柱の高さ範囲内にある場合
-		// XZ平面での距離が半径の合計より大きければ当たっていない
-		float combinedRadius = sphereRadius + cylinderRadius;
-		if (distanceXZ > combinedRadius) {
-			return false;
-		}
+	// 球が円柱を押し出す位置を計算
+	outCylinderPosition.x = spherePosition.x + (vx * combinedRadius);
+	outCylinderPosition.y = cylinderPosition.y; // Yはそのまま
+	outCylinderPosition.z = spherePosition.z + (vz * combinedRadius);
 
-		// ゼロ除算を防ぐ
-		if (distanceXZ < 0.0001f) {
-			// 球が円柱の中心軸上にある場合
-			outCylinderPosition.x = cylinderPosition.x + combinedRadius;
-			outCylinderPosition.y = closestY;
-			outCylinderPosition.z = cylinderPosition.z;
-			return true;
-		}
-
-		// XZ平面で単位ベクトル化
-		vx /= distanceXZ;
-		vz /= distanceXZ;
-
-		// 衝突点を計算（円柱の表面）
-		outCylinderPosition.x = cylinderPosition.x + (vx * cylinderRadius);
-		outCylinderPosition.y = closestY;
-		outCylinderPosition.z = cylinderPosition.z + (vz * cylinderRadius);
-
-		return true;
-	}
-	else {
-		// 球の中心が円柱の上下範囲外にある場合
-		// 円柱の端面（円）との判定
-		float combinedRadius = sphereRadius + cylinderRadius;
-
-		// XZ平面での距離チェック
-		if (distanceXZ > combinedRadius) {
-			return false;
-		}
-
-		// Y軸方向の距離チェック
-		if (fabs(dy) > sphereRadius) {
-			return false;
-		}
-
-		// ゼロ除算を防ぐ
-		if (distanceXZ < 0.0001f) {
-			outCylinderPosition.x = cylinderPosition.x;
-			outCylinderPosition.y = closestY;
-			outCylinderPosition.z = cylinderPosition.z;
-			return true;
-		}
-
-		// XZ平面で単位ベクトル化
-		vx /= distanceXZ;
-		vz /= distanceXZ;
-
-		// 衝突点を計算（円柱の端面）
-		outCylinderPosition.x = cylinderPosition.x + (vx * cylinderRadius);
-		outCylinderPosition.y = closestY;
-		outCylinderPosition.z = cylinderPosition.z + (vz * cylinderRadius);
-
-		return true;
-	}
+	return true;
 }
 
 bool collision::IntersectAABBVsAABB(
