@@ -502,6 +502,8 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 				horizontalBreak = 5.0f;  // 右方向に少し曲がる
 				verticalBreak = -2.0f;   // 少し落ちる
 				ballSpeedKmh = 140.0f;    // 少し速い
+				ballAngle.y = 0.0f;
+				ballAngle.x = 0.2f;
 				rotationSpeed = { -100.0f, 0.0f, 0.0f }; // 回転は少なめ
 				OutputDebugStringA("Pitch Type: TwoSeam\n");
 				break;
