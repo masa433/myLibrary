@@ -128,6 +128,7 @@ void Graphics::Initialize(HWND hWnd)
 	// ƒŒƒ“ƒ_ƒ‰¶¬
 	shapeRenderer = std::make_unique<ShapeRenderer>(device.Get());
 	primitiveRenderer = std::make_unique<PrimitiveRenderer>(device.Get());
+	modelRenderer = std::make_unique<ModelRenderer>(device.Get());
 }
 
 // ƒNƒŠƒA

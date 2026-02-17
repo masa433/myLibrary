@@ -197,6 +197,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BasicShader.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="camera_controller.cpp" />
     <ClCompile Include="collision.cpp" />
@@ -211,10 +212,15 @@
     <ClCompile Include="game_object.cpp" />
     <ClCompile Include="game_pad.cpp" />
     <ClCompile Include="gltf_model.cpp" />
+    <ClCompile Include="GpuResourceUtils.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="input.cpp" />
+    <ClCompile Include="LambertShader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="framework.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelRenderer.cpp" />
+    <ClCompile Include="ModelResource.cpp" />
     <ClCompile Include="mouse.cpp" />
     <ClCompile Include="physxManager.cpp" />
     <ClCompile Include="Pitcher.cpp" />
@@ -230,6 +236,7 @@
     <ClCompile Include="texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BasicShader.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="camera_controller.h" />
     <ClInclude Include="collision.h" />
@@ -247,11 +254,16 @@
     <ClInclude Include="game_object.h" />
     <ClInclude Include="game_pad.h" />
     <ClInclude Include="gltf_model.h" />
+    <ClInclude Include="GpuResourceUtils.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="high_resolution_timer.h" />
     <ClInclude Include="input.h" />
+    <ClInclude Include="LambertShader.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="misc.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelRenderer.h" />
+    <ClInclude Include="ModelResource.h" />
     <ClInclude Include="mouse.h" />
     <ClInclude Include="physxManager.h" />
     <ClInclude Include="Pitcher.h" />
@@ -262,6 +274,7 @@
     <ClInclude Include="scene.h" />
     <ClInclude Include="scene_game.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="ShaderId.h" />
     <ClInclude Include="shapeRenderer.h" />
     <ClInclude Include="sprite.h" />
     <ClInclude Include="sprite_batch.h" />
@@ -269,16 +282,32 @@
     <ClInclude Include="texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Basic.hlsli" />
     <None Include="bidirectional_reflectance_distribution_function.hlsli" />
     <None Include="fullscreen_quad.hlsli" />
     <None Include="gltf_model.hlsli" />
     <None Include="image_based_lighting.hlsli" />
+    <None Include="Lambert.hlsli" />
     <None Include="PrimitiveRenderer.hlsli" />
+    <None Include="Scene.hlsli" />
+    <None Include="Skinning.hlsli" />
     <None Include="SolidShapeRenderer.hlsli" />
     <None Include="WiredShapeRenderer.hlsli" />
     <None Include="sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="BasicPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="BasicVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
     <FxCompile Include="blur_ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -304,6 +333,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="gltf_model_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="LambertPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="LambertVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

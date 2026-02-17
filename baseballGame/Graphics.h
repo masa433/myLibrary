@@ -6,6 +6,8 @@
 #include "shapeRenderer.h"
 #include "PrimitiveRenderer.h"
 #include "Light.h"
+#include "ModelRenderer.h"
+
 
 class Graphics
 {
@@ -62,6 +64,9 @@ public:
 	// ライトマネージャー取得
 	Light& GetLightManager() { return lightManager; }
 
+	// モデルレンダラ取得
+	ModelRenderer* GetModelRenderer() const { return modelRenderer.get(); }
+
 private:
 	HWND											hWnd = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11Device>			device;
@@ -78,4 +83,5 @@ private:
 	std::unique_ptr<RenderState>					renderState;
 	std::unique_ptr<ShapeRenderer>					shapeRenderer;
 	std::unique_ptr<PrimitiveRenderer>				primitiveRenderer;
+	std::unique_ptr<ModelRenderer>					modelRenderer;
 };

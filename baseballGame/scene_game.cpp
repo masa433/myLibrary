@@ -173,15 +173,19 @@ void scene_game::render(float elapsedTime)
     rc.camera = &camera;
     rc.light = &light;
 
-    // ステージの描画
-    stage::Instance().render(rc);
+    
 
     // プレイヤーの描画
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+    
+
     Player::Instance().Render(rc);
 
     // ピッチャーの描画
     Pitcher::Instance().Render(rc);
+
+    // ステージの描画
+    stage::Instance().render(rc);
 
     // レンダーステート設定
     dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);

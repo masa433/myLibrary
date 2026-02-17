@@ -1,3 +1,4 @@
+C:\Users\2240021\Desktop\myLibrary\baseballGame\BasicShader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\BasicShader.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\camera.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\camera.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\camera_controller.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\camera_controller.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\collision.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\collision.obj
@@ -12,10 +13,15 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\fullscreen_quad.cpp;C:\Users\224
 C:\Users\2240021\Desktop\myLibrary\baseballGame\game_object.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\game_object.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\game_pad.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\game_pad.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\gltf_model.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\GpuResourceUtils.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\GpuResourceUtils.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Graphics.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Graphics.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\input.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\input.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\LambertShader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\LambertShader.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\main.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\main.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\framework.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\framework.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Model.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Model.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\ModelRenderer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ModelRenderer.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\ModelResource.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ModelResource.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\mouse.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\mouse.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\physxManager.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\physxManager.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Pitcher.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Pitcher.obj

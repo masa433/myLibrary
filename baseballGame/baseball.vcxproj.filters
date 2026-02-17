@@ -115,6 +115,24 @@
     <ClCompile Include="PrimitiveRenderer.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelRenderer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelResource.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="GpuResourceUtils.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicShader.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="LambertShader.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -228,6 +246,27 @@
     <ClInclude Include="PrimitiveRenderer.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelRenderer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelResource.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="GpuResourceUtils.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderId.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicShader.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="LambertShader.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="sprite.hlsli">
@@ -252,6 +291,18 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="SolidShapeRenderer.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Basic.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Lambert.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Scene.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Skinning.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -296,6 +347,18 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="SolidShapeRendererPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="LambertVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="LambertPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

@@ -3,10 +3,12 @@
 #include <wrl.h>
 #include <DirectXMath.h>
 #include <memory>
-#include "gltf_model.h"
+#include "Model.h"
 #include "game_object.h"
 #include "RenderContext.h"
 #include "physxManager.h"
+#include "ModelRenderer.h"
+#include "ShaderId.h"
 
 class stage : public GameObject
 {
@@ -29,7 +31,7 @@ public:
 
 private:
 
-	std::unique_ptr<gltf_model> model;
+	std::unique_ptr<Model> model;
 	std::vector<physx::PxTriangleMesh*> triangle_meshes;
 	std::vector<physx::PxActor*> actors;
 };
