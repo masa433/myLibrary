@@ -1,4 +1,4 @@
-#include "ShapeRenderer.hlsli"
+#include "WiredShapeRenderer.hlsli"
 
 VS_OUT main(float4 position : POSITION)
 {

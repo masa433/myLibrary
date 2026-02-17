@@ -1,48 +1,76 @@
 #pragma once
-#include "External/PhysX-main/PhysX-main/physx/include/PxPhysicsAPI.h"
 
+#include <vector>
+#include <DirectXMath.h>
+#include <PxPhysicsAPI.h>
 
-class PhysXManager
+// フィジクス
+class Physics
 {
+private:
+	Physics() = default;
+	~Physics() = default;
+
 public:
-    static PhysXManager& Instance();
+	// インスタンス取得
+	static Physics& Instance()
+	{
+		static Physics instance;
+		return instance;
+	}
 
-    void Initialize();
-    void Uninitialize();
-    void Update(float elapsedTime);
+	// 初期化
+	void Initialize();
 
-    // 物理オブジェクトをシーンに追加
-    void AddActor(physx::PxActor* actor);
+	// 終了化
+	void Finalize();
 
-    physx::PxPhysics* GetPhysics() const { return mPhysics; }
-    physx::PxMaterial* GetDefaultMaterial() const { return mDefaultMaterial; }
-    physx::PxScene* GetScene() const { return mScene; }
+	// 更新処理
+	void Update(float elapsedTime);
+
+	// 描画処理
+	void Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection, const DirectX::XMFLOAT3& lightDirection);
+
+	// フィジクス取得
+	physx::PxPhysics* GetPhysics() { return pxPhysics; }
+
+	// シーン取得
+	physx::PxScene* GetScene() { return pxScene; }
+
+	// コントローラーマネージャー取得
+	physx::PxControllerManager* GetControllerManager() { return pxControllerManager; }
+
+	// マテリアル取得
+	physx::PxMaterial* GetMaterial() { return pxMaterial; }
 
 private:
-    PhysXManager() = default;
-    ~PhysXManager() = default;
 
-    // コピー禁止
-    PhysXManager(const PhysXManager&) = delete;
-    PhysXManager& operator=(const PhysXManager&) = delete;
+	physx::PxDefaultAllocator			pxAllocator;
+	physx::PxDefaultErrorCallback		pxErrorCallback;
+	physx::PxFoundation* pxFoundation = nullptr;
+	physx::PxPhysics* pxPhysics = nullptr;
+	physx::PxDefaultCpuDispatcher* pxDispatcher = nullptr;
+	physx::PxScene* pxScene = nullptr;
+	physx::PxControllerManager* pxControllerManager = nullptr;
 
-    // PhysX関連のメンバ変数
-    physx::PxFoundation* mFoundation = nullptr;
-    physx::PxPhysics* mPhysics = nullptr;
-    physx::PxScene* mScene = nullptr;
-    physx::PxDefaultCpuDispatcher* mDispatcher = nullptr;
-    physx::PxMaterial* mDefaultMaterial = nullptr;
-    physx::PxDefaultAllocator mAllocator;
-    physx::PxDefaultErrorCallback mErrorCallback;
-};
+	physx::PxMaterial* pxMaterial = nullptr;
 
-class CollisionCallback : public physx::PxSimulationEventCallback
-{
-public:
-    void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) override;
-    void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) override {}
-    void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) override {}
-    void onWake(physx::PxActor** actors, physx::PxU32 count) override {}
-    void onSleep(physx::PxActor** actors, physx::PxU32 count) override {}
-    void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) override {}
+	physx::PxPvd* pxPvd = nullptr;
+
+	struct Line
+	{
+		DirectX::XMFLOAT3	start;
+		DirectX::XMFLOAT3	end;
+		DirectX::XMFLOAT4	color;
+	};
+
+	struct Capsule
+	{
+		DirectX::XMFLOAT4X4	transform;
+		float				radius;
+		float				height;
+		DirectX::XMFLOAT4	color;
+	};
+	std::vector<Line>		lines;
+	std::vector<Capsule>	capsules;
 };

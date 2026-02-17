@@ -4,6 +4,8 @@
 #include <memory>
 #include "RenderState.h"
 #include "shapeRenderer.h"
+#include "PrimitiveRenderer.h"
+#include "Light.h"
 
 class Graphics
 {
@@ -54,6 +56,12 @@ public:
 	// シェイプレンダラ取得
 	ShapeRenderer* GetShapeRenderer() const { return shapeRenderer.get(); }
 
+	// プリミティブレンダラ取得
+	PrimitiveRenderer* GetPrimitiveRenderer() const { return primitiveRenderer.get(); }
+
+	// ライトマネージャー取得
+	Light& GetLightManager() { return lightManager; }
+
 private:
 	HWND											hWnd = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11Device>			device;
@@ -66,6 +74,8 @@ private:
 	float	screenWidth = 0;
 	float	screenHeight = 0;
 
+	Light											lightManager;
 	std::unique_ptr<RenderState>					renderState;
 	std::unique_ptr<ShapeRenderer>					shapeRenderer;
+	std::unique_ptr<PrimitiveRenderer>				primitiveRenderer;
 };

@@ -99,5 +99,6 @@ private:
     float armAngleOffset = 0.0f; // 腕の角度オフセット（追加）
     float swingStartTime = 0.0f; // スイング開始からの経過時間
 
-    physx::PxRigidDynamic* batActor = nullptr; // バットのコライダー
+    physx::PxCapsuleController* pxCapsuleController = nullptr;
+    bool isOnGround = true; // 地面にいるかどうか
 };

@@ -53,8 +53,8 @@ void scene_game::initialize()
     HRESULT hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, constant_buffer.GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-    // 物理エンジンの初期化
-    PhysXManager::Instance().Initialize();
+    //物理システムの初期化
+	Physics::Instance().Initialize();
 
     // ステージの初期化
     stage::Instance().initialize();
@@ -78,8 +78,8 @@ void scene_game::update(float elapsed_time)
     cameraController.Update();
     cameraController.SyncControllerToCamera(camera);
 
-    // 物理エンジンの更新
-    PhysXManager::Instance().Update(elapsed_time);
+    // 物理システムの更新
+    Physics::Instance().Update(elapsed_time);
 
     // ステージの更新
     stage::Instance().update(elapsed_time);
@@ -163,11 +163,31 @@ void scene_game::render(float elapsedTime)
 
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
     RenderState* renderState = Graphics::Instance().GetRenderState();
+	ShapeRenderer* shapeRenderer = Graphics::Instance().GetShapeRenderer();
+
+
+    // 描画コンテキスト設定
+    RenderContext rc;
+    rc.context = dc;
+    rc.renderState = renderState;
+    rc.camera = &camera;
+    rc.light = &light;
+
+    // ステージの描画
+    stage::Instance().render(rc);
+
+    // プレイヤーの描画
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+    Player::Instance().Render(rc);
+
+    // ピッチャーの描画
+    Pitcher::Instance().Render(rc);
 
     // レンダーステート設定
     dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
     dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
+	shapeRenderer->Render(dc, camera.GetView(), camera.GetProjection(), light.GetDirectionalLight().direction);
 
     // サンプラーステートを設定
     ID3D11SamplerState* samplerStates[] = {
@@ -193,46 +213,31 @@ void scene_game::render(float elapsedTime)
     dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
     dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
-    // 描画コンテキスト設定
-    RenderContext rc;
-    rc.context = dc;
-    rc.renderState = renderState;
-    rc.camera = &camera;
-    rc.light = &light;
+    
 
-    // ステージの描画
-    stage::Instance().render(rc);
+    //// 2Dスプライトの描画（画面に重ねて表示）
+    //if (showStrikeZoneImage && strikeZoneSprite)
+    //{
+    //    // 深度テストを無効化（2D描画用）
+    //    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::WriteOnly), 0);
 
-    // プレイヤーの描画
-	dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
-    Player::Instance().Render(rc);
+    //    // テクスチャのサイズを取得
+    //    float textureWidth = static_cast<float>(strikeZoneSprite->texture2d_desc.Width);
+    //    float textureHeight = static_cast<float>(strikeZoneSprite->texture2d_desc.Height);
 
-    // ピッチャーの描画
-	Pitcher::Instance().Render(rc);
+    //    strikeZoneSprite->render(
+    //        dc,
+    //        spritePosition.x,                    // X座標
+    //        spritePosition.y,                    // Y座標
+    //        textureWidth * spriteScale.x,        // 幅
+    //        textureHeight * spriteScale.y,       // 高さ
+    //        spriteTint.x, spriteTint.y, spriteTint.z, spriteTint.w,  // 色
+    //        0.0f                                 // 回転角度
+    //    );
 
-    // 2Dスプライトの描画（画面に重ねて表示）
-    if (showStrikeZoneImage && strikeZoneSprite)
-    {
-        // 深度テストを無効化（2D描画用）
-        dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::WriteOnly), 0);
-
-        // テクスチャのサイズを取得
-        float textureWidth = static_cast<float>(strikeZoneSprite->texture2d_desc.Width);
-        float textureHeight = static_cast<float>(strikeZoneSprite->texture2d_desc.Height);
-
-        strikeZoneSprite->render(
-            dc,
-            spritePosition.x,                    // X座標
-            spritePosition.y,                    // Y座標
-            textureWidth * spriteScale.x,        // 幅
-            textureHeight * spriteScale.y,       // 高さ
-            spriteTint.x, spriteTint.y, spriteTint.z, spriteTint.w,  // 色
-            0.0f                                 // 回転角度
-        );
-
-        // 深度テストを戻す
-        dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
-    }
+    //    // 深度テストを戻す
+    //    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+    //}
 }
 
 void scene_game::uninitialize()
@@ -241,7 +246,7 @@ void scene_game::uninitialize()
     Player::Instance().Uninitialize();
     stage::Instance().uninitialize();
     Pitcher::Instance().Uninitialize();
-    PhysXManager::Instance().Uninitialize();
+
 }
 
 void scene_game::DrawGUI()

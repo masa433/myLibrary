@@ -29,19 +29,6 @@ void Pitcher::Initialize()
 
 	rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
-	// ボールのコライダーを作成
-	physx::PxSphereGeometry ballGeometry(ballWorldScale.x / 2.0f);
-	physx::PxTransform ballTransform(physx::PxVec3(ballWorldPosition.x, ballWorldPosition.y, ballWorldPosition.z));
-	ballActor = PhysXManager::Instance().GetPhysics()->createRigidDynamic(ballTransform);
-	if (!ballActor)
-		throw std::runtime_error("Failed to create ball actor!");
-
-	physx::PxShape* ballShape = PhysXManager::Instance().GetPhysics()->createShape(ballGeometry, *PhysXManager::Instance().GetDefaultMaterial());
-	if (!ballShape)
-		throw std::runtime_error("Failed to create ball shape!");
-
-	ballActor->attachShape(*ballShape);
-	PhysXManager::Instance().AddActor(ballActor);
 
 }
 
@@ -132,21 +119,21 @@ void Pitcher::Render(RenderContext& rc)
 		strikeZonePosition.z + strikeZoneSize.z / 2.0f + 0.3f + tolerance
 	};
 
-	// ストライクゾーンを描画（緑色の半透明ボックス）
-	shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
+	//// ストライクゾーンを描画（緑色の半透明ボックス）
+	//shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
 
-	// strikeZoneMin を赤い球体で描画
-	shapeRenderer->DrawSphere(strikeZoneMin, 0.1f, { 1, 0, 0, 1 }); // 半径 0.1f の赤い球体
+	//// strikeZoneMin を赤い球体で描画
+	//shapeRenderer->DrawSphere(strikeZoneMin, 0.1f, { 1, 0, 0, 1 }); // 半径 0.1f の赤い球体
 
-	// strikeZoneMax を青い球体で描画
-	shapeRenderer->DrawSphere(strikeZoneMax, 0.1f, { 0, 0, 1, 1 }); // 半径 0.1f の青い球体
+	//// strikeZoneMax を青い球体で描画
+	//shapeRenderer->DrawSphere(strikeZoneMax, 0.1f, { 0, 0, 1, 1 }); // 半径 0.1f の青い球体
 
-	// スケールを ImGui の値に基づいて変更
-	reducedRadius = (ballScale.x / ballScale.x) * ballDebugRadius;
+	//// スケールを ImGui の値に基づいて変更
+	//reducedRadius = (ballScale.x / ballScale.x) * ballDebugRadius;
 
-	// ShapeRenderer で描画
-	shapeRenderer->DrawSphere(ballPosition, reducedRadius, { 1, 0, 0, 1 }); // スケールを適用
-	shapeRenderer->Render(rc.context, rc.camera->GetView(), rc.camera->GetProjection());
+	//// ShapeRenderer で描画
+	//shapeRenderer->DrawSphere(ballPosition, reducedRadius, { 1, 0, 0, 1 }); // スケールを適用
+	//shapeRenderer->Render(rc.context, rc.camera->GetView(), rc.camera->GetProjection(), rc.light->GetDirectionalLight().direction);
 
 	
 	

@@ -20,6 +20,8 @@ void Player::Initialize()
     position = { 3.5f, 10.0f, 57.0f };
     scale = { -0.03f,0.03f,0.03f };
     angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
+	radius = 0.5f;
+	height = 1.8f;
 
     // アニメーション用のノードをコピー
     animated_nodes = animated_model->nodes;
@@ -40,24 +42,34 @@ void Player::Initialize()
     batPosition = { 8.0f, 0.0f, 4.0f };
     batAngle = { 0.0f, 0.0f, 20.6f };
 
-    // バットのコライダーを作成
-    physx::PxCapsuleGeometry batGeometry(batRadius, batHeight / 2.0f);
-    physx::PxTransform batTransform(physx::PxVec3(batPosition.x, batPosition.y, batPosition.z));
-    batActor = PhysXManager::Instance().GetPhysics()->createRigidDynamic(batTransform);
-    if (!batActor)
-        throw std::runtime_error("Failed to create bat actor!");
+   
+	// バットのコライダー作成
+    {
+		physx::PxCapsuleControllerDesc capsuleDesc;
+		capsuleDesc.position = physx::PxExtendedVec3(position.x, position.y, position.z);
+		capsuleDesc.upDirection = physx::PxVec3(0, 1, 0);
+		capsuleDesc.radius = radius; // スケールを考慮
+		capsuleDesc.height = height; // スケールを考慮
+		capsuleDesc.slopeLimit = 0.0f; // スロープ制限なし
+		capsuleDesc.stepOffset = 0.0f; // ステップオフセットなし
+		capsuleDesc.invisibleWallHeight = 0.0f; // 見えない壁なし
+		capsuleDesc.maxJumpHeight = 0.0f; // ジャンプなし
+		capsuleDesc.material = Physics::Instance().GetMaterial();
+        capsuleDesc.registerDeletionListener = true;
+        capsuleDesc.clientID = physx::PX_DEFAULT_CLIENT;
+        capsuleDesc.userData = this;
 
-    physx::PxShape* batShape = PhysXManager::Instance().GetPhysics()->createShape(batGeometry, *PhysXManager::Instance().GetDefaultMaterial());
-    if (!batShape)
-        throw std::runtime_error("Failed to create bat shape!");
-
-    batActor->attachShape(*batShape);
-    PhysXManager::Instance().AddActor(batActor);
+		physx::PxControllerManager* controllerManager = Physics::Instance().GetControllerManager();
+		pxCapsuleController = static_cast<physx::PxCapsuleController*>(controllerManager->createController(capsuleDesc));
+        _ASSERT_EXPR(pxCapsuleController != nullptr, "Failed pxControllerManagar->createController");
+        pxCapsuleController->setFootPosition(physx::PxExtendedVec3(position.x, position.y, position.z));
+    }
 }
 
 // 解放
 void Player::Uninitialize()
 {
+    PX_RELEASE(pxCapsuleController);
 }
 
 // プレイヤー固有の更新処理
@@ -81,12 +93,8 @@ void Player::Update(float elapsedTime)
     const DirectX::XMFLOAT3& ballPosition = Pitcher::Instance().GetBallPosition();
     UpdateLookAt(ballPosition);
 
-	position.y += gravity * elapsedTime;
-
-	position.y <= 0.05f ? position.y = 0.05f : position.y = position.y;
-
 	// バットとボールの当たり判定
-    CheckBatAndBallCollision(elapsedTime);
+    //CheckBatAndBallCollision(elapsedTime);
 }
 
 void Player::CheckBatAndBallCollision(float elapsedTime)
@@ -165,31 +173,31 @@ void Player::CheckBatAndBallCollision(float elapsedTime)
 void Player::HandleInput(float elapsedTime)
 {
     DirectX::XMFLOAT3 move_direction = { 0.0f, 0.0f, 0.0f };
-    bool is_moving = false;
+    
 
     // Wキー: 前進
     if (GetAsyncKeyState('W') & 0x8000)
     {
         move_direction.z += 100.0f;
-        is_moving = true;
+        
     }
     // Sキー: 後退
     if (GetAsyncKeyState('S') & 0x8000)
     {
         move_direction.z -= 100.0f;
-        is_moving = true;
+        
     }
     // Aキー: 左移動
     if (GetAsyncKeyState('A') & 0x8000)
     {
         move_direction.x -= 100.0f;
-        is_moving = true;
+        
     }
     // Dキー: 右移動
     if (GetAsyncKeyState('D') & 0x8000)
     {
         move_direction.x += 100.0f;
-        is_moving = true;
+        
     }
 
     // スペースキーでスイング
@@ -202,21 +210,36 @@ void Player::HandleInput(float elapsedTime)
     }
 
     // 移動方向を正規化
-    if (is_moving)
+    DirectX::XMVECTOR moveVec = DirectX::XMLoadFloat3(&move_direction);
+    if (!DirectX::XMVector3Equal(moveVec, DirectX::XMVectorZero()))
     {
-        DirectX::XMVECTOR move_vec = DirectX::XMLoadFloat3(&move_direction);
-        move_vec = DirectX::XMVector3Normalize(move_vec);
-        DirectX::XMStoreFloat3(&move_direction, move_vec);
+        moveVec = DirectX::XMVector3Normalize(moveVec);
+        DirectX::XMStoreFloat3(&move_direction, moveVec);
+    }
 
-        // 位置を更新
-        position.x += move_direction.x * move_speed * elapsedTime;
-        position.z += move_direction.z * move_speed * elapsedTime;
+    // 重力を適用
+    float gravityEffect = gravity * elapsedTime;
 
-        // 移動方向に向きを変える
-        if (move_direction.x != 0.0f || move_direction.z != 0.0f)
-        {
-            angle.y = atan2f(move_direction.x, move_direction.z);
-        }
+    // PhysXキャラクターコントローラーを使用して移動
+    physx::PxVec3 displacement(move_direction.x * move_speed * elapsedTime, gravityEffect, move_direction.z * move_speed * elapsedTime);
+    physx::PxControllerCollisionFlags collisionFlags = pxCapsuleController->move(displacement, 0.0f, elapsedTime, physx::PxControllerFilters());
+
+    // 地面に接触しているかを判定
+    //isOnGround = (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0;
+
+    // キャラクターの位置を更新
+    physx::PxExtendedVec3 footPosition = pxCapsuleController->getFootPosition();
+    position.x = static_cast<float>(footPosition.x);
+    position.y = static_cast<float>(footPosition.y);
+    position.z = static_cast<float>(footPosition.z);
+
+    // y座標が0.0f以下になった場合に0.0fで止める
+    if (position.y < 0.0f)
+    {
+        position.y = 0.0f;
+
+        // PhysXキャラクターコントローラーの位置も修正
+        pxCapsuleController->setFootPosition(physx::PxExtendedVec3(position.x, position.y, position.z));
     }
 }
 
@@ -317,12 +340,12 @@ void Player::Render(RenderContext& rc)
     DirectX::XMMATRIX adjustedBatMatrix = offsetMatrix * batWorldMatrix;
 
     // バットの当たり判定表示（オフセット適用後）
-    shapeRenderer->DrawCylinder(
-        adjustedBatMatrix,     // オフセット適用後の行列
-        batRadius,             // 半径
-        batHeight,             // 高さ
-        { 1.0f, 0.0f, 0.0f, 1.0f } // 色
-    );
+    //shapeRenderer->DrawCylinder(
+    //    adjustedBatMatrix,     // オフセット適用後の行列
+    //    batRadius,             // 半径
+    //    batHeight,             // 高さ
+    //    { 1.0f, 0.0f, 0.0f, 1.0f } // 色
+    //);
 }
 
 void Player::DrawGUI() 

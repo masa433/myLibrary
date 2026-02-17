@@ -25,10 +25,22 @@
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\luminance_extraction_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\ShapeRendererPS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\PrimitiveRendererPS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\ShapeRendererVS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\PrimitiveRendererVS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\SolidShapeRendererVS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\SolidShapeRendererPS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\WiredShapeRendererPS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\WiredShapeRendererVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_ps.cso</FullPath>

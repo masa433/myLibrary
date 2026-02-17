@@ -112,6 +112,9 @@
     <ClCompile Include="physxManager.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="PrimitiveRenderer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -222,6 +225,9 @@
     <ClInclude Include="physxManager.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="PrimitiveRenderer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="sprite.hlsli">
@@ -239,7 +245,13 @@
     <None Include="image_based_lighting.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="ShapeRenderer.hlsli">
+    <None Include="WiredShapeRenderer.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="PrimitiveRenderer.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="SolidShapeRenderer.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -268,10 +280,22 @@
     <FxCompile Include="gltf_model_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ShapeRendererPS.hlsl">
+    <FxCompile Include="WiredShapeRendererPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ShapeRendererVS.hlsl">
+    <FxCompile Include="WiredShapeRendererVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PrimitiveRendererVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PrimitiveRendererPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SolidShapeRendererVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SolidShapeRendererPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

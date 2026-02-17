@@ -6,7 +6,7 @@
 #include "gltf_model.h"
 #include "game_object.h"
 #include "RenderContext.h"
-#include "collision.h"
+#include "physxManager.h"
 
 class stage : public GameObject
 {
@@ -30,5 +30,6 @@ public:
 private:
 
 	std::unique_ptr<gltf_model> model;
-
+	std::vector<physx::PxTriangleMesh*> triangle_meshes;
+	std::vector<physx::PxActor*> actors;
 };
