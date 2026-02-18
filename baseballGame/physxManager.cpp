@@ -149,27 +149,10 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 			case physx::PxGeometryType::eCAPSULE:
 			{
 				const physx::PxCapsuleGeometry& pxCapsuleGeometry = static_cast<const physx::PxCapsuleGeometry&>(pxGeometry);
-
-				// カプセルの中心を計算
-				float capsuleCenterOffset = pxCapsuleGeometry.halfHeight;
-
-				// カプセルの中心を基準に回転を適用
 				DirectX::XMMATRIX ShapeTransform = DirectX::XMLoadFloat4x4(&shapeTransform);
-				DirectX::XMMATRIX TranslateToCenter = DirectX::XMMatrixTranslation(0.0f, capsuleCenterOffset, 0.0f);
-				DirectX::XMMATRIX Rotation = DirectX::XMMatrixRotationZ(-DirectX::XM_PIDIV4); // 45度回転
-				DirectX::XMMATRIX TranslateBack = DirectX::XMMatrixTranslation(0.0f, -capsuleCenterOffset, 0.0f);
-
-				// 回転を適用
-				DirectX::XMMATRIX OffsetTransform = TranslateToCenter * Rotation * TranslateBack;
+				DirectX::XMMATRIX OffsetTransform = DirectX::XMMatrixRotationZ(DirectX::XM_PIDIV2);
 				DirectX::XMStoreFloat4x4(&shapeTransform, OffsetTransform * ShapeTransform);
-
-				// カプセルを描画
-				shapeRenderer->DrawCapsule(
-					shapeTransform,
-					pxCapsuleGeometry.radius + contactOffset,
-					pxCapsuleGeometry.halfHeight * 2.0f,
-					color
-				);
+				shapeRenderer->DrawCapsule(shapeTransform, pxCapsuleGeometry.radius + contactOffset, pxCapsuleGeometry.halfHeight * 2.0f, color);
 				break;
 			}
 			case physx::PxGeometryType::eBOX:
