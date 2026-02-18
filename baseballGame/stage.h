@@ -34,4 +34,5 @@ private:
 	std::unique_ptr<Model> model;
 	std::vector<physx::PxTriangleMesh*> triangle_meshes;
 	std::vector<physx::PxActor*> actors;
+	DirectX::XMFLOAT4X4					transform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 };
