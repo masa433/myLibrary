@@ -17,11 +17,11 @@ void Player::Initialize()
     // モデルの読み込み
     animated_model = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batter.glb");
 
-    position = { 3.5f, 10.0f, 57.0f };
+    position = { 3.5f, 0.01f, 57.0f };
     scale = { -0.03f,0.03f,0.03f };
     angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
 	radius = 0.5f;
-	height = 1.8f;
+	height = 3.5f;
 
     // アニメーション用のノードをコピー
     animated_nodes = animated_model->nodes;
@@ -37,39 +37,90 @@ void Player::Initialize()
     current_animation_index = animation_indices[static_cast<int>(current_state)];
 
     //バットモデルの読み込み
-    bat = std::make_unique<gltf_model>(device, ".\\resources\\object\\bat.glb");
+    bat = std::make_unique<Model>(".\\resources\\object\\bat.mdl");
     batScale = { 1.2f,1.2f,1.2f };
     batPosition = { 8.0f, 0.0f, 4.0f };
-    batAngle = { 0.0f, 0.0f, 20.6f };
+    batAngle = { 0.0f, 0.0f, 1.6f };
+	batRadius = 0.2f;
+	batHeight = 1.0f;
 
+	colliderOffset = { 0.0f, 70.0f, 0.0f }; // コライダーの位置オフセット
    
-	// バットのコライダー作成
-    {
-		physx::PxCapsuleControllerDesc capsuleDesc;
-		capsuleDesc.position = physx::PxExtendedVec3(position.x, position.y, position.z);
-		capsuleDesc.upDirection = physx::PxVec3(0, 1, 0);
-		capsuleDesc.radius = radius; // スケールを考慮
-		capsuleDesc.height = height; // スケールを考慮
-		capsuleDesc.slopeLimit = 0.0f; // スロープ制限なし
-		capsuleDesc.stepOffset = 0.0f; // ステップオフセットなし
-		capsuleDesc.invisibleWallHeight = 0.0f; // 見えない壁なし
-		capsuleDesc.maxJumpHeight = 0.0f; // ジャンプなし
-		capsuleDesc.material = Physics::Instance().GetMaterial();
-        capsuleDesc.registerDeletionListener = true;
-        capsuleDesc.clientID = physx::PX_DEFAULT_CLIENT;
-        capsuleDesc.userData = this;
+	//// プレイヤーのコライダー作成
+ //   {
+	//	physx::PxCapsuleControllerDesc capsuleDesc;
+	//	capsuleDesc.position = physx::PxExtendedVec3(position.x, position.y, position.z);
+	//	capsuleDesc.upDirection = physx::PxVec3(0, 1, 0);
+	//	capsuleDesc.radius = radius; // スケールを考慮
+	//	capsuleDesc.height = height; // スケールを考慮
+	//	capsuleDesc.slopeLimit = 0.0f; // スロープ制限なし
+	//	capsuleDesc.stepOffset = 0.0f; // ステップオフセットなし
+	//	capsuleDesc.invisibleWallHeight = 0.0f; // 見えない壁なし
+	//	capsuleDesc.maxJumpHeight = 0.0f; // ジャンプなし
+	//	capsuleDesc.material = Physics::Instance().GetMaterial();
+ //       capsuleDesc.registerDeletionListener = true;
+ //       capsuleDesc.clientID = physx::PX_DEFAULT_CLIENT;
+ //       capsuleDesc.userData = this;
 
-		physx::PxControllerManager* controllerManager = Physics::Instance().GetControllerManager();
-		pxCapsuleController = static_cast<physx::PxCapsuleController*>(controllerManager->createController(capsuleDesc));
-        _ASSERT_EXPR(pxCapsuleController != nullptr, "Failed pxControllerManagar->createController");
-        pxCapsuleController->setFootPosition(physx::PxExtendedVec3(position.x, position.y, position.z));
+	//	physx::PxControllerManager* controllerManager = Physics::Instance().GetControllerManager();
+	//	pxPlayerCapsuleController = static_cast<physx::PxCapsuleController*>(controllerManager->createController(capsuleDesc));
+ //       _ASSERT_EXPR(pxPlayerCapsuleController != nullptr, "Failed pxControllerManagar->createController");
+ //       pxPlayerCapsuleController->setFootPosition(physx::PxExtendedVec3(position.x, position.y, position.z));
+ //   }
+
+    // バットのカプセル型コライダー作成
+    {
+        physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
+        physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
+
+        // コライダーの初期位置と回転を設定
+        DirectX::XMFLOAT3 colliderInitialPosition = {
+            batPosition.x + colliderOffset.x,
+            batPosition.y + colliderOffset.y,
+            batPosition.z + colliderOffset.z
+        };
+
+        DirectX::XMVECTOR colliderRotationQuat = DirectX::XMQuaternionRotationRollPitchYaw(
+            batAngle.x + colliderRotation.x,
+            batAngle.y + colliderRotation.y,
+            batAngle.z + colliderRotation.z
+        );
+        DirectX::XMFLOAT4 colliderInitialRotation;
+        DirectX::XMStoreFloat4(&colliderInitialRotation, colliderRotationQuat);
+
+        // コライダーの剛体を作成
+        physx::PxTransform colliderTransform(
+            physx::PxVec3(colliderInitialPosition.x, colliderInitialPosition.y, colliderInitialPosition.z),
+            physx::PxQuat(colliderInitialRotation.x, colliderInitialRotation.y, colliderInitialRotation.z, colliderInitialRotation.w)
+        );
+        pxBatRigidBody = pxPhysics->createRigidDynamic(colliderTransform);
+        _ASSERT_EXPR(pxBatRigidBody != nullptr, "Failed to create bat rigid body");
+
+        // カプセル型コライダーを作成
+        physx::PxCapsuleGeometry batCapsule(batRadius, batHeight * 0.5f); // 半径と高さを指定
+        physx::PxShape* batShape = pxPhysics->createShape(batCapsule, *pxMaterial);
+        _ASSERT_EXPR(batShape != nullptr, "Failed to create bat shape");
+
+        // 剛体にコライダーを関連付ける
+        pxBatRigidBody->attachShape(*batShape);
+
+        // 質量と慣性を設定
+        physx::PxRigidBodyExt::updateMassAndInertia(*pxBatRigidBody, 1.0f);
+
+        // シーンに追加
+        physx::PxScene* pxScene = Physics::Instance().GetScene();
+        pxScene->addActor(*pxBatRigidBody);
+
+        // Shapeのリリース（剛体にアタッチされた後は不要）
+        batShape->release();
     }
 }
 
 // 解放
 void Player::Uninitialize()
 {
-    PX_RELEASE(pxCapsuleController);
+    PX_RELEASE(pxPlayerCapsuleController);
+    PX_RELEASE(pxBatRigidBody);
 }
 
 // プレイヤー固有の更新処理
@@ -217,30 +268,30 @@ void Player::HandleInput(float elapsedTime)
         DirectX::XMStoreFloat3(&move_direction, moveVec);
     }
 
-    // 重力を適用
-    float gravityEffect = gravity * elapsedTime;
+    //// 重力を適用
+    //float gravityEffect = gravity * elapsedTime;
 
-    // PhysXキャラクターコントローラーを使用して移動
-    physx::PxVec3 displacement(move_direction.x * move_speed * elapsedTime, gravityEffect, move_direction.z * move_speed * elapsedTime);
-    physx::PxControllerCollisionFlags collisionFlags = pxCapsuleController->move(displacement, 0.0f, elapsedTime, physx::PxControllerFilters());
+    //// PhysXキャラクターコントローラーを使用して移動
+    //physx::PxVec3 displacement(move_direction.x * move_speed * elapsedTime, gravityEffect, move_direction.z * move_speed * elapsedTime);
+    //physx::PxControllerCollisionFlags collisionFlags = pxPlayerCapsuleController->move(displacement, 0.0f, elapsedTime, physx::PxControllerFilters());
 
-    // 地面に接触しているかを判定
-    //isOnGround = (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0;
+    //// 地面に接触しているかを判定
+    ////isOnGround = (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0;
 
-    // キャラクターの位置を更新
-    physx::PxExtendedVec3 footPosition = pxCapsuleController->getFootPosition();
-    position.x = static_cast<float>(footPosition.x);
-    position.y = static_cast<float>(footPosition.y);
-    position.z = static_cast<float>(footPosition.z);
+    //// キャラクターの位置を更新
+    //physx::PxExtendedVec3 footPosition = pxPlayerCapsuleController->getFootPosition();
+    //position.x = static_cast<float>(footPosition.x);
+    //position.y = static_cast<float>(footPosition.y);
+    //position.z = static_cast<float>(footPosition.z);
 
-    // y座標が0.0f以下になった場合に0.0fで止める
-    if (position.y < 0.0f)
-    {
-        position.y = 0.0f;
+    //// y座標が0.0f以下になった場合に0.0fで止める
+    //if (position.y < 0.0f)
+    //{
+    //    position.y = 0.0f;
 
-        // PhysXキャラクターコントローラーの位置も修正
-        pxCapsuleController->setFootPosition(physx::PxExtendedVec3(position.x, position.y, position.z));
-    }
+    //    // PhysXキャラクターコントローラーの位置も修正
+    //    pxPlayerCapsuleController->setFootPosition(physx::PxExtendedVec3(position.x, position.y, position.z));
+    //}
 }
 
 void Player::UpdateLookAt(const DirectX::XMFLOAT3& targetPosition)
@@ -327,7 +378,9 @@ void Player::UpdateLookAt(const DirectX::XMFLOAT3& targetPosition)
 void Player::Render(RenderContext& rc)
 {
     animated_model->render(rc.context, transform, animated_nodes);
-    bat->render(rc.context, batTransform, {});
+    ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
+
+    modelRenderer->Render(rc, batTransform, bat.get(), ShaderId::Lambert);
 
     ShapeRenderer* shapeRenderer = Graphics::Instance().GetShapeRenderer();
 
@@ -346,6 +399,13 @@ void Player::Render(RenderContext& rc)
     //    batHeight,             // 高さ
     //    { 1.0f, 0.0f, 0.0f, 1.0f } // 色
     //);
+
+    //shapeRenderer->DrawCapsule(
+    //    transform,     // プレイヤーの位置行列
+    //    radius,        // 半径
+    //    height,        // 高さ
+    //    { 1.0f, 1.0f, 1.0f, 1.0f } // 色
+    //);
 }
 
 void Player::DrawGUI() 
@@ -359,12 +419,28 @@ void Player::DrawGUI()
             ImGui::DragFloat3("Scale", &scale.x);
             ImGui::DragFloat3("Angle", &angle.x);
             ImGui::DragFloat("Move Speed", &move_speed, 0.1f, 0.0f, 100.0f);
+
+            // カプセルのサイズ変更用スライダー
+            ImGui::DragFloat("Radius", &radius, 0.1f, 1.0f, 100.0f); // 半径
+            ImGui::DragFloat("Height", &height, 0.1f, 1.0f, 200.0f); // 高さ
         }
         if (ImGui::CollapsingHeader("Bat"))
         {
             ImGui::DragFloat3("Bat Position", &batPosition.x);
             ImGui::DragFloat3("Bat Scale", &batScale.x);
             ImGui::DragFloat3("Bat Angle", &batAngle.x);
+        }
+        if (ImGui::CollapsingHeader("Collider Debug"))
+        {
+            // コライダーの位置、回転、サイズを操作
+            if (ImGui::DragFloat3("Collider Offset", &colliderOffset.x, 0.1f, -100.0f, 100.0f) ||
+                ImGui::DragFloat3("Collider Rotation", &colliderRotation.x, 0.1f, -DirectX::XM_PI, DirectX::XM_PI) ||
+                ImGui::DragFloat("Bat Radius", &batRadius, 0.1f, 0.1f, 100.0f) ||
+                ImGui::DragFloat("Bat Height", &batHeight, 0.1f, 0.1f, 100.0f))
+            {
+                // コライダーの更新処理を呼び出す
+                UpdateBatCollider();
+            }
         }
         // バットの当たり判定デバッグ用
         if (ImGui::CollapsingHeader("Bat Debug"))
@@ -440,7 +516,40 @@ void Player::DrawGUI()
 #endif
 }
 
-//アタッチメント処理
+void Player::UpdateBatCollider()
+{
+    if (!pxBatRigidBody) return;
+
+    // コライダーの新しい位置と回転を計算
+    DirectX::XMFLOAT3 colliderPosition = {
+        batPosition.x + colliderOffset.x,
+        batPosition.y + colliderOffset.y,
+        batPosition.z + colliderOffset.z
+    };
+
+    DirectX::XMVECTOR colliderRotationQuat = DirectX::XMQuaternionRotationRollPitchYaw(
+        batAngle.x + colliderRotation.x,
+        batAngle.y + colliderRotation.y,
+        batAngle.z + colliderRotation.z
+    );
+    DirectX::XMFLOAT4 colliderRotation;
+    DirectX::XMStoreFloat4(&colliderRotation, colliderRotationQuat);
+
+    // PxTransformを更新
+    physx::PxTransform colliderTransform(
+        physx::PxVec3(colliderPosition.x, colliderPosition.y, colliderPosition.z),
+        physx::PxQuat(colliderRotation.x, colliderRotation.y, colliderRotation.z, colliderRotation.w)
+    );
+    pxBatRigidBody->setGlobalPose(colliderTransform);
+
+    // コライダーの形状を更新
+    physx::PxShape* batShape;
+    pxBatRigidBody->getShapes(&batShape, 1);
+
+    physx::PxCapsuleGeometry batCapsule(batRadius, batHeight * 0.5f); // 半径と高さを指定
+    batShape->setGeometry(batCapsule);
+}
+
 void Player::AttachBatToHand()
 {
     const char* handName = "mixamorig:LeftHandMiddle1";
@@ -464,8 +573,44 @@ void Player::AttachBatToHand()
             // バットのワールド行列を計算
             DirectX::XMMATRIX batWorldMatrix = batLocalMatrix * leftHandMatrix * playerWorldMatrix;
 
+            // コライダーのオフセットと回転を適用
+            DirectX::XMMATRIX colliderOffsetMatrix = DirectX::XMMatrixTranslation(
+                colliderOffset.x, colliderOffset.y, colliderOffset.z);
+            DirectX::XMMATRIX colliderRotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(
+                colliderRotation.x, colliderRotation.y, colliderRotation.z);
+
+            DirectX::XMMATRIX colliderWorldMatrix = colliderOffsetMatrix * colliderRotationMatrix * batWorldMatrix;
+
             // バットの行列を保存（batTransform に保存）
             DirectX::XMStoreFloat4x4(&batTransform, batWorldMatrix);
+
+            // バットの剛体の位置と回転を更新
+            if (pxBatRigidBody)
+            {
+                DirectX::XMFLOAT4X4 colliderWorldMatrixFloat;
+                DirectX::XMStoreFloat4x4(&colliderWorldMatrixFloat, colliderWorldMatrix);
+
+                
+
+                // PxTransform の作成
+                DirectX::XMVECTOR quat = DirectX::XMQuaternionRotationMatrix(colliderWorldMatrix);
+                physx::PxTransform pxTransform(
+                    physx::PxVec3(
+						colliderWorldMatrixFloat._41,
+						colliderWorldMatrixFloat._42,
+                        colliderWorldMatrixFloat._43
+                    ),
+                    physx::PxQuat(
+                        DirectX::XMVectorGetX(quat),
+                        DirectX::XMVectorGetY(quat),
+                        DirectX::XMVectorGetZ(quat),
+                        DirectX::XMVectorGetW(quat)
+                    )
+                );
+
+                // 剛体の位置と回転を更新
+                pxBatRigidBody->setGlobalPose(pxTransform);
+            }
 
             // ボーンが見つかったらループを抜ける
             break;

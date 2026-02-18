@@ -179,10 +179,12 @@ void scene_game::render(float elapsedTime)
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
     
 
-    Player::Instance().Render(rc);
+    
 
     // ピッチャーの描画
     Pitcher::Instance().Render(rc);
+
+    Player::Instance().Render(rc);
 
     // ステージの描画
     stage::Instance().render(rc);
@@ -217,7 +219,7 @@ void scene_game::render(float elapsedTime)
     dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
     dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
-    
+	Physics::Instance().Render(camera.GetView(), camera.GetProjection(), light.GetDirectionalLight().direction);
 
     //// 2Dスプライトの描画（画面に重ねて表示）
     //if (showStrikeZoneImage && strikeZoneSprite)
@@ -250,7 +252,7 @@ void scene_game::uninitialize()
     Player::Instance().Uninitialize();
     stage::Instance().uninitialize();
     Pitcher::Instance().Uninitialize();
-
+    Physics::Instance().Finalize();
 }
 
 void scene_game::DrawGUI()

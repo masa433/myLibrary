@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include "RenderContext.h"
 #include "physxManager.h"
+#include "Model.h"
 
 enum class State 
 {
@@ -51,17 +52,21 @@ private:
     void UpdateNodeTransform(int nodeIndex, const DirectX::XMMATRIX& additionalRotation);
     void UpdateChildrenRecursive(int nodeIndex);
 
+    void UpdateBatCollider();
+
+    void UpdateCapsuleTransform();
+
 private:
     // モデル関連
-    std::unique_ptr<gltf_model> bat;
+    std::unique_ptr<Model> bat;
 
     DirectX::XMFLOAT4X4 batTransform = { 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1 };
     DirectX::XMFLOAT3   batPosition = { 0,0,0 };
     DirectX::XMFLOAT3   batScale = { 1,1,1 };
     DirectX::XMFLOAT3   batAngle = { 0,0,0 };
 
-    float batRadius = 4.0f;
-	float batHeight = 85.4f;
+    float batRadius = 0.0f;
+	float batHeight = 0.0f;
 
     std::unique_ptr<gltf_model> animated_model;
     std::vector<gltf_model::node> animated_nodes;
@@ -99,6 +104,14 @@ private:
     float armAngleOffset = 0.0f; // 腕の角度オフセット（追加）
     float swingStartTime = 0.0f; // スイング開始からの経過時間
 
-    physx::PxCapsuleController* pxCapsuleController = nullptr;
+    physx::PxCapsuleController* pxPlayerCapsuleController = nullptr;
+    physx::PxRigidBody* pxBatRigidBody = nullptr;
     bool isOnGround = true; // 地面にいるかどうか
+
+    // 新しいメンバ変数
+    DirectX::XMFLOAT3 colliderOffset; // コライダーの位置オフセット
+    DirectX::XMFLOAT3 colliderRotation; // コライダーの回転角度
+
+    std::vector<physx::PxTriangleMesh*> triangle_meshes;
+    std::vector<physx::PxActor*> actors;
 };
