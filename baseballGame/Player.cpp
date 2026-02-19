@@ -17,7 +17,7 @@ void Player::Initialize()
     // モデルの読み込み
     animated_model = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batter.glb");
 
-    position = { 3.5f, 0.01f, 57.0f };
+    position = { 3.0f, 0.01f, 43.0f };
     scale = { -0.03f,0.03f,0.03f };
     angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
 	radius = 0.5f;

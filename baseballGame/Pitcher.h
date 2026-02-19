@@ -100,8 +100,8 @@ private:
 		};
 
 		//ストライクゾーンの判定
-		DirectX::XMFLOAT3 strikeZonePosition = { 0.14f, 2.55f, 57.0f }; // ストライクゾーンの中心位置
-		DirectX::XMFLOAT3 strikeZoneSize = { 0.6f, 0.8f, 0.1f }; // ストライクゾーンのサイズ（幅、高さ、奥行き）
+		DirectX::XMFLOAT3 strikeZonePosition = { 0.0f, 2.55f, 43.0f }; // ストライクゾーンの中心位置
+		DirectX::XMFLOAT3 strikeZoneSize = { 0.6f, 0.8f, 0.001f }; // ストライクゾーンのサイズ（幅、高さ、奥行き）
 		DirectX::XMFLOAT4 strikeZoneColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // ストライクゾーンの色（透明度付き）
 		bool hasBeenJudged = false; // 判定済みフラグ
 

@@ -15,7 +15,7 @@ void Pitcher::Initialize()
 	//モデルの読み込み
 	pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\pitcher.glb");
 
-	position = { 0.0f,1.4f,-1.7f };
+	position = { 0.0f,1.4f,-9.0f };
 	scale = { -0.03f,0.03f,0.03f };
 	angle = { 0.0f, 0.0f, 0.0f };
 
@@ -119,14 +119,14 @@ void Pitcher::Render(RenderContext& rc)
 		strikeZonePosition.z + strikeZoneSize.z / 2.0f + 0.3f + tolerance
 	};
 
-	//// ストライクゾーンを描画（緑色の半透明ボックス）
-	//shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
+	// ストライクゾーンを描画（緑色の半透明ボックス）
+	shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
 
-	//// strikeZoneMin を赤い球体で描画
-	//shapeRenderer->DrawSphere(strikeZoneMin, 0.1f, { 1, 0, 0, 1 }); // 半径 0.1f の赤い球体
+	// strikeZoneMin を赤い球体で描画
+	shapeRenderer->DrawSphere(strikeZoneMin, 0.1f, { 1, 0, 0, 1 }); // 半径 0.1f の赤い球体
 
-	//// strikeZoneMax を青い球体で描画
-	//shapeRenderer->DrawSphere(strikeZoneMax, 0.1f, { 0, 0, 1, 1 }); // 半径 0.1f の青い球体
+	// strikeZoneMax を青い球体で描画
+	shapeRenderer->DrawSphere(strikeZoneMax, 0.1f, { 0, 0, 1, 1 }); // 半径 0.1f の青い球体
 
 	//// スケールを ImGui の値に基づいて変更
 	//reducedRadius = (ballScale.x / ballScale.x) * ballDebugRadius;
@@ -561,7 +561,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			isBallThrown = true;
 
 			// km/hからm/sに変換
-			float speedMs = ballSpeedKmh / 1.5f;
+			float speedMs = ballSpeedKmh;
 
 			// 発射角度を適用
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
