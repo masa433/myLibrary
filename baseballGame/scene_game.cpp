@@ -78,9 +78,6 @@ void scene_game::update(float elapsed_time)
     cameraController.Update();
     cameraController.SyncControllerToCamera(camera);
 
-    // 物理システムの更新
-    Physics::Instance().Update(elapsed_time);
-
     // ステージの更新
     stage::Instance().update(elapsed_time);
 
@@ -89,6 +86,9 @@ void scene_game::update(float elapsed_time)
 
 	// ピッチャーの更新
     Pitcher::Instance().Update(elapsed_time);
+
+    // 物理システムの更新
+    Physics::Instance().Update(elapsed_time);
 
 
 #ifdef USE_IMGUI

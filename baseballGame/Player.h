@@ -27,7 +27,7 @@ public:
 
     void Initialize();
     void Uninitialize() ;
-    void Update(float elapsedTime) ;
+    void Update(float elapsedTime);
     void Render(RenderContext& rc);
     void DrawGUI();
 
@@ -52,9 +52,7 @@ private:
     void UpdateNodeTransform(int nodeIndex, const DirectX::XMMATRIX& additionalRotation);
     void UpdateChildrenRecursive(int nodeIndex);
 
-    void UpdateBatCollider();
-
-    void UpdateCapsuleTransform();
+    void UpdatePhysXMeshTransform(const DirectX::XMFLOAT3& scale);
 
 private:
     // モデル関連
@@ -63,7 +61,7 @@ private:
     DirectX::XMFLOAT4X4 batTransform = { 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1 };
     DirectX::XMFLOAT3   batPosition = { 0,0,0 };
     DirectX::XMFLOAT3   batScale = { 1,1,1 };
-    DirectX::XMFLOAT3   batAngle = { 0,0,0 };
+    DirectX::XMFLOAT4   batAngle = { 0,0,0,1 };
 
     float batRadius = 0.0f;
 	float batHeight = 0.0f;
@@ -96,8 +94,7 @@ private:
 	float gravity = -9.8f;
     DirectX::XMFLOAT3 previousBatPosition = { 0.0f,0.0f,0.0f };
 
-    // 追加: シリンダーの底面位置オフセット
-    DirectX::XMFLOAT3 cylinderOffset = { 0.0f, 0.0f, 0.0f };
+
 
 	float swingHeight = 0.0f;
 	float swingWidth = 5.0f;
@@ -105,13 +102,9 @@ private:
     float swingStartTime = 0.0f; // スイング開始からの経過時間
 
     physx::PxCapsuleController* pxPlayerCapsuleController = nullptr;
-    physx::PxRigidBody* pxBatRigidBody = nullptr;
+    physx::PxConvexMesh* pxBatConvexMesh = nullptr;
+    physx::PxRigidDynamic* pxBatRigidBody = nullptr;
     bool isOnGround = true; // 地面にいるかどうか
 
-    // 新しいメンバ変数
-    DirectX::XMFLOAT3 colliderOffset; // コライダーの位置オフセット
-    DirectX::XMFLOAT3 colliderRotation; // コライダーの回転角度
-
-    std::vector<physx::PxTriangleMesh*> triangle_meshes;
-    std::vector<physx::PxActor*> actors;
+    DirectX::XMFLOAT3 meshScale = { 0.0f,0.0f,0.0f };
 };
