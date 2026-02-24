@@ -29,11 +29,43 @@ void Pitcher::Initialize()
 
 	rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
+	{
+		// PhysXのボールコライダーを作成
+		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
+		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
+		physx::PxScene* pxScene = Physics::Instance().GetScene();
+
+		// ボールの球状コライダーを作成
+		physx::PxSphereGeometry ballGeometry(ballDebugRadius);
+		physx::PxTransform ballTransform(
+			physx::PxVec3(ballPosition.x, ballPosition.y, ballPosition.z)
+		);
+
+		ballCollider = pxPhysics->createRigidDynamic(ballTransform);
+		_ASSERT_EXPR(ballCollider != nullptr, "Failed to create ball collider");
+
+		// ボールのコライダーに形状を追加
+		physx::PxShape* ballShape = pxPhysics->createShape(ballGeometry, *pxMaterial);
+		ballCollider->attachShape(*ballShape);
+
+		// ボールの質量を設定
+		physx::PxRigidBodyExt::updateMassAndInertia(*ballCollider, 0.145f); // 質量を145gに設定
+
+		// 重力を有効化
+		ballCollider->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
+
+		// シーンに追加
+		pxScene->addActor(*ballCollider);
+
+		// 解放
+		ballShape->release();
+	}
 
 }
 
 void Pitcher::Uninitialize() 
 {
+	PX_RELEASE(ballCollider);
 }
 
 // 更新
@@ -43,6 +75,9 @@ void Pitcher::Update(float elapsedTime)
 
 	// 位置更新
 	UpdateTransform();
+
+	// ボールの位置とスケールを更新
+	UpdateBallCollider();
 
 	AttachBallToHand(elapsedTime);
 
@@ -69,6 +104,18 @@ void Pitcher::Update(float elapsedTime)
 		isBallThrown = false;
 		hasBeenJudged = false; // 判定フラグをリセット
 	}
+}
+
+void Pitcher::UpdateBallCollider()
+{
+	if (!ballCollider) return;
+
+	// ボールのスケールを更新
+	physx::PxShape* ballShape;
+	ballCollider->getShapes(&ballShape, 1);
+
+	physx::PxSphereGeometry ballGeometry(ballDebugRadius * ballWorldScale.x); // スケールを適用
+	ballShape->setGeometry(ballGeometry);
 }
 
 bool Pitcher::IsBallInStrikeZone() const
@@ -326,10 +373,22 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 
 				DirectX::XMStoreFloat4x4(&ballTransform, ballWorldMatrix);
 
-				// ボールのワールド座標を保存（投げる瞬間の位置）
+				// ボールのワールド座標を保存
 				ballWorldPosition.x = ballTransform._41;
 				ballWorldPosition.y = ballTransform._42;
 				ballWorldPosition.z = ballTransform._43;
+
+				// コライダーをボールの位置に同期
+				if (ballCollider)
+				{
+					physx::PxTransform ballPhysxTransform(
+						physx::PxVec3(ballWorldPosition.x, ballWorldPosition.y, ballWorldPosition.z)
+					);
+					ballCollider->setGlobalPose(ballPhysxTransform);
+					// 速度をゼロに設定（手に追従している間は動かない）
+					ballCollider->setLinearVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
+					ballCollider->setAngularVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
+				}
 
 				// 投球開始位置を保存
 				ballStartPosition = ballWorldPosition;
@@ -349,44 +408,19 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 	}
 	else
 	{
-		//投球開始位置からの距離を計算
-		float distanceTravel = sqrtf(
-			(ballWorldPosition.x - ballStartPosition.x) * (ballWorldPosition.x - ballStartPosition.x) +
-			(ballWorldPosition.z - ballStartPosition.z) * (ballWorldPosition.z - ballStartPosition.z)
-		);
+		// 投球後はPhysXで動きを制御
+		ApplyPhysicsToBall(elapsedTime);
 
-		//変化が始まる距離を超えたら変化する
-		float breakFactor = 0.0f;
-		if (distanceTravel > breakStartDistance) 
-		{
-			breakFactor = (std::min)(1.0f, (distanceTravel - breakStartDistance) / 10.0f);
-		}
-
-		//重力を適用
-		ballVelocity.y += gravity * elapsedTime;
-
-		// 変化の加速度
-		float ballAccelerationX = horizontalBreak * breakFactor * elapsedTime;
-		float ballAccelerationY = verticalBreak * breakFactor * elapsedTime;
-
-		ballVelocity.x += ballAccelerationX;
-		ballVelocity.y += ballAccelerationY;
-
-		// 空気抵抗
-		float airResistance = 0.99999f;
-		ballVelocity.x *= airResistance;
-		ballVelocity.z *= airResistance;
-
-		// 位置を更新
-		ballWorldPosition.x += ballVelocity.x * elapsedTime;
-		ballWorldPosition.y += ballVelocity.y * elapsedTime;
-		ballWorldPosition.z += ballVelocity.z * elapsedTime;
+		// PhysXから位置を取得してワールド行列を更新
+		physx::PxTransform ballPhysxTransform = ballCollider->getGlobalPose();
+		ballWorldPosition.x = ballPhysxTransform.p.x;
+		ballWorldPosition.y = ballPhysxTransform.p.y;
+		ballWorldPosition.z = ballPhysxTransform.p.z;
 
 		// ボールの回転を更新
 		ballWorldAngle.x += rotationSpeed.x * elapsedTime;
 		ballWorldAngle.y += rotationSpeed.y * elapsedTime;
 		ballWorldAngle.z += rotationSpeed.z * elapsedTime;
-		
 
 		// ボールのワールド行列を更新
 		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(ballWorldScale.x, ballWorldScale.y, ballWorldScale.z);
@@ -561,7 +595,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			isBallThrown = true;
 
 			// km/hからm/sに変換
-			float speedMs = ballSpeedKmh;
+			float speedMs = ballSpeedKmh / 2.0f;
 
 			// 発射角度を適用
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
@@ -576,10 +610,10 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			DirectX::XMFLOAT3 normalizedDir;
 			DirectX::XMStoreFloat3(&normalizedDir, dir);
 
-			// 速度ベクトルを設定（m/s単位）
-			ballVelocity.x = normalizedDir.x * speedMs;
-			ballVelocity.y = normalizedDir.y * speedMs;
-			ballVelocity.z = normalizedDir.z * speedMs;
+			// physxに初期速度を設定
+			physx::PxVec3 initialVelocity(normalizedDir.x* speedMs, normalizedDir.y* speedMs, normalizedDir.z* speedMs);
+
+			ballCollider->setLinearVelocity(initialVelocity);
 
 			// 投げた瞬間のボールのスケールと角度を設定
 			ballWorldScale = { 3.0f, 3.0f, 3.0f };
@@ -595,4 +629,68 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 
 		pitcher->animate(current_animation_index, animation_time, animated_nodes);
 	}
+}
+
+void Pitcher::ApplyPhysicsToBall(float elapsedTime)
+{
+	if (!ballCollider) return;
+
+	// 投球開始位置からの距離を計算
+	float distanceTravel = sqrtf(
+		(ballWorldPosition.x - ballStartPosition.x) * (ballWorldPosition.x - ballStartPosition.x) +
+		(ballWorldPosition.z - ballStartPosition.z) * (ballWorldPosition.z - ballStartPosition.z)
+	);
+
+	// 変化が始まる距離を超えたら力を加える
+	if (distanceTravel > breakStartDistance)
+	{
+		// より滑らかな変化のための係数（0から1の間で徐々に変化）
+		float breakFactor = (std::min)(1.0f, (distanceTravel - breakStartDistance) / 10.0f);
+
+		// イージング関数を適用してより滑らかに（sin関数を使用）
+		float smoothBreakFactor = sinf(breakFactor * DirectX::XM_PIDIV2); // 0から1まで滑らかに変化
+
+		// 力の大きさを大幅に減少（元の1/100程度に）
+		float forceMultiplier = 0.0001f; // この値を調整して変化の強さを制御
+
+		// 横方向の力を加える（変化球）- 非常に小さな力を継続的に加える
+		physx::PxVec3 lateralForce(horizontalBreak * smoothBreakFactor * forceMultiplier, 0.0f, 0.0f);
+		ballCollider->addForce(lateralForce, physx::PxForceMode::eFORCE);
+
+		// 縦方向の力を加える（変化球）
+		physx::PxVec3 verticalForce(0.0f, verticalBreak * smoothBreakFactor * forceMultiplier, 0.0f);
+		ballCollider->addForce(verticalForce, physx::PxForceMode::eFORCE);
+	}
+
+	// 空気抵抗を適用（より現実的な値に調整）
+	physx::PxVec3 velocity = ballCollider->getLinearVelocity();
+	float speed = velocity.magnitude();
+
+	// 速度に比例した空気抵抗（二乗則）
+	float dragCoefficient = 0.0001f; // この値を調整して空気抵抗の強さを制御
+	float airResistance = 1.0f - (dragCoefficient * speed * elapsedTime);
+	airResistance = (std::max)(0.99f, airResistance); // 最小値を設定
+
+	velocity *= airResistance;
+	ballCollider->setLinearVelocity(velocity);
+
+	// マグヌス効果（回転による力）を追加
+	// 回転方向と速度に垂直な方向に力を加える
+	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
+
+	// マグヌス力の係数
+	float magnusCoefficient = 0.00001f; // この値を調整してマグヌス効果の強さを制御
+
+	// 回転軸と速度の外積でマグヌス力の方向を求める
+	physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
+	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
+
+	// トルクを加えて回転を維持（強度を調整）
+	float torqueMultiplier = 0.001f; // この値を調整して回転の強さを制御
+	physx::PxVec3 torque(
+		DirectX::XMConvertToRadians(rotationSpeed.x) * torqueMultiplier,
+		DirectX::XMConvertToRadians(rotationSpeed.y) * torqueMultiplier,
+		DirectX::XMConvertToRadians(rotationSpeed.z) * torqueMultiplier
+	);
+	ballCollider->addTorque(torque, physx::PxForceMode::eFORCE);
 }

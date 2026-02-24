@@ -27,6 +27,10 @@ public:
 
 		void UpdateAnimation(float elapsedTime);
 
+		void UpdateBallCollider();
+
+		void ApplyPhysicsToBall(float elapsedTime);
+
 public:
 		const DirectX::XMFLOAT3& GetBallPosition() const { return ballWorldPosition; }
 		const DirectX::XMFLOAT3& GetBallScale() const { return ballWorldScale; }
@@ -105,5 +109,5 @@ private:
 		DirectX::XMFLOAT4 strikeZoneColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // ストライクゾーンの色（透明度付き）
 		bool hasBeenJudged = false; // 判定済みフラグ
 
-		physx::PxRigidDynamic* ballActor = nullptr; // ボールのコライダー
+		physx::PxRigidDynamic* ballCollider = nullptr; // ボールのコライダー
 };
