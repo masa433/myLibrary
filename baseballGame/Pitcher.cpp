@@ -166,14 +166,14 @@ void Pitcher::Render(RenderContext& rc)
 		strikeZonePosition.z + strikeZoneSize.z / 2.0f + 0.3f + tolerance
 	};
 
-	// ストライクゾーンを描画（緑色の半透明ボックス）
-	shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
+	//// ストライクゾーンを描画（緑色の半透明ボックス）
+	//shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
 
-	// strikeZoneMin を赤い球体で描画
-	shapeRenderer->DrawSphere(strikeZoneMin, 0.1f, { 1, 0, 0, 1 }); // 半径 0.1f の赤い球体
+	//// strikeZoneMin を赤い球体で描画
+	//shapeRenderer->DrawSphere(strikeZoneMin, 0.1f, { 1, 0, 0, 1 }); // 半径 0.1f の赤い球体
 
-	// strikeZoneMax を青い球体で描画
-	shapeRenderer->DrawSphere(strikeZoneMax, 0.1f, { 0, 0, 1, 1 }); // 半径 0.1f の青い球体
+	//// strikeZoneMax を青い球体で描画
+	//shapeRenderer->DrawSphere(strikeZoneMax, 0.1f, { 0, 0, 1, 1 }); // 半径 0.1f の青い球体
 
 	//// スケールを ImGui の値に基づいて変更
 	//reducedRadius = (ballScale.x / ballScale.x) * ballDebugRadius;
@@ -595,7 +595,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			isBallThrown = true;
 
 			// km/hからm/sに変換
-			float speedMs = ballSpeedKmh / 2.0f;
+			float speedMs = ballSpeedKmh / 1.5f;
 
 			// 発射角度を適用
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
@@ -625,6 +625,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 		{
 			animation_time = fmodf(animation_time, animation_duration);
 			isBallThrown = false;
+			hasBeenJudged = false; // 判定フラグをリセット
 		}
 
 		pitcher->animate(current_animation_index, animation_time, animated_nodes);
@@ -644,49 +645,44 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	// 変化が始まる距離を超えたら力を加える
 	if (distanceTravel > breakStartDistance)
 	{
-		// より滑らかな変化のための係数（0から1の間で徐々に変化）
 		float breakFactor = (std::min)(1.0f, (distanceTravel - breakStartDistance) / 10.0f);
+		float smoothBreakFactor = sinf(breakFactor * DirectX::XM_PIDIV2);
+		float forceMultiplier = 0.001f;
 
-		// イージング関数を適用してより滑らかに（sin関数を使用）
-		float smoothBreakFactor = sinf(breakFactor * DirectX::XM_PIDIV2); // 0から1まで滑らかに変化
-
-		// 力の大きさを大幅に減少（元の1/100程度に）
-		float forceMultiplier = 0.0001f; // この値を調整して変化の強さを制御
-
-		// 横方向の力を加える（変化球）- 非常に小さな力を継続的に加える
+		// 横方向の力を加える
 		physx::PxVec3 lateralForce(horizontalBreak * smoothBreakFactor * forceMultiplier, 0.0f, 0.0f);
 		ballCollider->addForce(lateralForce, physx::PxForceMode::eFORCE);
 
-		// 縦方向の力を加える（変化球）
+		// 縦方向の力を加える
 		physx::PxVec3 verticalForce(0.0f, verticalBreak * smoothBreakFactor * forceMultiplier, 0.0f);
 		ballCollider->addForce(verticalForce, physx::PxForceMode::eFORCE);
 	}
 
-	// 空気抵抗を適用（より現実的な値に調整）
+	// 空気抵抗を適用
 	physx::PxVec3 velocity = ballCollider->getLinearVelocity();
 	float speed = velocity.magnitude();
-
-	// 速度に比例した空気抵抗（二乗則）
-	float dragCoefficient = 0.0001f; // この値を調整して空気抵抗の強さを制御
+	float dragCoefficient = 0.0001f;
 	float airResistance = 1.0f - (dragCoefficient * speed * elapsedTime);
-	airResistance = (std::max)(0.99f, airResistance); // 最小値を設定
-
+	airResistance = (std::max)(0.99f, airResistance);
 	velocity *= airResistance;
 	ballCollider->setLinearVelocity(velocity);
 
-	// マグヌス効果（回転による力）を追加
-	// 回転方向と速度に垂直な方向に力を加える
+	// マグヌス効果を追加
 	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
-
-	// マグヌス力の係数
-	float magnusCoefficient = 0.00001f; // この値を調整してマグヌス効果の強さを制御
-
-	// 回転軸と速度の外積でマグヌス力の方向を求める
+	float magnusCoefficient = 0.00001f;
 	physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
 	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
 
-	// トルクを加えて回転を維持（強度を調整）
-	float torqueMultiplier = 0.001f; // この値を調整して回転の強さを制御
+	// **角速度を更新してコライダーの回転を一致させる**
+	physx::PxVec3 newAngularVelocity(
+		DirectX::XMConvertToRadians(rotationSpeed.x),
+		DirectX::XMConvertToRadians(rotationSpeed.y),
+		DirectX::XMConvertToRadians(rotationSpeed.z)
+	);
+	ballCollider->setAngularVelocity(newAngularVelocity);
+
+	// トルクを加えて回転を維持
+	float torqueMultiplier = 0.001f;
 	physx::PxVec3 torque(
 		DirectX::XMConvertToRadians(rotationSpeed.x) * torqueMultiplier,
 		DirectX::XMConvertToRadians(rotationSpeed.y) * torqueMultiplier,

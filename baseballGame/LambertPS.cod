@@ -90,7 +90,7 @@ dp3 r1.x, r2.xyzx, r1.xyzx
 max r1.x, r1.x, r1.w  // r1.x <- power
 
 #line 19
-mul r1.x, r1.x, l(0.700000)
+mul r1.x, r1.x, l(0.500000)
 add r1.x, r1.x, l(0.700000)  // r1.x <- power
 
 #line 21

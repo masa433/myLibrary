@@ -227,7 +227,7 @@ void scene_game::render(float elapsedTime)
     dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
     dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
-	Physics::Instance().Render(camera.GetView(), camera.GetProjection(), light.GetDirectionalLight().direction);
+	//Physics::Instance().Render(camera.GetView(), camera.GetProjection(), light.GetDirectionalLight().direction);
 
     //// 2Dスプライトの描画（画面に重ねて表示）
     //if (showStrikeZoneImage && strikeZoneSprite)

@@ -61,7 +61,7 @@ void framework::render(float elapsed_time/*Elapsed seconds from last frame*/)
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 
-	Graphics::Instance().Clear(0.1f, 0.1f, 0.3f, 1.0f);
+	Graphics::Instance().Clear(0.5f, 0.8f, 1.0f, 1.0f);
 
 	//レンダーターゲット設定
 	Graphics::Instance().SetRenderTarget();

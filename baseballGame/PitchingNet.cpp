@@ -6,7 +6,7 @@ void PitchingNet::Initialize()
 {
 	net = std::make_unique<Model>(".\\resources\\net\\net.mdl");
 	position = { 0.0f, 0.0f, 0.0f };
-	scale = { 1.0f,1.0f,1.0f };
+	scale = { 1.3f,1.3f,1.3f };
 	angle = { 0.0f, 0.0f, 0.0f };
 
 	//ê√ìIçÑëÃÇÃçÏê¨
@@ -92,6 +92,13 @@ void PitchingNet::Uninitialize()
 
 void PitchingNet::Update(float elapsedTime)
 {
+	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
+	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+	DirectX::XMMATRIX W = S * R * T;
+	DirectX::XMStoreFloat4x4(&transform, W);
+
+
 	UpdateTransform();
 }
 
