@@ -133,6 +133,9 @@
     <ClCompile Include="LambertShader.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="PitchingNet.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -265,6 +268,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="LambertShader.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="PitchingNet.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

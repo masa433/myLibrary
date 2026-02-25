@@ -6,6 +6,7 @@
 #include "stage.h"
 #include "player.h"
 #include "Pitcher.h"
+#include "PitchingNet.h"
 #include "Graphics.h"
 #include "RenderContext.h"
 #include "misc.h"
@@ -65,6 +66,8 @@ void scene_game::initialize()
 	// ピッチャーの初期化
     Pitcher::Instance().Initialize();
 
+    //ネットの初期化
+    PitchingNet::Instance().Initialize();
 
     //ストライクゾーンの初期化
     strikeZoneSprite = std::make_unique<sprite>(device, L"./resources/sprite/strikeZone.png");
@@ -86,6 +89,9 @@ void scene_game::update(float elapsed_time)
 
 	// ピッチャーの更新
     Pitcher::Instance().Update(elapsed_time);
+
+	// ネットの更新
+	PitchingNet::Instance().Update(elapsed_time);
 
     // 物理システムの更新
     Physics::Instance().Update(elapsed_time);
@@ -186,6 +192,8 @@ void scene_game::render(float elapsedTime)
 
     Player::Instance().Render(rc);
 
+	PitchingNet::Instance().Render(rc);
+
     // ステージの描画
     stage::Instance().render(rc);
 
@@ -219,7 +227,7 @@ void scene_game::render(float elapsedTime)
     dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
     dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
-	//Physics::Instance().Render(camera.GetView(), camera.GetProjection(), light.GetDirectionalLight().direction);
+	Physics::Instance().Render(camera.GetView(), camera.GetProjection(), light.GetDirectionalLight().direction);
 
     //// 2Dスプライトの描画（画面に重ねて表示）
     //if (showStrikeZoneImage && strikeZoneSprite)
@@ -252,6 +260,7 @@ void scene_game::uninitialize()
     Player::Instance().Uninitialize();
     stage::Instance().uninitialize();
     Pitcher::Instance().Uninitialize();
+	PitchingNet::Instance().Uninitialize();
     Physics::Instance().Finalize();
 }
 
@@ -263,5 +272,6 @@ void scene_game::DrawGUI()
 	// ピッチャーのGUI描画
 	Pitcher::Instance().DrawGUI();
 
-  
+	// ピッチングネットのGUI描画
+	PitchingNet::Instance().DrawGUI();
 }
