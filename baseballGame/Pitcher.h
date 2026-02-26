@@ -31,6 +31,8 @@ public:
 
 		void ApplyPhysicsToBall(float elapsedTime);
 
+		void SelctPitchType();
+
 public:
 		const DirectX::XMFLOAT3& GetBallPosition() const { return ballWorldPosition; }
 		const DirectX::XMFLOAT3& GetBallScale() const { return ballWorldScale; }
@@ -110,4 +112,18 @@ private:
 		bool hasBeenJudged = false; // 判定済みフラグ
 
 		physx::PxRigidDynamic* ballCollider = nullptr; // ボールのコライダー
+
+private:
+
+	// 状態管理
+	enum class State 
+	{
+		SelectingPitch,// 球種選択中
+		Throwing,// 投球中
+
+	};
+
+	State currentState = State::SelectingPitch;
+	float stateTime = 0.0f; // 現在の状態に入ってからの経過時間
 };
+

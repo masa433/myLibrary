@@ -73,14 +73,37 @@ void Pitcher::Uninitialize()
 // 更新
 void Pitcher::Update(float elapsedTime)
 {
-	UpdateAnimation(elapsedTime);
+	// 状態に応じた処理
+	switch (currentState)
+	{
+	case State::SelectingPitch:
+		stateTime += elapsedTime;
+		if (stateTime > 3.0f) // 3秒後に投球開始
+		{
+			currentState = State::Throwing;
+			stateTime = 0.0f;
+			SelctPitchType(); // 球種選択
+		}
+		break;
 
-	// 位置更新
+	case State::Throwing:
+		// 投げるアニメーションを再生
+		UpdateAnimation(elapsedTime);
+
+		// アニメーションが終了したら球種選択状態に遷移
+		if (animation_time >= pitcher->animations[current_animation_index].duration)
+		{
+			currentState = State::SelectingPitch; // 球種選択状態に戻る
+			animation_time = 0.0f; // アニメーション時間をリセット
+			isBallThrown = false; // ボールの投球状態をリセット
+			hasBeenJudged = false; // 判定フラグをリセット
+		}
+		break;
+	}
+
+	// 共通の更新処理
 	UpdateTransform();
-
-	// ボールの位置とスケールを更新
 	UpdateBallCollider();
-
 	AttachBallToHand(elapsedTime);
 
 	// ストライク/ボールの判定
@@ -170,8 +193,8 @@ void Pitcher::Render(RenderContext& rc)
 		strikeZonePosition.z + strikeZoneSize.z / 2.0f + 0.3f + tolerance
 	};
 
-	//// ストライクゾーンを描画（緑色の半透明ボックス）
-	//shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
+	// ストライクゾーンを描画（緑色の半透明ボックス）
+	shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
 
 	//// strikeZoneMin を赤い球体で描画
 	//shapeRenderer->DrawSphere(strikeZoneMin, 0.1f, { 1, 0, 0, 1 }); // 半径 0.1f の赤い球体
@@ -195,6 +218,11 @@ void Pitcher::DrawGUI()
 #ifdef USE_IMGUI
 	if (ImGui::Begin(u8"ピッチャー"))
 	{
+		ImGui::Text("Current State: %s",
+			currentState == State::SelectingPitch ? "Selecting Pitch" :
+			currentState == State::Throwing ? "Throwing" : "Idle");
+		ImGui::Text("State Time: %.2f seconds", stateTime);
+
 		if (ImGui::CollapsingHeader(u8"ストライクゾーン"))
 		{
 			ImGui::DragFloat3("StrikeZone Position", &strikeZonePosition.x, 0.1f);
@@ -443,14 +471,6 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 	}
 }
 
-// ランダムな浮動小数点数を生成する関数
-float GenerateRandomFloat(float min, float max)
-{
-	std::random_device rd; // ランダムデバイス
-	std::mt19937 gen(rd()); // メルセンヌ・ツイスタ
-	std::uniform_real_distribution<float> dis(min, max); // 一様分布
-	return dis(gen);
-}
 
 void Pitcher::UpdateAnimation(float elapsedTime)
 {
@@ -474,127 +494,6 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 		// ボールを投げるタイミングの判定
 		if (!isBallThrown && animation_time >= throwTiming * animation_duration)
 		{
-			// 乱数生成
-			float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
-
-			PitchType selectedPitchType;
-
-			if (randomValue <= 0.5f) // 50%の確率でストレート
-			{
-				selectedPitchType = PitchType::Fastball;
-			}
-			else // 残り50%の確率で他の球種をランダムに選択
-			{
-				// SlowCurve を含む他の球種をランダムに選択
-				int randomPitchType = static_cast<int>(GenerateRandomFloat(0.0f, static_cast<float>(PitchType::SlowCurve)));
-				selectedPitchType = static_cast<PitchType>(randomPitchType);
-			}
-
-			// 球種ごとの挙動を設定
-			switch (selectedPitchType)
-			{
-			case PitchType::Fastball: // ストレート
-				horizontalBreak = 0.0f;
-				verticalBreak = 0.0f;
-				ballSpeedKmh = 150.0f; // 速い
-				ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, -100.0f }; // バックスピン
-				OutputDebugStringA("Pitch Type: Fastball\n");
-				break;
-
-			case PitchType::Slider: // スライダー
-				horizontalBreak = -15.0f; // 左方向に曲がる
-				verticalBreak = -5.0f;    // 少し落ちる
-				ballSpeedKmh = 130.0f;    // 少し遅い
-				ballAngle = { -0.2f, 0.0f, 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, -100.0f }; // サイドスピン
-				OutputDebugStringA("Pitch Type: Slider\n");
-				break;
-
-			case PitchType::Curveball: // カーブ
-				horizontalBreak = -10.0f; // 左方向に曲がる
-				verticalBreak = -20.0f;   // 大きく落ちる
-				ballSpeedKmh = 110.0f;    // 遅い
-				ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, 150.0f }; // トップスピン
-				OutputDebugStringA("Pitch Type: Curveball\n");
-				break;
-
-			case PitchType::Changeup: // チェンジアップ
-				horizontalBreak = 5.0f;  // 右方向に少し曲がる
-				verticalBreak = -12.0f;   // 落ちる
-				ballSpeedKmh = 120.0f;    // 遅い
-				rotationSpeed = { 100.0f, 0.0f, 100.0f }; // ミックス回転
-				OutputDebugStringA("Pitch Type: Changeup\n");
-				break;
-
-			case PitchType::Forkball: // フォーク
-				horizontalBreak = 0.0f;
-				verticalBreak = -30.0f;   // 非常に大きく落ちる
-				ballSpeedKmh = 130.0f;    // 少し遅い
-				ballAngle.y = 0.0f;
-				rotationSpeed = { -40.0f, 0.0f, 10.0f }; // 回転は少なめ
-				OutputDebugStringA("Pitch Type: Forkball\n");
-				break;
-
-			case PitchType::TwoSeam: // ツーシーム
-				horizontalBreak = 5.0f;  // 右方向に少し曲がる
-				verticalBreak = -2.0f;   // 少し落ちる
-				ballSpeedKmh = 140.0f;    // 少し速い
-				ballAngle.y = 0.0f;
-				ballAngle.x = 0.2f;
-				rotationSpeed = { -100.0f, 0.0f, 0.0f }; // 回転は少なめ
-				OutputDebugStringA("Pitch Type: TwoSeam\n");
-				break;
-
-			case PitchType::Cutter: // カットボール
-				horizontalBreak = -8.0f; // 左方向に少し曲がる
-				verticalBreak = -2.0f;    // 少し落ちる
-				ballSpeedKmh = 140.0f;    // 速い
-				ballAngle = { -0.2f, 0.0f, 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, -80.0f }; // 回転速度
-				OutputDebugStringA("Pitch Type: Cutter\n");
-				break;
-
-			case PitchType::Sinker: // シンカー
-				horizontalBreak = 15.0f;   // 右方向に少し曲がる
-				verticalBreak = -15.0f;   // 大きく落ちる
-				ballSpeedKmh = 130.0f;    // 少し遅い
-				rotationSpeed = { 120.0f, 0.0f, 120.0f }; // 回転速度
-				OutputDebugStringA("Pitch Type: Sinker\n");
-				break;
-
-			case PitchType::VerticalSlider: // 縦スライダー
-				horizontalBreak = -5.0f;   // 少し横に移動
-				verticalBreak = -15.0f;   // 大きく落ちる
-				ballSpeedKmh = 125.0f;    // 遅い
-				ballAngle = { -0.2f, 0.0f, 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, -100.0f }; // 回転速度
-				OutputDebugStringA("Pitch Type: VerticalSlider\n");
-				break;
-
-			case PitchType::Splitter: // スプリット
-				horizontalBreak = 0.0f;   // 横方向の変化なし
-				verticalBreak = -15.0f;   // 非常に大きく落ちる
-				ballSpeedKmh = 135.0f;    // 少し遅い
-				ballAngle.y = 0.0f;
-				rotationSpeed = { -40.0f, 0.0f, 10.0f }; // 回転速度
-				OutputDebugStringA("Pitch Type: Splitter\n");
-				break;
-
-			case PitchType::SlowCurve: // スローカーブ
-				horizontalBreak = -5.0f;  // 左方向に少し曲がる
-				verticalBreak = -25.0f;   // 非常に大きく落ちる
-				ballSpeedKmh = 80.0f;     // 非常に遅い
-				ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, 150.0f }; // トップスピン
-				OutputDebugStringA("Pitch Type: SlowCurve\n");
-				break;
-
-			default:
-				break;
-			}
-
 			// ボールを投げる
 			isBallThrown = true;
 
@@ -614,9 +513,8 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			DirectX::XMFLOAT3 normalizedDir;
 			DirectX::XMStoreFloat3(&normalizedDir, dir);
 
-			// physxに初期速度を設定
-			physx::PxVec3 initialVelocity(normalizedDir.x* speedMs, normalizedDir.y* speedMs, normalizedDir.z* speedMs);
-
+			// PhysXに初期速度を設定
+			physx::PxVec3 initialVelocity(normalizedDir.x * speedMs, normalizedDir.y * speedMs, normalizedDir.z * speedMs);
 			ballCollider->setLinearVelocity(initialVelocity);
 
 			// 投げた瞬間のボールのスケールと角度を設定
@@ -624,14 +522,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			ballWorldAngle = ballAngle;
 		}
 
-		// アニメーションのループ処理
-		if (animation_time > animation_duration)
-		{
-			animation_time = fmodf(animation_time, animation_duration);
-			isBallThrown = false;
-			hasBeenJudged = false; // 判定フラグをリセット
-		}
-
+		// アニメーションの再生
 		pitcher->animate(current_animation_index, animation_time, animated_nodes);
 	}
 }
@@ -693,4 +584,145 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 		DirectX::XMConvertToRadians(rotationSpeed.z) * torqueMultiplier
 	);
 	ballCollider->addTorque(torque, physx::PxForceMode::eFORCE);
+}
+
+
+// ランダムな浮動小数点数を生成する関数
+float GenerateRandomFloat(float min, float max)
+{
+	std::random_device rd; // ランダムデバイス
+	std::mt19937 gen(rd()); // メルセンヌ・ツイスタ
+	std::uniform_real_distribution<float> dis(min, max); // 一様分布
+	return dis(gen);
+}
+
+void Pitcher::SelctPitchType() 
+{
+	// 乱数生成
+	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
+
+	PitchType selectedPitchType;
+
+	if (randomValue <= 0.5f) // 50%の確率でストレート
+	{
+		selectedPitchType = PitchType::Fastball;
+	}
+	else // 残り50%の確率で他の球種をランダムに選択
+	{
+		// SlowCurve を含む他の球種をランダムに選択
+		int randomPitchType = static_cast<int>(GenerateRandomFloat(0.0f, static_cast<float>(PitchType::SlowCurve)));
+		selectedPitchType = static_cast<PitchType>(randomPitchType);
+	}
+
+	// 球種ごとの挙動を設定
+	switch (selectedPitchType)
+	{
+	case PitchType::Fastball: // ストレート
+		horizontalBreak = 0.0f;
+		verticalBreak = 0.0f;
+		ballSpeedKmh = 150.0f; // 速い
+		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
+		rotationSpeed = { 0.0f, 0.0f, -100.0f }; // バックスピン
+		OutputDebugStringA("Pitch Type: Fastball\n");
+		break;
+
+	case PitchType::Slider: // スライダー
+		horizontalBreak = -15.0f; // 左方向に曲がる
+		verticalBreak = -5.0f;    // 少し落ちる
+		ballSpeedKmh = 130.0f;    // 少し遅い
+		ballAngle = { -0.2f, 0.0f, 0.0f };
+		rotationSpeed = { 0.0f, 0.0f, -100.0f }; // サイドスピン
+		OutputDebugStringA("Pitch Type: Slider\n");
+		break;
+
+	case PitchType::Curveball: // カーブ
+		horizontalBreak = -10.0f; // 左方向に曲がる
+		verticalBreak = -20.0f;   // 大きく落ちる
+		ballSpeedKmh = 110.0f;    // 遅い
+		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
+		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // トップスピン
+		OutputDebugStringA("Pitch Type: Curveball\n");
+		break;
+
+	case PitchType::Changeup: // チェンジアップ
+		horizontalBreak = 5.0f;  // 右方向に少し曲がる
+		verticalBreak = -12.0f;   // 落ちる
+		ballSpeedKmh = 120.0f;    // 遅い
+		rotationSpeed = { 100.0f, 0.0f, 100.0f }; // ミックス回転
+		OutputDebugStringA("Pitch Type: Changeup\n");
+		break;
+
+	case PitchType::Forkball: // フォーク
+		horizontalBreak = 0.0f;
+		verticalBreak = -30.0f;   // 非常に大きく落ちる
+		ballSpeedKmh = 130.0f;    // 少し遅い
+		ballAngle.y = 0.0f;
+		rotationSpeed = { -40.0f, 0.0f, 10.0f }; // 回転は少なめ
+		OutputDebugStringA("Pitch Type: Forkball\n");
+		break;
+
+	case PitchType::TwoSeam: // ツーシーム
+		horizontalBreak = 5.0f;  // 右方向に少し曲がる
+		verticalBreak = -2.0f;   // 少し落ちる
+		ballSpeedKmh = 140.0f;    // 少し速い
+		ballAngle.y = 0.0f;
+		ballAngle.x = 0.2f;
+		rotationSpeed = { -100.0f, 0.0f, 0.0f }; // 回転は少なめ
+		OutputDebugStringA("Pitch Type: TwoSeam\n");
+		break;
+
+	case PitchType::Cutter: // カットボール
+		horizontalBreak = -8.0f; // 左方向に少し曲がる
+		verticalBreak = -2.0f;    // 少し落ちる
+		ballSpeedKmh = 140.0f;    // 速い
+		ballAngle = { -0.2f, 0.0f, 0.0f };
+		rotationSpeed = { 0.0f, 0.0f, -80.0f }; // 回転速度
+		OutputDebugStringA("Pitch Type: Cutter\n");
+		break;
+
+	case PitchType::Sinker: // シンカー
+		horizontalBreak = 15.0f;   // 右方向に少し曲がる
+		verticalBreak = -15.0f;   // 大きく落ちる
+		ballSpeedKmh = 130.0f;    // 少し遅い
+		rotationSpeed = { 120.0f, 0.0f, 120.0f }; // 回転速度
+		OutputDebugStringA("Pitch Type: Sinker\n");
+		break;
+
+	case PitchType::VerticalSlider: // 縦スライダー
+		horizontalBreak = -5.0f;   // 少し横に移動
+		verticalBreak = -15.0f;   // 大きく落ちる
+		ballSpeedKmh = 125.0f;    // 遅い
+		ballAngle = { -0.2f, 0.0f, 0.0f };
+		rotationSpeed = { 0.0f, 0.0f, -100.0f }; // 回転速度
+		OutputDebugStringA("Pitch Type: VerticalSlider\n");
+		break;
+
+	case PitchType::Splitter: // スプリット
+		horizontalBreak = 0.0f;   // 横方向の変化なし
+		verticalBreak = -15.0f;   // 非常に大きく落ちる
+		ballSpeedKmh = 135.0f;    // 少し遅い
+		ballAngle.y = 0.0f;
+		rotationSpeed = { -40.0f, 0.0f, 10.0f }; // 回転速度
+		OutputDebugStringA("Pitch Type: Splitter\n");
+		break;
+
+	case PitchType::SlowCurve: // スローカーブ
+		horizontalBreak = -5.0f;  // 左方向に少し曲がる
+		verticalBreak = -25.0f;   // 非常に大きく落ちる
+		ballSpeedKmh = 80.0f;     // 非常に遅い
+		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
+		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // トップスピン
+		OutputDebugStringA("Pitch Type: SlowCurve\n");
+		break;
+
+	default:
+		break;
+	}
+	// ランダムな投球方向を設定
+	throwDirection.x = GenerateRandomFloat(-0.04f, -0.01f); // 左右方向のランダム値
+	throwDirection.y = -0.2f; // 上下方向のランダム値
+	throwDirection.z = 1.0f; // 前方向固定
+
+	// ランダムな発射角度を設定
+	launchAngleDegrees = GenerateRandomFloat(-4.0f, -2.0f); // -4度から-2度の範囲でランダム
 }
