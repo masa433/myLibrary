@@ -44,7 +44,7 @@ void Player::Initialize()
 	batRadius = 0.2f;
 	batHeight = 1.0f;
 
-    meshScale = { 0.04f,0.035f,0.04f };
+    meshScale = { 0.1f,0.035f,0.1f };
    
     //バット型の凸形状のメッシュ作成
     {
@@ -368,7 +368,7 @@ void Player::DrawGUI()
             // リセットボタン
             if (ImGui::Button("Reset Mesh Transform"))
             {
-                meshScale = { 0.04f, 0.035f, 0.04f };
+                meshScale = { 0.1f, 0.035f, 0.1f };
                 UpdatePhysXMeshTransform(meshScale);
             }
            

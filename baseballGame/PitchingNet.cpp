@@ -6,7 +6,7 @@ void PitchingNet::Initialize()
 {
 	net = std::make_unique<Model>(".\\resources\\net\\net.mdl");
 	position = { 0.0f, 0.0f, 0.0f };
-	scale = { 1.3f,1.3f,1.3f };
+	scale = { 1.0f,1.0f,1.0f };
 	angle = { 0.0f, 0.0f, 0.0f };
 
 	//Ã“I„‘Ì‚Ìì¬

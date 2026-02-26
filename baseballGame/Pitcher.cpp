@@ -15,7 +15,7 @@ void Pitcher::Initialize()
 	//モデルの読み込み
 	pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\pitcher.glb");
 
-	position = { 0.0f,1.4f,-9.0f };
+	position = { 0.3f,1.4f,-9.0f };
 	scale = { -0.03f,0.03f,0.03f };
 	angle = { 0.0f, 0.0f, 0.0f };
 
@@ -26,6 +26,8 @@ void Pitcher::Initialize()
 	ballPosition = { 0.0f,2.0f,5.5f };
 	ballScale = { 100.0f,100.0f,100.0f };
 	ballAngle = { 0.0f,DirectX::XMConvertToRadians(90.0f),0.0f };
+
+	ballDebugRadius = 0.15f; // デバッグ用の半径
 
 	rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
@@ -114,8 +116,10 @@ void Pitcher::UpdateBallCollider()
 	physx::PxShape* ballShape;
 	ballCollider->getShapes(&ballShape, 1);
 
-	physx::PxSphereGeometry ballGeometry(ballDebugRadius * ballWorldScale.x); // スケールを適用
+	// コライダーのスケールを更新
+	physx::PxSphereGeometry ballGeometry(ballDebugRadius);
 	ballShape->setGeometry(ballGeometry);
+
 }
 
 bool Pitcher::IsBallInStrikeZone() const
@@ -343,7 +347,7 @@ void Pitcher::DrawGUI()
 	// ボールのデバッグスケールを変更するスライダー
 	if (ImGui::CollapsingHeader("Debug Settings"))
 	{
-		ImGui::SliderFloat("Ball Debug Radius", &ballDebugRadius, 0.1f, 5.0f, "%.2f");
+		ImGui::SliderFloat("Ball Debug Radius", &ballDebugRadius, 0.05f, 5.0f, "%.2f");
 	}
 	ImGui::End();
 #endif
