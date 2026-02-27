@@ -222,6 +222,8 @@
     <ClCompile Include="ModelRenderer.cpp" />
     <ClCompile Include="ModelResource.cpp" />
     <ClCompile Include="mouse.cpp" />
+    <ClCompile Include="PhysicsEventCallBack.cpp" />
+    <ClCompile Include="PhysicsFilterShader.cpp" />
     <ClCompile Include="physxManager.cpp" />
     <ClCompile Include="Pitcher.cpp" />
     <ClCompile Include="PitchingNet.cpp" />
@@ -266,6 +268,8 @@
     <ClInclude Include="ModelRenderer.h" />
     <ClInclude Include="ModelResource.h" />
     <ClInclude Include="mouse.h" />
+    <ClInclude Include="PhysicsEventCallBack.h" />
+    <ClInclude Include="PhysicsFilterShader.h" />
     <ClInclude Include="physxManager.h" />
     <ClInclude Include="Pitcher.h" />
     <ClInclude Include="PitchingNet.h" />

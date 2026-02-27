@@ -17,8 +17,8 @@ void Player::Initialize()
     // モデルの読み込み
     animated_model = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batter.glb");
 
-    position = { 3.0f, 0.01f, 43.0f };
-    scale = { -0.03f,0.03f,0.03f };
+    position = { 0.8f, 0.01f, 0.4f };
+    scale = { -0.01f,0.01f,0.01f };
     angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
 	radius = 0.5f;
 	height = 3.5f;
@@ -83,6 +83,10 @@ void Player::Initialize()
 		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
+
+        pxPhysics->createMaterial(0.4f, 0.4f, 0.0001f);
+		pxMaterial->setRestitution(0.0001f);
+        pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
 		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());

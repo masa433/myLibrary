@@ -8,10 +8,10 @@ void stage::initialize()
 	ID3D11Device* device = Graphics::Instance().GetDevice();
 
 	// モデルの読み込み
-	model = std::make_unique<Model>(".\\resources\\field\\stadium.mdl");
+	model = std::make_unique<Model>(".\\resources\\field\\stadium2.mdl");
 	// 位置、スケール、回転の初期化
 	position = { 0.0f, 0.0f, 0.0f };
-	scale = { 1.0f, 1.0f, 1.0f };
+	scale = { 0.01f, 0.01f, 0.01f };
 	angle = { 0.0f, 0.0f, 0.0f };
 
 
@@ -20,6 +20,13 @@ void stage::initialize()
 		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
+
+		pxPhysics->createMaterial(
+			0.5f,// 静止摩擦係数
+			0.5f,// 動摩擦係数
+			0.001f);// 反発係数
+
+		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eMULTIPLY);
 
 		const ModelResource* resources = model->GetResource();
 
@@ -42,7 +49,8 @@ void stage::initialize()
 
 			//静的剛体の作成
 			const Model::Node& node = model->GetNodes().at(mesh.nodeIndex);
-			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * Transform;
+			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z); // スケール行列を作成
+			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * Transform;
 			physx::PxVec3 pxScale(
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),
@@ -64,9 +72,11 @@ void stage::initialize()
 			_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create rigid body");
 
 			//静的剛体にメッシュ形状を関連付ける
-			physx::PxMeshScale pxMeshScale(pxScale);
+			physx::PxMeshScale pxMeshScale(physx::PxVec3(scale.x * pxScale.x, scale.y * pxScale.y, scale.z * pxScale.z));
 			physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
 			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *pxMaterial);
+
+			pxRigidBody->setName("Stage");
 
 			//シーンに剛体を追加
 			pxScene->addActor(*pxRigidBody);
@@ -90,7 +100,11 @@ void stage::update(float elapsedTime)
 	}
 #endif //  USE_IMGUI
 
-
+	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
+	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+	DirectX::XMMATRIX world = S * R * T;
+	DirectX::XMStoreFloat4x4(&transform, world);
 
 	UpdateTransform();
 }

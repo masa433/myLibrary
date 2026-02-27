@@ -103,6 +103,8 @@ private:
 			VerticalSlider,//縦スライダー	
 			Splitter,//スプリット
 			SlowCurve,//スローカーブ
+			Shooter,//シュート
+			Knuckleball,//ナックル
 		};
 
 		//ストライクゾーンの判定
@@ -125,5 +127,8 @@ private:
 
 	State currentState = State::SelectingPitch;
 	float stateTime = 0.0f; // 現在の状態に入ってからの経過時間
+
+	public:
+		physx::PxRigidDynamic* GetBallCollider() const { return ballCollider; }
 };
 

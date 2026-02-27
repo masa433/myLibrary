@@ -15,8 +15,8 @@ void Pitcher::Initialize()
 	//モデルの読み込み
 	pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\pitcher.glb");
 
-	position = { 0.3f,1.4f,-9.0f };
-	scale = { -0.03f,0.03f,0.03f };
+	position = { 0.3f,0.22f,-18.15f };
+	scale = { -0.01f,0.01f,0.01f };
 	angle = { 0.0f, 0.0f, 0.0f };
 
 	// アニメーション用のノードをコピー
@@ -29,13 +29,20 @@ void Pitcher::Initialize()
 
 	ballDebugRadius = 0.15f; // デバッグ用の半径
 
-	rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
+	//rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
 	{
 		// PhysXのボールコライダーを作成
 		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
+
+		pxPhysics->createMaterial(
+			0.3f,// 静止摩擦係数
+			0.3f,// 動摩擦係数
+			0.00001f);// 反発係数
+
+		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eMULTIPLY);
 
 		// ボールの球状コライダーを作成
 		physx::PxSphereGeometry ballGeometry(ballDebugRadius);
@@ -95,7 +102,7 @@ void Pitcher::Update(float elapsedTime)
 		{
 			currentState = State::SelectingPitch; // 球種選択状態に戻る
 			animation_time = 0.0f; // アニメーション時間をリセット
-			isBallThrown = false; // ボールの投球状態をリセット
+			
 			hasBeenJudged = false; // 判定フラグをリセット
 		}
 		break;
@@ -481,6 +488,12 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 
 	if (animation_playing)
 	{
+		// アニメーションが開始したタイミングで isBallThrown を false に設定
+		if (animation_time == 0.0f)
+		{
+			isBallThrown = false;
+		}
+
 		animation_time += elapsedTime;
 
 		// インデックスの範囲チェック
@@ -556,34 +569,37 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	// 空気抵抗を適用
 	physx::PxVec3 velocity = ballCollider->getLinearVelocity();
 	float speed = velocity.magnitude();
-	float dragCoefficient = 0.0001f;
+	float dragCoefficient = 0.0005f; // 空気抵抗を調整
 	float airResistance = 1.0f - (dragCoefficient * speed * elapsedTime);
-	airResistance = (std::max)(0.99f, airResistance);
+	airResistance = (std::max)(0.95f, airResistance); // 最小値を設定
 	velocity *= airResistance;
 	ballCollider->setLinearVelocity(velocity);
 
 	// マグヌス効果を追加
 	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
-	float magnusCoefficient = 0.00001f;
+	float magnusCoefficient = 0.00005f; // マグヌス効果を調整
 	physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
 	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
 
-	// **角速度を更新してコライダーの回転を一致させる**
+	//重力を適用
+	physx::PxVec3 gravity(0.0f, -9.81f, 0.0f);
+	ballCollider->addForce(gravity, physx::PxForceMode::eACCELERATION);
+
+	// ミックス回転を適用
 	physx::PxVec3 newAngularVelocity(
-		DirectX::XMConvertToRadians(rotationSpeed.x),
-		DirectX::XMConvertToRadians(rotationSpeed.y),
-		DirectX::XMConvertToRadians(rotationSpeed.z)
+		DirectX::XMConvertToRadians(rotationSpeed.x), // X軸回転速度
+		DirectX::XMConvertToRadians(rotationSpeed.y), // Y軸回転速度
+		DirectX::XMConvertToRadians(rotationSpeed.z)  // Z軸回転速度
 	);
 	ballCollider->setAngularVelocity(newAngularVelocity);
 
-	// トルクを加えて回転を維持
-	float torqueMultiplier = 0.001f;
-	physx::PxVec3 torque(
-		DirectX::XMConvertToRadians(rotationSpeed.x) * torqueMultiplier,
-		DirectX::XMConvertToRadians(rotationSpeed.y) * torqueMultiplier,
-		DirectX::XMConvertToRadians(rotationSpeed.z) * torqueMultiplier
-	);
-	ballCollider->addTorque(torque, physx::PxForceMode::eFORCE);
+	// 角速度の制限
+	float maxAngularVelocity = 30.0f; // 最大角速度を設定
+	if (angularVelocity.magnitude() > maxAngularVelocity)
+	{
+		newAngularVelocity = newAngularVelocity.getNormalized() * maxAngularVelocity;
+		ballCollider->setAngularVelocity(newAngularVelocity);
+	}
 }
 
 
@@ -603,7 +619,7 @@ void Pitcher::SelctPitchType()
 
 	PitchType selectedPitchType;
 
-	if (randomValue <= 0.5f) // 50%の確率でストレート
+	if (randomValue <= 0.9f) // 50%の確率でストレート
 	{
 		selectedPitchType = PitchType::Fastball;
 	}
@@ -621,7 +637,7 @@ void Pitcher::SelctPitchType()
 		horizontalBreak = 0.0f;
 		verticalBreak = 0.0f;
 		ballSpeedKmh = 150.0f; // 速い
-		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
+		ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, -100.0f }; // バックスピン
 		OutputDebugStringA("Pitch Type: Fastball\n");
 		break;
@@ -646,7 +662,7 @@ void Pitcher::SelctPitchType()
 
 	case PitchType::Changeup: // チェンジアップ
 		horizontalBreak = 5.0f;  // 右方向に少し曲がる
-		verticalBreak = -12.0f;   // 落ちる
+		verticalBreak = -7.0f;   // 落ちる
 		ballSpeedKmh = 120.0f;    // 遅い
 		rotationSpeed = { 100.0f, 0.0f, 100.0f }; // ミックス回転
 		OutputDebugStringA("Pitch Type: Changeup\n");
@@ -662,8 +678,8 @@ void Pitcher::SelctPitchType()
 		break;
 
 	case PitchType::TwoSeam: // ツーシーム
-		horizontalBreak = 5.0f;  // 右方向に少し曲がる
-		verticalBreak = -2.0f;   // 少し落ちる
+		horizontalBreak = 10.0f;  // 右方向に少し曲がる
+		verticalBreak = -7.0f;   // 少し落ちる
 		ballSpeedKmh = 140.0f;    // 少し速い
 		ballAngle.y = 0.0f;
 		ballAngle.x = 0.2f;
@@ -724,5 +740,5 @@ void Pitcher::SelctPitchType()
 	throwDirection.z = 1.0f; // 前方向固定
 
 	// ランダムな発射角度を設定
-	launchAngleDegrees = GenerateRandomFloat(-4.0f, -2.0f); // -4度から-2度の範囲でランダム
+	launchAngleDegrees = GenerateRandomFloat(-2.0f, -1.0f); // -4度から-2度の範囲でランダム
 }

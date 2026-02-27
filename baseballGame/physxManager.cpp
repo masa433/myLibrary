@@ -2,6 +2,14 @@
 #include "Misc.h"
 #include "Graphics.h"
 #include "physxManager.h"
+#include "Pitcher.h"
+#include <queue>
+#include <mutex>
+#include <functional>
+
+// グローバルまたはクラス内にキューを用意
+std::queue<std::function<void()>> velocityUpdateQueue;
+std::mutex queueMutex;
 
 // 初期化
 void Physics::Initialize()
@@ -42,7 +50,8 @@ void Physics::Initialize()
 		physx::PxSceneDesc pxSceneDesc(pxPhysics->getTolerancesScale());
 		pxSceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 		pxSceneDesc.cpuDispatcher = pxDispatcher;
-		pxSceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
+		pxSceneDesc.filterShader = SimulationFilterShader;	// NOTE:⑧衝突検出フィルタリング
+		pxSceneDesc.simulationEventCallback = this;
 
 		pxScene = pxPhysics->createScene(pxSceneDesc);
 		_ASSERT_EXPR(pxScene != nullptr, "Failed pxPhysics->createScene");
@@ -99,6 +108,16 @@ void Physics::Update(float elapsedTime)
 {
 	pxScene->simulate(elapsedTime);
 	pxScene->fetchResults(true);
+
+	// キューを処理
+	{
+		std::lock_guard<std::mutex> lock(queueMutex);
+		while (!velocityUpdateQueue.empty())
+		{
+			velocityUpdateQueue.front()(); // リクエストを実行
+			velocityUpdateQueue.pop();    // キューから削除
+		}
+	}
 }
 
 // 描画
@@ -455,4 +474,71 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 
 	shapeRenderer->Render(dc, view, projection, lightDirection);
 	primitiveRenderer->Render(dc, view, projection, D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+}
+
+//--------------------------
+// NOTE:⑧衝突検出フィルタリング
+//--------------------------
+physx::PxFilterFlags Physics::SimulationFilterShader(
+	physx::PxFilterObjectAttributes	attributes0, physx::PxFilterData filterData0,
+	physx::PxFilterObjectAttributes	attributes1, physx::PxFilterData	filterData1,
+	physx::PxPairFlags& pairFlags,
+	const void* constantBlock, physx::PxU32 constantBlockSize)
+{
+	if (physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
+	{
+		pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
+		return physx::PxFilterFlag::eDEFAULT;
+	}
+
+	pairFlags = physx::PxPairFlag::eCONTACT_DEFAULT;
+	pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_FOUND | physx::PxPairFlag::eNOTIFY_TOUCH_LOST | physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS | physx::PxPairFlag::eNOTIFY_CONTACT_POINTS;
+
+	return physx::PxFilterFlag::eDEFAULT;
+}
+
+
+
+void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs)
+{
+	//OutputDebugStringA("onContact called\n"); // ログを追加
+
+	for (physx::PxU32 i = 0; i < nbPairs; i++)
+	{
+		const physx::PxContactPair& pair = pairs[i];
+
+		// 衝突ペアの情報を出力
+		/*if (pairHeader.actors[0] && pairHeader.actors[0]->getName())
+			OutputDebugStringA(pairHeader.actors[0]->getName());
+		if (pairHeader.actors[1] && pairHeader.actors[1]->getName())
+			OutputDebugStringA(pairHeader.actors[1]->getName());*/
+
+		// ボールとステージの衝突を検知
+		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stage") ||
+			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stage"))
+		{
+			//OutputDebugStringA("Ball collided with Stage\n"); // ログを追加
+
+			// キューに速度変更リクエストを追加
+			{
+				std::lock_guard<std::mutex> lock(queueMutex);
+				velocityUpdateQueue.push([]() {
+					physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+					physx::PxVec3 velocity = ballCollider->getLinearVelocity();
+
+					// 減衰率を設定（例: 50% 減衰）
+					float dampingFactor = 0.99f;
+					velocity *= dampingFactor;
+
+					// 回転速度も減衰
+					physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
+					angularVelocity *= dampingFactor;
+
+					// シミュレーション終了後に速度を設定
+					ballCollider->setLinearVelocity(velocity);
+					ballCollider->setAngularVelocity(angularVelocity);
+					});
+			}
+		}
+	}
 }

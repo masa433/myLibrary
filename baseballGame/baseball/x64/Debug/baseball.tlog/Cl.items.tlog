@@ -23,6 +23,8 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Model.cpp;C:\Users\2240021\Deskt
 C:\Users\2240021\Desktop\myLibrary\baseballGame\ModelRenderer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ModelRenderer.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\ModelResource.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ModelResource.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\mouse.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\mouse.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\PhysicsEventCallBack.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\PhysicsEventCallBack.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\PhysicsFilterShader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\PhysicsFilterShader.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\physxManager.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\physxManager.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Pitcher.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Pitcher.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\PitchingNet.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\PitchingNet.obj

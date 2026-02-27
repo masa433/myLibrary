@@ -136,6 +136,12 @@
     <ClCompile Include="PitchingNet.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="PhysicsFilterShader.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsEventCallBack.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -271,6 +277,12 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="PitchingNet.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsEventCallBack.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsFilterShader.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
