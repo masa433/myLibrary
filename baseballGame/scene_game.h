@@ -36,7 +36,7 @@ private:
 
     //ƒJƒƒ‰‚ÌZÀ•W‚Ì•`‰æ”ÍˆÍ
     float camera_near_z = 1.0f;
-    float camera_far_z = 10000.0f;
+    float camera_far_z = 1000000.0f;
 
 public:
     scene_game();

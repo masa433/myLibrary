@@ -5,8 +5,8 @@
 void PitchingNet::Initialize()
 {
 	net = std::make_unique<Model>(".\\resources\\net\\net.mdl");
-	position = { 0.0f, 0.0f, 0.0f };
-	scale = { 1.0f,1.0f,1.0f };
+	position = { 0.0f, 0.0f, -15.10f };
+	scale = { 0.012f,0.012f,0.01f };
 	angle = { 0.0f, 0.0f, 0.0f };
 
 	//静的剛体の作成
@@ -36,7 +36,9 @@ void PitchingNet::Initialize()
 
 			//静的剛体の作成
 			const Model::Node& node = net->GetNodes().at(mesh.nodeIndex);
-			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * Transform;
+			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z); // スケール行列を作成
+			DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z); // 平行移動行列を作成
+			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * T * Transform;
 			physx::PxVec3 pxScale(
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),

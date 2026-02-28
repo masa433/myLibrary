@@ -44,7 +44,7 @@ void Player::Initialize()
 	batRadius = 0.2f;
 	batHeight = 1.0f;
 
-    meshScale = { 0.1f,0.035f,0.1f };
+    meshScale = { 0.05f,0.012f,0.05f };
    
     //バット型の凸形状のメッシュ作成
     {
@@ -84,8 +84,8 @@ void Player::Initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-        pxPhysics->createMaterial(0.4f, 0.4f, 0.0001f);
-		pxMaterial->setRestitution(0.0001f);
+        pxPhysics->createMaterial(0.4f, 0.4f, 0.45f);
+		pxMaterial->setRestitution(0.45f);
         pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;

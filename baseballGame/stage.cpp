@@ -72,7 +72,7 @@ void stage::initialize()
 			_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create rigid body");
 
 			//静的剛体にメッシュ形状を関連付ける
-			physx::PxMeshScale pxMeshScale(physx::PxVec3(scale.x * pxScale.x, scale.y * pxScale.y, scale.z * pxScale.z));
+			physx::PxMeshScale pxMeshScale(pxScale);
 			physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
 			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *pxMaterial);
 
