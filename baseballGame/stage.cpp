@@ -24,7 +24,7 @@ void stage::initialize()
 		pxPhysics->createMaterial(
 			0.5f,// ÃŽ~–€ŽCŒW”
 			0.5f,// “®–€ŽCŒW”
-			0.001f);// ”½”­ŒW”
+			0.0001f);// ”½”­ŒW”
 
 		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eMULTIPLY);
 

@@ -84,8 +84,8 @@ void Player::Initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-        pxPhysics->createMaterial(0.4f, 0.4f, 0.45f);
-		pxMaterial->setRestitution(0.45f);
+        pxPhysics->createMaterial(0.4f, 0.4f, 0.5f);
+		pxMaterial->setRestitution(0.5f);
         pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
@@ -536,6 +536,36 @@ void Player::UpdateAnimation(float elapsedTime)
         // アニメーションの長さを取得
         float animation_duration = animated_model->animations[current_animation_index].duration;
 
+		
+
+        if (Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)
+        {
+            ThrowingStateTime += elapsedTime;
+
+            // ThrowingStateTimeが0.8以上で、まだアニメーションを再生していない場合
+            if (ThrowingStateTime >= 0.8f && !hasPlayHomeRun)
+            {
+                ChangeState(State::HomeRun); // ホームランアニメーションに切り替え
+                hasPlayHomeRun = true;      // アニメーション再生済みフラグを設定
+            }
+        }
+        else if (current_state == State::HomeRun)
+        {
+            // HomeRunアニメーションが終了したらBattingIdleに戻す
+            if (animation_time >= animated_model->animations[current_animation_index].duration)
+            {
+                ChangeState(State::BattingIdle);
+                ThrowingStateTime = 0.0f;  // ThrowingStateTimeをリセット
+                hasPlayHomeRun = false;    // フラグをリセット
+            }
+        }
+        else
+        {
+            // Throwingステート以外になったらリセット
+            ThrowingStateTime = 0.0f;
+            hasPlayHomeRun = false; // フラグをリセット
+        }
+
         // Swingアニメーションの場合、マウス位置に応じて腕の角度を変更
         if (current_state == State::Swinging)
         {
@@ -578,7 +608,9 @@ void Player::UpdateAnimation(float elapsedTime)
                 animation_time = fmod(animation_time, animation_duration);
             }
         }
+
     }
+    
 }
 
 // ステート切り替え

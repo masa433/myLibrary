@@ -27,7 +27,7 @@ void Pitcher::Initialize()
 	ballScale = { 100.0f,100.0f,100.0f };
 	ballAngle = { 0.0f,DirectX::XMConvertToRadians(90.0f),0.0f };
 
-	ballDebugRadius = 1.0f; // デバッグ用の半径
+	ballDebugRadius = 0.3f; // デバッグ用の半径
 
 	//rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
@@ -40,9 +40,9 @@ void Pitcher::Initialize()
 		pxPhysics->createMaterial(
 			0.3f,// 静止摩擦係数
 			0.3f,// 動摩擦係数
-			0.45f);// 反発係数
+			0.5f);// 反発係数
 
-		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eMULTIPLY);
+		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		// ボールの球状コライダーを作成
 		physx::PxSphereGeometry ballGeometry(ballDebugRadius);
@@ -85,7 +85,7 @@ void Pitcher::Update(float elapsedTime)
 	{
 	case State::SelectingPitch:
 		stateTime += elapsedTime;
-		if (stateTime > 3.0f) // 3秒後に投球開始
+		if (stateTime > 7.0f) // 3秒後に投球開始
 		{
 			currentState = State::Throwing;
 			stateTime = 0.0f;
@@ -102,7 +102,6 @@ void Pitcher::Update(float elapsedTime)
 		{
 			currentState = State::SelectingPitch; // 球種選択状態に戻る
 			animation_time = 0.0f; // アニメーション時間をリセット
-			
 			hasBeenJudged = false; // 判定フラグをリセット
 		}
 		break;
@@ -135,6 +134,7 @@ void Pitcher::Update(float elapsedTime)
 	{
 		isBallThrown = false;
 		hasBeenJudged = false; // 判定フラグをリセット
+		hasCollided = false; // 衝突フラグをリセット
 	}
 }
 
@@ -275,7 +275,7 @@ void Pitcher::DrawGUI()
 			ImGui::Text("Break Settings");
 			ImGui::SliderFloat(u8"横方向の変化量", &horizontalBreak, -30.0f, 30.0f);
 			ImGui::SliderFloat(u8"縦方向の変化量", &verticalBreak, -30.0f, 30.0f);
-			ImGui::SliderFloat(u8"変化が始まる距離", &breakStartDistance, 0.0f, 20.0f);
+			ImGui::DragFloat(u8"変化が始まる距離", &breakStartDistance, 0.0f, 20.0f);
 
 			ImGui::Separator();
 			// 球種プリセット
@@ -472,6 +472,7 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 		if (ballWorldPosition.y < 0.0f)
 		{
 			isBallThrown = false;
+			hasCollided = false; // 衝突フラグをリセット
 			animation_time = 0.0f;
 			ballVelocity = { 0.0f, 0.0f, 0.0f };
 		}
@@ -509,6 +510,9 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 		{
 			// ボールを投げる
 			isBallThrown = true;
+
+			// 衝突フラグをリセット
+			SetHasCollided(false);
 
 			// km/hからm/sに変換
 			float speedMs = ballSpeedKmh / 3.6f;
@@ -550,12 +554,12 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 		(ballWorldPosition.z - ballStartPosition.z) * (ballWorldPosition.z - ballStartPosition.z)
 	);
 
-	// 変化が始まる距離を超えたら力を加える
-	if (distanceTravel > breakStartDistance)
+	// 変化球の力を加える
+	if (!hasCollided && distanceTravel > breakStartDistance)
 	{
 		float breakFactor = (std::min)(1.0f, (distanceTravel - breakStartDistance) / 10.0f);
 		float smoothBreakFactor = sinf(breakFactor * DirectX::XM_PIDIV2);
-		float forceMultiplier = 0.001f;
+		float forceMultiplier = 0.005f;
 
 		// 横方向の力を加える
 		physx::PxVec3 lateralForce(horizontalBreak * smoothBreakFactor * forceMultiplier, 0.0f, 0.0f);
@@ -569,37 +573,18 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	// 空気抵抗を適用
 	physx::PxVec3 velocity = ballCollider->getLinearVelocity();
 	float speed = velocity.magnitude();
-	float dragCoefficient = 0.001f; // 空気抵抗を調整
+	float dragCoefficient = 0.01f; // 空気抵抗を調整
 	float airResistance = 1.0f - (dragCoefficient * speed * elapsedTime);
-	airResistance = (std::max)(0.999f, airResistance); // 最小値を設定
+	airResistance = (std::max)(0.99f, airResistance); // 最小値を設定
 	velocity *= airResistance;
 	ballCollider->setLinearVelocity(velocity);
 
 	// マグヌス効果を追加
 	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
-	float magnusCoefficient = 0.002f; // マグヌス効果を調整
+	float magnusCoefficient = 0.00001f; // マグヌス効果を調整
 	physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
 	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
 
-	//重力を適用
-	/*physx::PxVec3 gravity(0.0f, -9.81f, 0.0f);
-	ballCollider->addForce(gravity, physx::PxForceMode::eACCELERATION);*/
-
-	//// ミックス回転を適用
-	//physx::PxVec3 newAngularVelocity(
-	//	DirectX::XMConvertToRadians(rotationSpeed.x), // X軸回転速度
-	//	DirectX::XMConvertToRadians(rotationSpeed.y), // Y軸回転速度
-	//	DirectX::XMConvertToRadians(rotationSpeed.z)  // Z軸回転速度
-	//);
-	//ballCollider->setAngularVelocity(newAngularVelocity);
-
-	// 角速度の制限
-	float maxAngularVelocity = 30.0f; // 最大角速度を設定
-	if (angularVelocity.magnitude() > maxAngularVelocity)
-	{
-		angularVelocity = angularVelocity.getNormalized() * maxAngularVelocity;
-		ballCollider->setAngularVelocity(angularVelocity);
-	}
 }
 
 
@@ -740,5 +725,5 @@ void Pitcher::SelctPitchType()
 	throwDirection.z = 1.0f; // 前方向固定
 
 	// ランダムな発射角度を設定
-	launchAngleDegrees = GenerateRandomFloat(-4.0f, -2.0f); // -4度から-2度の範囲でランダム
+	launchAngleDegrees = GenerateRandomFloat(-2.0f, 0.0f); // -4度から-2度の範囲でランダム
 }

@@ -6,6 +6,7 @@
 #include <queue>
 #include <mutex>
 #include <functional>
+#include "Player.h"
 
 // グローバルまたはクラス内にキューを用意
 std::queue<std::function<void()>> velocityUpdateQueue;
@@ -143,7 +144,7 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 				pxShapeMat.column3.x, pxShapeMat.column3.y, pxShapeMat.column3.z
 			};
 
-			DirectX::XMFLOAT4 color(0.0f, 1.0f, 0.0f, 0.3f);
+			DirectX::XMFLOAT4 color(1.0f, 0.0f, 0.0f, 0.3f);
 			if (sleeping)
 			{
 				const float dark = 0.25f;
@@ -513,6 +514,20 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if (pairHeader.actors[1] && pairHeader.actors[1]->getName())
 			OutputDebugStringA(pairHeader.actors[1]->getName());*/
 
+			// ボールとバットの衝突を検知
+		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
+			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
+		{
+			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
+		}
+
+		// ボールとステージの衝突を検知
+		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stage") ||
+			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stage"))
+		{
+			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
+		}
+
 		// ボールとステージの衝突を検知
 		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stage") ||
 			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stage"))
@@ -527,7 +542,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					physx::PxVec3 velocity = ballCollider->getLinearVelocity();
 
 					// 減衰率を設定（例: 50% 減衰）
-					float dampingFactor = 0.99f;
+					float dampingFactor = 0.999f;
 					velocity *= dampingFactor;
 
 					// 回転速度も減衰

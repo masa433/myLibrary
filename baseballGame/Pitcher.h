@@ -36,6 +36,7 @@ public:
 public:
 		const DirectX::XMFLOAT3& GetBallPosition() const { return ballWorldPosition; }
 		const DirectX::XMFLOAT3& GetBallScale() const { return ballWorldScale; }
+		const DirectX::XMFLOAT3& GetBallAngle() const { return ballWorldAngle; }
 
 		const DirectX::XMFLOAT3& GetBallVelocity() const { return ballVelocity; }
 		void SetBallVelocity(const DirectX::XMFLOAT3& velocity) { ballVelocity = velocity; }
@@ -85,7 +86,7 @@ private:
 		// 変化球パラメータ
 		float horizontalBreak = 0.0f; // 横方向の変化量（正:右、負:左）
 		float verticalBreak = 0.0f;   // 縦方向の変化量（正:上、負:下）
-		float breakStartDistance = 15.0f; // 変化が始まる距離
+		float breakStartDistance = -5.0f; // 変化が始まる距離
 
 		float ballDebugRadius = 0.15f; // デフォルトのスケール倍率
 		float reducedRadius = 0.0f;
@@ -115,7 +116,7 @@ private:
 
 		physx::PxRigidDynamic* ballCollider = nullptr; // ボールのコライダー
 
-private:
+public:
 
 	// 状態管理
 	enum class State 
@@ -130,5 +131,11 @@ private:
 
 	public:
 		physx::PxRigidDynamic* GetBallCollider() const { return ballCollider; }
+
+		bool hasCollided = false; // 衝突フラグ
+
+		void SetHasCollided(bool collided) { hasCollided = collided; }
+
+		const State GetCurrentState() const { return currentState; }
 };
 

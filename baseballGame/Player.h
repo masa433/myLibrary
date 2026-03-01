@@ -54,6 +54,9 @@ private:
 
     void UpdatePhysXMeshTransform(const DirectX::XMFLOAT3& scale);
 
+public:
+    physx::PxRigidDynamic* GetBatCollider() const { return pxBatRigidBody; }
+
 private:
     // ƒ‚ƒfƒ‹ŠÖ˜A
     std::unique_ptr<Model> bat;
@@ -107,4 +110,7 @@ private:
     bool isOnGround = true; // ’n–Ê‚É‚¢‚é‚©‚Ç‚¤‚©
 
     DirectX::XMFLOAT3 meshScale = { 0.0f,0.0f,0.0f };
+
+    float ThrowingStateTime = 0.0f;
+	bool hasPlayHomeRun = false;
 };
