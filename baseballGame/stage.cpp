@@ -24,9 +24,9 @@ void stage::initialize()
 		pxPhysics->createMaterial(
 			1.0f,// ÃŽ~–€ŽCŒW”
 			1.0f,// “®–€ŽCŒW”
-			0.0001f);// ”½”­ŒW”
+			0.000000001f);// ”½”­ŒW”
 
-		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eMULTIPLY);
+		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		const ModelResource* resources = model->GetResource();
 

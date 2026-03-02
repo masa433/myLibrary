@@ -581,7 +581,7 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 
 	// マグヌス効果を追加
 	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
-	float magnusCoefficient = 0.00001f; // マグヌス効果を調整
+	float magnusCoefficient = 0.00003f; // マグヌス効果を調整
 	physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
 	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
 
@@ -720,7 +720,7 @@ void Pitcher::SelctPitchType()
 		break;
 	}
 	// ランダムな投球方向を設定
-	throwDirection.x = GenerateRandomFloat(-0.04f, -0.01f); // 左右方向のランダム値
+	throwDirection.x = GenerateRandomFloat(-0.04f, -0.02f); // 左右方向のランダム値
 	throwDirection.y = -0.2f; // 上下方向のランダム値
 	throwDirection.z = 1.0f; // 前方向固定
 

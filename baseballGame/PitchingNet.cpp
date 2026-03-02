@@ -15,6 +15,11 @@ void PitchingNet::Initialize()
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 
+		pxPhysics->createMaterial(
+			1.0f,// ÃŽ~–€ŽCŒW”
+			1.0f,// “®–€ŽCŒW”
+			0.000000001f);// ”½”­ŒW”
+
 		const ModelResource* resources = net->GetResource();
 
 		DirectX::XMMATRIX Transform = DirectX::XMLoadFloat4x4(&transform);
