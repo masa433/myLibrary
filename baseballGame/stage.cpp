@@ -22,8 +22,8 @@ void stage::initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 
 		pxPhysics->createMaterial(
-			0.5f,// ÃŽ~–€ŽCŒW”
-			0.5f,// “®–€ŽCŒW”
+			1.0f,// ÃŽ~–€ŽCŒW”
+			1.0f,// “®–€ŽCŒW”
 			0.0001f);// ”½”­ŒW”
 
 		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eMULTIPLY);
