@@ -17,9 +17,17 @@ void Player::Initialize()
     // モデルの読み込み
     animated_model = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batter.glb");
 
-    position = { 0.8f, 0.01f, 0.4f };
-    scale = { -0.01f,0.01f,0.01f };
-    angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
+    if (IsRightBatter()) 
+    {
+        position = { -1.0f, 0.01f, -0.4f };
+        scale = { -0.01f,0.01f,0.01f };
+    }
+    else 
+    {
+        position = { 1.0f, 0.01f, -0.4f };
+		scale = { 0.01f,0.01f,0.01f };
+    }
+    angle = { 0.0f, 0.0f, 0.0f};
 	radius = 0.5f;
 	height = 3.5f;
 
@@ -84,8 +92,8 @@ void Player::Initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-        pxPhysics->createMaterial(0.4f, 0.4f, 0.5f);
-		pxMaterial->setRestitution(0.5f);
+        pxPhysics->createMaterial(0.4f, 0.4f, 0.45f);
+		pxMaterial->setRestitution(0.45f);
         pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
@@ -116,8 +124,8 @@ void Player::Initialize()
         physx::PxConvexMeshGeometry pxConvexGeometry(pxBatConvexMesh, pxMeshScale);
         physx::PxRigidActorExt::createExclusiveShape(*pxBatRigidBody, pxConvexGeometry, *pxMaterial);
 
-        //質量の設定
-        physx::PxRigidBodyExt::updateMassAndInertia(*pxBatRigidBody, 1.0f);
+        // 質量の設定
+        physx::PxRigidBodyExt::updateMassAndInertia(*pxBatRigidBody, 0.9);
 
         //シーンに剛体を追加
         pxScene->addActor(*pxBatRigidBody);
@@ -199,7 +207,7 @@ void Player::HandleInput(float elapsedTime)
     }
 
     // スペースキーでスイング
-    if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+    if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
     {
         if (current_state != State::Swinging)
         {
@@ -353,6 +361,10 @@ void Player::DrawGUI()
             ImGui::DragFloat3("Bat Position", &batPosition.x);
             ImGui::DragFloat3("Bat Scale", &batScale.x);
             ImGui::DragFloat3("Bat Angle", &batAngle.x);
+
+            // バットの質量を計算して表示
+            float originalMass = 0.9f; // 実際のバットの質量 (kg)
+            ImGui::Text("Bat Mass (scaled): %.6f kg", originalMass);
         }
 
         // PhysXメッシュ単体操作用

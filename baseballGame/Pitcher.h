@@ -81,7 +81,7 @@ private:
 		float ballSpeedKmh = 150.0f; // 投球速度（km/h） - デバッグ可能
 		float launchAngleDegrees = -2.5f; // 発射角度（度）
 		DirectX::XMFLOAT3 rotationSpeed = { 0.0f, 0.0f, 0.0f }; // 回転速度（度/秒）
-		DirectX::XMFLOAT3 throwDirection = { -0.02f, -0.2f, 1.0f }; // 投球方向
+		DirectX::XMFLOAT3 throwDirection = { 0.02f, 0.2f, -1.0f }; // 投球方向
 
 		// 変化球パラメータ
 		float horizontalBreak = 0.0f; // 横方向の変化量（正:右、負:左）

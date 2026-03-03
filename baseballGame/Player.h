@@ -31,6 +31,8 @@ public:
     void Render(RenderContext& rc);
     void DrawGUI();
 
+    bool IsRightBatter() const { return isRightBatter; } // 右打者かどうかを判定するメソッド
+
 private:
     // キー入力処理
     void HandleInput(float elapsedTime);
@@ -53,6 +55,8 @@ private:
     void UpdateChildrenRecursive(int nodeIndex);
 
     void UpdatePhysXMeshTransform(const DirectX::XMFLOAT3& scale);
+
+	
 
 public:
     physx::PxRigidDynamic* GetBatCollider() const { return pxBatRigidBody; }
@@ -113,4 +117,5 @@ private:
 
     float ThrowingStateTime = 0.0f;
 	bool hasPlayHomeRun = false;
+	bool isRightBatter = true; // 右打者かどうかのフラグ
 };

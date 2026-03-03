@@ -7,6 +7,7 @@
 #include <mutex>
 #include <functional>
 #include "Player.h"
+#include <random>
 
 // グローバルまたはクラス内にキューを用意
 std::queue<std::function<void()>> velocityUpdateQueue;
@@ -498,7 +499,13 @@ physx::PxFilterFlags Physics::SimulationFilterShader(
 	return physx::PxFilterFlag::eDEFAULT;
 }
 
-
+float GenerateRandomFloat2(float min, float max)
+{
+	static std::random_device rd;
+	static std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dis(min, max);
+	return dis(gen);
+}
 
 void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs)
 {
@@ -519,6 +526,52 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
 		{
 			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
+
+			// ボールのコライダーにランダムな回転を設定
+			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+			if (ballCollider)
+			{
+				// ボールの現在の速度を取得
+				physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
+
+				// 打球速度を計算 (ベクトルの大きさ)
+				float ballSpeed = ballVelocity.magnitude();
+
+				// 打球速度の上限を設定 (195km/h = 54.1667m/s)
+				const float maxSpeed = 195.0f * 3.6f;
+				if (ballSpeed > maxSpeed)
+				{
+					// 速度を上限に制限
+					ballVelocity = ballVelocity.getNormalized() * maxSpeed;
+					ballCollider->setLinearVelocity(ballVelocity);
+					ballSpeed = maxSpeed; // 表示用に更新
+				}
+
+				// 打球角度を計算 (地面と水平を0度としてそこから±90度)
+				float ballAngle = atan2f(ballVelocity.y, sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z)) * (180.0f / 3.14159265f);
+
+				//スイングスピードを計算
+				physx::PxVec3 batVelocity = Player::Instance().GetBatCollider()->getLinearVelocity();
+				float swingSpeed = batVelocity.magnitude();
+
+				// デバッグログに打球速度と角度とスイング速度を表示
+				char debugMessage[128];
+				snprintf(debugMessage, sizeof(debugMessage), "Ball Speed: %.f km/h, Ball Angle: %.2f degrees, Swing Speed: %.2f m/s\n", ballSpeed * 3.6f, ballAngle, swingSpeed);
+				OutputDebugStringA(debugMessage);
+
+				// ランダムな角速度を生成
+				float randomX = GenerateRandomFloat2(-30.0f, 30.0f); // -50 ~ 50 の範囲でランダム
+				float randomY = GenerateRandomFloat2(-50.0f, 50.0f);
+				float randomZ = GenerateRandomFloat2(-30.0f, 30.0f);
+
+				// キューに角速度変更リクエストを追加
+				{
+					std::lock_guard<std::mutex> lock(queueMutex);
+					velocityUpdateQueue.push([ballCollider, randomX, randomY, randomZ]() {
+						ballCollider->setAngularVelocity(physx::PxVec3(randomX, randomY, randomZ));
+						});
+				}
+			}
 		}
 
 		// ボールとステージの衝突を検知

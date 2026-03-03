@@ -12,7 +12,7 @@ void stage::initialize()
 	// 位置、スケール、回転の初期化
 	position = { 0.0f, 0.0f, 0.0f };
 	scale = { 0.01f, 0.01f, 0.01f };
-	angle = { 0.0f, 0.0f, 0.0f };
+	angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
 
 
 	//静的剛体の作成
@@ -50,7 +50,8 @@ void stage::initialize()
 			//静的剛体の作成
 			const Model::Node& node = model->GetNodes().at(mesh.nodeIndex);
 			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z); // スケール行列を作成
-			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * Transform;
+			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z); // 回転行列を作成
+			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * Transform;
 			physx::PxVec3 pxScale(
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),

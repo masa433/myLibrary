@@ -15,9 +15,9 @@ void Pitcher::Initialize()
 	//モデルの読み込み
 	pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\pitcher.glb");
 
-	position = { 0.1f,0.22f,-18.15f };
+	position = { -0.1f,0.22f,18.15f };
 	scale = { -0.01f,0.01f,0.01f };
-	angle = { 0.0f, 0.0f, 0.0f };
+	angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
 
 	// アニメーション用のノードをコピー
 	animated_nodes = pitcher->nodes;
@@ -40,7 +40,7 @@ void Pitcher::Initialize()
 		pxPhysics->createMaterial(
 			1.0f,// 静止摩擦係数
 			1.0f,// 動摩擦係数
-			0.5f);// 反発係数
+			0.45f);// 反発係数
 
 		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
@@ -58,7 +58,10 @@ void Pitcher::Initialize()
 		ballCollider->attachShape(*ballShape);
 
 		// ボールの質量を設定
-		physx::PxRigidBodyExt::updateMassAndInertia(*ballCollider, 0.145f); // 質量を145gに設定
+		float originalMass = 0.145f; // 野球の質量は約145g
+		float scaleFactor = ballScale.x / 100.0f; // モデルのスケールに基づく質量のスケーリング
+		float scaledMass = originalMass * (scaleFactor * scaleFactor * scaleFactor); // 体積に比例して質量をスケーリング
+		physx::PxRigidBodyExt::updateMassAndInertia(*ballCollider, scaledMass); // 質量をスケーリングに基づいて設定
 
 		// 重力を有効化
 		//ballCollider->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
@@ -376,6 +379,11 @@ void Pitcher::DrawGUI()
 			// 速度情報の表示
 			float speedMs = ballSpeedKmh / 3.6f;
 			ImGui::Text("Speed: %.2f m/s (%.0f km/h)", speedMs, ballSpeedKmh);
+
+			float originalMass = 0.145f; // 野球の質量は約145g
+			float scaleFactor = ballScale.x / 100.0f; // モデルのスケールに基づく質量のスケーリング
+			float scaledMass = originalMass * (scaleFactor * scaleFactor * scaleFactor); // 体積に比例して質量をスケーリング
+			ImGui::Text("Mass: %.4f kg (Scaled by %.2f)", scaledMass, scaleFactor);
 		}
 
 	}
@@ -522,7 +530,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 
 			// 方向ベクトルを設定
 			throwDirection.y = sinf(launchAngleRadians);
-			throwDirection.z = cosf(launchAngleRadians);
+			throwDirection.z = -cosf(launchAngleRadians);
 
 			// 正規化
 			DirectX::XMVECTOR dir = DirectX::XMLoadFloat3(&throwDirection);
@@ -537,6 +545,22 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			// 投げた瞬間のボールのスケールと角度を設定
 			ballWorldScale = { 1.0f, 1.0f, 1.0f };
 			ballWorldAngle = ballAngle;
+
+			// ボールのコライダーを取得
+			physx::PxRigidDynamic* ballCollider = GetBallCollider();
+			if (ballCollider)
+			{
+				// ボールに初速度を設定
+				ballCollider->setLinearVelocity(initialVelocity);
+
+				// 投球速度を計算 (ベクトルの大きさ)
+				float throwSpeed = initialVelocity.magnitude();
+
+				// デバッグログに投球速度を表示
+				char debugMessage[128];
+				snprintf(debugMessage, sizeof(debugMessage), "Throw Speed: %.2f km/h\n", throwSpeed * 3.6f);
+				OutputDebugStringA(debugMessage);
+			}
 		}
 
 		// アニメーションの再生
@@ -720,9 +744,9 @@ void Pitcher::SelctPitchType()
 		break;
 	}
 	// ランダムな投球方向を設定
-	throwDirection.x = GenerateRandomFloat(-0.04f, -0.02f); // 左右方向のランダム値
-	throwDirection.y = -0.2f; // 上下方向のランダム値
-	throwDirection.z = 1.0f; // 前方向固定
+	throwDirection.x = GenerateRandomFloat(0.02f, 0.04f); // 左右方向のランダム値
+	throwDirection.y = 0.2f; // 上下方向のランダム値
+	throwDirection.z = -1.0f; // 前方向固定
 
 	// ランダムな発射角度を設定
 	launchAngleDegrees = GenerateRandomFloat(-2.0f, 0.0f); // -4度から-2度の範囲でランダム
