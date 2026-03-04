@@ -86,7 +86,7 @@ private:
 		// 変化球パラメータ
 		float horizontalBreak = 0.0f; // 横方向の変化量（正:右、負:左）
 		float verticalBreak = 0.0f;   // 縦方向の変化量（正:上、負:下）
-		float breakStartDistance = -5.0f; // 変化が始まる距離
+		float breakStartDistance = 7.5f; // 変化が始まる距離
 
 		float ballDebugRadius = 0.15f; // デフォルトのスケール倍率
 		float reducedRadius = 0.0f;
@@ -107,6 +107,8 @@ private:
 			Shooter,//シュート
 			Knuckleball,//ナックル
 		};
+
+		PitchType selectedPitchType;
 
 		//ストライクゾーンの判定
 		DirectX::XMFLOAT3 strikeZonePosition = { 0.0f, 2.55f, 43.0f }; // ストライクゾーンの中心位置

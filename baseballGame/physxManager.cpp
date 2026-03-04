@@ -537,18 +537,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				// 打球速度を計算 (ベクトルの大きさ)
 				float ballSpeed = ballVelocity.magnitude();
 
-				// 打球速度の上限を設定 (195km/h = 54.1667m/s)
-				const float maxSpeed = 195.0f * 3.6f;
-				if (ballSpeed > maxSpeed)
-				{
-					// 速度を上限に制限
-					ballVelocity = ballVelocity.getNormalized() * maxSpeed;
-					ballCollider->setLinearVelocity(ballVelocity);
-					ballSpeed = maxSpeed; // 表示用に更新
-				}
-
 				// 打球角度を計算 (地面と水平を0度としてそこから±90度)
-				float ballAngle = atan2f(ballVelocity.y, sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z)) * (180.0f / 3.14159265f);
+				float ballAngle = atan2f(ballVelocity.y, sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z)) * (180.0f / DirectX::XM_PI);
 
 				//スイングスピードを計算
 				physx::PxVec3 batVelocity = Player::Instance().GetBatCollider()->getLinearVelocity();
@@ -559,18 +549,18 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				snprintf(debugMessage, sizeof(debugMessage), "Ball Speed: %.f km/h, Ball Angle: %.2f degrees, Swing Speed: %.2f m/s\n", ballSpeed * 3.6f, ballAngle, swingSpeed);
 				OutputDebugStringA(debugMessage);
 
-				// ランダムな角速度を生成
-				float randomX = GenerateRandomFloat2(-30.0f, 30.0f); // -50 ~ 50 の範囲でランダム
-				float randomY = GenerateRandomFloat2(-50.0f, 50.0f);
-				float randomZ = GenerateRandomFloat2(-30.0f, 30.0f);
+				//// ランダムな角速度を生成
+				//float randomX = GenerateRandomFloat2(-30.0f, 30.0f); // -50 ~ 50 の範囲でランダム
+				//float randomY = GenerateRandomFloat2(-50.0f, 50.0f);
+				//float randomZ = GenerateRandomFloat2(-30.0f, 30.0f);
 
-				// キューに角速度変更リクエストを追加
-				{
-					std::lock_guard<std::mutex> lock(queueMutex);
-					velocityUpdateQueue.push([ballCollider, randomX, randomY, randomZ]() {
-						ballCollider->setAngularVelocity(physx::PxVec3(randomX, randomY, randomZ));
-						});
-				}
+				//// キューに角速度変更リクエストを追加
+				//{
+				//	std::lock_guard<std::mutex> lock(queueMutex);
+				//	velocityUpdateQueue.push([ballCollider, randomX, randomY, randomZ]() {
+				//		ballCollider->setAngularVelocity(physx::PxVec3(randomX, randomY, randomZ));
+				//		});
+				//}
 			}
 		}
 
@@ -579,6 +569,17 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stage"))
 		{
 			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
+
+			//何メートル飛んだかを表示(最初の着弾点のみ)
+			physx::PxRigidBody* ballCollider = Pitcher::Instance().GetBallCollider();
+			if (ballCollider)
+			{
+				physx::PxVec3 ballPosition = ballCollider->getGlobalPose().p;
+				float distance = sqrtf(ballPosition.x * ballPosition.x + ballPosition.z * ballPosition.z);
+				char debugMessage[128];
+				snprintf(debugMessage, sizeof(debugMessage), "Distance: %.2f m\n", distance);
+				OutputDebugStringA(debugMessage);
+			}
 		}
 
 		// ボールとステージの衝突を検知

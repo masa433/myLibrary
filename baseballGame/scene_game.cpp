@@ -39,8 +39,8 @@ void scene_game::initialize()
         camera_far_z
     );
     camera.SetLookAt(
-        { 0.02f, 1.2f, 3.5f },
-        { 0.0f, 0.0f, -14.0f },
+        { 0.0f, 1.2f, -3.5f },
+        { 0.0f, 0.0f, 14.0f },
         { 0, 1, 0 }
     );
     cameraController.SyncCameraToController(camera);
