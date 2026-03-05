@@ -28,11 +28,16 @@ public:
 	void render(RenderContext& rc);
 	void uninitialize();
 
-
+public:
+	static const std::vector<physx::PxRigidStatic*>& GetBoxColliders() { return boxColliders; }
 private:
 
 	std::unique_ptr<Model> model;
 	std::vector<physx::PxTriangleMesh*> triangle_meshes;
 	std::vector<physx::PxActor*> actors;
 	DirectX::XMFLOAT4X4					transform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+	static std::vector<physx::PxRigidStatic*> boxColliders;
+	std::vector<physx::PxVec3> boxSizes;
+	std::vector<physx::PxVec3> boxPositions;
+
 };

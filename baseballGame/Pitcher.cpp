@@ -6,6 +6,14 @@
 #include "scene_game.h"
 #include <random>
 
+// ランダムな浮動小数点数を生成する関数
+float GenerateRandomFloat(float min, float max)
+{
+	std::random_device rd; // ランダムデバイス
+	std::mt19937 gen(rd()); // メルセンヌ・ツイスタ
+	std::uniform_real_distribution<float> dis(min, max); // 一様分布
+	return dis(gen);
+}
 
 // 初期化
 void Pitcher::Initialize() 
@@ -40,7 +48,7 @@ void Pitcher::Initialize()
 		pxPhysics->createMaterial(
 			1.0f,// 静止摩擦係数
 			1.0f,// 動摩擦係数
-			0.45f);// 反発係数
+			0.5f);// 反発係数
 
 		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
@@ -261,8 +269,8 @@ void Pitcher::DrawGUI()
 			ImGui::Separator();
 			ImGui::Text("Pitch Settings");
 			ImGui::DragFloat("Throw Timing", &throwTiming, 0.01f, 0.0f, 1.0f);
-			ImGui::SliderFloat("Ball Speed (km/h)", &ballSpeedKmh, 10.0f, 180.0f);
-			ImGui::SliderFloat("Launch Angle (deg)", &launchAngleDegrees, -20.0f, 10.0f);
+			ImGui::DragFloat("Ball Speed (km/h)", &ballSpeedKmh, 10.0f, 180.0f);
+			ImGui::DragFloat("Launch Angle (deg)", &launchAngleDegrees, -20.0f, 10.0f);
 
 			ImGui::Separator();
 			ImGui::Text("Throw Direction");
@@ -276,8 +284,8 @@ void Pitcher::DrawGUI()
 
 			ImGui::Separator();
 			ImGui::Text("Break Settings");
-			ImGui::SliderFloat(u8"横方向の変化量", &horizontalBreak, -30.0f, 30.0f);
-			ImGui::SliderFloat(u8"縦方向の変化量", &verticalBreak, -30.0f, 30.0f);
+			ImGui::DragFloat(u8"横方向の変化量", &horizontalBreak, -30.0f, 30.0f);
+			ImGui::DragFloat(u8"縦方向の変化量", &verticalBreak, -30.0f, 30.0f);
 			ImGui::DragFloat(u8"変化が始まる距離", &breakStartDistance, 0.0f, 20.0f);
 
 			ImGui::Separator();
@@ -285,7 +293,7 @@ void Pitcher::DrawGUI()
 			if (ImGui::Button(u8"Fastball (ストレート)"))
 			{
 				horizontalBreak = 0.0f;
-				verticalBreak = 0.0f;
+				verticalBreak = 20.0f;
 				ballSpeedKmh = 150.0f; // 速い
 				ballAngle = { 0.5f,DirectX::XMConvertToRadians(90.0f),0.0f };
 				rotationSpeed = { 0.0f,0.0f,-100.0f };//バックスピン
@@ -370,6 +378,22 @@ void Pitcher::DrawGUI()
 				verticalBreak = -25.0f;   // 非常に大きく落ちる
 				ballSpeedKmh = 80.0f;    // 非常に遅い
 				rotationSpeed = { 0.0f, 0.0f, 150.0f }; // トップスピン
+			}
+			if(ImGui::Button(u8"Shooter (シューター)"))
+			{
+				horizontalBreak = 15.0f;  // 右方向に大きく曲がる
+				verticalBreak = -5.0f;    // 少し落ちる
+				ballSpeedKmh = 145.0f;    // 少し遅い
+				rotationSpeed = { 0.0f, 0.0f, -150.0f }; // バックスピン
+				ballAngle = { 0.5f,DirectX::XMConvertToRadians(90.0f),0.0f };
+			}
+			if(ImGui::Button(u8"Knuckleball (ナックルボール)"))
+			{
+				horizontalBreak = 0.0f; //変化なし
+				verticalBreak = 0.0f;   //変化なし
+				ballSpeedKmh = 90.0f;    // 非常に遅い
+				ballAngle = { 0.0f, 0.0f, 0.0f };
+				rotationSpeed = { 5.0f, 0.0f, 5.0f }; // 不規則な回転
 			}
 
 			ImGui::Separator();
@@ -568,6 +592,8 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 	}
 }
 
+
+
 void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 {
 	if (!ballCollider) return;
@@ -579,6 +605,15 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	);
 
 	//OutputDebugStringA(("Distance Travelled: " + std::to_string(distanceTravel) + "\n").c_str());
+
+	// ナックルボールの特性: ランダムな横方向の揺れを加える
+	if (selectedPitchType == PitchType::Knuckleball)
+	{
+		float randomLateralForce = GenerateRandomFloat(-0.1f, 0.1f); // ランダムな横方向の力
+		
+		physx::PxVec3 lateralForce(randomLateralForce, 0.0f, 0.0f);
+		ballCollider->addForce(lateralForce, physx::PxForceMode::eFORCE);
+	}
 
 	// 変化球の力を加える
 	if (!hasCollided && distanceTravel > breakStartDistance)
@@ -594,7 +629,6 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 		// 縦方向の力を加える
 		physx::PxVec3 verticalForce(0.0f, verticalBreak * smoothBreakFactor * forceMultiplier, 0.0f);
 		ballCollider->addForce(verticalForce, physx::PxForceMode::eFORCE);
-		OutputDebugStringA("start breakFacter!");
 	}
 
 	// 空気抵抗を適用
@@ -614,16 +648,6 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 
 }
 
-
-// ランダムな浮動小数点数を生成する関数
-float GenerateRandomFloat(float min, float max)
-{
-	std::random_device rd; // ランダムデバイス
-	std::mt19937 gen(rd()); // メルセンヌ・ツイスタ
-	std::uniform_real_distribution<float> dis(min, max); // 一様分布
-	return dis(gen);
-}
-
 void Pitcher::SelctPitchType() 
 {
 	// 乱数生成
@@ -636,7 +660,7 @@ void Pitcher::SelctPitchType()
 	else // 残り50%の確率で他の球種をランダムに選択
 	{
 		// SlowCurve を含む他の球種をランダムに選択
-		int randomPitchType = static_cast<int>(GenerateRandomFloat(0.0f, static_cast<float>(PitchType::SlowCurve)));
+		int randomPitchType = static_cast<int>(GenerateRandomFloat(0.0f, static_cast<float>(PitchType::Knuckleball)));
 		selectedPitchType = static_cast<PitchType>(randomPitchType);
 	}
 
@@ -645,7 +669,7 @@ void Pitcher::SelctPitchType()
 	{
 	case PitchType::Fastball: // ストレート
 		horizontalBreak = 0.0f;
-		verticalBreak = 20.0f;//ややホップするような感じ
+		verticalBreak = 30.0f;//ややホップするような感じ
 		ballSpeedKmh = 150.0f; // 速い
 		ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // バックスピン
@@ -733,18 +757,18 @@ void Pitcher::SelctPitchType()
 		break;
 
 	case PitchType::SlowCurve: // スローカーブ
-		horizontalBreak = 5.0f;  // 左方向に少し曲がる
-		verticalBreak = -25.0f;   // 非常に大きく落ちる
+		horizontalBreak = 15.0f;  // 左方向に少し曲がる
+		verticalBreak = -20.0f;   // 非常に大きく落ちる
 		ballSpeedKmh = 80.0f;     // 非常に遅い
 		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // トップスピン
 		OutputDebugStringA("Pitch Type: SlowCurve\n");
 		break;
 
-	case PitchType::Shooter: // シューター
+	case PitchType::Shooter: // シュート
 		horizontalBreak = -30.0f;  // 大きく右に曲がる
 		verticalBreak = -5.0f;   // 少し落ちる
-		ballSpeedKmh = 120.0f;    // 遅い
+		ballSpeedKmh = 145.0f;    // 遅い
 		ballAngle = { -0.2f, 0.0f, 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // 強いサイドスピン
 		OutputDebugStringA("Pitch Type: Shooter\n");

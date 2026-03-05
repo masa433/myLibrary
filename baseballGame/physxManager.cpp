@@ -8,6 +8,7 @@
 #include <functional>
 #include "Player.h"
 #include <random>
+#include "stage.h"
 
 // グローバルまたはクラス内にキューを用意
 std::queue<std::function<void()>> velocityUpdateQueue;
@@ -487,6 +488,12 @@ physx::PxFilterFlags Physics::SimulationFilterShader(
 	physx::PxPairFlags& pairFlags,
 	const void* constantBlock, physx::PxU32 constantBlockSize)
 {
+	// ボックスコライダー（word0 = 1 << 1）との衝突を無効化
+	if ((filterData0.word0 & (1 << 1)) || (filterData1.word0 & (1 << 1)))
+	{
+		return physx::PxFilterFlag::eSUPPRESS; // 衝突を無効化
+	}
+
 	if (physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
 	{
 		pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
@@ -531,36 +538,29 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
 			if (ballCollider)
 			{
-				// ボールの現在の速度を取得
-				physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
-
-				// 打球速度を計算 (ベクトルの大きさ)
-				float ballSpeed = ballVelocity.magnitude();
-
-				// 打球角度を計算 (地面と水平を0度としてそこから±90度)
-				float ballAngle = atan2f(ballVelocity.y, sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z)) * (180.0f / DirectX::XM_PI);
-
-				//スイングスピードを計算
+				// スイングスピードを計算
 				physx::PxVec3 batVelocity = Player::Instance().GetBatCollider()->getLinearVelocity();
-				float swingSpeed = batVelocity.magnitude();
+				float swingSpeed = batVelocity.magnitude() * 3.6f; // m/s を km/h に変換
 
-				// デバッグログに打球速度と角度とスイング速度を表示
+				// エネルギー伝達効率を設定
+				float energyTransferEfficiency = 1.7f; // 170% のエネルギーが伝達されると仮定
+
+				// 打球速度を計算
+				float ballSpeed = swingSpeed * energyTransferEfficiency;
+
+				// 打球速度の上限を設定
+				float maxBallSpeed = 190.0f; // 最大打球速度 (km/h)
+				ballSpeed = (std::min)(ballSpeed, maxBallSpeed);
+
+				// ボールの速度を設定
+				physx::PxVec3 ballDirection = batVelocity.getNormalized(); // バットの方向を取得
+				physx::PxVec3 ballVelocity = ballDirection * (ballSpeed / 3.6f); // km/h を m/s に変換
+				ballCollider->setLinearVelocity(ballVelocity);
+
+				// デバッグログに打球速度とスイング速度を表示
 				char debugMessage[128];
-				snprintf(debugMessage, sizeof(debugMessage), "Ball Speed: %.f km/h, Ball Angle: %.2f degrees, Swing Speed: %.2f m/s\n", ballSpeed * 3.6f, ballAngle, swingSpeed);
+				snprintf(debugMessage, sizeof(debugMessage), "Swing Speed: %.2f km/h, Ball Speed: %.2f km/h\n", swingSpeed, ballSpeed);
 				OutputDebugStringA(debugMessage);
-
-				//// ランダムな角速度を生成
-				//float randomX = GenerateRandomFloat2(-30.0f, 30.0f); // -50 ~ 50 の範囲でランダム
-				//float randomY = GenerateRandomFloat2(-50.0f, 50.0f);
-				//float randomZ = GenerateRandomFloat2(-30.0f, 30.0f);
-
-				//// キューに角速度変更リクエストを追加
-				//{
-				//	std::lock_guard<std::mutex> lock(queueMutex);
-				//	velocityUpdateQueue.push([ballCollider, randomX, randomY, randomZ]() {
-				//		ballCollider->setAngularVelocity(physx::PxVec3(randomX, randomY, randomZ));
-				//		});
-				//}
 			}
 		}
 
@@ -570,16 +570,16 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		{
 			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
 
-			//何メートル飛んだかを表示(最初の着弾点のみ)
-			physx::PxRigidBody* ballCollider = Pitcher::Instance().GetBallCollider();
-			if (ballCollider)
-			{
-				physx::PxVec3 ballPosition = ballCollider->getGlobalPose().p;
-				float distance = sqrtf(ballPosition.x * ballPosition.x + ballPosition.z * ballPosition.z);
-				char debugMessage[128];
-				snprintf(debugMessage, sizeof(debugMessage), "Distance: %.2f m\n", distance);
-				OutputDebugStringA(debugMessage);
-			}
+			////何メートル飛んだかを表示(最初の着弾点のみ)
+			//physx::PxRigidBody* ballCollider = Pitcher::Instance().GetBallCollider();
+			//if (ballCollider)
+			//{
+			//	physx::PxVec3 ballPosition = ballCollider->getGlobalPose().p;
+			//	float distance = sqrtf(ballPosition.x * ballPosition.x + ballPosition.z * ballPosition.z);
+			//	char debugMessage[128];
+			//	snprintf(debugMessage, sizeof(debugMessage), "Distance: %.2f m\n", distance);
+			//	OutputDebugStringA(debugMessage);
+			//}
 		}
 
 		// ボールとステージの衝突を検知
@@ -596,7 +596,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					physx::PxVec3 velocity = ballCollider->getLinearVelocity();
 
 					// 減衰率を設定（例: 50% 減衰）
-					float dampingFactor = 0.999f;
+					float dampingFactor = 0.997f;
 					velocity *= dampingFactor;
 
 					// 回転速度も減衰
@@ -609,5 +609,36 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					});
 			}
 		}
+
+		//// ボールとボックスコライダーの衝突を検知
+		//if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && IsBoxCollider(pairHeader.actors[1])) ||
+		//	(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && IsBoxCollider(pairHeader.actors[0])))
+		//{
+		//	// ボールの反発係数を0に設定
+		//	physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+		//	if (ballCollider)
+		//	{
+		//		physx::PxShape* ballShape;
+		//		ballCollider->getShapes(&ballShape, 1);
+
+		//		physx::PxMaterial* ballMaterial;
+		//		ballShape->getMaterials(&ballMaterial, 1);
+
+		//		ballMaterial->setRestitution(0.0f); // 反発係数を0に設定
+		//	}
+		//}
 	}
 }
+
+//// ボックスコライダーかどうかを判定
+//bool Physics::IsBoxCollider(physx::PxActor* actor)
+//{
+//	for (const auto& boxCollider : stage::Instance().GetBoxColliders())
+//	{
+//		if (actor == boxCollider)
+//		{
+//			return true;
+//		}
+//	}
+//	return false;
+//}

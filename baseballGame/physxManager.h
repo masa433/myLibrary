@@ -45,6 +45,8 @@ public:
 	// マテリアル取得
 	physx::PxMaterial* GetMaterial() { return pxMaterial; }
 
+	bool IsBoxCollider(physx::PxActor* actor);
+
 protected:
 	//--------------------------
 	// NOTE:③フィルタリングインターフェース関数

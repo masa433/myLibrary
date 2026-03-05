@@ -2,6 +2,8 @@
 #include "imgui.h"
 #include "Graphics.h"
 
+//std::vector<physx::PxRigidStatic*> stage::boxColliders;
+
 // 初期化
 void stage::initialize()
 {
@@ -17,14 +19,41 @@ void stage::initialize()
 
 	//静的剛体の作成
 	{
+		// ボックスコライダーの生成
 		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 
+		//
+
+		//// ボックスコライダーを複数作成
+		//boxPositions = { {0.0f, 3.0f, 50.0f},{0.0f, 3.0f, 50.0f} }; // ボックスの位置
+
+		//boxSizes = { {40.0f, 20.0f, 45.0f}, {50.0f, 20.0f, 30.0f} }; // ボックスのサイズ
+
+		//for (size_t i = 0; i < boxPositions.size(); ++i)
+		//{
+		//	physx::PxTransform boxTransform(boxPositions[i]);
+		//	physx::PxRigidStatic* boxCollider = pxPhysics->createRigidStatic(boxTransform);
+		//	physx::PxShape* boxShape = pxPhysics->createShape(physx::PxBoxGeometry(boxSizes[i]), *pxMaterial);
+
+		//	// フィルターデータを設定
+		//	physx::PxFilterData filterData;
+		//	filterData.word0 = 1 << 1; // ボックスコライダー用のグループ
+		//	boxShape->setSimulationFilterData(filterData);
+
+		//	boxCollider->attachShape(*boxShape);
+		//	pxScene->addActor(*boxCollider);
+		//	boxColliders.push_back(boxCollider);
+
+		//	boxShape->release(); // 解放
+		//}
+
+
 		pxPhysics->createMaterial(
 			1.0f,// 静止摩擦係数
 			1.0f,// 動摩擦係数
-			0.000000001f);// 反発係数
+			0.0f);// 反発係数
 
 		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
@@ -99,6 +128,34 @@ void stage::update(float elapsedTime)
 		ImGui::DragFloat3("Scale", &scale.x);
 		ImGui::DragFloat3("Angle", &angle.x);
 	}
+
+	//if (ImGui::CollapsingHeader("Box Colliders"))
+	//{
+	//	for (size_t i = 0; i < boxColliders.size(); ++i)
+	//	{
+	//		physx::PxRigidStatic* boxCollider = boxColliders[i];
+	//		physx::PxTransform transform = boxCollider->getGlobalPose();
+
+	//		// ボックスの位置を操作
+	//		ImGui::DragFloat3(("Box Position " + std::to_string(i)).c_str(), &boxPositions[i].x, 0.1f);
+
+	//		// ボックスのサイズを操作
+	//		ImGui::DragFloat3(("Box Size " + std::to_string(i)).c_str(), &boxSizes[i].x, 0.1f);
+
+	//		// 位置を更新
+	//		transform.p = boxPositions[i];
+	//		boxCollider->setGlobalPose(transform);
+
+	//		// サイズを更新
+	//		physx::PxShape* shape = nullptr;
+	//		boxCollider->getShapes(&shape, 1);
+	//		if (shape)
+	//		{
+	//			shape->setGeometry(physx::PxBoxGeometry(boxSizes[i]));
+	//		}
+	//	}
+	//}
+
 #endif //  USE_IMGUI
 
 	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
@@ -106,6 +163,8 @@ void stage::update(float elapsedTime)
 	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 	DirectX::XMMATRIX world = S * R * T;
 	DirectX::XMStoreFloat4x4(&transform, world);
+
+	//ボックスの位置とサイズを更新
 
 	UpdateTransform();
 }
@@ -133,6 +192,12 @@ void stage::uninitialize()
 	{
 		pxScene->removeActors(actors.data(), static_cast<physx::PxU32>(actors.size()));
 	}
+
+	/*for (auto* boxCollider : boxColliders)
+	{
+		boxCollider->release();
+	}
+	boxColliders.clear();*/
 
 	model.reset();
 }

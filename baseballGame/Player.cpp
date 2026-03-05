@@ -92,8 +92,7 @@ void Player::Initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-        pxPhysics->createMaterial(0.4f, 0.4f, 0.45f);
-		pxMaterial->setRestitution(0.45f);
+        pxPhysics->createMaterial(0.4f, 0.4f, 0.5f);
         pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
