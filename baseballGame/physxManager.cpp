@@ -538,73 +538,36 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
 			if (ballCollider)
 			{
-				// ------------------------------
-				// パラメータ
-				// ------------------------------
-				const float ballMass = 0.145f;     // 野球ボール質量 (kg)
-				const float batMass = 1.0f;       // バット有効質量 (kg)
-				const float cor = 0.5f;       // 反発係数
-				const float maxExitV = 190.0f;     // 最大打球速度 km/h
+				// ボールの現在の速度を取得
+				physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
 
-				// ------------------------------
-				// 現在速度取得
-				// ------------------------------
-				physx::PxVec3 ballVel = ballCollider->getLinearVelocity();
-				physx::PxVec3 batVel = Player::Instance().GetBatCollider()->getLinearVelocity();
+				// 打球速度を計算 (ベクトルの大きさ)
+				float ballSpeed = ballVelocity.magnitude();
 
-				float pitchSpeed = ballVel.magnitude(); // m/s
-				float batSpeed = batVel.magnitude();  // m/s
+				// 打球角度を計算 (地面と水平を0度としてそこから±90度)
+				float ballAngle = atan2f(ballVelocity.y, sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z)) * (180.0f / DirectX::XM_PI);
 
-				// ------------------------------
-				// 打球方向
-				// ------------------------------
-				physx::PxVec3 hitDir = batVel.getNormalized();
+				//スイングスピードを計算
+				physx::PxVec3 batVelocity = Player::Instance().GetBatCollider()->getLinearVelocity();
+				float swingSpeed = batVelocity.magnitude();
 
-				// ------------------------------
-				// 衝突計算（野球研究式）
-				// ------------------------------
-				float exitSpeed =
-					((1.0f + cor) * batMass / (batMass + ballMass)) * batSpeed +
-					((1.0f - cor) * ballMass / (batMass + ballMass)) * pitchSpeed;
-
-				// 最大速度制限
-				float exitSpeedKmh = exitSpeed * 3.6f;
-				exitSpeedKmh = (std::min)(exitSpeedKmh, maxExitV);
-
-				exitSpeed = exitSpeedKmh / 3.6f;
-
-				// ------------------------------
-				// 新しいボール速度
-				// ------------------------------
-				physx::PxVec3 newBallVel = hitDir * exitSpeed;
-
-				ballCollider->setLinearVelocity(newBallVel);
-
-				//// ------------------------------
-				//// 回転付与
-				//// ------------------------------
-				//physx::PxVec3 spin;
-				//spin.x = ((rand() % 200) - 100) * 0.1f;
-				//spin.y = ((rand() % 200) - 100) * 0.1f;
-				//spin.z = ((rand() % 200) - 100) * 0.1f;
-
-				//ballCollider->setAngularVelocity(spin);
-
-				// ------------------------------
-				// デバッグ表示
-				// ------------------------------
-				char debugMessage[256];
-
-				snprintf(
-					debugMessage,
-					sizeof(debugMessage),
-					"Pitch: %.2f km/h  Bat: %.2f km/h  Exit: %.2f km/h\n",
-					pitchSpeed * 3.6f,
-					batSpeed * 3.6f,
-					exitSpeedKmh
-				);
-
+				// デバッグログに打球速度と角度とスイング速度を表示
+				char debugMessage[128];
+				snprintf(debugMessage, sizeof(debugMessage), "Ball Speed: %.f km/h, Ball Angle: %.2f degrees, Swing Speed: %.2f m/s\n", ballSpeed * 3.6f, ballAngle, swingSpeed);
 				OutputDebugStringA(debugMessage);
+
+				//// ランダムな角速度を生成
+				//float randomX = GenerateRandomFloat2(-30.0f, 30.0f); // -50 ~ 50 の範囲でランダム
+				//float randomY = GenerateRandomFloat2(-50.0f, 50.0f);
+				//float randomZ = GenerateRandomFloat2(-30.0f, 30.0f);
+
+				//// キューに角速度変更リクエストを追加
+				//{
+				//	std::lock_guard<std::mutex> lock(queueMutex);
+				//	velocityUpdateQueue.push([ballCollider, randomX, randomY, randomZ]() {
+				//		ballCollider->setAngularVelocity(physx::PxVec3(randomX, randomY, randomZ));
+				//		});
+				//}
 			}
 		}
 
