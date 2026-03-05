@@ -1,4 +1,4 @@
-#include <algorithm>
+ï»¿#include <algorithm>
 #include "Misc.h"
 #include "Graphics.h"
 #include "physxManager.h"
@@ -10,14 +10,14 @@
 #include <random>
 #include "stage.h"
 
-// ƒOƒ[ƒoƒ‹‚Ü‚½‚ÍƒNƒ‰ƒX“à‚ÉƒLƒ…[‚ğ—pˆÓ
+// ã‚°ãƒ­ãƒ¼ãƒãƒ«ã¾ãŸã¯ã‚¯ãƒ©ã‚¹å†…ã«ã‚­ãƒ¥ãƒ¼ã‚’ç”¨æ„
 std::queue<std::function<void()>> velocityUpdateQueue;
 std::mutex queueMutex;
 
-// ‰Šú‰»
+// åˆæœŸåŒ–
 void Physics::Initialize()
 {
-	// Šî”Õ¶¬
+	// åŸºç›¤ç”Ÿæˆ
 	{
 		pxFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, pxAllocator, pxErrorCallback);
 		_ASSERT_EXPR(pxFoundation != nullptr, "Failed PxCreateFoundation");
@@ -34,7 +34,7 @@ void Physics::Initialize()
 		pxPvd->connect(*pxPvdTransport, physx::PxPvdInstrumentationFlag::eALL);
 	}
 
-	// •¨—ƒVƒXƒeƒ€¶¬
+	// ç‰©ç†ã‚·ã‚¹ãƒ†ãƒ ç”Ÿæˆ
 	{
 		pxPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *pxFoundation, physx::PxTolerancesScale(), true, pxPvd);
 		_ASSERT_EXPR(pxPhysics != nullptr, "Failed PxCreatePhysics");
@@ -42,13 +42,13 @@ void Physics::Initialize()
 		PxInitExtensions(*pxPhysics, pxPvd);
 	}
 
-	// ƒfƒBƒXƒpƒbƒ`ƒƒ[¶¬
+	// ãƒ‡ã‚£ã‚¹ãƒ‘ãƒƒãƒãƒ£ãƒ¼ç”Ÿæˆ
 	{
 		pxDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
 		_ASSERT_EXPR(pxDispatcher != nullptr, "Failed PxDefaultCpuDispatcherCreate");
 	}
 
-	// ƒV[ƒ“¶¬
+	// ã‚·ãƒ¼ãƒ³ç”Ÿæˆ
 	{
 		physx::PxSceneDesc pxSceneDesc(pxPhysics->getTolerancesScale());
 		pxSceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
@@ -60,7 +60,7 @@ void Physics::Initialize()
 		_ASSERT_EXPR(pxScene != nullptr, "Failed pxPhysics->createScene");
 	}
 
-	// PVDƒV[ƒ“ƒNƒ‰ƒCƒAƒ“ƒgİ’è
+	// PVDã‚·ãƒ¼ãƒ³ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆè¨­å®š
 	{
 		physx::PxPvdSceneClient* pxPvdSceneClient = pxScene->getScenePvdClient();
 		if (pxPvdSceneClient != nullptr)
@@ -71,21 +71,21 @@ void Physics::Initialize()
 		}
 	}
 
-	// ƒRƒ“ƒgƒ[ƒ‰[ƒ}ƒl[ƒWƒƒ[¶¬
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼ç”Ÿæˆ
 	{
 		pxControllerManager = PxCreateControllerManager(*pxScene);
 		_ASSERT_EXPR(pxControllerManager != nullptr, "Failed PxCreateControllerManager");
 		pxControllerManager->setDebugRenderingFlags(physx::PxControllerDebugRenderFlag::eALL);
 	}
 
-	// ƒ}ƒeƒŠƒAƒ‹¶¬
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ç”Ÿæˆ
 	{
 		pxMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 		_ASSERT_EXPR(pxMaterial != nullptr, "Failed pxPhysics->createMaterial");
 	}
 }
 
-// I—¹‰»
+// çµ‚äº†åŒ–
 void Physics::Finalize()
 {
 	PxCloseExtensions();
@@ -106,24 +106,24 @@ void Physics::Finalize()
 	PX_RELEASE(pxFoundation);
 }
 
-// XVˆ—
+// æ›´æ–°å‡¦ç†
 void Physics::Update(float elapsedTime)
 {
 	pxScene->simulate(elapsedTime);
 	pxScene->fetchResults(true);
 
-	// ƒLƒ…[‚ğˆ—
+	// ã‚­ãƒ¥ãƒ¼ã‚’å‡¦ç†
 	{
 		std::lock_guard<std::mutex> lock(queueMutex);
 		while (!velocityUpdateQueue.empty())
 		{
-			velocityUpdateQueue.front()(); // ƒŠƒNƒGƒXƒg‚ğÀs
-			velocityUpdateQueue.pop();    // ƒLƒ…[‚©‚çíœ
+			velocityUpdateQueue.front()(); // ãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’å®Ÿè¡Œ
+			velocityUpdateQueue.pop();    // ã‚­ãƒ¥ãƒ¼ã‹ã‚‰å‰Šé™¤
 		}
 	}
 }
 
-// •`‰æ
+// æç”»
 void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection, const DirectX::XMFLOAT3& lightDirection)
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
@@ -388,7 +388,7 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 			}
 		};
 
-	// ƒAƒNƒ^[
+	// ã‚¢ã‚¯ã‚¿ãƒ¼
 	{
 		physx::PxActorTypeFlags pxActorTypeFlags = physx::PxActorTypeFlag::eRIGID_DYNAMIC | physx::PxActorTypeFlag::eRIGID_STATIC;
 		physx::PxU32 pxNumActors = pxScene->getNbActors(pxActorTypeFlags);
@@ -405,7 +405,7 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 			}
 		}
 	}
-	// ƒRƒ“ƒgƒ[ƒ‰[
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼
 	{
 		physx::PxU32 pxNumControllers = pxControllerManager->getNbControllers();
 		if (pxNumControllers > 0)
@@ -454,7 +454,7 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 		}
 	}
 
-	// ƒLƒƒƒXƒg
+	// ã‚­ãƒ£ã‚¹ãƒˆ
 	{
 		for (const Line& line : lines)
 		{
@@ -470,7 +470,7 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 		capsules.clear();
 	}
 
-	// •`‰æ
+	// æç”»
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 	dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
@@ -480,7 +480,7 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 }
 
 //--------------------------
-// NOTE:‡GÕ“ËŒŸoƒtƒBƒ‹ƒ^ƒŠƒ“ƒO
+// NOTE:â‘§è¡çªæ¤œå‡ºãƒ•ã‚£ãƒ«ã‚¿ãƒªãƒ³ã‚°
 //--------------------------
 physx::PxFilterFlags Physics::SimulationFilterShader(
 	physx::PxFilterObjectAttributes	attributes0, physx::PxFilterData filterData0,
@@ -488,10 +488,10 @@ physx::PxFilterFlags Physics::SimulationFilterShader(
 	physx::PxPairFlags& pairFlags,
 	const void* constantBlock, physx::PxU32 constantBlockSize)
 {
-	// ƒ{ƒbƒNƒXƒRƒ‰ƒCƒ_[iword0 = 1 << 1j‚Æ‚ÌÕ“Ë‚ğ–³Œø‰»
+	// ãƒœãƒƒã‚¯ã‚¹ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ï¼ˆword0 = 1 << 1ï¼‰ã¨ã®è¡çªã‚’ç„¡åŠ¹åŒ–
 	if ((filterData0.word0 & (1 << 1)) || (filterData1.word0 & (1 << 1)))
 	{
-		return physx::PxFilterFlag::eSUPPRESS; // Õ“Ë‚ğ–³Œø‰»
+		return physx::PxFilterFlag::eSUPPRESS; // è¡çªã‚’ç„¡åŠ¹åŒ–
 	}
 
 	if (physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
@@ -516,61 +516,105 @@ float GenerateRandomFloat2(float min, float max)
 
 void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs)
 {
-	//OutputDebugStringA("onContact called\n"); // ƒƒO‚ğ’Ç‰Á
+	//OutputDebugStringA("onContact called\n"); // ãƒ­ã‚°ã‚’è¿½åŠ 
 
 	for (physx::PxU32 i = 0; i < nbPairs; i++)
 	{
 		const physx::PxContactPair& pair = pairs[i];
 
-		// Õ“ËƒyƒA‚Ìî•ñ‚ğo—Í
+		// è¡çªãƒšã‚¢ã®æƒ…å ±ã‚’å‡ºåŠ›
 		/*if (pairHeader.actors[0] && pairHeader.actors[0]->getName())
 			OutputDebugStringA(pairHeader.actors[0]->getName());
 		if (pairHeader.actors[1] && pairHeader.actors[1]->getName())
 			OutputDebugStringA(pairHeader.actors[1]->getName());*/
 
-			// ƒ{[ƒ‹‚Æƒoƒbƒg‚ÌÕ“Ë‚ğŒŸ’m
+			// ãƒœãƒ¼ãƒ«ã¨ãƒãƒƒãƒˆã®è¡çªã‚’æ¤œçŸ¥
 		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
 			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
 		{
-			Pitcher::Instance().SetHasCollided(true); // Õ“Ëƒtƒ‰ƒO‚ğİ’è
+			Pitcher::Instance().SetHasCollided(true); // è¡çªãƒ•ãƒ©ã‚°ã‚’è¨­å®š
 
-			// ƒ{[ƒ‹‚ÌƒRƒ‰ƒCƒ_[‚Éƒ‰ƒ“ƒ_ƒ€‚È‰ñ“]‚ğİ’è
+			// ãƒœãƒ¼ãƒ«ã®ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã«ãƒ©ãƒ³ãƒ€ãƒ ãªå›è»¢ã‚’è¨­å®š
 			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
 			if (ballCollider)
 			{
-				// ƒXƒCƒ“ƒOƒXƒs[ƒh‚ğŒvZ
-				physx::PxVec3 batVelocity = Player::Instance().GetBatCollider()->getLinearVelocity();
-				float swingSpeed = batVelocity.magnitude() * 3.6f; // m/s ‚ğ km/h ‚É•ÏŠ·
+				// ------------------------------
+				// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+				// ------------------------------
+				const float ballMass = 0.145f;     // é‡çƒãƒœãƒ¼ãƒ«è³ªé‡ (kg)
+				const float batMass = 1.0f;       // ãƒãƒƒãƒˆæœ‰åŠ¹è³ªé‡ (kg)
+				const float cor = 0.5f;       // åç™ºä¿‚æ•°
+				const float maxExitV = 190.0f;     // æœ€å¤§æ‰“çƒé€Ÿåº¦ km/h
 
-				// ƒGƒlƒ‹ƒM[“`’BŒø—¦‚ğİ’è
-				float energyTransferEfficiency = 1.7f; // 170% ‚ÌƒGƒlƒ‹ƒM[‚ª“`’B‚³‚ê‚é‚Æ‰¼’è
+				// ------------------------------
+				// ç¾åœ¨é€Ÿåº¦å–å¾—
+				// ------------------------------
+				physx::PxVec3 ballVel = ballCollider->getLinearVelocity();
+				physx::PxVec3 batVel = Player::Instance().GetBatCollider()->getLinearVelocity();
 
-				// ‘Å‹…‘¬“x‚ğŒvZ
-				float ballSpeed = swingSpeed * energyTransferEfficiency;
+				float pitchSpeed = ballVel.magnitude(); // m/s
+				float batSpeed = batVel.magnitude();  // m/s
 
-				// ‘Å‹…‘¬“x‚ÌãŒÀ‚ğİ’è
-				float maxBallSpeed = 190.0f; // Å‘å‘Å‹…‘¬“x (km/h)
-				ballSpeed = (std::min)(ballSpeed, maxBallSpeed);
+				// ------------------------------
+				// æ‰“çƒæ–¹å‘
+				// ------------------------------
+				physx::PxVec3 hitDir = batVel.getNormalized();
 
-				// ƒ{[ƒ‹‚Ì‘¬“x‚ğİ’è
-				physx::PxVec3 ballDirection = batVelocity.getNormalized(); // ƒoƒbƒg‚Ì•ûŒü‚ğæ“¾
-				physx::PxVec3 ballVelocity = ballDirection * (ballSpeed / 3.6f); // km/h ‚ğ m/s ‚É•ÏŠ·
-				ballCollider->setLinearVelocity(ballVelocity);
+				// ------------------------------
+				// è¡çªè¨ˆç®—ï¼ˆé‡çƒç ”ç©¶å¼ï¼‰
+				// ------------------------------
+				float exitSpeed =
+					((1.0f + cor) * batMass / (batMass + ballMass)) * batSpeed +
+					((1.0f - cor) * ballMass / (batMass + ballMass)) * pitchSpeed;
 
-				// ƒfƒoƒbƒOƒƒO‚É‘Å‹…‘¬“x‚ÆƒXƒCƒ“ƒO‘¬“x‚ğ•\¦
-				char debugMessage[128];
-				snprintf(debugMessage, sizeof(debugMessage), "Swing Speed: %.2f km/h, Ball Speed: %.2f km/h\n", swingSpeed, ballSpeed);
+				// æœ€å¤§é€Ÿåº¦åˆ¶é™
+				float exitSpeedKmh = exitSpeed * 3.6f;
+				exitSpeedKmh = (std::min)(exitSpeedKmh, maxExitV);
+
+				exitSpeed = exitSpeedKmh / 3.6f;
+
+				// ------------------------------
+				// æ–°ã—ã„ãƒœãƒ¼ãƒ«é€Ÿåº¦
+				// ------------------------------
+				physx::PxVec3 newBallVel = hitDir * exitSpeed;
+
+				ballCollider->setLinearVelocity(newBallVel);
+
+				//// ------------------------------
+				//// å›è»¢ä»˜ä¸
+				//// ------------------------------
+				//physx::PxVec3 spin;
+				//spin.x = ((rand() % 200) - 100) * 0.1f;
+				//spin.y = ((rand() % 200) - 100) * 0.1f;
+				//spin.z = ((rand() % 200) - 100) * 0.1f;
+
+				//ballCollider->setAngularVelocity(spin);
+
+				// ------------------------------
+				// ãƒ‡ãƒãƒƒã‚°è¡¨ç¤º
+				// ------------------------------
+				char debugMessage[256];
+
+				snprintf(
+					debugMessage,
+					sizeof(debugMessage),
+					"Pitch: %.2f km/h  Bat: %.2f km/h  Exit: %.2f km/h\n",
+					pitchSpeed * 3.6f,
+					batSpeed * 3.6f,
+					exitSpeedKmh
+				);
+
 				OutputDebugStringA(debugMessage);
 			}
 		}
 
-		// ƒ{[ƒ‹‚ÆƒXƒe[ƒW‚ÌÕ“Ë‚ğŒŸ’m
+		// ãƒœãƒ¼ãƒ«ã¨ã‚¹ãƒ†ãƒ¼ã‚¸ã®è¡çªã‚’æ¤œçŸ¥
 		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stage") ||
 			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stage"))
 		{
-			Pitcher::Instance().SetHasCollided(true); // Õ“Ëƒtƒ‰ƒO‚ğİ’è
+			Pitcher::Instance().SetHasCollided(true); // è¡çªãƒ•ãƒ©ã‚°ã‚’è¨­å®š
 
-			////‰½ƒ[ƒgƒ‹”ò‚ñ‚¾‚©‚ğ•\¦(Å‰‚Ì’…’e“_‚Ì‚İ)
+			////ä½•ãƒ¡ãƒ¼ãƒˆãƒ«é£›ã‚“ã ã‹ã‚’è¡¨ç¤º(æœ€åˆã®ç€å¼¾ç‚¹ã®ã¿)
 			//physx::PxRigidBody* ballCollider = Pitcher::Instance().GetBallCollider();
 			//if (ballCollider)
 			//{
@@ -582,39 +626,39 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			//}
 		}
 
-		// ƒ{[ƒ‹‚ÆƒXƒe[ƒW‚ÌÕ“Ë‚ğŒŸ’m
+		// ãƒœãƒ¼ãƒ«ã¨ã‚¹ãƒ†ãƒ¼ã‚¸ã®è¡çªã‚’æ¤œçŸ¥
 		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stage") ||
 			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stage"))
 		{
-			//OutputDebugStringA("Ball collided with Stage\n"); // ƒƒO‚ğ’Ç‰Á
+			//OutputDebugStringA("Ball collided with Stage\n"); // ãƒ­ã‚°ã‚’è¿½åŠ 
 
-			// ƒLƒ…[‚É‘¬“x•ÏXƒŠƒNƒGƒXƒg‚ğ’Ç‰Á
+			// ã‚­ãƒ¥ãƒ¼ã«é€Ÿåº¦å¤‰æ›´ãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’è¿½åŠ 
 			{
 				std::lock_guard<std::mutex> lock(queueMutex);
 				velocityUpdateQueue.push([]() {
 					physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
 					physx::PxVec3 velocity = ballCollider->getLinearVelocity();
 
-					// Œ¸Š—¦‚ğİ’èi—á: 50% Œ¸Šj
+					// æ¸›è¡°ç‡ã‚’è¨­å®šï¼ˆä¾‹: 50% æ¸›è¡°ï¼‰
 					float dampingFactor = 0.997f;
 					velocity *= dampingFactor;
 
-					// ‰ñ“]‘¬“x‚àŒ¸Š
+					// å›è»¢é€Ÿåº¦ã‚‚æ¸›è¡°
 					physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
 					angularVelocity *= dampingFactor;
 
-					// ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“I—¹Œã‚É‘¬“x‚ğİ’è
+					// ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³çµ‚äº†å¾Œã«é€Ÿåº¦ã‚’è¨­å®š
 					ballCollider->setLinearVelocity(velocity);
 					ballCollider->setAngularVelocity(angularVelocity);
 					});
 			}
 		}
 
-		//// ƒ{[ƒ‹‚Æƒ{ƒbƒNƒXƒRƒ‰ƒCƒ_[‚ÌÕ“Ë‚ğŒŸ’m
+		//// ãƒœãƒ¼ãƒ«ã¨ãƒœãƒƒã‚¯ã‚¹ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®è¡çªã‚’æ¤œçŸ¥
 		//if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && IsBoxCollider(pairHeader.actors[1])) ||
 		//	(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && IsBoxCollider(pairHeader.actors[0])))
 		//{
-		//	// ƒ{[ƒ‹‚Ì”½”­ŒW”‚ğ0‚Éİ’è
+		//	// ãƒœãƒ¼ãƒ«ã®åç™ºä¿‚æ•°ã‚’0ã«è¨­å®š
 		//	physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
 		//	if (ballCollider)
 		//	{
@@ -624,13 +668,13 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		//		physx::PxMaterial* ballMaterial;
 		//		ballShape->getMaterials(&ballMaterial, 1);
 
-		//		ballMaterial->setRestitution(0.0f); // ”½”­ŒW”‚ğ0‚Éİ’è
+		//		ballMaterial->setRestitution(0.0f); // åç™ºä¿‚æ•°ã‚’0ã«è¨­å®š
 		//	}
 		//}
 	}
 }
 
-//// ƒ{ƒbƒNƒXƒRƒ‰ƒCƒ_[‚©‚Ç‚¤‚©‚ğ”»’è
+//// ãƒœãƒƒã‚¯ã‚¹ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‹ã©ã†ã‹ã‚’åˆ¤å®š
 //bool Physics::IsBoxCollider(physx::PxActor* actor)
 //{
 //	for (const auto& boxCollider : stage::Instance().GetBoxColliders())

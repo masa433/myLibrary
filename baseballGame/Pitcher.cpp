@@ -48,7 +48,7 @@ void Pitcher::Initialize()
 		pxPhysics->createMaterial(
 			1.0f,// 静止摩擦係数
 			1.0f,// 動摩擦係数
-			0.5f);// 反発係数
+			0.45f);// 反発係数
 
 		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
