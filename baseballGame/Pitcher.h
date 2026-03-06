@@ -31,7 +31,7 @@ public:
 
 		void ApplyPhysicsToBall(float elapsedTime);
 
-		void SelctPitchType();
+		void SelectPitchType();
 
 public:
 		const DirectX::XMFLOAT3& GetBallPosition() const { return ballWorldPosition; }
@@ -117,6 +117,9 @@ private:
 		bool hasBeenJudged = false; // 判定済みフラグ
 
 		physx::PxRigidDynamic* ballCollider = nullptr; // ボールのコライダー
+
+		float throwCounter = 0.0f; // 投球カウンター
+		bool hasReachedZero = false; // z = 0.0f に到達したかどうか
 
 public:
 

@@ -92,8 +92,9 @@ void Player::Initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-        pxPhysics->createMaterial(0.4f, 0.4f, 0.45f);
-        pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
+		pxMaterial->setRestitution(0.5f);// 反発係数を設定
+		pxMaterial->setDynamicFriction(0.4f);// 動的摩擦係数を設定
+		pxMaterial->setStaticFriction(0.5f);// 静止摩擦係数を設定
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
 		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
