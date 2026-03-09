@@ -35,7 +35,7 @@ void Pitcher::Initialize()
 	ballScale = { 100.0f,100.0f,100.0f };
 	ballAngle = { 0.0f,DirectX::XMConvertToRadians(90.0f),0.0f };
 
-	ballDebugRadius = 0.1f; // デバッグ用の半径
+	ballDebugRadius = 0.037f; // デバッグ用の半径
 
 	//rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
@@ -46,8 +46,8 @@ void Pitcher::Initialize()
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
 		pxMaterial->setRestitution(0.5f);// 反発係数を設定（0.5は適度な弾力を表す値）
-		pxMaterial->setDynamicFriction(0.35f);// 動摩擦係数を設定
-		pxMaterial->setStaticFriction(0.45f);// 静止摩擦係数を設定
+		pxMaterial->setDynamicFriction(0.2f);// 動摩擦係数を設定
+		pxMaterial->setStaticFriction(0.25f);// 静止摩擦係数を設定
 		//pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		// ボールの球状コライダーを作成
@@ -89,6 +89,20 @@ void Pitcher::Uninitialize()
 // 更新
 void Pitcher::Update(float elapsedTime)
 {
+
+
+	// **バックスペースキーで強制的に投球開始**
+	if (GetAsyncKeyState(VK_LSHIFT) & 0x8000)
+	{
+		if (currentState == State::SelectingPitch)
+		{
+			currentState = State::Throwing;
+			stateTime = 0.0f;
+			SelectPitchType(); // 球種選択
+			OutputDebugStringA("Forced Throw: Backspace pressed\n");
+		}
+	}
+
 	// 状態に応じた処理
 	switch (currentState)
 	{
@@ -612,7 +626,7 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	{
 		float breakFactor = (std::min)(1.0f, (distanceTravel - breakStartDistance) / 10.0f);
 		float smoothBreakFactor = sinf(breakFactor * DirectX::XM_PIDIV2);
-		float forceMultiplier = 0.0004f; // 半径に基づいてスケーリング
+		float forceMultiplier = 0.000004f; // 半径に基づいてスケーリング
 
 		// 横方向の力を加える
 		physx::PxVec3 lateralForce(horizontalBreak * smoothBreakFactor * forceMultiplier, 0.0f, 0.0f);
@@ -626,24 +640,21 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	// 空気抵抗を適用
 	physx::PxVec3 velocity = ballCollider->getLinearVelocity();
 	float speed = velocity.magnitude();
-	float dragCoefficient = 0.01f; // 空気抵抗をスケールに基づいて調整
+	float dragCoefficient = 0.005f; // 空気抵抗をスケールに基づいて調整
 	float airResistance = 1.0f - (dragCoefficient * speed * elapsedTime);
 	airResistance = (std::max)(0.99f, airResistance); // 最小値を設定
 	velocity *= airResistance;
 	ballCollider->setLinearVelocity(velocity);
 
-	// マグヌス効果を追加
-	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
-	float magnusCoefficient = 0.000001f; // マグヌス効果をスケールに基づいて調整
-	physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
-	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
 }
+
+
 void Pitcher::SelectPitchType() 
 {
 	// 乱数生成
 	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
 
-	if (randomValue <= 0.1f) // 50%の確率でストレート
+	if (randomValue <= 0.9f) // 50%の確率でストレート
 	{
 		selectedPitchType = PitchType::Fastball;
 	}
@@ -782,5 +793,5 @@ void Pitcher::SelectPitchType()
 	throwDirection.z = -1.0f; // 前方向固定
 
 	// ランダムな発射角度を設定
-	launchAngleDegrees = GenerateRandomFloat(-1.0f, 0.0f); // -4度から-2度の範囲でランダム
+	launchAngleDegrees = GenerateRandomFloat(0.0f, 0.3f); // -4度から-2度の範囲でランダム
 }

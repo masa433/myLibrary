@@ -50,12 +50,9 @@ void stage::initialize()
 		//}
 
 
-		pxPhysics->createMaterial(
-			1.0f,// ÃŽ~–€ŽCŒW”
-			1.0f,// “®–€ŽCŒW”
-			0.0f);// ”½”­ŒW”
-
-		pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
+		pxMaterial->setRestitution(0.0f);// ”½”­ŒW”‚ðÝ’è
+		pxMaterial->setDynamicFriction(1.0f);// “®“I–€ŽCŒW”‚ðÝ’è
+		pxMaterial->setStaticFriction(1.0f);// ÃŽ~–€ŽCŒW”‚ðÝ’è
 
 		const ModelResource* resources = model->GetResource();
 

@@ -33,6 +33,8 @@ public:
 
 		void SelectPitchType();
 
+		void ResetBall();
+
 public:
 		const DirectX::XMFLOAT3& GetBallPosition() const { return ballWorldPosition; }
 		const DirectX::XMFLOAT3& GetBallScale() const { return ballWorldScale; }

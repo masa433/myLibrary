@@ -93,8 +93,8 @@ void Player::Initialize()
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
 		pxMaterial->setRestitution(0.5f);// 反発係数を設定
-		pxMaterial->setDynamicFriction(0.4f);// 動的摩擦係数を設定
-		pxMaterial->setStaticFriction(0.5f);// 静止摩擦係数を設定
+		pxMaterial->setDynamicFriction(0.2f);// 動的摩擦係数を設定
+		pxMaterial->setStaticFriction(0.25f);// 静止摩擦係数を設定
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
 		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
@@ -555,7 +555,7 @@ void Player::UpdateAnimation(float elapsedTime)
             ThrowingStateTime += elapsedTime;
 
             // ThrowingStateTimeが0.8以上で、まだアニメーションを再生していない場合
-            if (ThrowingStateTime >= 0.8f && !hasPlayHomeRun)
+            if (ThrowingStateTime >= 0.75f && !hasPlayHomeRun)
             {
                 ChangeState(State::HomeRun); // ホームランアニメーションに切り替え
                 hasPlayHomeRun = true;      // アニメーション再生済みフラグを設定

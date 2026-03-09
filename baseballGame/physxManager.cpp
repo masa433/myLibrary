@@ -540,6 +540,12 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 			if (ballCollider && batCollider)
 			{
+				// ===== 物理定数 =====
+				const float AIR_DENSITY = 1.2f;                      // 空気密度 (kg/m³)
+				const float BALL_RADIUS = 0.037f;                    // 野球ボールの半径 (m)
+				const float MAGNUS_COEFFICIENT = 0.000035f;        // マグヌス係数
+				const float PI = 3.14159265359f;
+
 				// ===== 1. 衝突前の情報取得 =====
 				physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
 				physx::PxVec3 batVelocity = batCollider->getLinearVelocity();
@@ -562,16 +568,13 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				batCollider->getShapes(&batShape, 1);
 				batShape->getMaterials(&batMaterial, 1);
 
-				// 反発係数（Coefficient of Restitution）を取得
+				// 反発係数と摩擦係数を取得
 				float ballRestitution = ballMaterial->getRestitution();
 				float batRestitution = batMaterial->getRestitution();
-				// 合成反発係数（平均）
 				float combinedRestitution = (ballRestitution + batRestitution) / 2.0f;
 
-				// 摩擦係数を取得
 				float ballFriction = ballMaterial->getStaticFriction();
 				float batFriction = batMaterial->getStaticFriction();
-				// 合成摩擦係数（平均）
 				float combinedFriction = (ballFriction + batFriction) / 2.0f;
 
 				// ===== 2. 接触点の取得 =====
@@ -587,7 +590,6 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				}
 				else
 				{
-					// フォールバック：バットからボールへの方向
 					collisionNormal = (ballCollider->getGlobalPose().p - batCollider->getGlobalPose().p);
 					collisionNormal.normalize();
 				}
@@ -596,24 +598,19 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				physx::PxVec3 relativeVelocity = batVelocity - ballVelocity;
 				float relativeVelocityAlongNormal = relativeVelocity.dot(collisionNormal);
 
-				// ===== 5. 衝突後の速度計算（運動量保存則と反発係数） =====
-				// 撃力の計算: J = -(1 + e) * v_rel / (1/m1 + 1/m2)
+				// ===== 5. 衝突後の速度計算 =====
 				float impulseScalar = -(1.0f + combinedRestitution) * relativeVelocityAlongNormal;
 				impulseScalar /= (1.0f / ballMass + 1.0f / batMass);
 
-				// 打球速度の経験式（実際の野球データに基づく）
-				// 打球速度 ≈ 0.2 × 投球速度 + 1.2 × バット速度
-				float estimatedExitVelocity = (0.2f * ballSpeed + 1.2f * batSpeed)/* * combinedRestitution*/;
+				// 打球速度の経験式
+				float estimatedExitVelocity = (0.2f * ballSpeed + 1.2f * batSpeed);
 
 				// ===== 6. 回転の計算（摩擦による） =====
-				// 接線方向の速度成分
 				physx::PxVec3 tangentialVelocity = relativeVelocity - collisionNormal * relativeVelocityAlongNormal;
 				float tangentialSpeed = tangentialVelocity.magnitude();
 
-				// 摩擦による回転
-				// ω = (v_tangent × μ) / r
-				float ballRadius = 0.037f; // 野球ボールの半径（m）
-				float angularVelocityMagnitude = (tangentialSpeed * combinedFriction) / ballRadius;
+				// 摩擦による回転: ω = (v_tangent × μ) / r [rad/s]
+				float angularVelocityRadPerSec = (tangentialSpeed * combinedFriction) / BALL_RADIUS;
 
 				// 回転軸（接線方向と法線方向の外積）
 				physx::PxVec3 spinAxis = collisionNormal.cross(tangentialVelocity);
@@ -621,52 +618,81 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				{
 					spinAxis.normalize();
 				}
-				physx::PxVec3 newAngularVelocity = spinAxis * angularVelocityMagnitude;
+				physx::PxVec3 newAngularVelocity = spinAxis * angularVelocityRadPerSec;
 
 				// ===== 7. 新しい速度を設定 =====
 				physx::PxVec3 impulse = collisionNormal * impulseScalar;
 				physx::PxVec3 newBallVelocity = ballVelocity + impulse / ballMass;
 
-				// 速度の大きさを推定値に調整
 				if (newBallVelocity.magnitude() > 0.1f)
 				{
 					newBallVelocity.normalize();
 					newBallVelocity *= estimatedExitVelocity;
 				}
 
-				// キューに速度変更リクエストを追加（PhysXのシミュレーション外で実行）
+				// ===== 8. マグヌス効果の初期計算 =====
+				float magnusForceMagnitude = 0.0f;
+				physx::PxVec3 magnusForce(0, 0, 0);
+
+				
+					// F_magnus = Cm * ρ * v² * r * ω
+					magnusForceMagnitude = MAGNUS_COEFFICIENT *
+						AIR_DENSITY *
+						estimatedExitVelocity * estimatedExitVelocity *
+						BALL_RADIUS *
+						angularVelocityRadPerSec;
+
+					// マグヌス力の方向 = 角速度 × 速度（外積）
+					physx::PxVec3 magnusDirection = newAngularVelocity.cross(newBallVelocity);
+					if (magnusDirection.magnitude() > 0.001f)
+					{
+						magnusDirection.normalize();
+						magnusForce = magnusDirection * magnusForceMagnitude;
+					}
+				
+
+				// ===== 9. PhysXに速度を設定 =====
 				{
 					std::lock_guard<std::mutex> lock(queueMutex);
 					velocityUpdateQueue.push([ballCollider, newBallVelocity, newAngularVelocity]() {
 						ballCollider->setLinearVelocity(newBallVelocity);
 						ballCollider->setAngularVelocity(newAngularVelocity);
+
+						// PhysXの内蔵減衰を無効化
+						ballCollider->setLinearDamping(0.0f);
+						ballCollider->setAngularDamping(0.0f);
 						});
 				}
 
-				// ===== 8. デバッグ情報の出力 =====
+				// ===== 10. デバッグ情報の出力 =====
 				float exitVelocityKmh = estimatedExitVelocity * 3.6f;
 				float batSpeedKmh = batSpeed * 3.6f;
 				float ballSpeedKmh = ballSpeed * 3.6f;
 
 				// 打球角度を計算
 				float launchAngle = atan2f(collisionNormal.y, sqrtf(collisionNormal.x * collisionNormal.x + collisionNormal.z * collisionNormal.z));
-				float launchAngleDeg = launchAngle * (180.0f / DirectX::XM_PI);
+				float launchAngleDeg = launchAngle * (180.0f / PI);
 
-				// 回転数（rpm）
-				float spinRpm = angularVelocityMagnitude * 60.0f / (2.0f * DirectX::XM_PI);
+				// 回転数をRPMに変換: RPM = (ω × 60) / (2π)
+				float spinRpm = (angularVelocityRadPerSec * 60.0f) / (2.0f * PI);
 
-				char debugMessage[512];
+				char debugMessage[768];
 				snprintf(debugMessage, sizeof(debugMessage),
-					"=== Ball-Bat Collision ===\n"
-					"Initial Ball Speed: %.1f km/h\n"
-					"Bat Speed: %.1f km/h\n"
-					"Exit Velocity: %.1f km/h\n"
-					"Launch Angle: %.1f degrees\n"
-					"Spin Rate: %.0f rpm\n"
-					"Combined Restitution: %.3f\n"
-					"Combined Friction: %.3f\n",
-					ballSpeedKmh, batSpeedKmh, exitVelocityKmh, launchAngleDeg, spinRpm,
-					combinedRestitution, combinedFriction);
+					"=== ボールとバットの衝突（マグヌス効果あり） ===\n"
+					"初速（ボール）: %.1f km/h\n"
+					"バット速度: %.1f km/h\n"
+					"打球速度: %.1f km/h\n"
+					"打球角度: %.1f 度\n"
+					"回転数: %.0f rpm (%.1f rad/s)\n"
+					"合成反発係数: %.3f\n"
+					"合成摩擦係数: %.3f\n"
+					"--- マグヌス効果 ---\n"
+					"初期マグヌス力: %.3f N\n"
+					"マグヌス方向: (%.3f, %.3f, %.3f)\n",
+					ballSpeedKmh, batSpeedKmh, exitVelocityKmh, launchAngleDeg,
+					spinRpm, angularVelocityRadPerSec,
+					combinedRestitution, combinedFriction,
+					magnusForceMagnitude, magnusForce.x, magnusForce.y, magnusForce.z);
 				OutputDebugStringA(debugMessage);
 			}
 		}
