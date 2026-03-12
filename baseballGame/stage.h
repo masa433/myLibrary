@@ -25,7 +25,7 @@ public:
 	virtual ~stage() = default;
 	void initialize();
 	void update(float elapsedTime);
-	void render(RenderContext& rc);
+	void render(const RenderContext& rc, ModelRenderer* renderer);
 	void uninitialize();
 
 public:

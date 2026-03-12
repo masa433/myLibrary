@@ -206,17 +206,17 @@ bool Pitcher::IsBallInStrikeZone() const
 }
 
 // 描画
-void Pitcher::Render(RenderContext& rc) 
+void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer) 
 {
 	
-	pitcher->render(rc.context, transform, animated_nodes);
+	pitcher->render(rc.deviceContext, transform, animated_nodes);
 	if(isBallThrown)
 	{
-		ball->render(rc.context, ballWorldTransform, {});
+		ball->render(rc.deviceContext, ballWorldTransform, {});
 	}
 	else 
 	{
-		ball->render(rc.context, ballTransform, {});
+		ball->render(rc.deviceContext, ballTransform, {});
 	}
 
 	// ShapeRenderer をボールに関連付けて描画

@@ -9,8 +9,6 @@
 //
 //   row_major float4x4 viewProjection; // Offset:    0 Size:    64 [unused]
 //   float4 lightDirection;             // Offset:   64 Size:    16
-//   float4 lightColor;                 // Offset:   80 Size:    16
-//   float4 cameraPosition;             // Offset:   96 Size:    16 [unused]
 //
 // }
 //
@@ -52,7 +50,7 @@
 //
 ps_5_0
 dcl_globalFlags refactoringAllowed | skipOptimization
-dcl_constantbuffer CB0[6], immediateIndexed
+dcl_constantbuffer CB0[5], immediateIndexed
 dcl_constantbuffer CB1[1], immediateIndexed
 dcl_sampler s0, mode_default
 dcl_resource_texture2d (float,float,float,float) t0
@@ -94,11 +92,10 @@ mul r1.x, r1.x, l(0.500000)
 add r1.x, r1.x, l(0.700000)  // r1.x <- power
 
 #line 21
-mul r1.xyz, r1.xxxx, cb0[5].xyzx
-mul r0.xyz, r0.xyzx, r1.xyzx
+mul r0.xyz, r0.xyzx, r1.xxxx
 
 #line 23
 mov o0.xyz, r0.xyzx
 mov o0.w, r0.w
 ret 
-// Approximately 19 instruction slots used
+// Approximately 18 instruction slots used

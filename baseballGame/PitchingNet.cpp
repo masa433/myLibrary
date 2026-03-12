@@ -1,6 +1,7 @@
 #include "PitchingNet.h"
 #include "Graphics.h"
 #include "imgui.h"
+#include "ModelRenderer.h"
 
 void PitchingNet::Initialize()
 {
@@ -110,10 +111,9 @@ void PitchingNet::Update(float elapsedTime)
 	UpdateTransform();
 }
 
-void PitchingNet::Render(RenderContext& rc)
+void PitchingNet::Render(const RenderContext& rc, ModelRenderer* renderer)
 {
-	ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
-	modelRenderer->Render(rc, transform, net.get(), ShaderId::Lambert);
+	renderer->Render(rc, transform, net.get(), ShaderId::Lambert);
 }
 
 void PitchingNet::DrawGUI()

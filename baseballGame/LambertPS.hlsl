@@ -16,9 +16,9 @@ float4 main(VS_OUT pin) : SV_TARGET
     float3 L = normalize(-lightDirection.xyz);
     float power = max(0, dot(L, N));
 
-    power = power * 0.5f + 0.7f;
+    power = power * 0.5 + 0.7f;
 
-    color.rgb *= lightColor.rgb * power;
+    color.rgb *= power;
 
     return color;
 }

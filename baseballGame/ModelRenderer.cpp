@@ -28,28 +28,17 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 // 描画実行
 void ModelRenderer::Render(const RenderContext& rc, const DirectX::XMFLOAT4X4& worldTransform, const Model* model, ShaderId shaderId)
 {
-	ID3D11DeviceContext* dc = rc.context;
+	ID3D11DeviceContext* dc = rc.deviceContext;
 
 	// シーン用定数バッファ更新
 	{
-		static Light defaultLightManager;
-		const Light* lightManager = rc.light ? rc.light : &defaultLightManager;
-
 		CbScene cbScene{};
-		DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&rc.camera->GetView());
-		DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&rc.camera->GetProjection());
+		DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&rc.view);
+		DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&rc.projection);
 		DirectX::XMStoreFloat4x4(&cbScene.viewProjection, V * P);
-		const DirectionalLight& directionalLight = lightManager->GetDirectionalLight();
-		cbScene.lightDirection.x = directionalLight.direction.x;
-		cbScene.lightDirection.y = directionalLight.direction.y;
-		cbScene.lightDirection.z = directionalLight.direction.z;
-		cbScene.lightColor.x = directionalLight.color.x;
-		cbScene.lightColor.y = directionalLight.color.y;
-		cbScene.lightColor.z = directionalLight.color.z;
-		const DirectX::XMFLOAT3& eye = rc.camera->GetEye();
-		cbScene.cameraPosition.x = eye.x;
-		cbScene.cameraPosition.y = eye.y;
-		cbScene.cameraPosition.z = eye.z;
+		cbScene.lightDirection.x = rc.lightDirection.x;
+		cbScene.lightDirection.y = rc.lightDirection.y;
+		cbScene.lightDirection.z = rc.lightDirection.z;
 		dc->UpdateSubresource(sceneConstantBuffer.Get(), 0, 0, &cbScene, 0, 0);
 	}
 

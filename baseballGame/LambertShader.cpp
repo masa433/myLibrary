@@ -29,7 +29,7 @@ LambertShader::LambertShader(ID3D11Device* device)
 // 開始処理
 void LambertShader::Begin(const RenderContext& rc)
 {
-	ID3D11DeviceContext* dc = rc.context;
+	ID3D11DeviceContext* dc = rc.deviceContext;
 
 	// シェーダー設定
 	dc->IASetInputLayout(inputLayout.Get());
@@ -47,7 +47,7 @@ void LambertShader::Begin(const RenderContext& rc)
 // 更新処理
 void LambertShader::Update(const RenderContext& rc, const ModelResource::Material& material)
 {
-	ID3D11DeviceContext* dc = rc.context;
+	ID3D11DeviceContext* dc = rc.deviceContext;
 
 	// マテリアル用定数バッファ更新
 	CbMaterial cbMaterial{};
@@ -65,7 +65,7 @@ void LambertShader::Update(const RenderContext& rc, const ModelResource::Materia
 // 描画終了
 void LambertShader::End(const RenderContext& rc)
 {
-	ID3D11DeviceContext* dc = rc.context;
+	ID3D11DeviceContext* dc = rc.deviceContext;
 
 	// シェーダー設定解除
 	dc->VSSetShader(nullptr, nullptr, 0);

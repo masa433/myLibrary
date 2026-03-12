@@ -7,6 +7,7 @@
 #include "game_object.h"
 #include "RenderContext.h"
 #include "physxManager.h"
+#include "ModelRenderer.h"
 
 class Pitcher : public GameObject
 {
@@ -20,7 +21,7 @@ public:
 		void Initialize();
 		void Uninitialize();
 		void Update(float elapsedTime);
-		void Render(RenderContext& rc);
+		void Render(const RenderContext& rc, ModelRenderer* renderer);
 		void DrawGUI();
 
 		void AttachBallToHand(float elapsedTime);

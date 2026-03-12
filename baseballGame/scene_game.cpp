@@ -13,16 +13,15 @@
 #include "physxManager.h"
 
 
-scene_game::scene_game()
-{
-    // ライト設定のみコンストラクタで行う
-    DirectionalLight directionalLight;
-    directionalLight.direction = { 0, -1, 0 };
-    directionalLight.color = { 1, 1, 1 };
-    light.SetDirectionalLight(directionalLight);
-
-
-}
+//scene_game::scene_game()
+//{
+//    // ライト設定のみコンストラクタで行う
+//    DirectionalLight directionalLight;
+//    directionalLight.direction = { 0, -1, 0 };
+//    directionalLight.color = { 1, 1, 1 };
+//    light.SetDirectionalLight(directionalLight);
+//
+//}
 
 void scene_game::initialize()
 {
@@ -32,6 +31,7 @@ void scene_game::initialize()
     float screenWidth = Graphics::Instance().GetScreenWidth();
     float screenHeight = Graphics::Instance().GetScreenHeight();
 
+    Camera& camera = Camera::Instance();
     camera.SetPerspectiveFov(
         DirectX::XMConvertToRadians(45),
         screenWidth / screenHeight,
@@ -78,8 +78,9 @@ void scene_game::update(float elapsed_time)
 	elapsed_time *= timeScale;
 
     // カメラコントローラーの更新
-    cameraController.Update();
+	Camera& camera = Camera::Instance();
     cameraController.SyncControllerToCamera(camera);
+    cameraController.Update();
 
     // ステージの更新
     stage::Instance().update(elapsed_time);
@@ -129,10 +130,10 @@ void scene_game::update(float elapsed_time)
 
     if (ImGui::CollapsingHeader("Light"))
     {
-        DirectionalLight dirLight = light.GetDirectionalLight();
-        if (ImGui::SliderFloat3("Light Direction", &dirLight.direction.x, -1.0f, 1.0f))
+        
+        if (ImGui::SliderFloat3("Light Direction", &lightDirection.x, -1.0f, 1.0f))
         {
-            light.SetDirectionalLight(dirLight);
+            //light.SetDirectionalLight(dirLight);
         }
     }
 
@@ -170,16 +171,19 @@ void scene_game::render(float elapsedTime)
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
     RenderState* renderState = Graphics::Instance().GetRenderState();
 	ShapeRenderer* shapeRenderer = Graphics::Instance().GetShapeRenderer();
-
+	ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
 
     // 描画コンテキスト設定
     RenderContext rc;
-    rc.context = dc;
+    rc.deviceContext = dc;
     rc.renderState = renderState;
-    rc.camera = &camera;
-    rc.light = &light;
+    //rc.camera = &camera;
+    rc.lightDirection = lightDirection;
 
-    
+    //カメラパラメータ設定
+    Camera& camera = Camera::Instance();
+    rc.view = camera.GetView();
+    rc.projection = camera.GetProjection();
 
     // プレイヤーの描画
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
@@ -188,20 +192,20 @@ void scene_game::render(float elapsedTime)
     
 
     // ピッチャーの描画
-    Pitcher::Instance().Render(rc);
+    Pitcher::Instance().Render(rc,modelRenderer);
 
-    Player::Instance().Render(rc);
+    Player::Instance().Render(rc, modelRenderer);
 
-	PitchingNet::Instance().Render(rc);
+	PitchingNet::Instance().Render(rc, modelRenderer);
 
     // ステージの描画
-    stage::Instance().render(rc);
+    stage::Instance().render(rc, modelRenderer);
 
     // レンダーステート設定
     dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
     dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
-	shapeRenderer->Render(dc, camera.GetView(), camera.GetProjection(), light.GetDirectionalLight().direction);
+	shapeRenderer->Render(dc, camera.GetView(), camera.GetProjection(), rc.lightDirection);
 
     // サンプラーステートを設定
     ID3D11SamplerState* samplerStates[] = {
@@ -217,8 +221,8 @@ void scene_game::render(float elapsedTime)
     XMMATRIX P = XMLoadFloat4x4(&camera.GetProjection());
     XMStoreFloat4x4(&scene_data.view_projection, V * P);
 
-    DirectionalLight dirLight = light.GetDirectionalLight();
-    scene_data.light_direction = XMFLOAT4(dirLight.direction.x, dirLight.direction.y, dirLight.direction.z, 0.0f);
+    /*DirectionalLight dirLight = light.GetDirectionalLight();
+    scene_data.light_direction = XMFLOAT4(dirLight.direction.x, dirLight.direction.y, dirLight.direction.z, 0.0f);*/
 
     XMFLOAT3 eye = camera.GetEye();
     scene_data.camera_position = XMFLOAT4(eye.x, eye.y, eye.z, 1.0f);
@@ -227,7 +231,7 @@ void scene_game::render(float elapsedTime)
     dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
     dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
-	Physics::Instance().Render(camera.GetView(), camera.GetProjection(), light.GetDirectionalLight().direction);
+	Physics::Instance().Render(camera.GetView(), camera.GetProjection(), rc.lightDirection);
 
     //// 2Dスプライトの描画（画面に重ねて表示）
     //if (showStrikeZoneImage && strikeZoneSprite)

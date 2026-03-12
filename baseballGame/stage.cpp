@@ -166,12 +166,10 @@ void stage::update(float elapsedTime)
 	UpdateTransform();
 }
 
-void stage::render(RenderContext& rc)
+void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 {
 
-	ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
-
-	modelRenderer->Render(rc, transform, model.get(), ShaderId::Lambert);
+	renderer->Render(rc, transform, model.get(), ShaderId::Lambert);
 }
 
 // I—¹

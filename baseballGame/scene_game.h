@@ -1,8 +1,6 @@
 #pragma once
 #include "scene.h"
-#include "camera.h"
 #include "camera_controller.h"
-#include "Light.h"
 #include <DirectXMath.h>
 #include <memory>
 #include <wrl.h>
@@ -11,6 +9,7 @@
 #include "gltf_model.h"
 #include "RenderContext.h"
 #include "sprite.h"
+#include "ModelRenderer.h"
 
 class scene_game : public scene2
 {
@@ -30,16 +29,16 @@ private:
     int current_animation_index = 0;  // 現在再生中のアニメーションインデックス
     bool animation_playing = true;    // アニメーション再生中かどうか
 
-    Camera				camera;
+
     CameraController	cameraController;
-    Light			    light;
+
 
     //カメラのZ座標の描画範囲
     float camera_near_z = 1.0f;
     float camera_far_z = 1000000.0f;
 
 public:
-    scene_game();
+    scene_game() {};
     ~scene_game() override = default;
 
     void initialize() override;
@@ -63,7 +62,7 @@ public:
 
     float timeScale = 1.0f;
 
-
+	DirectX::XMFLOAT3 lightDirection = { 0.0f, -1.0f, 0.0f };
 
     // ストライクゾーン表示用スプライト
     std::unique_ptr<sprite> strikeZoneSprite;

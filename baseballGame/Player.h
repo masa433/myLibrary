@@ -5,6 +5,7 @@
 #include "RenderContext.h"
 #include "physxManager.h"
 #include "Model.h"
+#include "ModelRenderer.h"
 
 enum class State 
 {
@@ -28,7 +29,7 @@ public:
     void Initialize();
     void Uninitialize() ;
     void Update(float elapsedTime);
-    void Render(RenderContext& rc);
+    void Render(const RenderContext& rc, ModelRenderer* renderer);
     void DrawGUI();
 
     bool IsRightBatter() const { return isRightBatter; } // 右打者かどうかを判定するメソッド

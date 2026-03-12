@@ -330,12 +330,12 @@ void Player::UpdateLookAt(const DirectX::XMFLOAT3& targetPosition)
 }
 
 // プレイヤー固有のレンダリング処理
-void Player::Render(RenderContext& rc)
+void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
 {
-    animated_model->render(rc.context, transform, animated_nodes);
-    ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
+    animated_model->render(rc.deviceContext, transform, animated_nodes);
+    
 
-    modelRenderer->Render(rc, batTransform, bat.get(), ShaderId::Lambert);
+    renderer->Render(rc, batTransform, bat.get(), ShaderId::Lambert);
 
   
 }
