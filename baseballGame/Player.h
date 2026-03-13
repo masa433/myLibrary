@@ -7,14 +7,7 @@
 #include "Model.h"
 #include "ModelRenderer.h"
 
-enum class State 
-{
-    BattingIdle,
-	Swinging,
-	HomeRun,
-    Idle,
-	Count
-};
+
 
 class Player : public GameObject
 {
@@ -43,7 +36,7 @@ private:
 
 	void UpdateAnimation(float elapsedTime);
 
-	void ChangeState(State newState);
+	
 
     void UpdateLookAt(const DirectX::XMFLOAT3& targetPosition); // 頭のルックアット処理
 
@@ -57,10 +50,34 @@ private:
 
     void UpdatePhysXMeshTransform(const DirectX::XMFLOAT3& scale);
 
-	
+	void SetBattingIdleState();
+
+	void UpdateBattingIdleState(float elapsedTime);
+
+	void SetSwingState();
+
+	void UpdateSwingState(float elapsedTime);
 
 public:
     physx::PxRigidDynamic* GetBatCollider() const { return pxBatRigidBody; }
+
+    enum class State
+    {
+        BattingIdle,
+        Swinging,
+        HomeRun,
+        Idle,
+        Count
+    };
+
+    enum Animation
+    {
+        BattingIdle,
+        HomeRun,
+        Swing,
+    };
+
+    void ChangeState(State newState);
 
 private:
     // モデル関連
@@ -76,6 +93,7 @@ private:
 
     std::unique_ptr<gltf_model> animated_model;
     std::vector<gltf_model::node> animated_nodes;
+    std::unique_ptr<Model> batter;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_context;
 
     // アニメーション関連

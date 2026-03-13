@@ -71,6 +71,8 @@ void PitchingNet::Initialize()
 			physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
 			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *pxMaterial);
 
+			pxRigidBody->setName("Net");
+
 			//ƒV[ƒ“‚É„‘Ì‚ð’Ç‰Á
 			pxScene->addActor(*pxRigidBody);
 

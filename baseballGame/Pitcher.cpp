@@ -35,7 +35,7 @@ void Pitcher::Initialize()
 	ballScale = { 100.0f,100.0f,100.0f };
 	ballAngle = { 0.0f,DirectX::XMConvertToRadians(90.0f),0.0f };
 
-	ballDebugRadius = 0.037f; // デバッグ用の半径
+	ballDebugRadius = 0.05f; // デバッグ用の半径
 
 	//rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
@@ -45,9 +45,9 @@ void Pitcher::Initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-		pxMaterial->setRestitution(0.5f);// 反発係数を設定（0.5は適度な弾力を表す値）
-		pxMaterial->setDynamicFriction(0.2f);// 動摩擦係数を設定
-		pxMaterial->setStaticFriction(0.25f);// 静止摩擦係数を設定
+		pxMaterial->setRestitution(0.5f);// 反発係数を設定
+		pxMaterial->setDynamicFriction(0.3f);// 動摩擦係数を設定
+		pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
 		//pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		// ボールの球状コライダーを作成
@@ -645,6 +645,12 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	airResistance = (std::max)(0.99f, airResistance); // 最小値を設定
 	velocity *= airResistance;
 	ballCollider->setLinearVelocity(velocity);
+
+	// マグヌス効果を追加
+	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
+	float magnusCoefficient = 0.00000008f; // マグヌス効果を調整
+	physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
+	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
 
 }
 

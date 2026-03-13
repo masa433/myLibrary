@@ -92,9 +92,9 @@ void Player::Initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-		pxMaterial->setRestitution(0.5f);// 反発係数を設定
-		pxMaterial->setDynamicFriction(0.2f);// 動的摩擦係数を設定
-		pxMaterial->setStaticFriction(0.25f);// 静止摩擦係数を設定
+		pxMaterial->setRestitution(0.45f);// 反発係数を設定
+		pxMaterial->setDynamicFriction(0.3f);// 動的摩擦係数を設定
+		pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
 		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
@@ -660,6 +660,16 @@ void Player::ModifyArmBones()
 
     // 子ノード（前腕以降）のグローバル変換を再計算
     UpdateChildrenRecursive(leftArmIndex);
+
+	// 右腕のボーンを探す
+    int rightArmIndex = animated_model->GetNodeIndex("mixamorig:RightShoulder");
+    
+    if (rightArmIndex < 0) return;
+    // 右腕の回転を変更
+    additionalRotation = DirectX::XMMatrixRotationY(-armAngleOffset);
+    UpdateNodeTransform(rightArmIndex, additionalRotation);
+    // 子ノード（前腕以降）のグローバル変換を再計算
+    UpdateChildrenRecursive(rightArmIndex);
 }
 
 void Player::UpdateNodeTransform(int nodeIndex, const DirectX::XMMATRIX& additionalRotation)
