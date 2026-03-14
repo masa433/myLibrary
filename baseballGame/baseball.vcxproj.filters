@@ -136,6 +136,12 @@
     <ClCompile Include="PitchingNet.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="PhongShader.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ToonShader.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -273,6 +279,12 @@
     <ClInclude Include="PitchingNet.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="PhongShader.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ToonShader.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="sprite.hlsli">
@@ -309,6 +321,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Skinning.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="PhongShader.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ToonShader.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -365,6 +383,18 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="LambertPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PhongShaderVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PhongShaderPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ToonShaderVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ToonShaderPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

@@ -62,7 +62,14 @@ public:
 
     float timeScale = 1.0f;
 
+	// ライトの方向  
 	DirectX::XMFLOAT3 lightDirection = { 0.0f, -1.0f, 0.0f };
+
+    //ライトの色
+	DirectX::XMFLOAT3 lightColor = { 1.0f, 1.0f, 1.0f };
+
+    //アンビエントカラー
+	DirectX::XMFLOAT4 ambientColor = { 0.2f, 0.2f, 0.2f, 1.0f };
 
     // ストライクゾーン表示用スプライト
     std::unique_ptr<sprite> strikeZoneSprite;
@@ -71,4 +78,5 @@ public:
     DirectX::XMFLOAT2 spriteScale = { 0.2f, 0.25f };
     DirectX::XMFLOAT4 spriteTint = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+	bool showPhysxDebug = false;
 };

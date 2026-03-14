@@ -222,6 +222,7 @@
     <ClCompile Include="ModelRenderer.cpp" />
     <ClCompile Include="ModelResource.cpp" />
     <ClCompile Include="mouse.cpp" />
+    <ClCompile Include="PhongShader.cpp" />
     <ClCompile Include="physxManager.cpp" />
     <ClCompile Include="Pitcher.cpp" />
     <ClCompile Include="PitchingNet.cpp" />
@@ -235,6 +236,7 @@
     <ClCompile Include="sprite_batch.cpp" />
     <ClCompile Include="stage.cpp" />
     <ClCompile Include="texture.cpp" />
+    <ClCompile Include="ToonShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicShader.h" />
@@ -266,6 +268,7 @@
     <ClInclude Include="ModelRenderer.h" />
     <ClInclude Include="ModelResource.h" />
     <ClInclude Include="mouse.h" />
+    <ClInclude Include="PhongShader.h" />
     <ClInclude Include="physxManager.h" />
     <ClInclude Include="Pitcher.h" />
     <ClInclude Include="PitchingNet.h" />
@@ -282,6 +285,7 @@
     <ClInclude Include="sprite_batch.h" />
     <ClInclude Include="stage.h" />
     <ClInclude Include="texture.h" />
+    <ClInclude Include="ToonShader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Basic.hlsli" />
@@ -290,10 +294,12 @@
     <None Include="gltf_model.hlsli" />
     <None Include="image_based_lighting.hlsli" />
     <None Include="Lambert.hlsli" />
+    <None Include="PhongShader.hlsli" />
     <None Include="PrimitiveRenderer.hlsli" />
     <None Include="Scene.hlsli" />
     <None Include="Skinning.hlsli" />
     <None Include="SolidShapeRenderer.hlsli" />
+    <None Include="ToonShader.hlsli" />
     <None Include="WiredShapeRenderer.hlsli" />
     <None Include="sprite.hlsli" />
   </ItemGroup>
@@ -358,6 +364,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
+    <FxCompile Include="PhongShaderPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="PhongShaderVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
     <FxCompile Include="PrimitiveRendererPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -381,6 +399,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="ToonShaderPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="ToonShaderVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="WiredShapeRendererPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

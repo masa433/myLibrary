@@ -9,6 +9,9 @@
 //
 //   row_major float4x4 viewProjection; // Offset:    0 Size:    64
 //   float4 lightDirection;             // Offset:   64 Size:    16 [unused]
+//   float4 lightColor;                 // Offset:   80 Size:    16 [unused]
+//   float4 ambientColor;               // Offset:   96 Size:    16 [unused]
+//   float4 cameraPosition;             // Offset:  112 Size:    16 [unused]
 //
 // }
 //

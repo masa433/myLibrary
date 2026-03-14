@@ -8,6 +8,8 @@ cbuffer CbMesh : register(b1)
 Texture2D DiffuseMap : register(t0);
 SamplerState LinearSampler : register(s0);
 
+
+
 float4 main(VS_OUT pin) : SV_TARGET
 {
     float4 color = DiffuseMap.Sample(LinearSampler, pin.texcoord) * materialColor;
@@ -15,10 +17,16 @@ float4 main(VS_OUT pin) : SV_TARGET
     float3 N = normalize(pin.normal);
     float3 L = normalize(-lightDirection.xyz);
     float power = max(0, dot(L, N));
+    
+    power = power * 0.5 + 0.8; // 0`1‚Ì”ÍˆÍ‚É•ÏŠ·
+    
+    // ŠgUŒõ
+    float3 diffuse = color.rgb * lightColor.rgb * power;
+    // ƒAƒ“ƒrƒGƒ“ƒg
+    float3 ambient = color.rgb * ambientColor.rgb;
 
-    power = power * 0.5 + 0.7f;
+    // ‡¬
+    float3 result = diffuse + ambient;
 
-    color.rgb *= power;
-
-    return color;
+    return float4(result, color.a);
 }

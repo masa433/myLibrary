@@ -4,6 +4,8 @@
 #include "ModelRenderer.h"
 #include "BasicShader.h"
 #include "LambertShader.h"
+#include "PhongShader.h"
+#include "ToonShader.h"
 
 // コンストラクタ
 ModelRenderer::ModelRenderer(ID3D11Device* device)
@@ -23,6 +25,8 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 	// シェーダー生成
 	shaders[static_cast<int>(ShaderId::Basic)] = std::make_unique<BasicShader>(device);
 	shaders[static_cast<int>(ShaderId::Lambert)] = std::make_unique<LambertShader>(device);
+	shaders[static_cast<int>(ShaderId::Phong)] = std::make_unique<PhongShader>(device);
+	shaders[static_cast<int>(ShaderId::Toon)] = std::make_unique<ToonShader>(device);
 }
 
 // 描画実行
@@ -39,6 +43,21 @@ void ModelRenderer::Render(const RenderContext& rc, const DirectX::XMFLOAT4X4& w
 		cbScene.lightDirection.x = rc.lightDirection.x;
 		cbScene.lightDirection.y = rc.lightDirection.y;
 		cbScene.lightDirection.z = rc.lightDirection.z;
+
+		cbScene.lightColor.x = rc.lightColor.x;
+		cbScene.lightColor.y = rc.lightColor.y;
+		cbScene.lightColor.z = rc.lightColor.z;
+
+		cbScene.ambientColor.x = rc.ambientColor.x;
+		cbScene.ambientColor.y = rc.ambientColor.y;
+		cbScene.ambientColor.z = rc.ambientColor.z;
+		cbScene.ambientColor.w = 1.0f;
+
+		cbScene.cameraPosition.x = rc.cameraPosition.x;
+		cbScene.cameraPosition.y = rc.cameraPosition.y;
+		cbScene.cameraPosition.z = rc.cameraPosition.z;
+		cbScene.cameraPosition.w = 1.0f;
+
 		dc->UpdateSubresource(sceneConstantBuffer.Get(), 0, 0, &cbScene, 0, 0);
 	}
 

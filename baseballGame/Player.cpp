@@ -207,7 +207,7 @@ void Player::HandleInput(float elapsedTime)
     }
 
     // スペースキーでスイング
-    if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+    if (GetAsyncKeyState(VK_SPACE) & 0x8000)
     {
         if (current_state != State::Swinging)
         {
@@ -335,7 +335,7 @@ void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
     animated_model->render(rc.deviceContext, transform, animated_nodes);
     
 
-    renderer->Render(rc, batTransform, bat.get(), ShaderId::Lambert);
+    renderer->Render(rc, batTransform, bat.get(), ShaderId::Phong);
 
   
 }

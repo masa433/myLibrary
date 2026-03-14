@@ -135,7 +135,14 @@ void scene_game::update(float elapsed_time)
         {
             //light.SetDirectionalLight(dirLight);
         }
+        if (ImGui::ColorEdit3("Light Color", &lightColor.x))
+        {
+            //light.SetDirectionalLight(dirLight);
+		}
+		ImGui::ColorEdit4("Ambient Color", &ambientColor.x);
     }
+
+	ImGui::Checkbox("Show PhysX Debug", &showPhysxDebug);
 
     // ストライクゾーン画像の制御
     if (ImGui::CollapsingHeader("Strike Zone Image"))
@@ -179,11 +186,15 @@ void scene_game::render(float elapsedTime)
     rc.renderState = renderState;
     //rc.camera = &camera;
     rc.lightDirection = lightDirection;
+	rc.lightColor = lightColor;
+	rc.ambientColor = ambientColor;
 
     //カメラパラメータ設定
     Camera& camera = Camera::Instance();
     rc.view = camera.GetView();
     rc.projection = camera.GetProjection();
+
+	rc.cameraPosition = camera.GetEye();
 
     // プレイヤーの描画
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
@@ -224,6 +235,8 @@ void scene_game::render(float elapsedTime)
     /*DirectionalLight dirLight = light.GetDirectionalLight();
     scene_data.light_direction = XMFLOAT4(dirLight.direction.x, dirLight.direction.y, dirLight.direction.z, 0.0f);*/
 
+    scene_data.light_direction = DirectX::XMFLOAT4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f);
+
     XMFLOAT3 eye = camera.GetEye();
     scene_data.camera_position = XMFLOAT4(eye.x, eye.y, eye.z, 1.0f);
 
@@ -231,6 +244,7 @@ void scene_game::render(float elapsedTime)
     dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
     dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
+    if(showPhysxDebug)
 	Physics::Instance().Render(camera.GetView(), camera.GetProjection(), rc.lightDirection);
 
     //// 2Dスプライトの描画（画面に重ねて表示）

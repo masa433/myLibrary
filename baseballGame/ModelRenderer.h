@@ -17,7 +17,8 @@ enum class ShaderId
 {
 	Basic,
 	Lambert,
-
+	Phong,
+	Toon,
 	EnumCount
 };
 
@@ -36,6 +37,7 @@ private:
 		DirectX::XMFLOAT4X4		viewProjection;
 		DirectX::XMFLOAT4		lightDirection;
 		DirectX::XMFLOAT4		lightColor;
+		DirectX::XMFLOAT4		ambientColor;
 		DirectX::XMFLOAT4		cameraPosition;
 	};
 
