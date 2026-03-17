@@ -169,7 +169,7 @@ void stage::update(float elapsedTime)
 void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 {
 
-	renderer->Render(rc, transform, model.get(), ShaderId::Lambert);
+	renderer->Render(rc, transform, model.get(), ShaderId::ShadowMap);
 }
 
 // I—¹

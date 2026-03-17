@@ -142,6 +142,9 @@
     <ClCompile Include="ToonShader.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowMapShader.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -285,6 +288,9 @@
     <ClInclude Include="ToonShader.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="ShadowMapShader.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="sprite.hlsli">
@@ -327,6 +333,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="ToonShader.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ShadowMapCaster.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -395,6 +404,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="ToonShaderPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ShadowMapCasterPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ShadowMapCasterVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

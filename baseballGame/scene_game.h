@@ -51,6 +51,8 @@ public:
 
 	void RenderStrikeZone();
 
+	void RenderShadowMap();
+
     // 定数バッファ構造体
     struct scene_constants
     {
@@ -79,4 +81,27 @@ public:
     DirectX::XMFLOAT4 spriteTint = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	bool showPhysxDebug = false;
+
+    struct ShadowMapContext
+    {
+        DirectX::XMFLOAT4X4 lightViewProjection;	// ライトの位置から見た射影行列
+        DirectX::XMFLOAT3	shadowColor;			// 影色
+        float				shadowBias;			// 深度バイアス
+    };
+    DirectX::XMFLOAT4X4     lightViewProjection;
+    float				    shadowBias = { 0.001f }; // (ToT)
+    DirectX::XMFLOAT3	    shadowColor = { 0.5f, 0.5f, 0.5f }; // (ToT)
+
+    DirectX::XMFLOAT3   cameraPosition = {};
+
+    float SHADOWMAP_DRAWRECT = { 30 };
+
+    Microsoft::WRL::ComPtr<ID3D11Device>			 device;
+    Microsoft::WRL::ComPtr<ID3D11Buffer>             shadowMapConstantBuffer;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>   shadowMapDepthStencilView;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowMapShaderResourceView;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState>       shadowMapSamplerState;
+    Microsoft::WRL::ComPtr<ID3D11VertexShader>       shadowMapCasterVertexShader;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout>        shadowMapCasterInputLayout;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> shadowContext;
 };

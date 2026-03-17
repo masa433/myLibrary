@@ -19,6 +19,7 @@ enum class ShaderId
 	Lambert,
 	Phong,
 	Toon,
+	ShadowMap,
 	EnumCount
 };
 

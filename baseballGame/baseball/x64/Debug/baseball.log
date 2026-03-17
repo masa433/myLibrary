@@ -1,10 +1,2 @@
-﻿  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cod
-  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cso
-  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_vs.cod
-  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_vs.cso
-  Pitcher.cpp
-  framework.cpp
-  main.cpp
-  scene_game.cpp
-  コードを生成中...
+﻿  scene_game.cpp
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

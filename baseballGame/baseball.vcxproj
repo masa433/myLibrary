@@ -231,6 +231,7 @@
     <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="scene_game.cpp" />
     <ClCompile Include="shader.cpp" />
+    <ClCompile Include="ShadowMapShader.cpp" />
     <ClCompile Include="shapeRenderer.cpp" />
     <ClCompile Include="sprite.cpp" />
     <ClCompile Include="sprite_batch.cpp" />
@@ -280,6 +281,7 @@
     <ClInclude Include="scene_game.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="ShaderId.h" />
+    <ClInclude Include="ShadowMapShader.h" />
     <ClInclude Include="shapeRenderer.h" />
     <ClInclude Include="sprite.h" />
     <ClInclude Include="sprite_batch.h" />
@@ -297,6 +299,7 @@
     <None Include="PhongShader.hlsli" />
     <None Include="PrimitiveRenderer.hlsli" />
     <None Include="Scene.hlsli" />
+    <None Include="ShadowMapCaster.hlsli" />
     <None Include="Skinning.hlsli" />
     <None Include="SolidShapeRenderer.hlsli" />
     <None Include="ToonShader.hlsli" />
@@ -383,6 +386,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="PrimitiveRendererVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="ShadowMapCasterPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="ShadowMapCasterVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
