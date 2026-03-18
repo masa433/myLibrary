@@ -28,25 +28,34 @@ float4 main(VS_OUT pin) : SV_TARGET
 
     color.rgb *= power;
     
-    // --- ソフトシャドウ（3x3 PCF） ---
-    float2 texelSize = float2(1.0 / SHADOWMAP_WIDTH, 1.0 / SHADOWMAP_HEIGHT);
-    float shadow = 0.0f;
-    [unroll]
-    for (int y = -1; y <= 1; ++y)
-    {
-        [unroll]
-        for (int x = -1; x <= 1; ++x)
-        {
-            float2 offset = float2(x, y) * texelSize;
-            float depth = shadowMap.Sample(ShadowSamplerState, pin.shadowTexcoord.xy + offset).r;
-            shadow += (pin.shadowTexcoord.z - depth > shadowBias) ? 1.0f : 0.0f;
-        }
-    }
-    shadow /= 9.0f;
+    //// --- ソフトシャドウ（3x3 PCF） ---
+    //float2 texelSize = float2(1.0 / SHADOWMAP_WIDTH, 1.0 / SHADOWMAP_HEIGHT);
+    //float shadow = 0.0f;
+    //[unroll]
+    //for (int y = -1; y <= 1; ++y)
+    //{
+    //    [unroll]
+    //    for (int x = -1; x <= 1; ++x)
+    //    {
+    //        float2 offset = float2(x, y) * texelSize;
+    //        float depth = shadowMap.Sample(ShadowSamplerState, pin.shadowTexcoord.xy + offset).r;
+    //        shadow += (pin.shadowTexcoord.z - depth > shadowBias) ? 1.0f : 0.0f;
+    //    }
+    //}
+    //shadow /= 9.0f;
 
     // シャドウ適用
-    color.rgb = lerp(color.rgb, color.rgb * shadowColor.rgb, shadow);
-
+    //color.rgb = lerp(color.rgb, color.rgb * shadowColor.rgb, shadow);
+    // --- ハードシャドウ ---
+    float depth = shadowMap.Sample(ShadowSamplerState, pin.shadowTexcoord.xy).r;
+    
+   
+	    // 深度バイアスを考慮して、影の中にいるかどうかを判定
+    if (pin.shadowTexcoord.z - depth > shadowBias)
+    {
+        color.rgb *= shadowColor.rgb;
+    }
+    
     return color;
 }
 

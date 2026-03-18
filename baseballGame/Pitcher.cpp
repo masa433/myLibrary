@@ -237,7 +237,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 	};
 
 	// ストライクゾーンを描画（緑色の半透明ボックス）
-	shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
+	//shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
 
 	//// strikeZoneMin を赤い球体で描画
 	//shapeRenderer->DrawSphere(strikeZoneMin, 0.1f, { 1, 0, 0, 1 }); // 半径 0.1f の赤い球体

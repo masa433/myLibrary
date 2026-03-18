@@ -13,8 +13,8 @@
 #include "physxManager.h"
 #include "GpuResourceUtils.h"
 
-CONST LONG SHADOWMAP_WIDTH = { 1280 };
-CONST LONG SHADOWMAP_HEIGHT = { 720 };
+CONST LONG SHADOWMAP_WIDTH = { 8192 };
+CONST LONG SHADOWMAP_HEIGHT = { 8192 };
 
 //scene_game::scene_game()
 //{
@@ -327,21 +327,21 @@ void scene_game::RenderShadowMap()
             dc->PSSetConstantBuffers(8/*TODO*/, 1, shadowMapConstantBuffer.GetAddressOf());
         }
 
-        {
-            // カメラ情報・scene_constantsの更新
-            Camera& camera = Camera::Instance();
-            scene_constants scene_data;
-            DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&camera.GetView());
-            DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&camera.GetProjection());
-            DirectX::XMStoreFloat4x4(&scene_data.view_projection, V * P);
-            scene_data.light_direction = DirectX::XMFLOAT4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f);
-            DirectX::XMFLOAT3 eye = camera.GetEye();
-            scene_data.camera_position = DirectX::XMFLOAT4(eye.x, eye.y, eye.z, 1.0f);
+        //{
+        //    // カメラ情報・scene_constantsの更新
+        //    Camera& camera = Camera::Instance();
+        //    scene_constants scene_data;
+        //    DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&camera.GetView());
+        //    DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&camera.GetProjection());
+        //    DirectX::XMStoreFloat4x4(&scene_data.view_projection, V * P);
+        //    scene_data.light_direction = DirectX::XMFLOAT4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f);
+        //    DirectX::XMFLOAT3 eye = camera.GetEye();
+        //    scene_data.camera_position = DirectX::XMFLOAT4(eye.x, eye.y, eye.z, 1.0f);
 
-            dc->UpdateSubresource(constant_buffer.Get(), 0, nullptr, &scene_data, 0, 0);
-            dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
-            dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
-        }
+        //    dc->UpdateSubresource(constant_buffer.Get(), 0, nullptr, &scene_data, 0, 0);
+        //    dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
+        //    dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
+        //}
     }
 
     // 3Dモデル描画
@@ -362,6 +362,16 @@ void scene_game::RenderShadowMap()
 
     // (ToT)
     dc->OMSetRenderTargets(1, cacheRenderTargetView.GetAddressOf(), cacheDepthStencilView.Get());
+
+    // ビューポートをスクリーンサイズにリセット
+    D3D11_VIEWPORT screenViewport{};
+    screenViewport.TopLeftX = 0;
+    screenViewport.TopLeftY = 0;
+    screenViewport.Width = Graphics::Instance().GetScreenWidth();
+    screenViewport.Height = Graphics::Instance().GetScreenHeight();
+    screenViewport.MinDepth = 0.0f;
+    screenViewport.MaxDepth = 1.0f;
+    dc->RSSetViewports(1, &screenViewport);
 }
 
 void scene_game::render(float elapsedTime)
