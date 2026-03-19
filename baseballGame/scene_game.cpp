@@ -376,7 +376,7 @@ void scene_game::RenderShadowMap()
 
 void scene_game::render(float elapsedTime)
 {
-	RenderShadowMap();
+	//RenderShadowMap();
 
     using namespace DirectX;
 

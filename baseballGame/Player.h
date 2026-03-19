@@ -134,6 +134,8 @@ private:
 
     DirectX::XMFLOAT3 meshScale = { 0.0f,0.0f,0.0f };
 
+    physx::PxMaterial* pxBatMaterial = nullptr;//バット専用のマテリアル
+
     float ThrowingStateTime = 0.0f;
 	bool hasPlayHomeRun = false;
 	bool isRightBatter = true; // 右打者かどうかのフラグ

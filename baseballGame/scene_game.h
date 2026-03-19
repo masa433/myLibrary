@@ -80,7 +80,7 @@ public:
     DirectX::XMFLOAT2 spriteScale = { 0.2f, 0.25f };
     DirectX::XMFLOAT4 spriteTint = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-	bool showPhysxDebug = false;
+	bool showPhysxDebug = true;
 
     struct ShadowMapContext
     {

@@ -613,7 +613,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					}
 
 					// 打球速度の経験式（上限として使う）
-					float estimatedExitVelocity = (0.2f * ballSpeed + 1.2f * batSpeed);
+					float estimatedExitVelocity = (batRestitution * ballSpeed + (1.0f + batRestitution) * batSpeed);
 
 					// 打球角度（法線ベース）を計算
 					float launchAngle = std::atan2(
@@ -673,9 +673,9 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					{
 						// 物理ベースの速度に対して、経験式の速度を「上限」としてクランプする
 						// かつ過剰なブーストにならないよう倍率を制限
-						float targetSpeed = (std::min)(estimatedExitVelocity, physSpeed * 1.2f); // 物理速度の 1.2倍まで
+						float targetSpeed = (std::min)(estimatedExitVelocity, physSpeed); // 物理ベースの速度を上限とする
 						float scale = targetSpeed / physSpeed;
-						scale = std::clamp(scale, 0.2f, 1.2f);
+						scale = std::clamp(scale, 0.0f, 0.8f);
 						newBallVelocity *= scale;
 					}
 					else

@@ -92,9 +92,12 @@ void Player::Initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-		pxMaterial->setRestitution(0.45f);// 反発係数を設定
-		pxMaterial->setDynamicFriction(0.3f);// 動的摩擦係数を設定
-		pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
+		//pxMaterial->setRestitution(0.2f);// 反発係数を設定
+		//pxMaterial->setDynamicFriction(0.3f);// 動的摩擦係数を設定
+		//pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
+
+        //バット専用マテリアルの作成
+        pxBatMaterial = pxPhysics->createMaterial(0.3f, 0.3f, 0.2f);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
 		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
@@ -122,7 +125,7 @@ void Player::Initialize()
             physx::PxQuat(physx::PxIdentity)
         );
         physx::PxConvexMeshGeometry pxConvexGeometry(pxBatConvexMesh, pxMeshScale);
-        physx::PxRigidActorExt::createExclusiveShape(*pxBatRigidBody, pxConvexGeometry, *pxMaterial);
+        physx::PxRigidActorExt::createExclusiveShape(*pxBatRigidBody, pxConvexGeometry, *pxBatMaterial);
 
         // 質量の設定
         physx::PxRigidBodyExt::updateMassAndInertia(*pxBatRigidBody, 0.9);
@@ -142,6 +145,7 @@ void Player::Uninitialize()
     pxScene->removeActor(*pxBatRigidBody);
 
     PX_RELEASE(pxBatConvexMesh);
+    PX_RELEASE(pxBatMaterial);
 }
 
 // プレイヤー固有の更新処理

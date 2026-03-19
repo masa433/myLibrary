@@ -45,7 +45,7 @@ void Pitcher::Initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-		pxMaterial->setRestitution(0.5f);// 反発係数を設定
+		pxMaterial->setRestitution(0.43f);// 反発係数を設定
 		pxMaterial->setDynamicFriction(0.3f);// 動摩擦係数を設定
 		pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
 		//pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
