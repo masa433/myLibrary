@@ -625,15 +625,15 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					float angleScale = 1.0f;
 					if (launchAngleDeg <= -20.0f)
 					{
-						// -20度〜-60度で 0.7 -> 0.5 まで落とす
+						// -20度〜-60度で 0.85 -> 0.75 まで落とす
 						float t = std::clamp((launchAngleDeg + 20.0f) / -40.0f, 0.0f, 1.0f);
-						angleScale = 0.7f - 0.2f * t;
+						angleScale = 0.85f - 0.1f * t;
 					}
 					else if (launchAngleDeg < 0.0f)
 					{
-						// 0〜-20度で 0.9 -> 0.7
+						// 0〜-20度で 0.95 -> 0.85 まで落とす
 						float t = std::clamp(launchAngleDeg / -20.0f, 0.0f, 1.0f);
-						angleScale = 0.9f - 0.2f * t;
+						angleScale = 0.95f - 0.1f * t;
 					}
 					estimatedExitVelocity *= angleScale;
 
@@ -673,15 +673,25 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					{
 						// 物理ベースの速度に対して、経験式の速度を「上限」としてクランプする
 						// かつ過剰なブーストにならないよう倍率を制限
-						float targetSpeed = (std::min)(estimatedExitVelocity, physSpeed); // 物理ベースの速度を上限とする
+						float targetSpeed = (std::min)(estimatedExitVelocity, physSpeed * 0.8f); // 物理ベースの速度を超えないようにしつつ、最大でも20%程度のブーストに留める
 						float scale = targetSpeed / physSpeed;
-						scale = std::clamp(scale, 0.0f, 0.8f);
+						scale = std::clamp(scale, 0.0f, 1.0f);
 						newBallVelocity *= scale;
 					}
 					else
 					{
 						// ほぼ静止していた場合は、法線方向に経験式速度を与える
 						newBallVelocity = collisionNormal * estimatedExitVelocity;
+					}
+
+					// ===== 打球速度の上限設定（195 km/h） =====
+					const float MAX_EXIT_VELOCITY_KMH = 195.0f;
+					const float MAX_EXIT_VELOCITY_MS = MAX_EXIT_VELOCITY_KMH / 3.6f;  // m/s に変換
+					float currentExitSpeed = newBallVelocity.magnitude();
+					if (currentExitSpeed > MAX_EXIT_VELOCITY_MS)
+					{
+						// 速度を正規化してから上限値を掛ける
+						newBallVelocity = (newBallVelocity / currentExitSpeed) * MAX_EXIT_VELOCITY_MS;
 					}
 
 					// ===== 8. マグヌス効果の初期計算（デバッグ用） =====
@@ -757,10 +767,67 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			}
 
 		// ボールとステージの衝突を検知
-		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stage") ||
-			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stage"))
+		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Ground") ||
+			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Ground"))
 		{
 			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
+
+			// キューに速度変更リクエストを追加
+			{
+				std::lock_guard<std::mutex> lock(queueMutex);
+				velocityUpdateQueue.push([]() {
+					physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+					physx::PxVec3 velocity = ballCollider->getLinearVelocity();
+
+					// 速度の大きさをチェック
+					float speed = velocity.magnitude();
+
+					// 速度がある程度以上ある場合のみ減衰を適用
+					if (speed > 0.1f)
+					{
+						// ステージのマテリアルから摩擦係数を取得
+						physx::PxMaterial* stageMaterial = Physics::Instance().GetMaterial();
+						float friction = stageMaterial->getDynamicFriction();
+
+						// 摩擦係数から減衰率を計算
+						// 摩擦係数が大きいほど減衰が強い
+						float dampingFactor = 1.0f - (friction * 0.02f);  // 摩擦係数を減衰に反映
+						dampingFactor = std::clamp(dampingFactor, 0.3f, 0.999f);  // クランプして安定させる
+
+						velocity *= dampingFactor;
+
+						// 回転速度も同じように減衰
+						physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
+						angularVelocity *= dampingFactor;
+
+						ballCollider->setLinearVelocity(velocity);
+						ballCollider->setAngularVelocity(angularVelocity);
+					}
+					else
+					{
+						// 速度が非常に小さくなったら完全に停止
+						ballCollider->setLinearVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
+						ballCollider->setAngularVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
+					}
+					});
+			}
+
+			// ボールのコライダーを取得
+			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+			if (ballCollider)
+			{
+				// ボールの形状を取得
+				physx::PxShape* ballShape;
+				ballCollider->getShapes(&ballShape, 1);
+
+				// ボールのマテリアルを取得
+				physx::PxMaterial* ballMaterial;
+				ballShape->getMaterials(&ballMaterial, 1);
+
+				ballMaterial->setRestitution(0.5f);
+				
+				
+			}
 
 			////何メートル飛んだかを表示(最初の着弾点のみ)
 			//physx::PxRigidBody* ballCollider = Pitcher::Instance().GetBallCollider();
@@ -791,38 +858,11 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 		}
 
-		// ボールとステージの衝突を検知
-		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stage") ||
-			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stage"))
+		//ボールとフェンスの衝突を検知
+		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stand") ||
+			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stand"))
 		{
-			//OutputDebugStringA("Ball collided with Stage\n"); // ログを追加
-
-			// キューに速度変更リクエストを追加
-			{
-				std::lock_guard<std::mutex> lock(queueMutex);
-				velocityUpdateQueue.push([]() {
-					physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
-					physx::PxVec3 velocity = ballCollider->getLinearVelocity();
-
-					// 減衰率を設定（例: 50% 減衰）
-					float dampingFactor = 0.996f;
-					velocity *= dampingFactor;
-
-					// 回転速度も減衰
-					physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
-					angularVelocity *= dampingFactor;
-
-					// シミュレーション終了後に速度を設定
-					ballCollider->setLinearVelocity(velocity);
-					ballCollider->setAngularVelocity(angularVelocity);
-					});
-			}
-		}
-
-		//ボールとピッチングネットの衝突を検知
-		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Net") ||
-			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Net"))
-			{
+			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
 			// ボールのコライダーを取得
 			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
 			if (ballCollider)
@@ -830,34 +870,55 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				// ボールの形状を取得
 				physx::PxShape* ballShape;
 				ballCollider->getShapes(&ballShape, 1);
-
 				// ボールのマテリアルを取得
 				physx::PxMaterial* ballMaterial;
 				ballShape->getMaterials(&ballMaterial, 1);
-
 				// ボールの反発係数を変更
 				ballMaterial->setRestitution(0.1f);
 
+				
 			}
 		}
+		
+		////ボールとピッチングネットの衝突を検知
+		//if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Net") ||
+		//	(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Net"))
+		//	{
+		//	// ボールのコライダーを取得
+		//	physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+		//	if (ballCollider)
+		//	{
+		//		// ボールの形状を取得
+		//		physx::PxShape* ballShape;
+		//		ballCollider->getShapes(&ballShape, 1);
 
-		// バットとの衝突時
-		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
-			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
-		{
-			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
-			if (ballCollider)
-			{
-				physx::PxShape* ballShape;
-				ballCollider->getShapes(&ballShape, 1);
+		//		// ボールのマテリアルを取得
+		//		physx::PxMaterial* ballMaterial;
+		//		ballShape->getMaterials(&ballMaterial, 1);
 
-				physx::PxMaterial* ballMaterial;
-				ballShape->getMaterials(&ballMaterial, 1);
+		//		// ボールの反発係数を変更
+		//		ballMaterial->setRestitution(0.1f);
 
-				// バットとの衝突時に反発係数を元に戻す
-				ballMaterial->setRestitution(0.5f);
-			}
-		}
+		//	}
+		//}
+
+		//// バットとの衝突時
+		//if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
+		//	(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
+		//{
+		//	physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+		//	if (ballCollider)
+		//	{
+		//		physx::PxShape* ballShape;
+		//		ballCollider->getShapes(&ballShape, 1);
+
+		//		physx::PxMaterial* ballMaterial;
+		//		ballShape->getMaterials(&ballMaterial, 1);
+
+		//		// バットとの衝突時に反発係数を元に戻す
+		//		ballMaterial->setRestitution(0.5f);
+		//	}
+		//}
 	}
 }
 

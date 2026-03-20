@@ -10,57 +10,29 @@ void stage::initialize()
 	ID3D11Device* device = Graphics::Instance().GetDevice();
 
 	// モデルの読み込み
-	model = std::make_unique<Model>(".\\resources\\field\\stadium2.mdl");
+	stand = std::make_unique<Model>(".\\resources\\field\\stand.mdl");
+	ground = std::make_unique<Model>(".\\resources\\field\\ground.mdl");
 	// 位置、スケール、回転の初期化
 	position = { 0.0f, 0.0f, 0.0f };
 	scale = { 0.01f, 0.01f, 0.01f };
-	angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
-
+	angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f };
 
 	//静的剛体の作成
 	{
-		// ボックスコライダーの生成
 		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 
-		//
-
-		//// ボックスコライダーを複数作成
-		//boxPositions = { {0.0f, 3.0f, 50.0f},{0.0f, 3.0f, 50.0f} }; // ボックスの位置
-
-		//boxSizes = { {40.0f, 20.0f, 45.0f}, {50.0f, 20.0f, 30.0f} }; // ボックスのサイズ
-
-		//for (size_t i = 0; i < boxPositions.size(); ++i)
-		//{
-		//	physx::PxTransform boxTransform(boxPositions[i]);
-		//	physx::PxRigidStatic* boxCollider = pxPhysics->createRigidStatic(boxTransform);
-		//	physx::PxShape* boxShape = pxPhysics->createShape(physx::PxBoxGeometry(boxSizes[i]), *pxMaterial);
-
-		//	// フィルターデータを設定
-		//	physx::PxFilterData filterData;
-		//	filterData.word0 = 1 << 1; // ボックスコライダー用のグループ
-		//	boxShape->setSimulationFilterData(filterData);
-
-		//	boxCollider->attachShape(*boxShape);
-		//	pxScene->addActor(*boxCollider);
-		//	boxColliders.push_back(boxCollider);
-
-		//	boxShape->release(); // 解放
-		//}
-
-
-		pxMaterial->setRestitution(0.0f);// 反発係数を設定
-		pxMaterial->setDynamicFriction(1.0f);// 動的摩擦係数を設定
-		pxMaterial->setStaticFriction(1.0f);// 静止摩擦係数を設定
-
-		const ModelResource* resources = model->GetResource();
+		pxMaterial->setRestitution(0.2f);
+		pxMaterial->setDynamicFriction(0.1f);
+		pxMaterial->setStaticFriction(0.2f);
 
 		DirectX::XMMATRIX Transform = DirectX::XMLoadFloat4x4(&transform);
 
-		for (const ModelResource::Mesh& mesh : resources->GetMeshes()) 
+		// Stand モデルのメッシュを処理
+		const ModelResource* standResources = stand->GetResource();
+		for (const ModelResource::Mesh& mesh : standResources->GetMeshes())
 		{
-			// 三角形メッシュの作成
 			physx::PxTriangleMeshDesc meshDesc;
 			meshDesc.points.count = static_cast<physx::PxU32>(mesh.vertices.size());
 			meshDesc.points.data = mesh.vertices.data();
@@ -73,10 +45,9 @@ void stage::initialize()
 			const physx::PxCookingParams cookingParams(pxTolerances);
 			physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
 
-			//静的剛体の作成
-			const Model::Node& node = model->GetNodes().at(mesh.nodeIndex);
-			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z); // スケール行列を作成
-			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z); // 回転行列を作成
+			const Model::Node& node = stand->GetNodes().at(mesh.nodeIndex);
+			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
 			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * Transform;
 			physx::PxVec3 pxScale(
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
@@ -96,24 +67,74 @@ void stage::initialize()
 				physx::PxVec3(nodeTransform._41, nodeTransform._42, nodeTransform._43)
 			));
 			physx::PxRigidStatic* pxRigidBody = pxPhysics->createRigidStatic(pxTransform);
-			_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create rigid body");
+			_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create stand rigid body");
 
-			//静的剛体にメッシュ形状を関連付ける
 			physx::PxMeshScale pxMeshScale(pxScale);
 			physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
 			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *pxMaterial);
 
-			pxRigidBody->setName("Stage");
+			pxRigidBody->setName("Stand");
 
-			//シーンに剛体を追加
 			pxScene->addActor(*pxRigidBody);
 
-			//削除用にポインタを保持
+			actors.emplace_back(pxRigidBody);
+			triangle_meshes.emplace_back(pxTriangleMesh);
+		}
+
+		// Ground モデルのメッシュを処理
+		const ModelResource* groundResources = ground->GetResource();
+		for (const ModelResource::Mesh& mesh : groundResources->GetMeshes())
+		{
+			physx::PxTriangleMeshDesc meshDesc;
+			meshDesc.points.count = static_cast<physx::PxU32>(mesh.vertices.size());
+			meshDesc.points.data = mesh.vertices.data();
+			meshDesc.points.stride = sizeof(ModelResource::Vertex);
+			meshDesc.triangles.count = static_cast<physx::PxU32>(mesh.indices.size() / 3);
+			meshDesc.triangles.data = mesh.indices.data();
+			meshDesc.triangles.stride = sizeof(UINT) * 3;
+
+			physx::PxTolerancesScale pxTolerances;
+			const physx::PxCookingParams cookingParams(pxTolerances);
+			physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
+
+			const Model::Node& node = ground->GetNodes().at(mesh.nodeIndex);
+			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
+			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * Transform;
+			physx::PxVec3 pxScale(
+				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
+				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),
+				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[2]))
+			);
+			NodeTransform.r[0] = DirectX::XMVector3Normalize(NodeTransform.r[0]);
+			NodeTransform.r[1] = DirectX::XMVector3Normalize(NodeTransform.r[1]);
+			NodeTransform.r[2] = DirectX::XMVector3Normalize(NodeTransform.r[2]);
+
+			DirectX::XMFLOAT4X4 nodeTransform;
+			DirectX::XMStoreFloat4x4(&nodeTransform, NodeTransform);
+			physx::PxTransform pxTransform(physx::PxMat44(
+				physx::PxVec3(nodeTransform._11, nodeTransform._12, nodeTransform._13),
+				physx::PxVec3(nodeTransform._21, nodeTransform._22, nodeTransform._23),
+				physx::PxVec3(nodeTransform._31, nodeTransform._32, nodeTransform._33),
+				physx::PxVec3(nodeTransform._41, nodeTransform._42, nodeTransform._43)
+			));
+			physx::PxRigidStatic* pxRigidBody = pxPhysics->createRigidStatic(pxTransform);
+			_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create ground rigid body");
+
+			physx::PxMeshScale pxMeshScale(pxScale);
+			physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
+			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *pxMaterial);
+
+			pxRigidBody->setName("Ground");
+
+			pxScene->addActor(*pxRigidBody);
+
 			actors.emplace_back(pxRigidBody);
 			triangle_meshes.emplace_back(pxTriangleMesh);
 		}
 	}
 }
+
 
 // 更新
 void stage::update(float elapsedTime)
@@ -168,9 +189,10 @@ void stage::update(float elapsedTime)
 
 void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 {
-
-	renderer->Render(rc, transform, model.get(), ShaderId::ShadowMap);
+	renderer->Render(rc, transform, stand.get(), ShaderId::ShadowMap);
+	renderer->Render(rc, transform, ground.get(), ShaderId::ShadowMap);
 }
+
 
 // 終了
 void stage::uninitialize()

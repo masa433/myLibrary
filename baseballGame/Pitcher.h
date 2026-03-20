@@ -120,6 +120,7 @@ private:
 		bool hasBeenJudged = false; // 判定済みフラグ
 
 		physx::PxRigidDynamic* ballCollider = nullptr; // ボールのコライダー
+		physx::PxMaterial* pxBallMaterial = nullptr;//ボール専用のマテリアル
 
 		float throwCounter = 0.0f; // 投球カウンター
 		bool hasReachedZero = false; // z = 0.0f に到達したかどうか

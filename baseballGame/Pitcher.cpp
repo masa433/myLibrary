@@ -45,9 +45,10 @@ void Pitcher::Initialize()
 		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-		pxMaterial->setRestitution(0.43f);// 反発係数を設定
-		pxMaterial->setDynamicFriction(0.3f);// 動摩擦係数を設定
-		pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
+		//pxMaterial->setRestitution(0.6f);// 反発係数を設定
+		//pxMaterial->setDynamicFriction(0.4f);// 動摩擦係数を設定
+		//pxMaterial->setStaticFriction(0.5f);// 静止摩擦係数を設定
+		pxBallMaterial = pxPhysics->createMaterial(0.5f, 0.4f, 0.62f); // ボール専用のマテリアルとして保存
 		//pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		// ボールの球状コライダーを作成
@@ -60,7 +61,7 @@ void Pitcher::Initialize()
 		_ASSERT_EXPR(ballCollider != nullptr, "Failed to create ball collider");
 
 		// ボールのコライダーに形状を追加
-		physx::PxShape* ballShape = pxPhysics->createShape(ballGeometry, *pxMaterial);
+		physx::PxShape* ballShape = pxPhysics->createShape(ballGeometry, *pxBallMaterial);
 		ballCollider->attachShape(*ballShape);
 
 		// ボールの質量を設定
@@ -84,6 +85,7 @@ void Pitcher::Initialize()
 void Pitcher::Uninitialize() 
 {
 	PX_RELEASE(ballCollider);
+	PX_RELEASE(pxBallMaterial);
 }
 
 // 更新
