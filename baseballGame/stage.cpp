@@ -21,11 +21,12 @@ void stage::initialize()
 	{
 		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
-		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
 
-		pxMaterial->setRestitution(0.2f);
-		pxMaterial->setDynamicFriction(0.1f);
-		pxMaterial->setStaticFriction(0.2f);
+		// Ground用のマテリアル（よく跳ねる）
+		physx::PxMaterial* groundMaterial = pxPhysics->createMaterial(0.1f, 0.1f, 0.6f);
+
+		// Stand用のマテリアル（ほぼ跳ねない）
+		physx::PxMaterial* standMaterial = pxPhysics->createMaterial(0.2f, 0.2f, 0.1f);
 
 		DirectX::XMMATRIX Transform = DirectX::XMLoadFloat4x4(&transform);
 
@@ -71,7 +72,7 @@ void stage::initialize()
 
 			physx::PxMeshScale pxMeshScale(pxScale);
 			physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
-			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *pxMaterial);
+			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *standMaterial);
 
 			pxRigidBody->setName("Stand");
 
@@ -123,7 +124,7 @@ void stage::initialize()
 
 			physx::PxMeshScale pxMeshScale(pxScale);
 			physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
-			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *pxMaterial);
+			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *groundMaterial);
 
 			pxRigidBody->setName("Ground");
 

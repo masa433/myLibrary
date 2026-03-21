@@ -791,8 +791,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 						// 摩擦係数から減衰率を計算
 						// 摩擦係数が大きいほど減衰が強い
-						float dampingFactor = 1.0f - (friction * 0.02f);  // 摩擦係数を減衰に反映
-						dampingFactor = std::clamp(dampingFactor, 0.3f, 0.999f);  // クランプして安定させる
+						float dampingFactor = 1.0f - (friction * 0.001f);  // 摩擦係数を減衰に反映
+						//dampingFactor = std::clamp(dampingFactor, 0.3f, 0.999f);  // クランプして安定させる
 
 						velocity *= dampingFactor;
 
@@ -824,7 +824,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				physx::PxMaterial* ballMaterial;
 				ballShape->getMaterials(&ballMaterial, 1);
 
-				ballMaterial->setRestitution(0.5f);
+				ballMaterial->setRestitution(0.2f);
 				
 				
 			}
@@ -874,7 +874,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				physx::PxMaterial* ballMaterial;
 				ballShape->getMaterials(&ballMaterial, 1);
 				// ボールの反発係数を変更
-				ballMaterial->setRestitution(0.1f);
+				ballMaterial->setRestitution(0.0f);
 
 				
 			}
