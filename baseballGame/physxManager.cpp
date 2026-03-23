@@ -812,22 +812,22 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					});
 			}
 
-			// ボールのコライダーを取得
-			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
-			if (ballCollider)
-			{
-				// ボールの形状を取得
-				physx::PxShape* ballShape;
-				ballCollider->getShapes(&ballShape, 1);
+			//// ボールのコライダーを取得
+			//physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+			//if (ballCollider)
+			//{
+			//	// ボールの形状を取得
+			//	physx::PxShape* ballShape;
+			//	ballCollider->getShapes(&ballShape, 1);
 
-				// ボールのマテリアルを取得
-				physx::PxMaterial* ballMaterial;
-				ballShape->getMaterials(&ballMaterial, 1);
+			//	// ボールのマテリアルを取得
+			//	physx::PxMaterial* ballMaterial;
+			//	ballShape->getMaterials(&ballMaterial, 1);
 
-				ballMaterial->setRestitution(0.2f);
-				
-				
-			}
+			//	ballMaterial->setRestitution(0.1f);
+			//	
+			//	
+			//}
 
 			////何メートル飛んだかを表示(最初の着弾点のみ)
 			//physx::PxRigidBody* ballCollider = Pitcher::Instance().GetBallCollider();
@@ -863,21 +863,21 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stand"))
 		{
 			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
-			// ボールのコライダーを取得
-			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
-			if (ballCollider)
-			{
-				// ボールの形状を取得
-				physx::PxShape* ballShape;
-				ballCollider->getShapes(&ballShape, 1);
-				// ボールのマテリアルを取得
-				physx::PxMaterial* ballMaterial;
-				ballShape->getMaterials(&ballMaterial, 1);
-				// ボールの反発係数を変更
-				ballMaterial->setRestitution(0.0f);
+			//// ボールのコライダーを取得
+			//physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+			//if (ballCollider)
+			//{
+			//	// ボールの形状を取得
+			//	physx::PxShape* ballShape;
+			//	ballCollider->getShapes(&ballShape, 1);
+			//	// ボールのマテリアルを取得
+			//	physx::PxMaterial* ballMaterial;
+			//	ballShape->getMaterials(&ballMaterial, 1);
+			//	// ボールの反発係数を変更
+			//	ballMaterial->setRestitution(0.0f);
 
-				
-			}
+			//	
+			//}
 		}
 		
 		////ボールとピッチングネットの衝突を検知

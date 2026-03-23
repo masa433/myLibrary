@@ -48,7 +48,7 @@ void Pitcher::Initialize()
 		//pxMaterial->setRestitution(0.6f);// 反発係数を設定
 		//pxMaterial->setDynamicFriction(0.4f);// 動摩擦係数を設定
 		//pxMaterial->setStaticFriction(0.5f);// 静止摩擦係数を設定
-		pxBallMaterial = pxPhysics->createMaterial(0.5f, 0.4f, 0.62f); // ボール専用のマテリアルとして保存
+		pxBallMaterial = pxPhysics->createMaterial(0.5f, 0.4f, 0.52f); // ボール専用のマテリアルとして保存
 		//pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		// ボールの球状コライダーを作成
@@ -569,6 +569,19 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			throwCounter = 0.0f; // 投球カウンターをリセット
 			hasReachedZero = false; // z = 0.0f に到達フラグをリセット
 			SetHasCollided(false);
+
+			// ボール反発係数をリセット
+			{
+				physx::PxRigidDynamic* ballCollider = GetBallCollider();
+				if (ballCollider)
+				{
+					physx::PxShape* ballShape;
+					ballCollider->getShapes(&ballShape, 1);
+					physx::PxMaterial* ballMaterial;
+					ballShape->getMaterials(&ballMaterial, 1);
+					ballMaterial->setRestitution(0.52f);  // 初期値に設定
+				}
+			}
 
 			float speedMs = ballSpeedKmh / 3.6f;
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
