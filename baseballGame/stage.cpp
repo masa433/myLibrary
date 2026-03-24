@@ -26,7 +26,7 @@ void stage::initialize()
 		physx::PxMaterial* groundMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.15f);
 
 		// Stand用のマテリアル（ほぼ跳ねない）
-		physx::PxMaterial* standMaterial = pxPhysics->createMaterial(0.2f, 0.2f, 0.0f);
+		physx::PxMaterial* standMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.0f);
 
 		DirectX::XMMATRIX Transform = DirectX::XMLoadFloat4x4(&transform);
 

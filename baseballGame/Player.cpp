@@ -332,7 +332,6 @@ void Player::UpdateLookAt(const DirectX::XMFLOAT3& targetPosition)
         };
     traverse(-1, neck_joint_index);
 }
-
 // プレイヤー固有のレンダリング処理
 void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
 {
