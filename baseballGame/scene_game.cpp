@@ -70,7 +70,7 @@ void scene_game::initialize()
     Pitcher::Instance().Initialize();
 
     //ネットの初期化
-    PitchingNet::Instance().Initialize();
+    //PitchingNet::Instance().Initialize();
 
     //ストライクゾーンの初期化
     strikeZoneSprite = std::make_unique<sprite>(device, L"./resources/sprite/strikeZone.png");
@@ -160,7 +160,7 @@ void scene_game::update(float elapsed_time)
     Pitcher::Instance().Update(elapsed_time);
 
 	// ネットの更新
-	PitchingNet::Instance().Update(elapsed_time);
+	//PitchingNet::Instance().Update(elapsed_time);
 
     // 物理システムの更新
     Physics::Instance().Update(elapsed_time);
@@ -356,7 +356,7 @@ void scene_game::RenderShadowMap()
 		Pitcher::Instance().Render(rc, modelRenderer);
 
 		//ネット描画
-		PitchingNet::Instance().Render(rc, modelRenderer);
+		//PitchingNet::Instance().Render(rc, modelRenderer);
     }
 
 
@@ -496,7 +496,7 @@ void scene_game::uninitialize()
     Player::Instance().Uninitialize();
     stage::Instance().uninitialize();
     Pitcher::Instance().Uninitialize();
-	PitchingNet::Instance().Uninitialize();
+	//PitchingNet::Instance().Uninitialize();
     Physics::Instance().Finalize();
 }
 
@@ -509,5 +509,5 @@ void scene_game::DrawGUI()
 	Pitcher::Instance().DrawGUI();
 
 	// ピッチングネットのGUI描画
-	PitchingNet::Instance().DrawGUI();
+	//PitchingNet::Instance().DrawGUI();
 }
