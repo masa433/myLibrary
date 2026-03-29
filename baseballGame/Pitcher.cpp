@@ -35,7 +35,7 @@ void Pitcher::Initialize()
 	ballScale = { 100.0f,100.0f,100.0f };
 	ballAngle = { 0.0f,DirectX::XMConvertToRadians(90.0f),0.0f };
 
-	ballDebugRadius = 0.05f; // デバッグ用の半径
+	ballDebugRadius = 0.1f; // デバッグ用の半径
 
 	//rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
@@ -641,7 +641,7 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	{
 		float breakFactor = (std::min)(1.0f, (distanceTravel - breakStartDistance) / 10.0f);
 		float smoothBreakFactor = sinf(breakFactor * DirectX::XM_PIDIV2);
-		float forceMultiplier = 0.0001f; // 半径に基づいてスケーリング
+		float forceMultiplier = 0.0005f; // 半径に基づいてスケーリング
 
 		// 横方向の力を加える
 		physx::PxVec3 lateralForce(horizontalBreak * smoothBreakFactor * forceMultiplier, 0.0f, 0.0f);
