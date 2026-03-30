@@ -631,7 +631,7 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	// ナックルボールの特性: ランダムな横方向の揺れを加える
 	if (selectedPitchType == PitchType::Knuckleball)
 	{
-		float randomLateralForce = GenerateRandomFloat(-0.1f, 0.1f); // ランダムな横方向の力
+		float randomLateralForce = GenerateRandomFloat(-0.01f, 0.01f); // ランダムな横方向の力
 		physx::PxVec3 lateralForce(randomLateralForce, 0.0f, 0.0f);
 		ballCollider->addForce(lateralForce, physx::PxForceMode::eFORCE);
 	}
@@ -675,9 +675,9 @@ void Pitcher::SelectPitchType()
 	// 乱数生成
 	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
 
-	if (randomValue <= 0.9f) // 50%の確率でストレート
+	if (randomValue <= 1.0f) // 50%の確率でストレート
 	{
-		selectedPitchType = PitchType::Fastball;
+		selectedPitchType = PitchType::Shooter;
 	}
 	else // 残り50%の確率で他の球種をランダムに選択
 	{
@@ -814,5 +814,5 @@ void Pitcher::SelectPitchType()
 	throwDirection.z = -1.0f; // 前方向固定
 
 	// ランダムな発射角度を設定
-	launchAngleDegrees = GenerateRandomFloat(0.0f, 0.3f); // -4度から-2度の範囲でランダム
+	launchAngleDegrees = GenerateRandomFloat(0.0f, 1.0f); // -4度から-2度の範囲でランダム
 }
