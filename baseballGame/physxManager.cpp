@@ -542,6 +542,10 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 				if (ballCollider && batCollider)
 				{
+					// バット衝突時のボール位置を保存
+					physx::PxVec3 hitPos = ballCollider->getGlobalPose().p;
+					Pitcher::Instance().SetBallHitPosition({ hitPos.x, hitPos.y, hitPos.z });
+
 					// ===== 物理定数 =====
 					const float AIR_DENSITY = 1.2f;                // 空気密度 (kg/m³)
 					const float BALL_RADIUS = 0.037f;              // 野球ボールの半径 (m)
@@ -863,21 +867,78 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stand"))
 		{
 			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
-			//// ボールのコライダーを取得
-			//physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
-			//if (ballCollider)
-			//{
-			//	// ボールの形状を取得
-			//	physx::PxShape* ballShape;
-			//	ballCollider->getShapes(&ballShape, 1);
-			//	// ボールのマテリアルを取得
-			//	physx::PxMaterial* ballMaterial;
-			//	ballShape->getMaterials(&ballMaterial, 1);
-			//	// ボールの反発係数を変更
-			//	ballMaterial->setRestitution(0.0f);
 
-			//	
-			//}
+			// フェンスとの衝突が初回のみ飛距離を出力
+			if (!Pitcher::Instance().GetHasCollidedWithFence())
+			{
+				Pitcher::Instance().SetHasCollidedWithFence(true);
+
+				// ボールのコライダーを取得
+				physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+				if (ballCollider)
+				{
+					// ボールの現在位置を取得（フェンス衝突位置）
+					physx::PxVec3 ballFencePosition = ballCollider->getGlobalPose().p;
+
+					// バット衝突時のボール位置を取得
+					DirectX::XMFLOAT3 ballHitPos = Pitcher::Instance().GetBallHitPosition();
+
+					// 実測飛距離を計算（3次元）
+					float distanceX = ballFencePosition.x - ballHitPos.x;
+					float distanceY = ballFencePosition.y - ballHitPos.y;
+					float distanceZ = ballFencePosition.z - ballHitPos.z;
+					float measuredDistance = sqrtf(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ);
+					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
+
+					// ===== 推定飛距離の計算（地面がなかったらどこまで飛ぶか） =====
+					physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
+					float exitVelocity = ballVelocity.magnitude();
+
+					// 打球角度を計算（速度ベクトルから）
+					float launchAngle = std::atan2(ballVelocity.y,
+						sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z));
+
+					// 投射体運動の公式: 飛距離 = (v₀² × sin(2θ)) / g
+					// これは「初期高さと同じ高さに落ちるまでの水平距離」を表す
+					const float GRAVITY = 9.81f;
+					float estimatedDistance = 0.0f;
+
+					if (exitVelocity > 0.1f)
+					{
+						float angle2 = 2.0f * launchAngle;
+						// 絶対値を使用して負の値を防ぐ
+						estimatedDistance = std::abs((exitVelocity * exitVelocity * sinf(angle2)) / GRAVITY);
+					}
+
+					// 総飛距離 = 実測飛距離 + 推定飛距離
+					// （推定飛距離は地面がなかったらあと何メートル飛ぶかを表す）
+					float totalDistance = measuredDistance + estimatedDistance;
+
+					// 飛距離を出力
+					char debugMessage[768];
+					snprintf(
+						debugMessage,
+						sizeof(debugMessage),
+						"=== ボールがフェンスに入った ===\n"
+						"実測飛距離: %.2f m\n"
+						"推定飛距離（地面がなかったら）: %.2f m\n"
+						"総飛距離: %.2f m\n"
+						"水平飛距離: %.2f m\n"
+						"バット衝突位置: X=%.2f, Y=%.2f, Z=%.2f\n"
+						"フェンス衝突位置: X=%.2f, Y=%.2f, Z=%.2f\n",
+						measuredDistance,
+						estimatedDistance,
+						totalDistance,
+						horizontalDistance,
+						ballHitPos.x,
+						ballHitPos.y,
+						ballHitPos.z,
+						ballFencePosition.x,
+						ballFencePosition.y,
+						ballFencePosition.z);
+					OutputDebugStringA(debugMessage);
+				}
+			}
 		}
 		
 		////ボールとピッチングネットの衝突を検知

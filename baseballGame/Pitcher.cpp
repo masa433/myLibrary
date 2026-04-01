@@ -173,6 +173,7 @@ void Pitcher::Update(float elapsedTime)
 		isBallThrown = false;
 		hasBeenJudged = false; // 判定フラグをリセット
 		hasCollided = false; // 衝突フラグをリセット
+		hasCollidedWithFence = false; // フェンス衝突フラグをリセット
 	}
 }
 
@@ -569,6 +570,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			throwCounter = 0.0f; // 投球カウンターをリセット
 			hasReachedZero = false; // z = 0.0f に到達フラグをリセット
 			SetHasCollided(false);
+			SetHasCollidedWithFence(false);
 
 			// ボール反発係数をリセット
 			{
@@ -677,7 +679,7 @@ void Pitcher::SelectPitchType()
 
 	if (randomValue <= 1.0f) // 50%の確率でストレート
 	{
-		selectedPitchType = PitchType::Shooter;
+		selectedPitchType = PitchType::Fastball;
 	}
 	else // 残り50%の確率で他の球種をランダムに選択
 	{
@@ -691,7 +693,7 @@ void Pitcher::SelectPitchType()
 	{
 	case PitchType::Fastball: // ストレート
 		horizontalBreak = 0.0f;
-		verticalBreak = 5.0f;//ややホップするような感じ
+		verticalBreak = 10.0f;//ややホップするような感じ
 		ballSpeedKmh = 150.0f; // 速い
 		ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // バックスピン
@@ -788,7 +790,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Shooter: // シュート
-		horizontalBreak = -30.0f;  // 大きく右に曲がる
+		horizontalBreak = -15.0f;  // 大きく右に曲がる
 		verticalBreak = -5.0f;   // 少し落ちる
 		ballSpeedKmh = 145.0f;    // 遅い
 		ballAngle = { -0.2f, 0.0f, 0.0f };

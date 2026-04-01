@@ -146,5 +146,15 @@ public:
 		void SetHasCollided(bool collided) { hasCollided = collided; }
 
 		const State GetCurrentState() const { return currentState; }
+
+		// フェンスとの衝突フラグ
+		bool hasCollidedWithFence = false;
+		void SetHasCollidedWithFence(bool collided) { hasCollidedWithFence = collided; }
+		bool GetHasCollidedWithFence() const { return hasCollidedWithFence; }
+
+		// バット衝突時の位置を記録
+		DirectX::XMFLOAT3 ballHitPosition = { 0.0f, 0.0f, 0.0f };
+		void SetBallHitPosition(const DirectX::XMFLOAT3& pos) { ballHitPosition = pos; }
+		const DirectX::XMFLOAT3& GetBallHitPosition() const { return ballHitPosition; }
 };
 
