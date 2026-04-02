@@ -890,7 +890,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					float measuredDistance = sqrtf(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ);
 					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
 
-					// ===== 推定飛距離の計算（地面がなかったらどこまで飛ぶか） =====
+					// ===== 推定飛距離の計算（スタンドがなくグラウンドに着地していたら何メートルか） =====
 					physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
 					float exitVelocity = ballVelocity.magnitude();
 
@@ -898,21 +898,45 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					float launchAngle = std::atan2(ballVelocity.y,
 						sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z));
 
-					// 投射体運動の公式: 飛距離 = (v₀² × sin(2θ)) / g
-					// これは「初期高さと同じ高さに落ちるまでの水平距離」を表す
+					// 投射体運動の計算
+					// グラウンドレベル（y = 0）に着地するまでの水平距離を計算
 					const float GRAVITY = 9.81f;
+					const float GROUND_LEVEL = 0.0f;
 					float estimatedDistance = 0.0f;
 
 					if (exitVelocity > 0.1f)
 					{
-						float angle2 = 2.0f * launchAngle;
-						// 絶対値を使用して負の値を防ぐ
-						estimatedDistance = std::abs((exitVelocity * exitVelocity * sinf(angle2)) / GRAVITY);
+						// 初期高さ（ボール衝突時のY座標）
+						float initialHeight = ballHitPos.y;
+
+						// 着地時間を計算: y = y0 + v_y*t - 0.5*g*t^2
+						// 0 = initialHeight + (exitVelocity * sin(launchAngle)) * t - 0.5 * GRAVITY * t^2
+						// 整理すると: 0.5 * g * t^2 - v_y * t - y0 = 0
+						float v_y = exitVelocity * sinf(launchAngle);
+						float a = 0.5f * GRAVITY;
+						float b = -v_y;
+						float c = -initialHeight;
+
+						// 二次方程式の解
+						float discriminant = b * b - 4.0f * a * c;
+						if (discriminant >= 0.0f)
+						{
+							float t = (-b + sqrtf(discriminant)) / (2.0f * a); // 正の解を取得
+
+							if (t > 0.0f)
+							{
+								// 水平速度を計算
+								float v_horizontal = exitVelocity * cosf(launchAngle);
+
+								// 着地までの水平距離を計算
+								estimatedDistance = v_horizontal * t;
+							}
+						}
 					}
 
-					// 総飛距離 = 実測飛距離 + 推定飛距離
-					// （推定飛距離は地面がなかったらあと何メートル飛ぶかを表す）
-					float totalDistance = measuredDistance + estimatedDistance;
+					// 総飛距離 = 水平飛距離 + 推定飛距離
+					// （推定飛距離はスタンドがなかった場合にグラウンドに着地するまでの距離）
+					float totalDistance = horizontalDistance + estimatedDistance;
 
 					// 飛距離を出力
 					char debugMessage[768];
@@ -920,16 +944,14 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						debugMessage,
 						sizeof(debugMessage),
 						"=== ボールがフェンスに入った ===\n"
-						"実測飛距離: %.2f m\n"
-						"推定飛距離（地面がなかったら）: %.2f m\n"
+						"水平飛距離（実測）: %.2f m\n"
+						"推定飛距離（スタンドなしでグラウンド着地）: %.2f m\n"
 						"総飛距離: %.2f m\n"
-						"水平飛距離: %.2f m\n"
 						"バット衝突位置: X=%.2f, Y=%.2f, Z=%.2f\n"
 						"フェンス衝突位置: X=%.2f, Y=%.2f, Z=%.2f\n",
-						measuredDistance,
+						horizontalDistance,
 						estimatedDistance,
 						totalDistance,
-						horizontalDistance,
 						ballHitPos.x,
 						ballHitPos.y,
 						ballHitPos.z,
