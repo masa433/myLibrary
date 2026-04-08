@@ -144,6 +144,7 @@ public:
 		bool hasCollided = false; // è’ìÀÉtÉâÉO
 
 		void SetHasCollided(bool collided) { hasCollided = collided; }
+		bool GetHasCollided() const { return hasCollided; }
 
 		const State GetCurrentState() const { return currentState; }
 
@@ -156,5 +157,9 @@ public:
 		DirectX::XMFLOAT3 ballHitPosition = { 0.0f, 0.0f, 0.0f };
 		void SetBallHitPosition(const DirectX::XMFLOAT3& pos) { ballHitPosition = pos; }
 		const DirectX::XMFLOAT3& GetBallHitPosition() const { return ballHitPosition; }
+
+		private:
+			// ===== êVãKí«â¡ =====
+			physx::PxVec3 GetSpinAxisFromPitchType() const;
 };
 

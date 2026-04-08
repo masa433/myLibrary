@@ -534,6 +534,12 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
 				(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
 			{
+				// 衝突が既に処理されている場合はスキップ
+				if (Pitcher::Instance().GetHasCollided())
+				{
+					return; // または continue; ループ内なら
+				}
+
 				Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
 
 				// ボールのコライダーを取得

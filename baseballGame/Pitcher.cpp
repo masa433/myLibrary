@@ -694,7 +694,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::Fastball: // ストレート
 		horizontalBreak = 0.0f;
 		verticalBreak = 0.0f;//ややホップするような感じ
-		ballSpeedKmh = 150.0f; // 速い
+		ballSpeedKmh = 166.0f; // 速い
 		ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // バックスピン
 		OutputDebugStringA("Pitch Type: Fastball\n");
