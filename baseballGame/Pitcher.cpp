@@ -35,7 +35,7 @@ void Pitcher::Initialize()
 	ballScale = { 100.0f,100.0f,100.0f };
 	ballAngle = { 0.0f,DirectX::XMConvertToRadians(90.0f),0.0f };
 
-	ballDebugRadius = 0.1f; // デバッグ用の半径
+	ballDebugRadius = 0.037f; // デバッグ用の半径
 
 	//rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
@@ -54,7 +54,7 @@ void Pitcher::Initialize()
 		// ボールの球状コライダーを作成
 		physx::PxSphereGeometry ballGeometry(ballDebugRadius);
 		physx::PxTransform ballTransform(
-			physx::PxVec3(ballPosition.x, ballPosition.y, ballPosition.z)
+			physx::PxVec3(ballWorldPosition.x, ballWorldPosition.y, ballWorldPosition.z)
 		);
 
 		ballCollider = pxPhysics->createRigidDynamic(ballTransform);
@@ -68,7 +68,7 @@ void Pitcher::Initialize()
 		float originalMass = 0.145f; // 野球の質量は約145g
 		float scaleFactor = ballScale.x / 100.0f; // モデルのスケールに基づく質量のスケーリング
 		float scaledMass = originalMass * (scaleFactor * scaleFactor * scaleFactor); // 体積に比例して質量をスケーリング
-		physx::PxRigidBodyExt::updateMassAndInertia(*ballCollider, scaledMass); // 質量をスケーリングに基づいて設定
+		physx::PxRigidBodyExt::updateMassAndInertia(*ballCollider, 0.145f); // 質量をスケーリングに基づいて設定
 
 		// 重力を有効化
 		//ballCollider->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
@@ -599,7 +599,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			physx::PxVec3 initialVelocity(normalizedDir.x * speedMs, normalizedDir.y * speedMs, normalizedDir.z * speedMs);
 			ballCollider->setLinearVelocity(initialVelocity);
 
-			ballWorldScale = { 2.0f, 2.0f, 2.0f };
+			ballWorldScale = { 1.0f, 1.0f, 1.0f };
 			ballWorldAngle = ballAngle;
 
 			physx::PxRigidDynamic* ballCollider = GetBallCollider();
@@ -663,11 +663,11 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	velocity *= airResistance;
 	ballCollider->setLinearVelocity(velocity);
 
-	// マグヌス効果を追加
-	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
-	float magnusCoefficient = 0.00000008f; // マグヌス効果を調整
-	physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
-	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
+	//// マグヌス効果を追加
+	//physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
+	//float magnusCoefficient = 0.00000008f; // マグヌス効果を調整
+	//physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
+	//ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
 
 }
 
@@ -693,7 +693,7 @@ void Pitcher::SelectPitchType()
 	{
 	case PitchType::Fastball: // ストレート
 		horizontalBreak = 0.0f;
-		verticalBreak = 10.0f;//ややホップするような感じ
+		verticalBreak = 0.0f;//ややホップするような感じ
 		ballSpeedKmh = 150.0f; // 速い
 		ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // バックスピン
