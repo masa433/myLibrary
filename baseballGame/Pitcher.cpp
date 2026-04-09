@@ -48,7 +48,7 @@ void Pitcher::Initialize()
 		//pxMaterial->setRestitution(0.6f);// 反発係数を設定
 		//pxMaterial->setDynamicFriction(0.4f);// 動摩擦係数を設定
 		//pxMaterial->setStaticFriction(0.5f);// 静止摩擦係数を設定
-		pxBallMaterial = pxPhysics->createMaterial(0.5f, 0.4f, 0.52f); // ボール専用のマテリアルとして保存
+		pxBallMaterial = pxPhysics->createMaterial(0.5f, 0.4f, 0.42f); // ボール専用のマテリアルとして保存
 		//pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		// ボールの球状コライダーを作成
@@ -65,9 +65,7 @@ void Pitcher::Initialize()
 		ballCollider->attachShape(*ballShape);
 
 		// ボールの質量を設定
-		float originalMass = 0.145f; // 野球の質量は約145g
-		float scaleFactor = ballScale.x / 100.0f; // モデルのスケールに基づく質量のスケーリング
-		float scaledMass = originalMass * (scaleFactor * scaleFactor * scaleFactor); // 体積に比例して質量をスケーリング
+		//ballCollider->setMass(0.145f); // 野球の平均的な質量は約145グラム
 		physx::PxRigidBodyExt::updateMassAndInertia(*ballCollider, 0.145f); // 質量をスケーリングに基づいて設定
 
 		// 重力を有効化
@@ -432,10 +430,6 @@ void Pitcher::DrawGUI()
 			float speedMs = ballSpeedKmh / 3.6f;
 			ImGui::Text("Speed: %.2f m/s (%.0f km/h)", speedMs, ballSpeedKmh);
 
-			float originalMass = 0.145f; // 野球の質量は約145g
-			float scaleFactor = ballScale.x / 100.0f; // モデルのスケールに基づく質量のスケーリング
-			float scaledMass = originalMass * (scaleFactor * scaleFactor * scaleFactor); // 体積に比例して質量をスケーリング
-			ImGui::Text("Mass: %.4f kg (Scaled by %.2f)", scaledMass, scaleFactor);
 		}
 
 	}
@@ -581,7 +575,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 					ballCollider->getShapes(&ballShape, 1);
 					physx::PxMaterial* ballMaterial;
 					ballShape->getMaterials(&ballMaterial, 1);
-					ballMaterial->setRestitution(0.52f);  // 初期値に設定
+					ballMaterial->setRestitution(0.42f);  // 初期値に設定
 				}
 			}
 
@@ -694,7 +688,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::Fastball: // ストレート
 		horizontalBreak = 0.0f;
 		verticalBreak = 0.0f;//ややホップするような感じ
-		ballSpeedKmh = 166.0f; // 速い
+		ballSpeedKmh = 150.0f; // 速い
 		ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // バックスピン
 		OutputDebugStringA("Pitch Type: Fastball\n");

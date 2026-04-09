@@ -1,7 +1,2 @@
-﻿  Pitcher.cpp
-  Player.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Player.cpp(131,70): warning C4305: '引数': 'double' から 'physx::PxReal' へ切り詰めます。
-  physxManager.cpp
-  scene_game.cpp
-  コードを生成中...
+﻿  physxManager.cpp
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

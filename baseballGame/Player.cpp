@@ -97,7 +97,7 @@ void Player::Initialize()
 		//pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
 
         //バット専用マテリアルの作成
-        pxBatMaterial = pxPhysics->createMaterial(0.55f, 0.45f, 0.2f);
+        pxBatMaterial = pxPhysics->createMaterial(0.4f, 0.3f, 0.2f);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
 		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
@@ -128,7 +128,8 @@ void Player::Initialize()
         physx::PxRigidActorExt::createExclusiveShape(*pxBatRigidBody, pxConvexGeometry, *pxBatMaterial);
 
         // 質量の設定
-        physx::PxRigidBodyExt::updateMassAndInertia(*pxBatRigidBody, 0.9);
+		//pxBatRigidBody->setMass(0.9f); // バットの質量を設定
+        physx::PxRigidBodyExt::updateMassAndInertia(*pxBatRigidBody, 0.9f);
 
         //シーンに剛体を追加
         pxScene->addActor(*pxBatRigidBody);
