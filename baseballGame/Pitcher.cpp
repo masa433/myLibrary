@@ -810,5 +810,5 @@ void Pitcher::SelectPitchType()
 	throwDirection.z = -1.0f; // 前方向固定
 
 	// ランダムな発射角度を設定
-	launchAngleDegrees = GenerateRandomFloat(0.0f, 1.0f); // -4度から-2度の範囲でランダム
+	launchAngleDegrees = GenerateRandomFloat(-0.5f, 0.0f); // -4度から-2度の範囲でランダム
 }

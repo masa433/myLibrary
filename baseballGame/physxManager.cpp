@@ -531,70 +531,69 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 
 			// ボールとバットの衝突を検知
-			if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
-				(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
+		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
+			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
+		{
+			// 衝突が既に処理されている場合はスキップ
+			if (Pitcher::Instance().GetHasCollided())
 			{
-				//// 衝突が既に処理されている場合はスキップ
-				//if (Pitcher::Instance().GetHasCollided())
-				//{
-				//	return; // または continue; ループ内なら
-				//}
+			    continue; // または continue; ループ内なら
+			}
 
-				Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
+			Pitcher::Instance().SetHasCollided(true);
 
-				// ボールのコライダーを取得
-				physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
-				physx::PxRigidDynamic* batCollider = Player::Instance().GetBatCollider();
+			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+			physx::PxRigidDynamic* batCollider = Player::Instance().GetBatCollider();
 
-				if (ballCollider && batCollider)
+			if (ballCollider && batCollider)
+			{
+				// バット衝突時のボール位置を保存
+				physx::PxVec3 hitPos = ballCollider->getGlobalPose().p;
+				Pitcher::Instance().SetBallHitPosition({ hitPos.x, hitPos.y, hitPos.z });
+
+				// ===== 物理定数 =====
+				const float BALL_RADIUS = 0.037f;
+				const float PI = 3.14159265359f;
+
+				// ===== 1. 衝突前の情報取得 =====
+				physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
+				physx::PxVec3 batVelocity = batCollider->getLinearVelocity();
+
+				// ===== ボール初速の上限設定（180 km/h） =====
+				float ballSpeed = ballVelocity.magnitude();
+				if (ballSpeed > 50.0f)  // 180 km/h ≈ 50.0 m/s
 				{
-					// バット衝突時のボール位置を保存
-					physx::PxVec3 hitPos = ballCollider->getGlobalPose().p;
-					Pitcher::Instance().SetBallHitPosition({ hitPos.x, hitPos.y, hitPos.z });
+					ballVelocity = (ballVelocity / ballSpeed) * 50.0f;
+					ballSpeed = 50.0f;
+				}
 
-					// ===== 物理定数 =====
-					const float AIR_DENSITY = 1.2f;                // 空気密度 (kg/m³)
-					const float BALL_RADIUS = 0.037f;              // 野球ボールの半径 (m)
-					const float MAGNUS_COEFFICIENT = 0.000035f;    // マグヌス係数
-					const float PI = 3.14159265359f;
+				float batSpeed = batVelocity.magnitude();
 
-					// ===== 1. 衝突前の情報取得 =====
-					physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
-					physx::PxVec3 batVelocity = batCollider->getLinearVelocity();
-
-					float ballSpeed = ballVelocity.magnitude();
-					float batSpeed = batVelocity.magnitude();
-
-					// ボールとバットの質量を取得
-					float ballMass = ballCollider->getMass();
-					float batMass = batCollider->getMass();
-
-					// マテリアルの取得
-					physx::PxMaterial* ballMaterial;
+				// ===== マテリアル取得 =====
+				physx::PxMaterial* ballMaterial;
+				physx::PxMaterial* batMaterial;
+				{
 					physx::PxShape* ballShape;
 					ballCollider->getShapes(&ballShape, 1);
 					ballShape->getMaterials(&ballMaterial, 1);
 
-					physx::PxMaterial* batMaterial;
 					physx::PxShape* batShape;
 					batCollider->getShapes(&batShape, 1);
 					batShape->getMaterials(&batMaterial, 1);
+				}
 
-					// 反発係数と摩擦係数を取得
-					float ballRestitution = ballMaterial->getRestitution();
-					float batRestitution = batMaterial->getRestitution();
-					float combinedRestitution = (ballRestitution + batRestitution) * 0.5f;
+				//反発係数を取得
+				float combinedRestitution = (ballMaterial->getRestitution() + batMaterial->getRestitution()) * 0.5f;
 
-					float ballFriction = ballMaterial->getStaticFriction();
-					float batFriction = batMaterial->getStaticFriction();
-					float combinedFriction = (ballFriction + batFriction) * 0.5f;
+				//摩擦係数を取得
+				float combinedFriction = ((ballMaterial->getStaticFriction() + batMaterial->getStaticFriction()) * 0.5f);
 
-					// ===== 2. 接触点の取得 =====
+				// ===== 2. 接触点・法線の取得 =====
+				physx::PxVec3 collisionNormal(0.0f, 0.0f, 0.0f);
+				{
 					physx::PxContactPairPoint contactPoints[16];
 					physx::PxU32 numContactPoints = pairs[i].extractContacts(contactPoints, 16);
 
-					// ===== 3. 衝突方向（法線方向）の取得 =====
-					physx::PxVec3 collisionNormal(0.0f, 0.0f, 0.0f);
 					if (numContactPoints > 0)
 					{
 						collisionNormal = contactPoints[0].normal;
@@ -605,176 +604,126 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						collisionNormal = (ballCollider->getGlobalPose().p - batCollider->getGlobalPose().p);
 						if (collisionNormal.normalize() < 1e-4f)
 						{
-							// 法線が取得できない場合のフォールバック（前方とみなす）
 							collisionNormal = physx::PxVec3(0.0f, 0.0f, 1.0f);
 						}
 					}
+				}
 
-					// ===== 4. 相対速度の計算 =====
-					physx::PxVec3 relativeVelocity = batVelocity - ballVelocity;
-					float relativeVelocityAlongNormal = relativeVelocity.dot(collisionNormal);
+				// ===== 3. 衝突計算 =====
+				physx::PxVec3 relativeVelocity = batVelocity - ballVelocity;
+				float relativeVelocityAlongNormal = relativeVelocity.dot(collisionNormal);
 
-					// ===== 5. 衝突後の速度計算（インパルスベース） =====
-					float impulseScalar = 0.0f;
-					if (std::fabs(relativeVelocityAlongNormal) > 1e-4f)
-					{
-						impulseScalar = -(1.0f + combinedRestitution) * relativeVelocityAlongNormal;
-						impulseScalar /= (1.0f / ballMass + 1.0f / batMass);
-					}
+				//ボールの質量とバットの有効質量を設定
+				const float BALL_MASS = 0.145f;
+				const float EFFECTIVE_BAT_MASS = 0.3f;
 
-					// 打球速度の経験式（上限として使う）
-					float estimatedExitVelocity = (batRestitution * ballSpeed + (1.0f + batRestitution) * batSpeed);
+				float impulseScalar = 0.0f;
+				if (std::fabs(relativeVelocityAlongNormal) > 1e-4f)
+				{
+					impulseScalar = -(1.0f + combinedRestitution) * relativeVelocityAlongNormal;
+					impulseScalar /= (1.0f / BALL_MASS + 1.0f / EFFECTIVE_BAT_MASS);
+				}
 
-					// 打球角度（法線ベース）を計算
-					float launchAngle = std::atan2(
-						collisionNormal.y,
-						std::sqrt(collisionNormal.x * collisionNormal.x + collisionNormal.z * collisionNormal.z));
-					float launchAngleDeg = launchAngle * (180.0f / PI);
+				// ===== 打撃係数・打球速度 =====
+				const float TARGET_Q = 0.2f;
+				float massRatio = BALL_MASS / EFFECTIVE_BAT_MASS;
+				float adjustedRestitution = TARGET_Q + (1.0f + TARGET_Q) * massRatio;
+				adjustedRestitution = std::clamp(adjustedRestitution, 0.5f, 0.95f);
+				float q = (adjustedRestitution - massRatio) / (1.0f + massRatio);
 
-					// 角度に応じて速度スケールを調整（叩きつけるほど弱く）
-					float angleScale = 1.0f;
-					if (launchAngleDeg <= -20.0f)
-					{
-						// -20度〜-60度で 0.85 -> 0.75 まで落とす
-						float t = std::clamp((launchAngleDeg + 20.0f) / -40.0f, 0.0f, 1.0f);
-						angleScale = 0.85f - 0.1f * t;
-					}
-					else if (launchAngleDeg < 0.0f)
-					{
-						// 0〜-20度で 0.95 -> 0.85 まで落とす
-						float t = std::clamp(launchAngleDeg / -20.0f, 0.0f, 1.0f);
-						angleScale = 0.95f - 0.1f * t;
-					}
-					estimatedExitVelocity *= angleScale;
+				float estimatedExitVelocity = (q * ballSpeed + (1.0f + q) * batSpeed);
 
-					// ===== 6. 回転の計算（摩擦による） =====
-					physx::PxVec3 tangentialVelocity = relativeVelocity - collisionNormal * relativeVelocityAlongNormal;
-					float tangentialSpeed = tangentialVelocity.magnitude();
+				// ===== 打球角度による速度調整 =====
+				float launchAngle = std::atan2(
+					collisionNormal.y,
+					std::sqrt(collisionNormal.x * collisionNormal.x + collisionNormal.z * collisionNormal.z));
+				float launchAngleDeg = launchAngle * (180.0f / PI);
 
-					float angularVelocityRadPerSec = 0.0f;
-					if (tangentialSpeed > 1e-3f)
-					{
-						angularVelocityRadPerSec = (tangentialSpeed * combinedFriction) / BALL_RADIUS;
-					}
+				float angleScale = 1.0f;
+				if (launchAngleDeg <= -20.0f)
+				{
+					float t = std::clamp((launchAngleDeg + 20.0f) / -40.0f, 0.0f, 1.0f);
+					angleScale = 0.85f - 0.1f * t;
+				}
+				else if (launchAngleDeg < 0.0f)
+				{
+					float t = std::clamp(launchAngleDeg / -20.0f, 0.0f, 1.0f);
+					angleScale = 0.95f - 0.1f * t;
+				}
+				estimatedExitVelocity *= angleScale;
 
-					// 回転軸（接線方向と法線方向の外積）
-					physx::PxVec3 spinAxis = collisionNormal.cross(tangentialVelocity);
-					if (spinAxis.magnitude() > 1e-3f)
-					{
-						spinAxis.normalize();
-					}
-					else
-					{
-						// 回転軸が取れない場合はとりあえず上方向でフォールバック
-						spinAxis = physx::PxVec3(0.0f, 1.0f, 0.0f);
-					}
+				// ===== 4. 回転計算 =====
+				physx::PxVec3 tangentialVelocity = relativeVelocity - collisionNormal * relativeVelocityAlongNormal;
+				float tangentialSpeed = tangentialVelocity.magnitude();
 
-					//回転軸をy軸のみ逆にする
-					spinAxis.y = -spinAxis.y;
+				float angularVelocityRadPerSec = 0.0f;
+				if (tangentialSpeed > 1e-3f)
+				{
+					angularVelocityRadPerSec = (tangentialSpeed * combinedFriction) / BALL_RADIUS;
+				}
 
-					physx::PxVec3 newAngularVelocity = spinAxis * angularVelocityRadPerSec;
+				physx::PxVec3 spinAxis = collisionNormal.cross(tangentialVelocity);
+				if (spinAxis.magnitude() > 1e-3f)
+				{
+					spinAxis.normalize();
+				}
+				else
+				{
+					spinAxis = physx::PxVec3(0.0f, 1.0f, 0.0f);
+				}
+				spinAxis.y = -spinAxis.y;
 
-					// ===== 7. 新しい線形速度を計算 =====
-					physx::PxVec3 impulse = collisionNormal * impulseScalar;
-					physx::PxVec3 newBallVelocity = ballVelocity + impulse / ballMass;
+				// ===== 5. 最終速度計算 =====
+				physx::PxVec3 newBallVelocity = ballVelocity + collisionNormal * impulseScalar / BALL_MASS;
+				float physSpeed = newBallVelocity.magnitude();
 
-					float physSpeed = newBallVelocity.magnitude();
-					if (physSpeed > 1e-3f)
-					{
-						// 物理ベースの速度に対して、経験式の速度を「上限」としてクランプする
-						// かつ過剰なブーストにならないよう倍率を制限
-						float targetSpeed = (std::min)(estimatedExitVelocity, physSpeed * 0.8f); // 物理ベースの速度を超えないようにしつつ、最大でも20%程度のブーストに留める
-						float scale = targetSpeed / physSpeed;
-						scale = std::clamp(scale, 0.0f, 1.0f);
-						newBallVelocity *= scale;
-					}
-					else
-					{
-						// ほぼ静止していた場合は、法線方向に経験式速度を与える
-						newBallVelocity = collisionNormal * estimatedExitVelocity;
-					}
+				if (physSpeed > 1e-3f)
+				{
+					float targetSpeed = (std::min)(estimatedExitVelocity, physSpeed * 0.8f);
+					newBallVelocity *= (targetSpeed / physSpeed);
+				}
+				else
+				{
+					newBallVelocity = collisionNormal * estimatedExitVelocity;
+				}
 
-					// ===== 打球速度の上限設定（195 km/h） =====
-					const float MAX_EXIT_VELOCITY_KMH = 195.0f;
-					const float MAX_EXIT_VELOCITY_MS = MAX_EXIT_VELOCITY_KMH / 3.6f;  // m/s に変換
-					float currentExitSpeed = newBallVelocity.magnitude();
-					if (currentExitSpeed > MAX_EXIT_VELOCITY_MS)
-					{
-						// 速度を正規化してから上限値を掛ける
-						newBallVelocity = (newBallVelocity / currentExitSpeed) * MAX_EXIT_VELOCITY_MS;
-					}
+				// ===== 打球速度の上限設定（190 km/h） =====
+				float finalSpeed = newBallVelocity.magnitude();
+				if (finalSpeed > 52.78f)  // 190 km/h ≈ 52.78 m/s
+				{
+					newBallVelocity = (newBallVelocity / finalSpeed) * 52.78f;
+				}
 
-					// ===== 8. マグヌス効果の初期計算（デバッグ用） =====
-					float magnusForceMagnitude = 0.0f;
-					physx::PxVec3 magnusForce(0.0f, 0.0f, 0.0f);
+				// ===== 6. 速度をキューに登録 =====
+				{
+					// 制限後の初速を保存
+					float limitedBallSpeedKmh = ballVelocity.magnitude() * 3.6f;
 
-					if (estimatedExitVelocity > 1e-3f && angularVelocityRadPerSec > 1e-3f)
-					{
-						// F_magnus = Cm * ρ * v² * r * ω
-						magnusForceMagnitude = MAGNUS_COEFFICIENT *
-							AIR_DENSITY *
-							estimatedExitVelocity * estimatedExitVelocity *
-							BALL_RADIUS *
-							angularVelocityRadPerSec;
-
-						// マグヌス力の方向 = 角速度 × 速度（外積）
-						physx::PxVec3 magnusDirection = newAngularVelocity.cross(newBallVelocity);
-						if (magnusDirection.magnitude() > 1e-3f)
-						{
-							magnusDirection.normalize();
-							magnusForce = magnusDirection * magnusForceMagnitude;
-						}
-					}
-
-					// ===== 9. PhysXに速度を設定 =====
-					{
-						std::lock_guard<std::mutex> lock(queueMutex);
-						velocityUpdateQueue.push([ballCollider, newBallVelocity, newAngularVelocity]() {
+					std::lock_guard<std::mutex> lock(queueMutex);
+					velocityUpdateQueue.push([ballCollider, newBallVelocity, spinAxis, angularVelocityRadPerSec,
+						limitedBallSpeedKmh, batSpeed, launchAngleDeg]() {
 							ballCollider->setLinearVelocity(newBallVelocity);
-							ballCollider->setAngularVelocity(newAngularVelocity);
-
-							// 減衰は別途シーン側で制御するので、ここではゼロに固定
+							ballCollider->setAngularVelocity(spinAxis * angularVelocityRadPerSec);
 							ballCollider->setLinearDamping(0.0f);
 							ballCollider->setAngularDamping(0.0f);
-							});
-					}
 
-					// ===== 10. デバッグ情報の出力 =====
-					float exitVelocityKmh = newBallVelocity.magnitude() * 3.6f;
-					float batSpeedKmh = batSpeed * 3.6f;
-					float ballSpeedKmh = ballSpeed * 3.6f;
-					float spinRpm = (angularVelocityRadPerSec * 60.0f) / (2.0f * PI);
+							// ===== デバッグ出力（速度設定直後） =====
+#ifdef _DEBUG
+							float exitVelocityKmh = newBallVelocity.magnitude() * 3.6f;
+							float spinRpm = (angularVelocityRadPerSec * 60.0f) / (2.0f * 3.14159265359f);
 
-					char debugMessage[768];
-					snprintf(
-						debugMessage,
-						sizeof(debugMessage),
-						"=== ボールとバットの衝突（マグヌス効果あり） ===\n"
-						"初速（ボール）: %.1f km/h\n"
-						"バット速度: %.1f km/h\n"
-						"打球速度: %.1f km/h\n"
-						"打球角度: %.1f 度\n"
-						"回転数: %.0f rpm (%.1f rad/s)\n"
-						"合成反発係数: %.3f\n"
-						"合成摩擦係数: %.3f\n"
-						"--- マグヌス効果 ---\n"
-						"初期マグヌス力: %.3f N\n"
-						"マグヌス方向: (%.3f, %.3f, %.3f)\n",
-						ballSpeedKmh,
-						batSpeedKmh,
-						exitVelocityKmh,
-						launchAngleDeg,
-						spinRpm,
-						angularVelocityRadPerSec,
-						combinedRestitution,
-						combinedFriction,
-						magnusForceMagnitude,
-						magnusForce.x,
-						magnusForce.y,
-						magnusForce.z);
-					OutputDebugStringA(debugMessage);
+							char debugMessage[512];
+							snprintf(debugMessage, sizeof(debugMessage),
+								"=== バット衝突 ===\nボール初速: %.1f km/h\nバット速度: %.1f km/h\n打球速度: %.1f km/h\n打球角度: %.1f°\n回転: %.0f rpm\n",
+								limitedBallSpeedKmh, batSpeed * 3.6f, exitVelocityKmh, launchAngleDeg, spinRpm);
+							OutputDebugStringA(debugMessage);
+#endif
+						});
 				}
+
+				
 			}
+		}
 
 			// ボールとステージの衝突を検知
 			if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Ground") ||

@@ -97,7 +97,7 @@ void Player::Initialize()
 		//pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
 
         //バット専用マテリアルの作成
-        pxBatMaterial = pxPhysics->createMaterial(0.4f, 0.3f, 0.2f);
+        pxBatMaterial = pxPhysics->createMaterial(0.4f, 0.3f, 0.5f);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
 		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
