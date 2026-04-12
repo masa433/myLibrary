@@ -338,6 +338,9 @@
     <None Include="ShadowMapCaster.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shading_function.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="sprite_vs.hlsl">

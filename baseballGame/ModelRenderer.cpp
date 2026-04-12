@@ -55,6 +55,19 @@ void ModelRenderer::Render(const RenderContext& rc, const DirectX::XMFLOAT4X4& w
 		cbScene.ambientColor.z = rc.ambientColor.z;
 		cbScene.ambientColor.w = 1.0f;
 
+		//ポイントライト
+		cbScene.pointLightPosition = rc.pointLightPosition;
+		cbScene.pointLightRange = rc.pointLightRange;
+		cbScene.pointLightColor = rc.pointLightColor;
+
+		//スポットライト
+		cbScene.spotLightPosition = rc.spotLightPosition;
+		cbScene.spotLightDirection = rc.spotLightDirection;
+		cbScene.spotLightColor = rc.spotLightColor;
+		cbScene.spotLightRange = rc.spotLightRange;
+		cbScene.spotLightInnerConeAngle = rc.spotLightInnerAngle;
+		cbScene.spotLightOuterConeAngle = rc.spotLightOuterAngle;
+
 		cbScene.cameraPosition.x = rc.cameraPosition.x;
 		cbScene.cameraPosition.y = rc.cameraPosition.y;
 		cbScene.cameraPosition.z = rc.cameraPosition.z;

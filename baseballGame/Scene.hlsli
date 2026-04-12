@@ -4,6 +4,21 @@ cbuffer CbScene : register(b0)
     float4 lightDirection;
     float4 lightColor; // 追加
     float4 ambientColor; // 追加
+    
+    // ポイントライト
+    float3 pointLightPosition;
+    float pointLightRange;
+    float3 pointLightColor;
+    float pad0;
+    
+    // スポットライト
+    float3 spotLightPosition;
+    float spotLightRange;
+    float3 spotLightDirection;
+    float spotLightInnerAngle;
+    float3 spotLightColor;
+    float spotLightOuterAngle;
+    
     float4 cameraPosition;
 };
 

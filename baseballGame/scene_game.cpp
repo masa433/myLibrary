@@ -229,6 +229,24 @@ void scene_game::update(float elapsed_time)
 		}
 		ImGui::ColorEdit4("Ambient Color", &ambientColor.x);
     }
+    // ポイントライト制御
+    if (ImGui::CollapsingHeader("Point Light"))
+    {
+        ImGui::DragFloat3("Point Light Position", &pointLightPosition.x, 0.1f);
+        ImGui::DragFloat("Point Light Range", &pointLightRange, 0.1f, 0.0f, 100.0f);
+        ImGui::ColorEdit3("Point Light Color", &pointLightColor.x);
+    }
+
+    // スポットライト制御
+    if (ImGui::CollapsingHeader("Spot Light"))
+    {
+        ImGui::DragFloat3("Spot Light Position", &spotLightPosition.x, 0.1f);
+        ImGui::DragFloat("Spot Light Range", &spotLightRange, 0.1f, 0.0f, 100.0f);
+        ImGui::DragFloat3("Spot Light Direction", &spotLightDirection.x, 0.1f);
+        ImGui::ColorEdit3("Spot Light Color", &spotLightColor.x);
+        ImGui::SliderFloat("Spot Light Inner Angle (cos)", &spotLightInnerAngle, 0.0f, 1.0f);
+        ImGui::SliderFloat("Spot Light Outer Angle (cos)", &spotLightOuterAngle, 0.0f, 1.0f);
+    }
 
 	ImGui::Checkbox("Show PhysX Debug", &showPhysxDebug);
 
@@ -390,9 +408,22 @@ void scene_game::render(float elapsedTime)
     rc.deviceContext = dc;
     rc.renderState = renderState;
     //rc.camera = &camera;
-    rc.lightDirection = lightDirection;
+    //rc.lightDirection = lightDirection;
 	rc.lightColor = lightColor;
 	rc.ambientColor = ambientColor;
+
+    // ポイントライト設定
+    rc.pointLightPosition = pointLightPosition;
+    rc.pointLightRange = pointLightRange;
+    rc.pointLightColor = pointLightColor;
+
+    // スポットライト設定
+    rc.spotLightPosition = spotLightPosition;
+    rc.spotLightRange = spotLightRange;
+    rc.spotLightDirection = spotLightDirection;
+    rc.spotLightInnerAngle = spotLightInnerAngle;
+    rc.spotLightColor = spotLightColor;
+    rc.spotLightOuterAngle = spotLightOuterAngle;
 
     //カメラパラメータ設定
     Camera& camera = Camera::Instance();

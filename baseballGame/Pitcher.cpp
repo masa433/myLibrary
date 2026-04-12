@@ -637,7 +637,7 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	{
 		float breakFactor = (std::min)(1.0f, (distanceTravel - breakStartDistance) / 10.0f);
 		float smoothBreakFactor = sinf(breakFactor * DirectX::XM_PIDIV2);
-		float forceMultiplier = 0.0005f; // 半径に基づいてスケーリング
+		float forceMultiplier = 0.00005f; // 半径に基づいてスケーリング
 
 		// 横方向の力を加える
 		physx::PxVec3 lateralForce(horizontalBreak * smoothBreakFactor * forceMultiplier, 0.0f, 0.0f);

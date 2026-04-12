@@ -299,6 +299,7 @@
     <None Include="PhongShader.hlsli" />
     <None Include="PrimitiveRenderer.hlsli" />
     <None Include="Scene.hlsli" />
+    <None Include="shading_function.hlsli" />
     <None Include="ShadowMapCaster.hlsli" />
     <None Include="Skinning.hlsli" />
     <None Include="SolidShapeRenderer.hlsli" />

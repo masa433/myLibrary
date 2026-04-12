@@ -39,6 +39,21 @@ private:
 		DirectX::XMFLOAT4		lightDirection;
 		DirectX::XMFLOAT4		lightColor;
 		DirectX::XMFLOAT4		ambientColor;
+
+		//ポイントライト
+		DirectX::XMFLOAT3 	 pointLightPosition;
+		float pointLightRange;
+		DirectX::XMFLOAT3 	 pointLightColor;
+		float pad0;
+
+		//スポットライト
+		DirectX::XMFLOAT3 	 spotLightPosition;
+		DirectX::XMFLOAT3 	 spotLightDirection;
+		DirectX::XMFLOAT3 	 spotLightColor;
+		float spotLightRange;
+		float spotLightInnerConeAngle;
+		float spotLightOuterConeAngle;
+
 		DirectX::XMFLOAT4		cameraPosition;
 	};
 
