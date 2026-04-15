@@ -52,7 +52,7 @@ void Player::Initialize()
 	batRadius = 0.2f;
 	batHeight = 1.0f;
 
-    meshScale = { 0.05f,0.012f,0.05f };
+    meshScale = { 0.03f,0.012f,0.03f };
    
     //バット型の凸形状のメッシュ作成
     {
@@ -97,7 +97,7 @@ void Player::Initialize()
 		//pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
 
         //バット専用マテリアルの作成
-        pxBatMaterial = pxPhysics->createMaterial(0.4f, 0.3f, 0.5f);
+        pxBatMaterial = pxPhysics->createMaterial(0.2f, 0.1f, 0.5f);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
 		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
@@ -174,42 +174,36 @@ void Player::Update(float elapsedTime)
     //CheckBatAndBallCollision(elapsedTime);
 }
 
-
-void Player::CheckBatAndBallCollision(float elapsedTime)
-{
-    
-}
-
 // キー入力処理
 void Player::HandleInput(float elapsedTime)
 {
-    DirectX::XMFLOAT3 move_direction = { 0.0f, 0.0f, 0.0f };
-    
+    //DirectX::XMFLOAT3 move_direction = { 0.0f, 0.0f, 0.0f };
+    //
 
-    // Wキー: 前進
-    if (GetAsyncKeyState('W') & 0x8000)
-    {
-        move_direction.z += 100.0f;
-        
-    }
-    // Sキー: 後退
-    if (GetAsyncKeyState('S') & 0x8000)
-    {
-        move_direction.z -= 100.0f;
-        
-    }
-    // Aキー: 左移動
-    if (GetAsyncKeyState('A') & 0x8000)
-    {
-        move_direction.x -= 100.0f;
-        
-    }
-    // Dキー: 右移動
-    if (GetAsyncKeyState('D') & 0x8000)
-    {
-        move_direction.x += 100.0f;
-        
-    }
+    //// Wキー: 前進
+    //if (GetAsyncKeyState('W') & 0x8000)
+    //{
+    //    move_direction.z += 100.0f;
+    //    
+    //}
+    //// Sキー: 後退
+    //if (GetAsyncKeyState('S') & 0x8000)
+    //{
+    //    move_direction.z -= 100.0f;
+    //    
+    //}
+    //// Aキー: 左移動
+    //if (GetAsyncKeyState('A') & 0x8000)
+    //{
+    //    move_direction.x -= 100.0f;
+    //    
+    //}
+    //// Dキー: 右移動
+    //if (GetAsyncKeyState('D') & 0x8000)
+    //{
+    //    move_direction.x += 100.0f;
+    //    
+    //}
 
     // スペースキーでスイング
     if (GetAsyncKeyState(VK_SPACE) & 0x8000)
@@ -220,13 +214,13 @@ void Player::HandleInput(float elapsedTime)
         }
     }
 
-    // 移動方向を正規化
-    DirectX::XMVECTOR moveVec = DirectX::XMLoadFloat3(&move_direction);
-    if (!DirectX::XMVector3Equal(moveVec, DirectX::XMVectorZero()))
-    {
-        moveVec = DirectX::XMVector3Normalize(moveVec);
-        DirectX::XMStoreFloat3(&move_direction, moveVec);
-    }
+    //// 移動方向を正規化
+    //DirectX::XMVECTOR moveVec = DirectX::XMLoadFloat3(&move_direction);
+    //if (!DirectX::XMVector3Equal(moveVec, DirectX::XMVectorZero()))
+    //{
+    //    moveVec = DirectX::XMVector3Normalize(moveVec);
+    //    DirectX::XMStoreFloat3(&move_direction, moveVec);
+    //}
 
     //// 重力を適用
     //float gravityEffect = gravity * elapsedTime;
@@ -388,7 +382,7 @@ void Player::DrawGUI()
             // リセットボタン
             if (ImGui::Button("Reset Mesh Transform"))
             {
-                meshScale = { 0.1f, 0.035f, 0.1f };
+                meshScale = { 0.03f, 0.012f, 0.03f };
                 UpdatePhysXMeshTransform(meshScale);
             }
            

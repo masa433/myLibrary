@@ -863,74 +863,16 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						"=== ボールがフェンスに入った ===\n"
 						"水平飛距離（実測）: %.2f m\n"
 						"推定飛距離（スタンドなしでグラウンド着地）: %.2f m\n"
-						"総飛距離: %.2f m\n"
-						"バット衝突位置: X=%.2f, Y=%.2f, Z=%.2f\n"
-						"フェンス衝突位置: X=%.2f, Y=%.2f, Z=%.2f\n",
+						"総飛距離: %.2f m\n",
 						horizontalDistance,
 						estimatedDistance,
-						totalDistance,
-						ballHitPos.x,
-						ballHitPos.y,
-						ballHitPos.z,
-						ballFencePosition.x,
-						ballFencePosition.y,
-						ballFencePosition.z);
+						totalDistance);
 					OutputDebugStringA(debugMessage);
 				}
 			}
 		}
 		
-		////ボールとピッチングネットの衝突を検知
-		//if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Net") ||
-		//	(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Net"))
-		//	{
-		//	// ボールのコライダーを取得
-		//	physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
-		//	if (ballCollider)
-		//	{
-		//		// ボールの形状を取得
-		//		physx::PxShape* ballShape;
-		//		ballCollider->getShapes(&ballShape, 1);
 
-		//		// ボールのマテリアルを取得
-		//		physx::PxMaterial* ballMaterial;
-		//		ballShape->getMaterials(&ballMaterial, 1);
-
-		//		// ボールの反発係数を変更
-		//		ballMaterial->setRestitution(0.1f);
-
-		//	}
-		//}
-
-		//// バットとの衝突時
-		//if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
-		//	(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
-		//{
-		//	physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
-		//	if (ballCollider)
-		//	{
-		//		physx::PxShape* ballShape;
-		//		ballCollider->getShapes(&ballShape, 1);
-
-		//		physx::PxMaterial* ballMaterial;
-		//		ballShape->getMaterials(&ballMaterial, 1);
-
-		//		// バットとの衝突時に反発係数を元に戻す
-		//		ballMaterial->setRestitution(0.5f);
-		//	}
-		//}
 	}
 }
 
-//// ボックスコライダーかどうかを判定
-//bool Physics::IsBoxCollider(physx::PxActor* actor)
-//{
-//	for (const auto& boxCollider : stage::Instance().GetBoxColliders())
-//	{
-//		if (actor == boxCollider)
-//		{
-//			return true;
-//		}
-//	}
-//	return false;
-//}

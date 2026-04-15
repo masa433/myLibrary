@@ -48,7 +48,7 @@ void Pitcher::Initialize()
 		//pxMaterial->setRestitution(0.6f);// 反発係数を設定
 		//pxMaterial->setDynamicFriction(0.4f);// 動摩擦係数を設定
 		//pxMaterial->setStaticFriction(0.5f);// 静止摩擦係数を設定
-		pxBallMaterial = pxPhysics->createMaterial(0.5f, 0.4f, 0.42f); // ボール専用のマテリアルとして保存
+		pxBallMaterial = pxPhysics->createMaterial(0.3f, 0.2f, 0.42f); // ボール専用のマテリアルとして保存
 		//pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		// ボールの球状コライダーを作成
@@ -144,7 +144,7 @@ void Pitcher::Update(float elapsedTime)
 			OutputDebugStringA("Strike!\n");
 			hasBeenJudged = true; // 判定済みフラグを設定
 		}
-		else if (ballWorldPosition.z > strikeZonePosition.z + strikeZoneSize.z / 2.0f)
+		else if (ballWorldPosition.z < strikeZonePosition.z + strikeZoneSize.z / 2.0f)
 		{
 			// ボールがストライクゾーン外を通過した場合
 			OutputDebugStringA("Ball!\n");
@@ -648,14 +648,27 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 		ballCollider->addForce(verticalForce, physx::PxForceMode::eFORCE);
 	}
 
-	// 空気抵抗を適用
+	//// 空気抵抗を適用
+	//physx::PxVec3 velocity = ballCollider->getLinearVelocity();
+	//float speed = velocity.magnitude();
+	//float dragCoefficient = 0.005f; // 空気抵抗をスケールに基づいて調整
+	//float airResistance = 1.0f - (dragCoefficient * speed * elapsedTime);
+	//airResistance = (std::max)(0.99f, airResistance); // 最小値を設定
+	//velocity *= airResistance;
+	//ballCollider->setLinearVelocity(velocity);
+
+	//空気抵抗を適用
 	physx::PxVec3 velocity = ballCollider->getLinearVelocity();
 	float speed = velocity.magnitude();
-	float dragCoefficient = 0.005f; // 空気抵抗をスケールに基づいて調整
-	float airResistance = 1.0f - (dragCoefficient * speed * elapsedTime);
-	airResistance = (std::max)(0.99f, airResistance); // 最小値を設定
-	velocity *= airResistance;
-	ballCollider->setLinearVelocity(velocity);
+	const float airDensity = 1.225f; //空気密度
+	const float ballCrossSectionalArea = DirectX::XM_PI * (0.0365 * 0.0365); // ボールの断面積
+	const float dragCoefficient = 0.47f; // 球の抗力係数
+	const float dragForceMagnitude = -0.5f * airDensity * speed * speed * dragCoefficient * ballCrossSectionalArea;
+	const float forceMultiplier = 0.00015f; // 力のスケーリング
+	physx::PxVec3 dragForce = velocity;
+	dragForce.normalize();
+	dragForce *= dragForceMagnitude * forceMultiplier;
+	ballCollider->addForce(dragForce, physx::PxForceMode::eFORCE);
 
 	//// マグヌス効果を追加
 	//physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
@@ -784,7 +797,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Shooter: // シュート
-		horizontalBreak = -15.0f;  // 大きく右に曲がる
+		horizontalBreak = -5.0f;  // 大きく右に曲がる
 		verticalBreak = -5.0f;   // 少し落ちる
 		ballSpeedKmh = 145.0f;    // 遅い
 		ballAngle = { -0.2f, 0.0f, 0.0f };
@@ -810,5 +823,5 @@ void Pitcher::SelectPitchType()
 	throwDirection.z = -1.0f; // 前方向固定
 
 	// ランダムな発射角度を設定
-	launchAngleDegrees = GenerateRandomFloat(-0.5f, 0.0f); // -4度から-2度の範囲でランダム
+	launchAngleDegrees = GenerateRandomFloat(-0.5f, -0.0f); // -4度から-2度の範囲でランダム
 }

@@ -40,9 +40,6 @@ private:
 
     void UpdateLookAt(const DirectX::XMFLOAT3& targetPosition); // 頭のルックアット処理
 
-    //バットとボールの当たり判定
-	void CheckBatAndBallCollision(float elapsedTime);
-
     // ボーン操作用メソッド
     void ModifyArmBones();
     void UpdateNodeTransform(int nodeIndex, const DirectX::XMMATRIX& additionalRotation);

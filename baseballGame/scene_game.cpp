@@ -408,22 +408,22 @@ void scene_game::render(float elapsedTime)
     rc.deviceContext = dc;
     rc.renderState = renderState;
     //rc.camera = &camera;
-    //rc.lightDirection = lightDirection;
+    rc.lightDirection = lightDirection;
 	rc.lightColor = lightColor;
 	rc.ambientColor = ambientColor;
 
-    // ポイントライト設定
-    rc.pointLightPosition = pointLightPosition;
-    rc.pointLightRange = pointLightRange;
-    rc.pointLightColor = pointLightColor;
+    //// ポイントライト設定
+    //rc.pointLightPosition = pointLightPosition;
+    //rc.pointLightRange = pointLightRange;
+    //rc.pointLightColor = pointLightColor;
 
-    // スポットライト設定
-    rc.spotLightPosition = spotLightPosition;
-    rc.spotLightRange = spotLightRange;
-    rc.spotLightDirection = spotLightDirection;
-    rc.spotLightInnerAngle = spotLightInnerAngle;
-    rc.spotLightColor = spotLightColor;
-    rc.spotLightOuterAngle = spotLightOuterAngle;
+    //// スポットライト設定
+    //rc.spotLightPosition = spotLightPosition;
+    //rc.spotLightRange = spotLightRange;
+    //rc.spotLightDirection = spotLightDirection;
+    //rc.spotLightInnerAngle = spotLightInnerAngle;
+    //rc.spotLightColor = spotLightColor;
+    //rc.spotLightOuterAngle = spotLightOuterAngle;
 
     //カメラパラメータ設定
     Camera& camera = Camera::Instance();
