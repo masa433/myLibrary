@@ -37,7 +37,7 @@ void Graphics::Initialize(HWND hWnd)
 		{
 			swapchainDesc.BufferDesc.Width = screenWidth;
 			swapchainDesc.BufferDesc.Height = screenHeight;
-			swapchainDesc.BufferDesc.RefreshRate.Numerator = 60;
+			swapchainDesc.BufferDesc.RefreshRate.Numerator = 144;
 			swapchainDesc.BufferDesc.RefreshRate.Denominator = 1;
 			swapchainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 			swapchainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
