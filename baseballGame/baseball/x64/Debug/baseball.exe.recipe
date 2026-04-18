@@ -43,6 +43,12 @@
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\PhongShaderVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\phong_shader_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\phong_shader_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\PrimitiveRendererPS.cso</FullPath>
     </ContentFile>
     <ContentFile>

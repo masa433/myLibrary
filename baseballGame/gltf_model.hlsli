@@ -1,45 +1,52 @@
 // 頂点シェーダーへの入力構造体
 struct VS_IN
 {
-    float4 position : POSITION; // 頂点位置
-    float4 normal : NORMAL; // 法線ベクトル
-    float4 tangent : TANGENT; // 接線ベクトル
-    float2 texcoord : TEXCOORD; // テクスチャ座標
-    uint4 joints : JOINTS; // スキニング用のジョイントインデックス
-    float4 weights : WEIGHTS; // スキニング用のウェイト
+    float4 position : POSITION;
+    float4 normal : NORMAL;
+    float4 tangent : TANGENT;
+    float2 texcoord : TEXCOORD;
+    uint4 joints : JOINTS;
+    float4 weights : WEIGHTS;
 };
 
 // 頂点シェーダーからピクセルシェーダーへの出力構造体
 struct VS_OUT
 {
-    float4 position : SV_POSITION; // クリップ空間での頂点位置（システム用セマンティクス）
-    float4 w_position : POSITION; // ワールド空間での頂点位置
-    float4 w_normal : NORMAL; // ワールド空間での法線ベクトル
-    float4 w_tangent : TANGENT; // ワールド空間での接線ベクトル
-    float2 texcoord : TEXCOORD; // テクスチャ座標
+    float4 position : SV_POSITION;
+    float4 w_position : POSITION;
+    float4 w_normal : NORMAL;
+    float4 w_tangent : TANGENT;
+    float2 texcoord : TEXCOORD;
 };
 
 // プリミティブごとの定数バッファ（b0）
 cbuffer PRIMITIVE_CONSTANT_BUFFER : register(b0)
 {
-    row_major float4x4 world; // ワールド変換行列
-    int material; // マテリアルインデックス
-    bool has_tangent; // 接線情報があるかどうか
-    int skin; // スキン（ボーンセット）のインデックス
-    int pad; // パディング（未使用、アライメント調整用）
+    row_major float4x4 world;
+    int material;
+    bool has_tangent;
+    int skin;
+    int pad;
 };
 
 // シーン全体の定数バッファ（b1）
 cbuffer SCENE_CONSTANT_BUFFER : register(b1)
 {
-    row_major float4x4 view_projection; // ビュー・プロジェクション行列
-    float4 light_direction; // ライトの方向ベクトル
-    float4 camera_position; // カメラのワールド座標
-}
+    row_major float4x4 view_projection;
+    float4 camera_position;
+};
 
-//UNIT.37
-static const uint PRIMiTIVE_MAX_JOINTS = 512;//最大ジョイント数
+// ライト定数バッファ（b2）- Phong シェーディング用
+cbuffer LIGHT_CONSTANT_BUFFER : register(b2)
+{
+    float4 ambient_color;
+    float4 directional_light_direction;
+    float4 directional_light_color;
+};
+
+// UNIT.37
+static const uint PRIMITIVE_MAX_JOINTS = 512;
 cbuffer PRIMITIVE_JOINT_CONSTANTS : register(b2)
 {
-    row_major float4x4 joint_matrices[PRIMiTIVE_MAX_JOINTS]; //ジョイント変換行列
+    row_major float4x4 joint_matrices[PRIMITIVE_MAX_JOINTS];
 };
