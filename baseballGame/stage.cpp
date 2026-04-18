@@ -12,6 +12,8 @@ void stage::initialize()
 	// モデルの読み込み
 	stand = std::make_unique<Model>(".\\resources\\field\\stand.mdl");
 	ground = std::make_unique<Model>(".\\resources\\field\\ground.mdl");
+	stand2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\stand.glb");
+	ground2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\ground.glb");
 	// 位置、スケール、回転の初期化
 	position = { 0.0f, 0.0f, 0.0f };
 	scale = { 0.01f, 0.01f, 0.01f };
@@ -190,8 +192,10 @@ void stage::update(float elapsedTime)
 
 void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 {
-	renderer->Render(rc, transform, stand.get(), ShaderId::ShadowMap);
-	renderer->Render(rc, transform, ground.get(), ShaderId::ShadowMap);
+	//renderer->Render(rc, transform, stand.get(), ShaderId::ShadowMap);
+	//renderer->Render(rc, transform, ground.get(), ShaderId::ShadowMap);
+	stand2->render(rc.deviceContext, transform, {});
+	ground2->render(rc.deviceContext, transform, {});
 }
 
 
@@ -217,6 +221,7 @@ void stage::uninitialize()
 	}
 	boxColliders.clear();*/
 
-	model.reset();
+	stand2.reset();
+	ground2.reset();
 }
 

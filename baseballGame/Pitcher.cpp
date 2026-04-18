@@ -24,7 +24,7 @@ void Pitcher::Initialize()
 	pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\pitcher.glb");
 
 	position = { -0.1f,0.22f,18.15f };
-	scale = { -0.01f,0.01f,0.01f };
+	scale = { 0.01f,0.01f,0.01f };
 	angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
 
 	// アニメーション用のノードをコピー
@@ -48,7 +48,7 @@ void Pitcher::Initialize()
 		//pxMaterial->setRestitution(0.6f);// 反発係数を設定
 		//pxMaterial->setDynamicFriction(0.4f);// 動摩擦係数を設定
 		//pxMaterial->setStaticFriction(0.5f);// 静止摩擦係数を設定
-		pxBallMaterial = pxPhysics->createMaterial(0.3f, 0.2f, 0.42f); // ボール専用のマテリアルとして保存
+		pxBallMaterial = pxPhysics->createMaterial(0.4f, 0.3f, 0.42f); // ボール専用のマテリアルとして保存
 		//pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 
 		// ボールの球状コライダーを作成
@@ -661,7 +661,8 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	physx::PxVec3 velocity = ballCollider->getLinearVelocity();
 	float speed = velocity.magnitude();
 	const float airDensity = 1.225f; //空気密度
-	const float ballCrossSectionalArea = DirectX::XM_PI * (0.0365 * 0.0365); // ボールの断面積
+	const float ballRadius = 0.0365f; // ボールの半径（メートル）
+	const float ballCrossSectionalArea = DirectX::XM_PI * (ballRadius * ballRadius); // ボールの断面積
 	const float dragCoefficient = 0.47f; // 球の抗力係数
 	const float dragForceMagnitude = -0.5f * airDensity * speed * speed * dragCoefficient * ballCrossSectionalArea;
 	const float forceMultiplier = 0.00015f; // 力のスケーリング

@@ -51,8 +51,8 @@ void scene_game::initialize()
     // シーン定数バッファの作成
     D3D11_BUFFER_DESC buffer_desc{};
     buffer_desc.ByteWidth = sizeof(scene_constants);
-    buffer_desc.Usage = D3D11_USAGE_DEFAULT;
-    buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    //buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+    //buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
     HRESULT hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, constant_buffer.GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
@@ -446,6 +446,7 @@ void scene_game::render(float elapsedTime)
     
 
     
+    stage::Instance().render(rc, modelRenderer);
 
     // ピッチャーの描画
     Pitcher::Instance().Render(rc,modelRenderer);
@@ -455,13 +456,12 @@ void scene_game::render(float elapsedTime)
 	//PitchingNet::Instance().Render(rc, modelRenderer);
 
     // ステージの描画
-    stage::Instance().render(rc, modelRenderer);
 
     // レンダーステート設定
     dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
     dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
-	shapeRenderer->Render(dc, camera.GetView(), camera.GetProjection(), rc.lightDirection);
+	//shapeRenderer->Render(dc, camera.GetView(), camera.GetProjection(), rc.lightDirection);
 
     // サンプラーステートを設定
     ID3D11SamplerState* samplerStates[] = {
@@ -480,7 +480,7 @@ void scene_game::render(float elapsedTime)
     /*DirectionalLight dirLight = light.GetDirectionalLight();
     scene_data.light_direction = XMFLOAT4(dirLight.direction.x, dirLight.direction.y, dirLight.direction.z, 0.0f);*/
 
-    scene_data.light_direction = DirectX::XMFLOAT4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f);
+    //scene_data.light_direction = DirectX::XMFLOAT4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f);
 
     XMFLOAT3 eye = camera.GetEye();
     scene_data.camera_position = XMFLOAT4(eye.x, eye.y, eye.z, 1.0f);
@@ -516,9 +516,9 @@ void scene_game::render(float elapsedTime)
     //    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
     //}
 
-    ID3D11ShaderResourceView* clearShaderResourceView[] = { nullptr };
+    /*ID3D11ShaderResourceView* clearShaderResourceView[] = { nullptr };
     dc->PSSetShaderResources(8, 1, clearShaderResourceView);
-    dc->PSSetSamplers(8, 1, shadowMapSamplerState.GetAddressOf());
+    dc->PSSetSamplers(8, 1, shadowMapSamplerState.GetAddressOf());*/
 }
 
 void scene_game::uninitialize()

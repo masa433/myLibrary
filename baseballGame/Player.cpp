@@ -20,12 +20,12 @@ void Player::Initialize()
     if (IsRightBatter()) 
     {
         position = { -1.0f, 0.01f, -0.4f };
-        scale = { -0.01f,0.01f,0.01f };
+        scale = { 0.01f,0.01f,0.01f };
     }
     else 
     {
         position = { 1.0f, 0.01f, -0.4f };
-		scale = { 0.01f,0.01f,0.01f };
+		scale = { -0.01f,0.01f,0.01f };
     }
     angle = { 0.0f, 0.0f, 0.0f};
 	radius = 0.5f;
@@ -97,7 +97,7 @@ void Player::Initialize()
 		//pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
 
         //バット専用マテリアルの作成
-        pxBatMaterial = pxPhysics->createMaterial(0.2f, 0.1f, 0.5f);
+        pxBatMaterial = pxPhysics->createMaterial(0.3f, 0.2f, 0.5f);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
 		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());

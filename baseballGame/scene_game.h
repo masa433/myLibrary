@@ -57,7 +57,7 @@ public:
     struct scene_constants
     {
         DirectX::XMFLOAT4X4 view_projection;
-        DirectX::XMFLOAT4 light_direction;
+        //DirectX::XMFLOAT4 light_direction;
         DirectX::XMFLOAT4 camera_position;
     };
     Microsoft::WRL::ComPtr<ID3D11Buffer> constant_buffer;

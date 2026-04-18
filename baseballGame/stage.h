@@ -33,6 +33,8 @@ private:
 
 	std::unique_ptr<Model> stand;
 	std::unique_ptr<Model> ground;
+	std::unique_ptr<gltf_model> stand2;
+	std::unique_ptr<gltf_model> ground2;
 	std::vector<physx::PxTriangleMesh*> triangle_meshes;
 	std::vector<physx::PxActor*> actors;
 	DirectX::XMFLOAT4X4					transform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
