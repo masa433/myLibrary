@@ -23,7 +23,7 @@ cbuffer SCENE_CONSTANT_BUFFER : register(b1)
     float4 camera_position;
 };
 
-cbuffer LIGHT_CONSTANT_BUFFER : register(b2)
+cbuffer LIGHT_CONSTANT_BUFFER : register(b4)
 {
     float4 ambient_color;
     float4 directional_light_direction;

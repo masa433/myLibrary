@@ -151,17 +151,7 @@ void scene_game::initialize()
     //    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     //}
 
-    D3D11_INPUT_ELEMENT_DESC input_element_desc[]
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    };
 
-    //シェーダーの読み込み
-    create_vs_from_cso(device, "phong_shader_vs.cso", mesh_vertex_shader.GetAddressOf(),
-        mesh_input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
-    create_ps_from_cso(device, "phong_shader_ps.cso", mesh_pixel_shader.GetAddressOf());
 
 }
 
@@ -460,9 +450,9 @@ void scene_game::render(float elapsedTime)
         lightConstants.directional_light_color = directional_light_color;
         dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &lightConstants, 0, 0);
 
-        // スロット b2 のみ設定
-        dc->VSSetConstantBuffers(2, 1, light_constant_buffer.GetAddressOf());
-        dc->PSSetConstantBuffers(2, 1, light_constant_buffer.GetAddressOf());
+        // スロット b4 のみ設定
+        dc->VSSetConstantBuffers(4, 1, light_constant_buffer.GetAddressOf());
+        dc->PSSetConstantBuffers(4, 1, light_constant_buffer.GetAddressOf());
     }
     
     dc->IASetInputLayout(mesh_input_layout.Get());

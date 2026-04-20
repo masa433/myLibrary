@@ -1,10 +1,10 @@
 #ifndef __IMAGE_BASED_LIGHTING__
 #define __IMAGE_BASED_LIGHTING__
 
-//#define POINT 0
-//#define LINEAR 1
-//#define ANISOTROPIC 2
-//SamplerState sampler_states[3] : register(s0);
+#define POINT 0
+#define LINEAR 1
+#define ANISOTROPIC 2
+SamplerState sampler_states[3] : register(s0);
 
 Texture2D skybox : register(t32);
 TextureCube diffuse_iem : register(t33);

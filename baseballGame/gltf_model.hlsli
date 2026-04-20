@@ -36,8 +36,8 @@ cbuffer SCENE_CONSTANT_BUFFER : register(b1)
     float4 camera_position;
 };
 
-// ライト定数バッファ（b2）- Phong シェーディング用
-cbuffer LIGHT_CONSTANT_BUFFER : register(b2)
+// ライト定数バッファ（b4）
+cbuffer LIGHT_CONSTANT_BUFFER : register(b4)
 {
     float4 ambient_color;
     float4 directional_light_direction;

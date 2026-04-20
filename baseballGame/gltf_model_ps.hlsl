@@ -1,4 +1,5 @@
 #include "gltf_model.hlsli"
+#include "bidirectional_reflectance_distribution_function.hlsli"
 
 // UNIT.35
 struct texture_info
@@ -49,10 +50,10 @@ StructuredBuffer<material_constants> materials : register(t0);
 #define OCCLUSION_TEXTURE 4
 Texture2D<float4> material_textures[5] : register(t1);
 
-#define POINT 0
-#define LINEAR 1
-#define ANISOTROPIC 2
-SamplerState sampler_states[3] : register(s0);
+//#define POINT 0
+//#define LINEAR 1
+//#define ANISOTROPIC 2
+//SamplerState sampler_states[3] : register(s0);
 
 float4 main(VS_OUT pin) : SV_TARGET
 {
