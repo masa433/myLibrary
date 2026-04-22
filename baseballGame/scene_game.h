@@ -65,17 +65,45 @@ public:
     DirectX::XMFLOAT3   cameraPosition = {};
 
 	// ライト関連の定数バッファ構造体
+
+    //ポイントライトの構造体
+    struct point_lights
+    {
+        DirectX::XMFLOAT4 position;
+        DirectX::XMFLOAT4 color;
+        float intensity;
+		float range;
+		DirectX::XMFLOAT2 dummy; // 4の倍数にするためのダミー
+	};
+    
+	//スポットライトの構造体
+    struct spot_lights
+    {
+        DirectX::XMFLOAT4 position;
+        DirectX::XMFLOAT4 direction;
+        DirectX::XMFLOAT4 color;
+        float range;
+        float innerCorn;
+		float outerCorn;
+		float intensity;
+		
+    };
+
     struct light_constants
     {
         DirectX::XMFLOAT4 ambient_color;
         DirectX::XMFLOAT4 directional_light_direction;
         DirectX::XMFLOAT4 directional_light_color;
+		point_lights pointLights[6]; // 最大6つのポイントライト
+		spot_lights spotLights[6]; // 最大6つのスポットライト
     };
     Microsoft::WRL::ComPtr<ID3D11Buffer> light_constant_buffer;
 
     DirectX::XMFLOAT4 ambient_color{ 1.0f, 1.0f, 1.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_direction{ 0.0f, 1.0f, 0.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_color{ 1.0f, 1.0f, 1.0f, 1.0f };
+	point_lights pointLights[6];
+	spot_lights spotLights[6];
 
 
     float timeScale = 1.0f;

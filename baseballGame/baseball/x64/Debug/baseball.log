@@ -1,3 +1,5 @@
-﻿  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cod
+﻿C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
+  
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cod
   compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cso
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

@@ -344,6 +344,9 @@
     <None Include="phong_shader.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Lights.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="sprite_vs.hlsl">

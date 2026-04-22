@@ -296,6 +296,7 @@
     <None Include="gltf_model.hlsli" />
     <None Include="image_based_lighting.hlsli" />
     <None Include="Lambert.hlsli" />
+    <None Include="Lights.hlsli" />
     <None Include="PhongShader.hlsli" />
     <None Include="phong_shader.hlsli" />
     <None Include="PrimitiveRenderer.hlsli" />

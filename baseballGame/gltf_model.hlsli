@@ -1,3 +1,5 @@
+#include "Lights.hlsli"
+
 // 頂点シェーダーへの入力構造体
 struct VS_IN
 {
@@ -42,6 +44,8 @@ cbuffer LIGHT_CONSTANT_BUFFER : register(b4)
     float4 ambient_color;
     float4 directional_light_direction;
     float4 directional_light_color;
+    point_lights pointLights[6];
+    spot_lights spotLights[6];
 };
 
 // UNIT.37
@@ -50,3 +54,5 @@ cbuffer PRIMITIVE_JOINT_CONSTANTS : register(b2)
 {
     row_major float4x4 joint_matrices[PRIMITIVE_MAX_JOINTS];
 };
+
+#include "shading_function.hlsli"

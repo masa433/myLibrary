@@ -151,6 +151,46 @@ void scene_game::initialize()
     //    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     //}
 
+    // ポイントライト・スポットライトの初期位置設定
+    {
+        pointLights[0].position.x = 10;
+        pointLights[0].position.y = 1;
+        pointLights[0].intensity = 10;
+        pointLights[0].color = { 1, 0, 0, 1 };
+        pointLights[1].position.x = -10;
+        pointLights[1].position.y = 1;
+        pointLights[1].intensity = 10;
+        pointLights[1].color = { 0, 1, 0, 1 };
+        pointLights[2].position.y = 1;
+        pointLights[2].position.z = 10;
+        pointLights[2].intensity = 10;
+        pointLights[2].position.y = 1;
+        pointLights[2].color = { 0, 0, 1, 1 };
+        pointLights[3].position.y = 1;
+        pointLights[3].position.z = -10;
+        pointLights[3].intensity = 10;
+        pointLights[3].color = { 1, 1, 1, 1 };
+        pointLights[4].intensity = 10;
+        pointLights[4].color = { 1, 1, 1, 1 };
+        ZeroMemory(&pointLights[5], sizeof(point_lights) * 3);
+        spotLights[0].position = { 15, 3, 15, 0 };
+        spotLights[0].direction = { -1, -1, -1, 0 };
+        spotLights[0].range = 100;
+        spotLights[0].color = { 1, 0, 0, 1 };
+        spotLights[1].position = { -15, 3, 15, 0 };
+        spotLights[1].direction = { +1, -1, -1, 0 };
+        spotLights[1].range = 100;
+        spotLights[1].color = { 0, 1, 0, 1 };
+        spotLights[2].position = { 15, 3, -15, 0 };
+        spotLights[2].direction = { -1, -1, +1, 0 };
+        spotLights[2].range = 100;
+        spotLights[2].color = { 0, 0, 1, 1 };
+        spotLights[3].position = { -15, 3, -15, 0 };
+        spotLights[3].direction = { +1, -1, +1, 0 };
+        spotLights[3].range = 100;
+        spotLights[3].color = { 1, 1, 1, 1 };
+        ZeroMemory(&spotLights[4], sizeof(spot_lights) * 2);
+    }
 
 
 }
@@ -235,6 +275,43 @@ void scene_game::update(float elapsed_time)
         ImGui::ColorEdit3("ambient_color", &ambient_color.x);
         ImGui::SliderFloat3("directional_light_direction", &directional_light_direction.x, -1.0f, +1.0f);
         ImGui::ColorEdit3("directional_light_color", &directional_light_color.x);
+    
+        if (ImGui::TreeNode("points"))
+        {
+            for (int i = 0; i < 6; ++i)
+            {
+                std::string p = std::string("position") + std::to_string(i);
+                ImGui::SliderFloat3(p.c_str(), &pointLights[i].position.x, -10.0f, +10.0f);
+                std::string c = std::string("color") + std::to_string(i);
+                ImGui::ColorEdit3(c.c_str(), &pointLights[i].color.x);
+                std::string it = std::string("intensity") + std::to_string(i);
+                ImGui::SliderFloat(it.c_str(), &pointLights[i].intensity, 0.0f, +100.0f);
+				std::string r = std::string("range") + std::to_string(i);  
+				ImGui::SliderFloat(r.c_str(), &pointLights[i].range, 0.0f, +1000.0f);
+            }
+            ImGui::TreePop();
+        }
+        if (ImGui::TreeNode("spots"))
+        {
+            for (int i = 0; i < 6; ++i)
+            {
+                std::string p = std::string("position") + std::to_string(i);
+                ImGui::SliderFloat3(p.c_str(), &spotLights[i].position.x, -10.0f, +10.0f);
+                std::string d = std::string("direction") + std::to_string(i);
+                ImGui::SliderFloat3(d.c_str(), &spotLights[i].direction.x, 0.0f, +1.0f);
+                std::string c = std::string("color") + std::to_string(i);
+                ImGui::ColorEdit3(c.c_str(), &spotLights[i].color.x);
+                std::string r = std::string("range") + std::to_string(i);
+                ImGui::SliderFloat(r.c_str(), &spotLights[i].range, 0.0f, +1000.0f);
+                std::string ic = std::string("inner") + std::to_string(i);
+                ImGui::SliderFloat(ic.c_str(), &spotLights[i].innerCorn, -1.0f, +1.0f);
+                std::string oc = std::string("outer") + std::to_string(i);
+                ImGui::SliderFloat(oc.c_str(), &spotLights[i].outerCorn, -1.0f, +1.0f);
+				std::string it = std::string("intensity") + std::to_string(i);
+				ImGui::SliderFloat(it.c_str(), &spotLights[i].intensity, 0.0f, +1000.0f);
+            }
+            ImGui::TreePop();
+        }
     }
 
 	ImGui::Checkbox("Show PhysX Debug", &showPhysxDebug);
@@ -246,6 +323,9 @@ void scene_game::update(float elapsed_time)
         ImGui::DragFloat2("Screen Position", &spritePosition.x, 1.0f, 0.0f, 2000.0f);
         ImGui::DragFloat2("Scale", &spriteScale.x, 0.01f, 0.1f, 5.0f);
         ImGui::ColorEdit4("Tint", &spriteTint.x);
+
+        
+
     }
 
     // タイムスケール制御
@@ -448,6 +528,8 @@ void scene_game::render(float elapsedTime)
         lightConstants.ambient_color = ambient_color;
         lightConstants.directional_light_direction = directional_light_direction;
         lightConstants.directional_light_color = directional_light_color;
+		memcpy_s(lightConstants.pointLights, sizeof(lightConstants.pointLights), pointLights, sizeof(pointLights));
+		memcpy_s(lightConstants.spotLights, sizeof(lightConstants.spotLights), spotLights, sizeof(spotLights));
         dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &lightConstants, 0, 0);
 
         // スロット b4 のみ設定

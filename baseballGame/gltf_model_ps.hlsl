@@ -55,86 +55,122 @@ Texture2D<float4> material_textures[5] : register(t1);
 //#define ANISOTROPIC 2
 //SamplerState sampler_states[3] : register(s0);
 
-float4 main(VS_OUT pin) : SV_TARGET
+float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
 {
     // UNIT.35
     const material_constants m = materials[material];
 
-    // ベースカラー取得
-    float4 basecolor_factor = m.pbr_metallic_roughness.basecolor_factor;
-    const int basecolor_texture = m.pbr_metallic_roughness.basecolor_texture.index;
-    if (basecolor_texture > -1)
+    //	ベースカラーを取得
+    float4 basecolor = (float4) 0;
+    if (m.pbr_metallic_roughness.basecolor_texture.index > -1)
     {
-        float4 sampled = material_textures[BASECOLOR_TEXTURE].Sample(sampler_states[ANISOTROPIC], pin.texcoord);
-        basecolor_factor *= sampled;
+        basecolor = material_textures[BASECOLOR_TEXTURE].Sample(sampler_states[ANISOTROPIC], pin.texcoord);
+    }
+    else
+    {
+        basecolor = m.pbr_metallic_roughness.basecolor_factor;
     }
 
-    // エミッシブ取得
-    float3 emissive_factor = m.emissive_factor;
-    const int emissive_texture = m.emissive_texture.index;
-    if (emissive_texture > -1)
+    //	自己発光色を取得
+    float3 emmisive = (float3) 0;
+    if (m.emissive_texture.index > -1)
     {
-        float4 sampled = material_textures[EMISSIVE_TEXTURE].Sample(sampler_states[ANISOTROPIC], pin.texcoord);
-        emissive_factor *= sampled.rgb;
+        emmisive = material_textures[EMISSIVE_TEXTURE].Sample(sampler_states[ANISOTROPIC], pin.texcoord).rgb;
+    }
+    else
+    {
+        emmisive = m.emissive_factor;
     }
 
-    // 法線計算
+    //	法線取得
     float3 N = normalize(pin.w_normal.xyz);
     float3 T = has_tangent ? normalize(pin.w_tangent.xyz) : float3(1, 0, 0);
     float sigma = has_tangent ? pin.w_tangent.w : 1.0;
     T = normalize(T - N * dot(N, T));
     float3 B = normalize(cross(N, T) * sigma);
-
-    // 法線マップ適用
-    const int normal_texture = m.normal_texture.index;
-    if (normal_texture > -1)
+	//	裏面描画の場合は反転しておく
+    if (is_front_face == false)
+    {
+        T = -T;
+        B = -B;
+        N = -N;
+    }
+	
+	//	法線マッピング
+    if (m.normal_texture.index > -1)
     {
         float4 sampled = material_textures[NORMAL_TEXTURE].Sample(sampler_states[LINEAR], pin.texcoord);
         float3 normal_factor = sampled.xyz;
-        normal_factor = (normal_factor * 2.0) - 1.0;
+        normal_factor = (normal_factor * 2.0f) - 1.0f;
         normal_factor = normalize(normal_factor * float3(m.normal_texture.scale, m.normal_texture.scale, 1.0));
         N = normalize((normal_factor.x * T) + (normal_factor.y * B) + (normal_factor.z * N));
     }
 
-    // Phong ライティング
-    float3 E = normalize(camera_position.xyz - pin.w_position.xyz);
-    float3 L = normalize(-directional_light_direction.xyz);
-    
-    // アンビエント
-    float3 ambient = ambient_color.rgb * basecolor_factor.rgb;
+    //	視線ベクトル
+    float3 V = normalize(pin.w_position.xyz - camera_position.xyz);
 
-    // ディフューズ
-    float diffuse_power = saturate(dot(N, -L));
-    float3 diffuse_color = directional_light_color.rgb * diffuse_power * basecolor_factor.rgb;
+	//	シェーディング
+    float4 color = (float4) 0;
+	{
+		//	環境光
+        float3 ambient = ambient_color.rgb * ambient_color.a;
 
-    // スペキュラー（メタリック・ラフネスベース）
-    float3 specular_color = 0;
-    {
-        float3 R = reflect(L, N);
-        float spec_power = max(dot(-E, R), 0.0f);
-        
-        // メタリック・ラフネス情報を取得
-        float metallic_factor = m.pbr_metallic_roughness.metallic_factor;
-        float roughness_factor = m.pbr_metallic_roughness.roughness_factor;
-        const int metallic_roughness_texture = m.pbr_metallic_roughness.metallic_roughness_texture.index;
-        if (metallic_roughness_texture > -1)
-        {
-            float4 sampled = material_textures[METALLIC_ROUGHNESS_TEXTURE].Sample(sampler_states[LINEAR], pin.texcoord);
-            roughness_factor *= sampled.g;
-            metallic_factor *= sampled.b;
+		//	平行光源
+        float3 directional_diffuse = 0, directional_specular = 0;
+		{
+            float3 L = normalize(directional_light_direction.xyz);
+            float3 LC = directional_light_color.rgb * directional_light_color.a;
+            directional_diffuse = CalcLambert(N, L, LC, 1);
+            directional_specular = CalcPhongSpecular(N, L, V, LC, 1);
+
         }
 
-        // ラフネスによってスペキュラーの鋭さを調整
-        float shininess = lerp(128.0f, 4.0f, roughness_factor);
-        spec_power = pow(spec_power, shininess);
-        
-        // メタリックが高いほどスペキュラーが強くなる
-        float3 spec_reflect = lerp(float3(0.01f, 0.01f, 0.01f), basecolor_factor.rgb, metallic_factor);
-        specular_color = directional_light_color.rgb * spec_power * spec_reflect;
-    }
+		//	点光源
+        float3 point_diffuse = 0, point_specular = 0;
+        for (int i = 0; i < 6; ++i)
+        {
+            
+         
+            float3 L = pin.w_position.xyz - pointLights[i].position.xyz;
+            float len = length(L);
+            if (len >= pointLights[i].range)
+                continue;
+            float attenuateLength = saturate(1.0f - len / pointLights[i].range);
+            float attenuation = attenuateLength * attenuateLength;
+            L /= len;
+            float3 LC = pointLights[i].color.rgb * pointLights[i].intensity;
+            point_diffuse += CalcLambert(N, L, LC, 1) * attenuation;
+            point_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation;
+        }
 
-    // 最終色
-    float3 color = ambient + diffuse_color + specular_color + emissive_factor;
-    
-    return float4(color, basecolor_factor.a);
+		//	スポットライト
+        float3 spot_diffuse = 0, spot_specular = 0;
+        for (int j = 0; j < 6; ++j)
+        {
+          
+            float3 L = pin.w_position.xyz - spotLights[j].position.xyz;
+            float len = length(L);
+            if (len >= spotLights[j].range)
+                continue;
+            float attenuateLength = saturate(1.0f - len / spotLights[j].range);
+            float attenuation = attenuateLength * attenuateLength;
+            L /= len;
+            float3 spotDirection = normalize(spotLights[j].direction.xyz);
+            float angle = dot(spotDirection, L);
+            float area = spotLights[j].innerCorn - spotLights[j].outerCorn;
+            attenuation *= saturate(1.0f - (spotLights[j].innerCorn - angle) / area);
+            float3 LC = spotLights[j].color.rgb * spotLights[j].intensity;
+            spot_diffuse += CalcLambert(N, L, LC, 1) * attenuation;
+            spot_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation;
+        }
+		
+		//	合算
+        color.a = basecolor.a;
+        color.rgb += basecolor.rgb * (ambient + directional_diffuse + point_diffuse + spot_diffuse);
+        color.rgb += directional_specular + spot_specular + point_specular;
+    }
+	
+	//	自己発光色加算
+    color.rgb += emmisive;
+    return color;
 }
