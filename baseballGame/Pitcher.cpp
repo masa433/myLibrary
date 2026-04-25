@@ -671,11 +671,11 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	dragForce *= dragForceMagnitude * forceMultiplier;
 	ballCollider->addForce(dragForce, physx::PxForceMode::eFORCE);
 
-	//// マグヌス効果を追加
-	//physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
-	//float magnusCoefficient = 0.00000008f; // マグヌス効果を調整
-	//physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
-	//ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
+	// マグヌス効果を追加
+	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
+	float magnusCoefficient = 0.00000003f; // マグヌス効果を調整
+	physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
+	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
 
 }
 

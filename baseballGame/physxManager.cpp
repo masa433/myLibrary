@@ -672,6 +672,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					spinAxis = physx::PxVec3(0.0f, 1.0f, 0.0f);
 				}
 				spinAxis.x = -spinAxis.x;
+				spinAxis.y = -spinAxis.y;
 
 				// ===== 5. 最終速度計算 =====
 				physx::PxVec3 newBallVelocity = ballVelocity + collisionNormal * impulseScalar / BALL_MASS;
