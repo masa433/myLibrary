@@ -566,19 +566,6 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			SetHasCollided(false);
 			SetHasCollidedWithFence(false);
 
-			// ボール反発係数をリセット
-			{
-				physx::PxRigidDynamic* ballCollider = GetBallCollider();
-				if (ballCollider)
-				{
-					physx::PxShape* ballShape;
-					ballCollider->getShapes(&ballShape, 1);
-					physx::PxMaterial* ballMaterial;
-					ballShape->getMaterials(&ballMaterial, 1);
-					ballMaterial->setRestitution(0.42f);  // 初期値に設定
-				}
-			}
-
 			float speedMs = ballSpeedKmh / 3.6f;
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
 
@@ -596,6 +583,10 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			ballWorldScale = { 1.0f, 1.0f, 1.0f };
 			ballWorldAngle = ballAngle;
 
+			//球種に応じた回転を設定
+			physx::PxVec3 angularVelocity = GetSpinAxisFromPitchType();
+			ballCollider->setAngularVelocity(angularVelocity);
+
 			physx::PxRigidDynamic* ballCollider = GetBallCollider();
 			if (ballCollider)
 			{
@@ -612,7 +603,56 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 	}
 }
 
+// ===== 新規追加: 球種から角速度を計算 =====
+physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
+{
+	const float RPM_TO_RAD_PER_SEC = 2.0f * 3.14159265f / 60.0f;
 
+	switch (selectedPitchType)
+	{
+	case PitchType::Fastball:  // バックスピン
+		return physx::PxVec3(2500.0f * RPM_TO_RAD_PER_SEC, 0.0f, 0.0f);
+
+	case PitchType::Slider:  // サイドスピン＋少しバック
+		return physx::PxVec3(0.0f, 0.0f, 1500.0f * RPM_TO_RAD_PER_SEC);
+
+	case PitchType::Curveball:  // サイドスピン＋トップスピン
+		return physx::PxVec3(-2500.0f * RPM_TO_RAD_PER_SEC, 0.0f, 0.0f);
+
+	case PitchType::Changeup:  // ミックススピン（弱い）
+		return physx::PxVec3(500.0f * RPM_TO_RAD_PER_SEC, -800.0f * RPM_TO_RAD_PER_SEC, -1000.0f * RPM_TO_RAD_PER_SEC);
+
+	case PitchType::Forkball:  // ほぼ回転なし
+		return physx::PxVec3(100.0f * RPM_TO_RAD_PER_SEC, -100.0f * RPM_TO_RAD_PER_SEC, -100.0f * RPM_TO_RAD_PER_SEC);
+
+	case PitchType::TwoSeam:  // バックスピン＋弱いサイド
+		return physx::PxVec3(0.0f, -600.0f * RPM_TO_RAD_PER_SEC, -2200.0f * RPM_TO_RAD_PER_SEC);
+
+	case PitchType::Cutter:  // サイドスピン強め
+		return physx::PxVec3(0.0f, -2200.0f * RPM_TO_RAD_PER_SEC, -1500.0f * RPM_TO_RAD_PER_SEC);
+
+	case PitchType::Sinker:  // サイドスピン＋トップスピン
+		return physx::PxVec3(800.0f * RPM_TO_RAD_PER_SEC, -1800.0f * RPM_TO_RAD_PER_SEC, 800.0f * RPM_TO_RAD_PER_SEC);
+
+	case PitchType::VerticalSlider:  // 純粋なサイドスピン
+		return physx::PxVec3(0.0f, -2000.0f * RPM_TO_RAD_PER_SEC, 0.0f);
+
+	case PitchType::Splitter:  // 回転が少ない
+		return physx::PxVec3(300.0f * RPM_TO_RAD_PER_SEC, -500.0f * RPM_TO_RAD_PER_SEC, -200.0f * RPM_TO_RAD_PER_SEC);
+
+	case PitchType::SlowCurve:  // トップスピン強め
+		return physx::PxVec3(0.0f, -1200.0f * RPM_TO_RAD_PER_SEC, 2000.0f * RPM_TO_RAD_PER_SEC);
+
+	case PitchType::Shooter:  // サイドスピン最強
+		return physx::PxVec3(0.0f, -2500.0f * RPM_TO_RAD_PER_SEC, -2000.0f * RPM_TO_RAD_PER_SEC);
+
+	case PitchType::Knuckleball:  // ほぼ回転なし
+		return physx::PxVec3(100.0f * RPM_TO_RAD_PER_SEC, 100.0f * RPM_TO_RAD_PER_SEC, 50.0f * RPM_TO_RAD_PER_SEC);
+
+	default:
+		return physx::PxVec3(0.0f, 0.0f, 0.0f);
+	}
+}
 
 void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 {
@@ -627,7 +667,7 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	// ナックルボールの特性: ランダムな横方向の揺れを加える
 	if (selectedPitchType == PitchType::Knuckleball)
 	{
-		float randomLateralForce = GenerateRandomFloat(-0.01f, 0.01f); // ランダムな横方向の力
+		float randomLateralForce = GenerateRandomFloat(-0.001f, 0.001f); // ランダムな横方向の力
 		physx::PxVec3 lateralForce(randomLateralForce, 0.0f, 0.0f);
 		ballCollider->addForce(lateralForce, physx::PxForceMode::eFORCE);
 	}
@@ -665,7 +705,7 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	const float ballCrossSectionalArea = DirectX::XM_PI * (ballRadius * ballRadius); // ボールの断面積
 	const float dragCoefficient = 0.47f; // 球の抗力係数
 	const float dragForceMagnitude = -0.5f * airDensity * speed * speed * dragCoefficient * ballCrossSectionalArea;
-	const float forceMultiplier = 0.00015f; // 力のスケーリング
+	const float forceMultiplier = 0.00018f; // 力のスケーリング
 	physx::PxVec3 dragForce = velocity;
 	dragForce.normalize();
 	dragForce *= dragForceMagnitude * forceMultiplier;
@@ -718,8 +758,8 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Curveball: // カーブ
-		horizontalBreak = 10.0f; // 左方向に曲がる
-		verticalBreak = -20.0f;   // 大きく落ちる
+		horizontalBreak = 5.0f; // 左方向に曲がる
+		verticalBreak = -10.0f;   // 大きく落ちる
 		ballSpeedKmh = 110.0f;    // 遅い
 		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // トップスピン
