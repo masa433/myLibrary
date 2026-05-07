@@ -25,7 +25,7 @@ void stage::initialize()
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
 		// Ground用のマテリアル（よく跳ねる）
-		physx::PxMaterial* groundMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.2f);
+		physx::PxMaterial* groundMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.3f);
 
 		// Stand用のマテリアル（ほぼ跳ねない）
 		physx::PxMaterial* standMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.0f);
