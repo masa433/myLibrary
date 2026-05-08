@@ -79,6 +79,7 @@ public:
 private:
     // ƒ‚ƒfƒ‹ŠÖ˜A
     std::unique_ptr<Model> bat;
+	std::unique_ptr<gltf_model> batModel;
 
     DirectX::XMFLOAT4X4 batTransform = { 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1 };
     DirectX::XMFLOAT3   batPosition = { 0,0,0 };

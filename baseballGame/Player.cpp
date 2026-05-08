@@ -46,6 +46,7 @@ void Player::Initialize()
 
     //バットモデルの読み込み
     bat = std::make_unique<Model>(".\\resources\\object\\bat.mdl");
+	batModel = std::make_unique<gltf_model>(device, ".\\resources\\object\\bat.glb");
     batScale = { 1.2f,1.1f,1.2f };
     batPosition = { 8.0f, 0.0f, 4.0f };
     batAngle = { 0.0f, 0.0f, 1.6f, 0.0f };
@@ -333,8 +334,8 @@ void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
     animated_model->render(rc.deviceContext, transform, animated_nodes);
     
 
-    renderer->Render(rc, batTransform, bat.get(), ShaderId::Phong);
-
+    //renderer->Render(rc, batTransform, bat.get(), ShaderId::Phong);
+    batModel->render(rc.deviceContext, batTransform, {});
   
 }
 

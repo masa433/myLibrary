@@ -620,7 +620,7 @@ physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 		return physx::PxVec3(-2500.0f * RPM_TO_RAD_PER_SEC, -2800.0f * RPM_TO_RAD_PER_SEC, 0.0f);
 
 	case PitchType::Changeup:  // ミックススピン（弱い）
-		return physx::PxVec3(1000.0f * RPM_TO_RAD_PER_SEC, 1000.0f * RPM_TO_RAD_PER_SEC, 0.0f);
+		return physx::PxVec3(1000.0f * RPM_TO_RAD_PER_SEC, 0.0f, 0.0f);
 
 	case PitchType::Forkball:  // ほぼ回転なし
 		return physx::PxVec3(100.0f * RPM_TO_RAD_PER_SEC, -100.0f * RPM_TO_RAD_PER_SEC, -100.0f * RPM_TO_RAD_PER_SEC);
@@ -724,16 +724,24 @@ void Pitcher::SelectPitchType()
 {
 	// 乱数生成
 	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
-	selectedPitchType = PitchType::Fastball; // デフォルトはストレート
+	//selectedPitchType = PitchType::Fastball; // デフォルトはストレート
 
-	//if(randomValue<=0.9f) // 50%の確率でストレート
-	//{
-	//	selectedPitchType = PitchType::Changeup;
-	//}
-	//else if(randomValue<=1.0f) // 50%の確率で他の球種をランダムに選択
-	//{
-	//	selectedPitchType = PitchType::Fastball; // ここではシンカーを選択
-	//}
+	if(randomValue<=0.25f) // 50%の確率でストレート
+	{
+		selectedPitchType = PitchType::Fastball;
+	}
+	else if(randomValue<=0.5f) // 50%の確率で他の球種をランダムに選択
+	{
+		selectedPitchType = PitchType::Slider; // ここではシンカーを選択
+	}
+	else if (randomValue <= 0.75f)
+	{
+		selectedPitchType = PitchType::Curveball; // ここではカーブを選択
+	}
+	else if (randomValue <= 1.0f)
+	{
+		selectedPitchType = PitchType::Changeup; // ここではチェンジアップを選択
+	}
 
 	//if (randomValue <= 0.2f) // 20%の確率でストレート
 	//{
@@ -768,9 +776,11 @@ void Pitcher::SelectPitchType()
 	case PitchType::Fastball: // ストレート
 		horizontalBreak = 0.0f;
 		verticalBreak = 0.0f;//ややホップするような感じ
-		//ballSpeedKmh = 150.0f; // 速い
+		ballSpeedKmh = 150.0f; // 速い
 		ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // バックスピン
+		throwDirection.x = 0.03f;
+		launchAngleDegrees = -1.5f;
 		OutputDebugStringA("Pitch Type: Fastball\n");
 		break;
 
@@ -780,6 +790,8 @@ void Pitcher::SelectPitchType()
 		ballSpeedKmh = 130.0f;    // 少し遅い
 		ballAngle = { -0.2f, 0.0f, 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, -100.0f }; // サイドスピン
+		throwDirection.x = 0.0f;
+		launchAngleDegrees = 0.5f;
 		OutputDebugStringA("Pitch Type: Slider\n");
 		break;
 
@@ -789,6 +801,7 @@ void Pitcher::SelectPitchType()
 		ballSpeedKmh = 110.0f;    // 遅い
 		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // トップスピン
+		throwDirection.x = 0.01f;
 		launchAngleDegrees = 4.0f; // カーブはやや下向きに投げる
 		OutputDebugStringA("Pitch Type: Curveball\n");
 		break;
@@ -798,6 +811,8 @@ void Pitcher::SelectPitchType()
 		verticalBreak = -5.0f;   // 落ちる
 		ballSpeedKmh = 120.0f;    // 遅い
 		rotationSpeed = { 100.0f, 0.0f, 100.0f }; // ミックス回転
+		throwDirection.x = 0.03f;
+		launchAngleDegrees = 0.0f; // カーブはやや下向きに投げる
 		OutputDebugStringA("Pitch Type: Changeup\n");
 		break;
 

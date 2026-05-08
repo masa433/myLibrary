@@ -133,9 +133,6 @@
     <ClCompile Include="LambertShader.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="PitchingNet.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
     <ClCompile Include="PhongShader.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
@@ -277,9 +274,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="LambertShader.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="PitchingNet.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="PhongShader.h">

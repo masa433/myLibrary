@@ -225,7 +225,6 @@
     <ClCompile Include="PhongShader.cpp" />
     <ClCompile Include="physxManager.cpp" />
     <ClCompile Include="Pitcher.cpp" />
-    <ClCompile Include="PitchingNet.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PrimitiveRenderer.cpp" />
     <ClCompile Include="RenderState.cpp" />
@@ -272,7 +271,6 @@
     <ClInclude Include="PhongShader.h" />
     <ClInclude Include="physxManager.h" />
     <ClInclude Include="Pitcher.h" />
-    <ClInclude Include="PitchingNet.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PrimitiveRenderer.h" />
     <ClInclude Include="RenderContext.h" />

@@ -9,7 +9,6 @@
 #include "Player.h"
 #include <random>
 #include "stage.h"
-#include "PitchingNet.h"
 
 // グローバルまたはクラス内にキューを用意
 std::queue<std::function<void()>> velocityUpdateQueue;
