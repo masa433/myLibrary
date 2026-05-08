@@ -56,6 +56,23 @@
 //
 // }
 //
+// cbuffer HEMISPHERE_LIGHT_CONSTANT_BUFFER
+// {
+//
+//   float4 sky_color;                  // Offset:    0 Size:    16
+//   float4 ground_color;               // Offset:   16 Size:    16
+//   float4 hemisphere_weight;          // Offset:   32 Size:    16
+//
+// }
+//
+// cbuffer FOG_CONSTANT_BUFFER
+// {
+//
+//   float4 fog_color;                  // Offset:    0 Size:    16
+//   float4 fog_range;                  // Offset:   16 Size:    16
+//
+// }
+//
 // Resource bind info for materials
 // {
 //
@@ -132,10 +149,11 @@
 // materials                         texture  struct         r/o             t0      1 
 // material_textures[0]              texture  float4          2d             t1      1 
 // material_textures[2]              texture  float4          2d             t3      1 
-// material_textures[3]              texture  float4          2d             t4      1 
 // PRIMITIVE_CONSTANT_BUFFER         cbuffer      NA          NA            cb0      1 
 // SCENE_CONSTANT_BUFFER             cbuffer      NA          NA            cb1      1 
-// LIGHT_CONSTANT_BUFFER             cbuffer      NA          NA            cb4      1 
+// LIGHT_CONSTANT_BUFFER             cbuffer      NA          NA            cb3      1 
+// HEMISPHERE_LIGHT_CONSTANT_BUFFER    cbuffer      NA          NA            cb4      1 
+// FOG_CONSTANT_BUFFER               cbuffer      NA          NA            cb5      1 
 //
 //
 //
@@ -161,20 +179,21 @@ ps_5_0
 dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_constantbuffer CB0[5], immediateIndexed
 dcl_constantbuffer CB1[5], immediateIndexed
-dcl_constantbuffer CB4[45], dynamicIndexed
+dcl_constantbuffer CB3[45], dynamicIndexed
+dcl_constantbuffer CB4[3], immediateIndexed
+dcl_constantbuffer CB5[2], immediateIndexed
 dcl_sampler s1, mode_default
 dcl_sampler s2, mode_default
 dcl_resource_structured t0, 96
 dcl_resource_texture2d (float,float,float,float) t1
 dcl_resource_texture2d (float,float,float,float) t3
-dcl_resource_texture2d (float,float,float,float) t4
 dcl_input_ps linear v1.xyz
 dcl_input_ps linear v2.xyz
 dcl_input_ps linear v3.xyzw
 dcl_input_ps linear v4.xy
 dcl_input_ps_sgv constant v5.x, is_front_face
 dcl_output o0.xyzw
-dcl_temps 19
+dcl_temps 18
 //
 // Initial variable locations:
 //   v0.x <- pin.position.x; v0.y <- pin.position.y; v0.z <- pin.position.z; v0.w <- pin.position.w; 
@@ -187,48 +206,28 @@ dcl_temps 19
 //
 #line 61 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
 mov r0.x, cb0[4].x
-ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r1.x, r0.x, l(0), t0.xxxx  // r1.x <- m.emissive_factor.x
-ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r1.y, r0.x, l(4), t0.xxxx  // r1.y <- m.emissive_factor.y
-ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r1.z, r0.x, l(8), t0.xxxx  // r1.z <- m.emissive_factor.z
-ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r2.x, r0.x, l(24), t0.xxxx  // r2.x <- m.pbr_metallic_roughness.basecolor_factor.x
-ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r2.y, r0.x, l(28), t0.xxxx  // r2.y <- m.pbr_metallic_roughness.basecolor_factor.y
-ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r2.z, r0.x, l(32), t0.xxxx  // r2.z <- m.pbr_metallic_roughness.basecolor_factor.z
-ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r2.w, r0.x, l(36), t0.xxxx  // r2.w <- m.pbr_metallic_roughness.basecolor_factor.w
+ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r1.x, r0.x, l(24), t0.xxxx  // r1.x <- m.pbr_metallic_roughness.basecolor_factor.x
+ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r1.y, r0.x, l(28), t0.xxxx  // r1.y <- m.pbr_metallic_roughness.basecolor_factor.y
+ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r1.z, r0.x, l(32), t0.xxxx  // r1.z <- m.pbr_metallic_roughness.basecolor_factor.z
+ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r1.w, r0.x, l(36), t0.xxxx  // r1.w <- m.pbr_metallic_roughness.basecolor_factor.w
 ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r0.y, r0.x, l(40), t0.xxxx  // r0.y <- m.pbr_metallic_roughness.basecolor_texture.index
 ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r0.z, r0.x, l(64), t0.xxxx  // r0.z <- m.normal_texture.index
-ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r3.x, r0.x, l(72), t0.xxxx  // r3.x <- m.normal_texture.scale
-ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r0.x, r0.x, l(88), t0.xxxx  // r0.x <- m.emissive_texture.index
+ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r2.z, r0.x, l(72), t0.xxxx  // r2.z <- m.normal_texture.scale
 
 #line 65
-ilt r0.y, l(-1), r0.y
-if_nz r0.y
-
-#line 67
-  sample_indexable(texture2d)(float,float,float,float) r2.xyzw, v4.xyxx, t1.xyzw, s2  // r2.x <- basecolor.x; r2.y <- basecolor.y; r2.z <- basecolor.z; r2.w <- basecolor.w
-
-#line 68
-else   // Prior locations: r2.x <- m.pbr_metallic_roughness.basecolor_factor.x; r2.y <- m.pbr_metallic_roughness.basecolor_factor.y; r2.z <- m.pbr_metallic_roughness.basecolor_factor.z; r2.w <- m.pbr_metallic_roughness.basecolor_factor.w
-
-#line 71
-  mov r2.xyzw, r2.xyzw  // r2.x <- basecolor.x; r2.y <- basecolor.y; r2.z <- basecolor.z; r2.w <- basecolor.w
-
-#line 72
-endif 
-
-#line 76
-ilt r0.x, l(-1), r0.x
+ilt r0.x, l(-1), r0.y
 if_nz r0.x
 
-#line 78
-  sample_indexable(texture2d)(float,float,float,float) r1.xyz, v4.xyxx, t4.xyzw, s2  // r1.x <- emmisive.x; r1.y <- emmisive.y; r1.z <- emmisive.z
+#line 67
+  sample_indexable(texture2d)(float,float,float,float) r1.xyzw, v4.xyxx, t1.xyzw, s2  // r1.x <- basecolor.x; r1.y <- basecolor.y; r1.z <- basecolor.z; r1.w <- basecolor.w
 
-#line 79
-else   // Prior locations: r1.x <- m.emissive_factor.x; r1.y <- m.emissive_factor.y; r1.z <- m.emissive_factor.z
+#line 68
+else   // Prior locations: r1.x <- m.pbr_metallic_roughness.basecolor_factor.x; r1.y <- m.pbr_metallic_roughness.basecolor_factor.y; r1.z <- m.pbr_metallic_roughness.basecolor_factor.z; r1.w <- m.pbr_metallic_roughness.basecolor_factor.w
 
-#line 82
-  mov r1.xyz, r1.xyzx  // r1.x <- emmisive.x; r1.y <- emmisive.y; r1.z <- emmisive.z
+#line 71
+  mov r1.xyzw, r1.xyzw  // r1.x <- basecolor.x; r1.y <- basecolor.y; r1.z <- basecolor.z; r1.w <- basecolor.w
 
-#line 83
+#line 72
 endif 
 
 #line 86
@@ -237,44 +236,44 @@ rsq r0.x, r0.x
 mul r0.xyw, r0.xxxx, v2.xyxz  // r0.x <- N.x; r0.y <- N.y; r0.w <- N.z
 
 #line 87
-ine r1.w, l(0, 0, 0, 0), cb0[4].y
-dp3 r3.y, v3.xyzx, v3.xyzx
-rsq r3.y, r3.y
-mul r4.xyz, r3.yyyy, v3.xyzx
-itof r5.xyz, l(1, 0, 0, 0)
-movc r4.xyz, r1.wwww, r4.xyzx, r5.xyzx  // r4.x <- T.x; r4.y <- T.y; r4.z <- T.z
+ine r2.x, l(0, 0, 0, 0), cb0[4].y
+dp3 r2.y, v3.xyzx, v3.xyzx
+rsq r2.y, r2.y
+mul r3.xyz, r2.yyyy, v3.xyzx
+itof r4.xyz, l(1, 0, 0, 0)
+movc r3.xyz, r2.xxxx, r3.xyzx, r4.xyzx  // r3.x <- T.x; r3.y <- T.y; r3.z <- T.z
 
 #line 88
-ine r1.w, l(0, 0, 0, 0), cb0[4].y
-movc r1.w, r1.w, v3.w, l(1.000000)  // r1.w <- sigma
+ine r2.x, l(0, 0, 0, 0), cb0[4].y
+movc r2.x, r2.x, v3.w, l(1.000000)  // r2.x <- sigma
 
 #line 89
-dp3 r3.y, r0.xywx, r4.xyzx
-mul r5.xyz, r0.xywx, r3.yyyy
-mov r5.xyz, -r5.xyzx
-add r4.xyz, r4.xyzx, r5.xyzx
-dp3 r3.y, r4.xyzx, r4.xyzx
-rsq r3.y, r3.y
-mul r4.xyz, r3.yyyy, r4.xyzx  // r4.x <- T.x; r4.y <- T.y; r4.z <- T.z
+dp3 r2.y, r0.xywx, r3.xyzx
+mul r4.xyz, r0.xywx, r2.yyyy
+mov r4.xyz, -r4.xyzx
+add r3.xyz, r3.xyzx, r4.xyzx
+dp3 r2.y, r3.xyzx, r3.xyzx
+rsq r2.y, r2.y
+mul r3.xyz, r2.yyyy, r3.xyzx  // r3.x <- T.x; r3.y <- T.y; r3.z <- T.z
 
 #line 90
-mul r5.xyz, r0.ywxy, r4.zxyz
-mul r6.xyz, r0.wxyw, r4.yzxy
-mov r6.xyz, -r6.xyzx
-add r5.xyz, r5.xyzx, r6.xyzx
-mul r5.xyz, r1.wwww, r5.xyzx
-dp3 r1.w, r5.xyzx, r5.xyzx
-rsq r1.w, r1.w
-mul r5.xyz, r1.wwww, r5.xyzx  // r5.x <- B.x; r5.y <- B.y; r5.z <- B.z
+mul r4.xyz, r0.ywxy, r3.zxyz
+mul r5.xyz, r0.wxyw, r3.yzxy
+mov r5.xyz, -r5.xyzx
+add r4.xyz, r4.xyzx, r5.xyzx
+mul r4.xyz, r2.xxxx, r4.xyzx
+dp3 r2.x, r4.xyzx, r4.xyzx
+rsq r2.x, r2.x
+mul r4.xyz, r2.xxxx, r4.xyzx  // r4.x <- B.x; r4.y <- B.y; r4.z <- B.z
 
 #line 92
 if_z v5.x
 
 #line 94
-  mov r4.xyz, -r4.xyzx
+  mov r3.xyz, -r3.xyzx
 
 #line 95
-  mov r5.xyz, -r5.xyzx
+  mov r4.xyz, -r4.xyzx
 
 #line 96
   mov r0.xyw, -r0.xyxw
@@ -287,201 +286,224 @@ ilt r0.z, l(-1), r0.z
 if_nz r0.z
 
 #line 102
-  sample_indexable(texture2d)(float,float,float,float) r6.xyz, v4.xyxx, t3.xyzw, s1  // r6.x <- sampled.x; r6.y <- sampled.y; r6.z <- sampled.z
+  sample_indexable(texture2d)(float,float,float,float) r5.xyz, v4.xyxx, t3.xyzw, s1  // r5.x <- sampled.x; r5.y <- sampled.y; r5.z <- sampled.z
 
 #line 103
-  mov r6.xyz, r6.xyzx  // r6.x <- normal_factor.x; r6.y <- normal_factor.y; r6.z <- normal_factor.z
+  mov r5.xyz, r5.xyzx  // r5.x <- normal_factor.x; r5.y <- normal_factor.y; r5.z <- normal_factor.z
 
 #line 104
-  mul r6.xyz, r6.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000)
-  mov r7.xyz, l(-1.000000,-1.000000,-1.000000,-0.000000)
-  add r6.xyz, r6.xyzx, r7.xyzx  // r6.x <- normal_factor.x; r6.y <- normal_factor.y; r6.z <- normal_factor.z
+  mul r5.xyz, r5.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000)
+  mov r6.xyz, l(-1.000000,-1.000000,-1.000000,-0.000000)
+  add r5.xyz, r5.xyzx, r6.xyzx  // r5.x <- normal_factor.x; r5.y <- normal_factor.y; r5.z <- normal_factor.z
 
 #line 105
-  mov r3.z, l(1.000000)
-  mul r3.xyz, r3.xxzx, r6.xyzx
-  dp3 r0.z, r3.xyzx, r3.xyzx
+  mov r2.w, l(1.000000)
+  mul r2.xyz, r2.zzwz, r5.xyzx
+  dp3 r0.z, r2.xyzx, r2.xyzx
   rsq r0.z, r0.z
-  mul r3.xyz, r0.zzzz, r3.xyzx  // r3.x <- normal_factor.x; r3.y <- normal_factor.y; r3.z <- normal_factor.z
+  mul r2.xyz, r0.zzzz, r2.xyzx  // r2.x <- normal_factor.x; r2.y <- normal_factor.y; r2.z <- normal_factor.z
 
 #line 106
-  mul r4.xyz, r4.xyzx, r3.xxxx
-  mul r3.xyw, r5.xyxz, r3.yyyy
-  add r3.xyw, r3.xyxw, r4.xyxz
-  mul r4.xyz, r0.xywx, r3.zzzz
-  add r3.xyz, r3.xywx, r4.xyzx
-  dp3 r0.z, r3.xyzx, r3.xyzx
+  mul r3.xyz, r3.xyzx, r2.xxxx
+  mul r2.xyw, r4.xyxz, r2.yyyy
+  add r2.xyw, r2.xyxw, r3.xyxz
+  mul r3.xyz, r0.xywx, r2.zzzz
+  add r2.xyz, r2.xywx, r3.xyzx
+  dp3 r0.z, r2.xyzx, r2.xyzx
   rsq r0.z, r0.z
-  mul r0.xyw, r0.zzzz, r3.xyxz
+  mul r0.xyw, r0.zzzz, r2.xyxz
 
 #line 107
 endif 
 
 #line 110
-mov r3.xyz, -cb1[4].xyzx
-add r3.xyz, r3.xyzx, v1.xyzx
-dp3 r0.z, r3.xyzx, r3.xyzx
+mov r2.xyz, -cb1[4].xyzx
+add r2.xyz, r2.xyzx, v1.xyzx
+dp3 r0.z, r2.xyzx, r2.xyzx
 rsq r0.z, r0.z
-mul r3.xyz, r0.zzzz, r3.xyzx  // r3.x <- V.x; r3.y <- V.y; r3.z <- V.z
+mul r2.xyz, r0.zzzz, r2.xyzx  // r2.x <- V.x; r2.y <- V.y; r2.z <- V.z
 
 #line 113
-itof r4.xyz, l(0, 0, 0, 0)  // r4.x <- color.x; r4.y <- color.y; r4.z <- color.z
+itof r3.xyz, l(0, 0, 0, 0)  // r3.x <- color.x; r3.y <- color.y; r3.z <- color.z
 
 #line 116
-mul r5.xyz, cb4[0].wwww, cb4[0].xyzx  // r5.x <- ambient.x; r5.y <- ambient.y; r5.z <- ambient.z
+mul r4.xyz, cb3[0].wwww, cb3[0].xyzx  // r4.x <- ambient.x; r4.y <- ambient.y; r4.z <- ambient.z
 
-#line 121
-dp3 r0.z, cb4[1].xyzx, cb4[1].xyzx
-rsq r0.z, r0.z
-mul r6.xyz, r0.zzzz, cb4[1].xyzx  // r6.x <- L.x; r6.y <- L.y; r6.z <- L.z
-
-#line 122
-mul r7.xyz, cb4[2].wwww, cb4[2].xyzx  // r7.x <- LC.x; r7.y <- LC.y; r7.z <- LC.z
-
-#line 123
+#line 117
 nop 
 mov r0.xyw, r0.xyxw
-mov r6.xyz, r6.xyzx
-mov r7.xyz, r7.xyzx
-itof r8.xyz, l(1, 1, 1, 0)
+itof r5.xyz, l(0, 1, 0, 0)
+mov r6.xyz, cb4[0].xyzx
+mov r7.xyz, cb4[1].xyzx
+mov r0.z, cb4[2].x
 
-#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
-mov r9.xyz, -r6.xyzx
-dp3 r0.z, r0.xywx, r9.xyzx
-max r0.z, r0.z, l(0.000000)
-min r0.z, r0.z, l(1.000000)  // r0.z <- power
+#line 108 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+dp3 r2.w, r0.xywx, r5.xyzx
+mul r2.w, r2.w, l(0.500000)
+add r2.w, r2.w, l(0.500000)  // r2.w <- factor
 
-#line 13
-mul r9.xyz, r0.zzzz, r7.xyzx
-mul r8.xyz, r8.xyzx, r9.xyzx  // r8.x <- <CalcLambert return value>.x; r8.y <- <CalcLambert return value>.y; r8.z <- <CalcLambert return value>.z
+#line 109
+mov r5.xyz, -r7.xyzx
+add r5.xyz, r5.xyzx, r6.xyzx
+mul r5.xyz, r2.wwww, r5.xyzx
+add r5.xyz, r5.xyzx, r7.xyzx
+mul r5.xyz, r0.zzzz, r5.xyzx  // r5.x <- <CalcHemiSphereLight return value>.x; r5.y <- <CalcHemiSphereLight return value>.y; r5.z <- <CalcHemiSphereLight return value>.z
 
-#line 123 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
-mov r8.xyz, r8.xyzx  // r8.x <- directional_diffuse.x; r8.y <- directional_diffuse.y; r8.z <- directional_diffuse.z
+#line 117 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+add r4.xyz, r4.xyzx, r5.xyzx
+
+#line 122
+dp3 r0.z, cb3[1].xyzx, cb3[1].xyzx
+rsq r0.z, r0.z
+mul r5.xyz, r0.zzzz, cb3[1].xyzx  // r5.x <- L.x; r5.y <- L.y; r5.z <- L.z
+
+#line 123
+mul r6.xyz, cb3[2].wwww, cb3[2].xyzx  // r6.x <- LC.x; r6.y <- LC.y; r6.z <- LC.z
 
 #line 124
 nop 
 mov r0.xyw, r0.xyxw
+mov r5.xyz, r5.xyzx
 mov r6.xyz, r6.xyzx
-mov r3.xyz, r3.xyzx
-mov r7.xyz, r7.xyzx
-itof r9.xyz, l(1, 1, 1, 0)
+itof r7.xyz, l(1, 1, 1, 0)
+
+#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+mov r8.xyz, -r5.xyzx
+dp3 r0.z, r0.xywx, r8.xyzx
+max r0.z, r0.z, l(0.000000)
+min r0.z, r0.z, l(1.000000)  // r0.z <- power
+
+#line 13
+mul r8.xyz, r0.zzzz, r6.xyzx
+mul r7.xyz, r7.xyzx, r8.xyzx  // r7.x <- <CalcLambert return value>.x; r7.y <- <CalcLambert return value>.y; r7.z <- <CalcLambert return value>.z
+
+#line 124 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+mov r7.xyz, r7.xyzx  // r7.x <- directional_diffuse.x; r7.y <- directional_diffuse.y; r7.z <- directional_diffuse.z
+
+#line 125
+nop 
+mov r0.xyw, r0.xyxw
+mov r5.xyz, r5.xyzx
+mov r2.xyz, r2.xyzx
+mov r6.xyz, r6.xyzx
+itof r8.xyz, l(1, 1, 1, 0)
 
 #line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
-dp3 r0.z, r6.xyzx, r0.xywx
+dp3 r0.z, r5.xyzx, r0.xywx
 add r0.z, r0.z, r0.z
 mov r0.z, -r0.z
-mul r10.xyz, r0.zzzz, r0.xywx
-add r6.xyz, r6.xyzx, r10.xyzx  // r6.x <- R.x; r6.y <- R.y; r6.z <- R.z
+mul r9.xyz, r0.zzzz, r0.xywx
+add r5.xyz, r5.xyzx, r9.xyzx  // r5.x <- R.x; r5.y <- R.y; r5.z <- R.z
 
 #line 28
-mov r10.xyz, -r3.xyzx
-dp3 r0.z, r10.xyzx, r6.xyzx
-itof r1.w, l(0)
-max r0.z, r0.z, r1.w  // r0.z <- power
+mov r9.xyz, -r2.xyzx
+dp3 r0.z, r9.xyzx, r5.xyzx
+itof r2.w, l(0)
+max r0.z, r0.z, r2.w  // r0.z <- power
 
 #line 29
-itof r1.w, l(128)
+itof r2.w, l(128)
 log r0.z, r0.z
-mul r0.z, r0.z, r1.w
+mul r0.z, r0.z, r2.w
 exp r0.z, r0.z  // r0.z <- power
 
 #line 30
-mul r6.xyz, r0.zzzz, r7.xyzx
-mul r6.xyz, r9.xyzx, r6.xyzx  // r6.x <- <CalcPhongSpecular return value>.x; r6.y <- <CalcPhongSpecular return value>.y; r6.z <- <CalcPhongSpecular return value>.z
+mul r5.xyz, r0.zzzz, r6.xyzx
+mul r5.xyz, r8.xyzx, r5.xyzx  // r5.x <- <CalcPhongSpecular return value>.x; r5.y <- <CalcPhongSpecular return value>.y; r5.z <- <CalcPhongSpecular return value>.z
 
-#line 124 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
-mov r6.xyz, r6.xyzx  // r6.x <- directional_specular.x; r6.y <- directional_specular.y; r6.z <- directional_specular.z
-
-#line 129
-itof r7.xyz, l(0, 0, 0, 0)  // r7.x <- point_diffuse.x; r7.y <- point_diffuse.y; r7.z <- point_diffuse.z
-itof r9.xyz, l(0, 0, 0, 0)  // r9.x <- point_specular.x; r9.y <- point_specular.y; r9.z <- point_specular.z
+#line 125 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+mov r5.xyz, r5.xyzx  // r5.x <- directional_specular.x; r5.y <- directional_specular.y; r5.z <- directional_specular.z
 
 #line 130
+itof r6.xyz, l(0, 0, 0, 0)  // r6.x <- point_diffuse.x; r6.y <- point_diffuse.y; r6.z <- point_diffuse.z
+itof r8.xyz, l(0, 0, 0, 0)  // r8.x <- point_specular.x; r8.y <- point_specular.y; r8.z <- point_specular.z
+
+#line 131
 mov r0.z, l(0)  // r0.z <- i
-mov r10.xyz, r7.xyzx  // r10.x <- point_diffuse.x; r10.y <- point_diffuse.y; r10.z <- point_diffuse.z
-mov r11.xyz, r9.xyzx  // r11.x <- point_specular.x; r11.y <- point_specular.y; r11.z <- point_specular.z
-mov r1.w, r0.z  // r1.w <- i
+mov r9.xyz, r6.xyzx  // r9.x <- point_diffuse.x; r9.y <- point_diffuse.y; r9.z <- point_diffuse.z
+mov r10.xyz, r8.xyzx  // r10.x <- point_specular.x; r10.y <- point_specular.y; r10.z <- point_specular.z
+mov r2.w, r0.z  // r2.w <- i
 loop 
-  ilt r3.w, r1.w, l(6)
+  ilt r3.w, r2.w, l(6)
   breakc_z r3.w
 
-#line 134
-  imul null, r3.w, r1.w, l(3)
-  mov r12.xyz, -cb4[r3.w + 3].xyzx
-  add r12.xyz, r12.xyzx, v1.xyzx  // r12.x <- L.x; r12.y <- L.y; r12.z <- L.z
-
 #line 135
-  dp3 r3.w, r12.xyzx, r12.xyzx
-  sqrt r3.w, r3.w  // r3.w <- len
+  imul null, r3.w, r2.w, l(3)
+  mov r11.xyz, -cb3[r3.w + 3].xyzx
+  add r11.xyz, r11.xyzx, v1.xyzx  // r11.x <- L.x; r11.y <- L.y; r11.z <- L.z
 
 #line 136
-  imul null, r4.w, r1.w, l(3)
-  ge r4.w, r3.w, cb4[r4.w + 5].y
-  if_nz r4.w
+  dp3 r3.w, r11.xyzx, r11.xyzx
+  sqrt r3.w, r3.w  // r3.w <- len
 
 #line 137
-    iadd r1.w, r1.w, l(1)
+  imul null, r4.w, r2.w, l(3)
+  ge r4.w, r3.w, cb3[r4.w + 5].y
+  if_nz r4.w
+
+#line 138
+    iadd r2.w, r2.w, l(1)
     continue 
   endif 
 
-#line 138
-  imul null, r4.w, r1.w, l(3)
-  div r4.w, r3.w, cb4[r4.w + 5].y
+#line 139
+  imul null, r4.w, r2.w, l(3)
+  div r4.w, r3.w, cb3[r4.w + 5].y
   mov r4.w, -r4.w
   add r4.w, r4.w, l(1.000000)
   max r4.w, r4.w, l(0.000000)
   min r4.w, r4.w, l(1.000000)  // r4.w <- attenuateLength
 
-#line 139
+#line 140
   mul r4.w, r4.w, r4.w  // r4.w <- attenuation
 
-#line 140
-  div r12.xyz, r12.xyzx, r3.wwww
-
 #line 141
-  imul null, r3.w, r1.w, l(3)
-  imul null, r5.w, r1.w, l(3)
-  mul r13.xyz, cb4[r3.w + 4].xyzx, cb4[r5.w + 5].xxxx  // r13.x <- LC.x; r13.y <- LC.y; r13.z <- LC.z
+  div r11.xyz, r11.xyzx, r3.wwww
 
 #line 142
+  imul null, r3.w, r2.w, l(3)
+  imul null, r5.w, r2.w, l(3)
+  mul r12.xyz, cb3[r3.w + 4].xyzx, cb3[r5.w + 5].xxxx  // r12.x <- LC.x; r12.y <- LC.y; r12.z <- LC.z
+
+#line 143
   nop 
-  mov r14.xyz, r0.xywx
+  mov r13.xyz, r0.xywx
+  mov r11.xyz, r11.xyzx
   mov r12.xyz, r12.xyzx
-  mov r13.xyz, r13.xyzx
-  itof r15.xyz, l(1, 1, 1, 0)
+  itof r14.xyz, l(1, 1, 1, 0)
 
 #line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
-  mov r16.xyz, -r12.xyzx
-  dp3 r3.w, r14.xyzx, r16.xyzx
+  mov r15.xyz, -r11.xyzx
+  dp3 r3.w, r13.xyzx, r15.xyzx
   max r3.w, r3.w, l(0.000000)
   min r3.w, r3.w, l(1.000000)  // r3.w <- power
 
 #line 13
-  mul r14.xyz, r3.wwww, r13.xyzx
-  mul r14.xyz, r15.xyzx, r14.xyzx  // r14.x <- <CalcLambert return value>.x; r14.y <- <CalcLambert return value>.y; r14.z <- <CalcLambert return value>.z
+  mul r13.xyz, r3.wwww, r12.xyzx
+  mul r13.xyz, r14.xyzx, r13.xyzx  // r13.x <- <CalcLambert return value>.x; r13.y <- <CalcLambert return value>.y; r13.z <- <CalcLambert return value>.z
 
-#line 142 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
-  mul r14.xyz, r4.wwww, r14.xyzx
-  add r10.xyz, r10.xyzx, r14.xyzx
+#line 143 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+  mul r13.xyz, r4.wwww, r13.xyzx
+  add r9.xyz, r9.xyzx, r13.xyzx
 
-#line 143
+#line 144
   nop 
-  mov r14.xyz, r0.xywx
+  mov r13.xyz, r0.xywx
+  mov r11.xyz, r11.xyzx
+  mov r14.xyz, r2.xyzx
   mov r12.xyz, r12.xyzx
-  mov r15.xyz, r3.xyzx
-  mov r13.xyz, r13.xyzx
-  itof r16.xyz, l(1, 1, 1, 0)
+  itof r15.xyz, l(1, 1, 1, 0)
 
 #line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
-  dp3 r3.w, r12.xyzx, r14.xyzx
+  dp3 r3.w, r11.xyzx, r13.xyzx
   add r3.w, r3.w, r3.w
   mov r3.w, -r3.w
-  mul r14.xyz, r3.wwww, r14.xyzx
-  add r12.xyz, r12.xyzx, r14.xyzx  // r12.x <- R.x; r12.y <- R.y; r12.z <- R.z
+  mul r13.xyz, r3.wwww, r13.xyzx
+  add r11.xyz, r11.xyzx, r13.xyzx  // r11.x <- R.x; r11.y <- R.y; r11.z <- R.z
 
 #line 28
-  mov r14.xyz, -r15.xyzx
-  dp3 r3.w, r14.xyzx, r12.xyzx
+  mov r13.xyz, -r14.xyzx
+  dp3 r3.w, r13.xyzx, r11.xyzx
   itof r5.w, l(0)
   max r3.w, r3.w, r5.w  // r3.w <- power
 
@@ -492,84 +514,84 @@ loop
   exp r3.w, r3.w  // r3.w <- power
 
 #line 30
-  mul r12.xyz, r3.wwww, r13.xyzx
-  mul r12.xyz, r16.xyzx, r12.xyzx  // r12.x <- <CalcPhongSpecular return value>.x; r12.y <- <CalcPhongSpecular return value>.y; r12.z <- <CalcPhongSpecular return value>.z
+  mul r11.xyz, r3.wwww, r12.xyzx
+  mul r11.xyz, r15.xyzx, r11.xyzx  // r11.x <- <CalcPhongSpecular return value>.x; r11.y <- <CalcPhongSpecular return value>.y; r11.z <- <CalcPhongSpecular return value>.z
 
-#line 143 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
-  mul r12.xyz, r4.wwww, r12.xyzx
-  add r11.xyz, r11.xyzx, r12.xyzx
+#line 144 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+  mul r11.xyz, r4.wwww, r11.xyzx
+  add r10.xyz, r10.xyzx, r11.xyzx
 
-#line 130
-  iadd r1.w, r1.w, l(1)
+#line 131
+  iadd r2.w, r2.w, l(1)
 
-#line 144
+#line 145
 endloop 
 
-#line 147
-itof r7.xyz, l(0, 0, 0, 0)  // r7.x <- spot_diffuse.x; r7.y <- spot_diffuse.y; r7.z <- spot_diffuse.z
-itof r9.xyz, l(0, 0, 0, 0)  // r9.x <- spot_specular.x; r9.y <- spot_specular.y; r9.z <- spot_specular.z
-
 #line 148
+itof r6.xyz, l(0, 0, 0, 0)  // r6.x <- spot_diffuse.x; r6.y <- spot_diffuse.y; r6.z <- spot_diffuse.z
+itof r8.xyz, l(0, 0, 0, 0)  // r8.x <- spot_specular.x; r8.y <- spot_specular.y; r8.z <- spot_specular.z
+
+#line 149
 mov r0.z, l(0)  // r0.z <- j
-mov r12.xyz, r7.xyzx  // r12.x <- spot_diffuse.x; r12.y <- spot_diffuse.y; r12.z <- spot_diffuse.z
-mov r13.xyz, r9.xyzx  // r13.x <- spot_specular.x; r13.y <- spot_specular.y; r13.z <- spot_specular.z
-mov r1.w, r0.z  // r1.w <- j
+mov r11.xyz, r6.xyzx  // r11.x <- spot_diffuse.x; r11.y <- spot_diffuse.y; r11.z <- spot_diffuse.z
+mov r12.xyz, r8.xyzx  // r12.x <- spot_specular.x; r12.y <- spot_specular.y; r12.z <- spot_specular.z
+mov r2.w, r0.z  // r2.w <- j
 loop 
-  ilt r3.w, r1.w, l(6)
+  ilt r3.w, r2.w, l(6)
   breakc_z r3.w
 
-#line 151
-  imul null, r3.w, r1.w, l(4)
-  mov r14.xyz, -cb4[r3.w + 21].xyzx
-  add r14.xyz, r14.xyzx, v1.xyzx  // r14.x <- L.x; r14.y <- L.y; r14.z <- L.z
-
 #line 152
-  dp3 r3.w, r14.xyzx, r14.xyzx
-  sqrt r3.w, r3.w  // r3.w <- len
+  imul null, r3.w, r2.w, l(4)
+  mov r13.xyz, -cb3[r3.w + 21].xyzx
+  add r13.xyz, r13.xyzx, v1.xyzx  // r13.x <- L.x; r13.y <- L.y; r13.z <- L.z
 
 #line 153
-  imul null, r4.w, r1.w, l(4)
-  ge r4.w, r3.w, cb4[r4.w + 24].x
-  if_nz r4.w
+  dp3 r3.w, r13.xyzx, r13.xyzx
+  sqrt r3.w, r3.w  // r3.w <- len
 
 #line 154
-    iadd r1.w, r1.w, l(1)
+  imul null, r4.w, r2.w, l(4)
+  ge r4.w, r3.w, cb3[r4.w + 24].x
+  if_nz r4.w
+
+#line 155
+    iadd r2.w, r2.w, l(1)
     continue 
   endif 
 
-#line 155
-  imul null, r4.w, r1.w, l(4)
-  div r4.w, r3.w, cb4[r4.w + 24].x
+#line 156
+  imul null, r4.w, r2.w, l(4)
+  div r4.w, r3.w, cb3[r4.w + 24].x
   mov r4.w, -r4.w
   add r4.w, r4.w, l(1.000000)
   max r4.w, r4.w, l(0.000000)
   min r4.w, r4.w, l(1.000000)  // r4.w <- attenuateLength
 
-#line 156
+#line 157
   mul r4.w, r4.w, r4.w  // r4.w <- attenuation
 
-#line 157
-  div r14.xyz, r14.xyzx, r3.wwww
-
 #line 158
-  imul null, r3.w, r1.w, l(4)
-  dp3 r5.w, cb4[r3.w + 22].xyzx, cb4[r3.w + 22].xyzx
-  rsq r5.w, r5.w
-  mul r15.xyz, r5.wwww, cb4[r3.w + 22].xyzx  // r15.x <- spotDirection.x; r15.y <- spotDirection.y; r15.z <- spotDirection.z
+  div r13.xyz, r13.xyzx, r3.wwww
 
 #line 159
-  dp3 r3.w, r15.xyzx, r14.xyzx  // r3.w <- angle
+  imul null, r3.w, r2.w, l(4)
+  dp3 r5.w, cb3[r3.w + 22].xyzx, cb3[r3.w + 22].xyzx
+  rsq r5.w, r5.w
+  mul r14.xyz, r5.wwww, cb3[r3.w + 22].xyzx  // r14.x <- spotDirection.x; r14.y <- spotDirection.y; r14.z <- spotDirection.z
 
 #line 160
-  imul null, r5.w, r1.w, l(4)
-  imul null, r6.w, r1.w, l(4)
-  mov r6.w, -cb4[r6.w + 24].z
-  add r5.w, r6.w, cb4[r5.w + 24].y  // r5.w <- area
+  dp3 r3.w, r14.xyzx, r13.xyzx  // r3.w <- angle
 
 #line 161
-  imul null, r6.w, r1.w, l(4)
+  imul null, r5.w, r2.w, l(4)
+  imul null, r6.w, r2.w, l(4)
+  mov r6.w, -cb3[r6.w + 24].z
+  add r5.w, r6.w, cb3[r5.w + 24].y  // r5.w <- area
+
+#line 162
+  imul null, r6.w, r2.w, l(4)
   mov r3.w, -r3.w
-  add r3.w, r3.w, cb4[r6.w + 24].y
+  add r3.w, r3.w, cb3[r6.w + 24].y
   div r3.w, r3.w, r5.w
   mov r3.w, -r3.w
   add r3.w, r3.w, l(1.000000)
@@ -577,50 +599,50 @@ loop
   min r3.w, r3.w, l(1.000000)
   mul r3.w, r3.w, r4.w  // r3.w <- attenuation
 
-#line 162
-  imul null, r4.w, r1.w, l(4)
-  imul null, r5.w, r1.w, l(4)
-  mul r15.xyz, cb4[r4.w + 23].xyzx, cb4[r5.w + 24].wwww  // r15.x <- LC.x; r15.y <- LC.y; r15.z <- LC.z
-
 #line 163
+  imul null, r4.w, r2.w, l(4)
+  imul null, r5.w, r2.w, l(4)
+  mul r14.xyz, cb3[r4.w + 23].xyzx, cb3[r5.w + 24].wwww  // r14.x <- LC.x; r14.y <- LC.y; r14.z <- LC.z
+
+#line 164
   nop 
-  mov r16.xyz, r0.xywx
+  mov r15.xyz, r0.xywx
+  mov r13.xyz, r13.xyzx
   mov r14.xyz, r14.xyzx
-  mov r15.xyz, r15.xyzx
-  itof r17.xyz, l(1, 1, 1, 0)
+  itof r16.xyz, l(1, 1, 1, 0)
 
 #line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
-  mov r18.xyz, -r14.xyzx
-  dp3 r4.w, r16.xyzx, r18.xyzx
+  mov r17.xyz, -r13.xyzx
+  dp3 r4.w, r15.xyzx, r17.xyzx
   max r4.w, r4.w, l(0.000000)
   min r4.w, r4.w, l(1.000000)  // r4.w <- power
 
 #line 13
-  mul r16.xyz, r4.wwww, r15.xyzx
-  mul r16.xyz, r17.xyzx, r16.xyzx  // r16.x <- <CalcLambert return value>.x; r16.y <- <CalcLambert return value>.y; r16.z <- <CalcLambert return value>.z
+  mul r15.xyz, r4.wwww, r14.xyzx
+  mul r15.xyz, r16.xyzx, r15.xyzx  // r15.x <- <CalcLambert return value>.x; r15.y <- <CalcLambert return value>.y; r15.z <- <CalcLambert return value>.z
 
-#line 163 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
-  mul r16.xyz, r3.wwww, r16.xyzx
-  add r12.xyz, r12.xyzx, r16.xyzx
+#line 164 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+  mul r15.xyz, r3.wwww, r15.xyzx
+  add r11.xyz, r11.xyzx, r15.xyzx
 
-#line 164
+#line 165
   nop 
-  mov r16.xyz, r0.xywx
+  mov r15.xyz, r0.xywx
+  mov r13.xyz, r13.xyzx
+  mov r16.xyz, r2.xyzx
   mov r14.xyz, r14.xyzx
-  mov r17.xyz, r3.xyzx
-  mov r15.xyz, r15.xyzx
-  itof r18.xyz, l(1, 1, 1, 0)
+  itof r17.xyz, l(1, 1, 1, 0)
 
 #line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
-  dp3 r4.w, r14.xyzx, r16.xyzx
+  dp3 r4.w, r13.xyzx, r15.xyzx
   add r4.w, r4.w, r4.w
   mov r4.w, -r4.w
-  mul r16.xyz, r4.wwww, r16.xyzx
-  add r14.xyz, r14.xyzx, r16.xyzx  // r14.x <- R.x; r14.y <- R.y; r14.z <- R.z
+  mul r15.xyz, r4.wwww, r15.xyzx
+  add r13.xyz, r13.xyzx, r15.xyzx  // r13.x <- R.x; r13.y <- R.y; r13.z <- R.z
 
 #line 28
-  mov r16.xyz, -r17.xyzx
-  dp3 r4.w, r16.xyzx, r14.xyzx
+  mov r15.xyz, -r16.xyzx
+  dp3 r4.w, r15.xyzx, r13.xyzx
   itof r5.w, l(0)
   max r4.w, r4.w, r5.w  // r4.w <- power
 
@@ -631,39 +653,64 @@ loop
   exp r4.w, r4.w  // r4.w <- power
 
 #line 30
-  mul r14.xyz, r4.wwww, r15.xyzx
-  mul r14.xyz, r18.xyzx, r14.xyzx  // r14.x <- <CalcPhongSpecular return value>.x; r14.y <- <CalcPhongSpecular return value>.y; r14.z <- <CalcPhongSpecular return value>.z
+  mul r13.xyz, r4.wwww, r14.xyzx
+  mul r13.xyz, r17.xyzx, r13.xyzx  // r13.x <- <CalcPhongSpecular return value>.x; r13.y <- <CalcPhongSpecular return value>.y; r13.z <- <CalcPhongSpecular return value>.z
 
-#line 164 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
-  mul r14.xyz, r3.wwww, r14.xyzx
-  add r13.xyz, r13.xyzx, r14.xyzx
+#line 165 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+  mul r13.xyz, r3.wwww, r13.xyzx
+  add r12.xyz, r12.xyzx, r13.xyzx
 
-#line 148
-  iadd r1.w, r1.w, l(1)
+#line 149
+  iadd r2.w, r2.w, l(1)
 
-#line 165
+#line 166
 endloop 
 
-#line 168
-mov r2.w, r2.w  // r2.w <- color.w
-
 #line 169
-add r0.xyz, r5.xyzx, r8.xyzx
-add r0.xyz, r10.xyzx, r0.xyzx
-add r0.xyz, r12.xyzx, r0.xyzx
-mul r0.xyz, r0.xyzx, r2.xyzx
-add r0.xyz, r0.xyzx, r4.xyzx  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
+mov r1.w, r1.w  // r1.w <- color.w
 
 #line 170
-add r2.xyz, r6.xyzx, r13.xyzx
-add r2.xyz, r11.xyzx, r2.xyzx
-add r0.xyz, r0.xyzx, r2.xyzx
+add r0.xyz, r4.xyzx, r7.xyzx
+add r0.xyz, r9.xyzx, r0.xyzx
+add r0.xyz, r11.xyzx, r0.xyzx
+mul r0.xyz, r0.xyzx, r1.xyzx
+add r0.xyz, r0.xyzx, r3.xyzx  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
 
-#line 174
-add r0.xyz, r1.xyzx, r0.xyzx
+#line 171
+add r2.xyz, r5.xyzx, r12.xyzx
+add r2.xyz, r10.xyzx, r2.xyzx
+add r1.xyz, r0.xyzx, r2.xyzx  // r1.x <- color.x; r1.y <- color.y; r1.z <- color.z
 
-#line 175
-mov o0.xyz, r0.xyzx
-mov o0.w, r2.w
+#line 176
+nop 
+mov r1.xyz, r1.xyzx
+mov r1.w, r1.w
+mov r0.xyzw, cb5[0].xyzw
+mov r2.xy, cb5[1].xyxx
+mov r3.xyz, -cb1[4].xyzx
+add r3.xyz, r3.xyzx, v1.xyzx
+dp3 r2.z, r3.xyzx, r3.xyzx
+sqrt r2.z, r2.z
+
+#line 122 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+mov r2.w, -r2.x
+add r2.z, r2.w, r2.z
+mov r2.x, -r2.x
+add r2.x, r2.x, r2.y
+div r2.x, r2.z, r2.x
+max r2.x, r2.x, l(0.000000)
+min r2.x, r2.x, l(1.000000)  // r2.x <- fogAlpha
+
+#line 123
+mov r3.xyzw, -r1.xyzw
+add r0.xyzw, r0.xyzw, r3.xyzw
+mul r0.xyzw, r0.xyzw, r2.xxxx
+add r0.xyzw, r0.xyzw, r1.xyzw  // r0.x <- <CalcFog return value>.x; r0.y <- <CalcFog return value>.y; r0.z <- <CalcFog return value>.z; r0.w <- <CalcFog return value>.w
+
+#line 176 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+mov r0.xyzw, r0.xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w <- color.w
+
+#line 177
+mov o0.xyzw, r0.xyzw
 ret 
-// Approximately 290 instruction slots used
+// Approximately 314 instruction slots used

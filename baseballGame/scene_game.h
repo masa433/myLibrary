@@ -14,22 +14,7 @@
 class scene_game : public scene2
 {
 private:
-    DirectX::XMFLOAT3 position{ 0.0f, 0.0f, 0.0f };
-    DirectX::XMFLOAT3 scale{ 1.0f, 1.0f, 1.0f };
-    DirectX::XMFLOAT3 angle{ 0.0f, 0.0f, 0.0f };
-
-
-
-    // モデル
-	std::unique_ptr<gltf_model> animated_model;
-    // アニメーション関連のメンバ変数を追加
-  
-    float animation_time = 0.0f;
-    std::vector<gltf_model::node> animated_nodes;
-    int current_animation_index = 0;  // 現在再生中のアニメーションインデックス
-    bool animation_playing = true;    // アニメーション再生中かどうか
-
-
+   
     CameraController	cameraController;
 
 
@@ -48,10 +33,6 @@ public:
     void uninitialize() override;
 	// GUI描画処理
 	void DrawGUI() override;
-
-	void RenderStrikeZone();
-
-	void RenderShadowMap();
 
     // 定数バッファ構造体
     struct scene_constants
@@ -105,10 +86,29 @@ public:
 	point_lights pointLights[6];
 	spot_lights spotLights[6];
 
+    //半球ライティング
+    struct hemisphere_light_constants
+    {
+        DirectX::XMFLOAT4 sky_color;
+        DirectX::XMFLOAT4 ground_color;
+		DirectX::XMFLOAT4 hemisphere_weight; // x:skyの重み、y,z,wは未使用
+	};
+	Microsoft::WRL::ComPtr<ID3D11Buffer> hemisphere_light_constant_buffer;
+	DirectX::XMFLOAT4 sky_color{ 0.0f, 0.0f, 0.0f, 1.0f };
+	DirectX::XMFLOAT4 ground_color{ 1.0f, 1.0f, 1.0f, 1.0f };
+	float hemisphere_weight = 0.5f; // 0.0fで完全に地面の色、1.0fで完全に空の色
+
+    //フォグ
+    struct fog_constants
+    {
+        DirectX::XMFLOAT4 fog_color;
+        DirectX::XMFLOAT4 fog_range; // x:開始距離、y:終了距離、z,wは未使用
+    };
+	Microsoft::WRL::ComPtr<ID3D11Buffer> fog_constant_buffer;
+	DirectX::XMFLOAT4 fog_color{ 0.5f, 0.5f, 0.5f, 1.0f };
+	DirectX::XMFLOAT4 fog_range{ 0.1f, 1000.0f, 0.0f, 0.0f };
 
     float timeScale = 1.0f;
-
-	
 
     // ストライクゾーン表示用スプライト
     std::unique_ptr<sprite> strikeZoneSprite;

@@ -38,8 +38,8 @@ cbuffer SCENE_CONSTANT_BUFFER : register(b1)
     float4 camera_position;
 };
 
-// ライト定数バッファ（b4）
-cbuffer LIGHT_CONSTANT_BUFFER : register(b4)
+// ライト定数バッファ（b3）
+cbuffer LIGHT_CONSTANT_BUFFER : register(b3)
 {
     float4 ambient_color;
     float4 directional_light_direction;
@@ -47,6 +47,22 @@ cbuffer LIGHT_CONSTANT_BUFFER : register(b4)
     point_lights pointLights[6];
     spot_lights spotLights[6];
 };
+
+// 半球ライト定数バッファ（b4）
+cbuffer HEMISPHERE_LIGHT_CONSTANT_BUFFER : register(b4)
+{
+    float4 sky_color;
+    float4 ground_color;
+    float4 hemisphere_weight;
+};
+
+//フォグ定数バッファ（b5）
+cbuffer FOG_CONSTANT_BUFFER : register(b5)
+{
+    float4 fog_color;
+    float4 fog_range;
+};
+
 
 // UNIT.37
 static const uint PRIMITIVE_MAX_JOINTS = 512;

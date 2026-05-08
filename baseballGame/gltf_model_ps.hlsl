@@ -114,6 +114,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
 	{
 		//	ä¬ã´åı
         float3 ambient = ambient_color.rgb * ambient_color.a;
+        ambient += CalcHemiSphereLight(N, float3(0, 1, 0), sky_color.rgb, ground_color.rgb, hemisphere_weight);
 
 		//	ïΩçsåıåπ
         float3 directional_diffuse = 0, directional_specular = 0;
@@ -171,6 +172,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
     }
 	
 	//	é©å»î≠åıêFâ¡éZ
-    color.rgb += emmisive;
+    //color.rgb += emmisive;
+    color = CalcFog(color, fog_color, fog_range.xy, length(pin.w_position.xyz - camera_position.xyz));
     return color;
 }

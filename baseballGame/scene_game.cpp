@@ -44,12 +44,24 @@ void scene_game::initialize()
         buffer_desc.MiscFlags = 0;
         buffer_desc.StructureByteStride = 0;
 
+		// シーン定数バッファの作成
         buffer_desc.ByteWidth = sizeof(scene_constants);
         HRESULT hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, constant_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
+		// ライト定数バッファの作成
 		buffer_desc.ByteWidth = sizeof(light_constants);
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, light_constant_buffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		// 半球ライティング定数バッファの作成
+		buffer_desc.ByteWidth = sizeof(hemisphere_light_constants);
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, hemisphere_light_constant_buffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		// フォグ定数バッファの作成
+        buffer_desc.ByteWidth = sizeof(fog_constants);
+		hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, fog_constant_buffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
     
@@ -215,6 +227,18 @@ void scene_game::update(float elapsed_time)
         }
     }
 
+    if(ImGui::CollapsingHeader("Hemisphere Light & Fog"))
+    {
+        ImGui::ColorEdit3("Sky Color", &sky_color.x);
+        ImGui::ColorEdit3("Ground Color", &ground_color.x);
+        ImGui::SliderFloat("Hemisphere Weight", &hemisphere_weight, 0.0f, 1.0f);
+        ImGui::Separator();
+        ImGui::ColorEdit3("Fog Color", &fog_color.x);
+        ImGui::SliderFloat("fog_near", &fog_range.x, 0.1f, +100.0f);
+        ImGui::SliderFloat("fog_far", &fog_range.y, 0.1f, +100.0f);
+
+    }
+
 	ImGui::Checkbox("Show PhysX Debug", &showPhysxDebug);
 
     // ストライクゾーン画像の制御
@@ -249,8 +273,6 @@ void scene_game::update(float elapsed_time)
 
 void scene_game::render(float elapsedTime)
 {
-	//RenderShadowMap();
-
     using namespace DirectX;
 
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
@@ -262,21 +284,17 @@ void scene_game::render(float elapsedTime)
     RenderContext rc;
     rc.deviceContext = dc;
     rc.renderState = renderState;
-    //rc.camera = &camera;
-    /*rc.lightDirection = lightDirection;
-	rc.lightColor = lightColor;
-	rc.ambientColor = ambientColor;*/
 
     //カメラパラメータ設定
     Camera& camera = Camera::Instance();
-    rc.view = camera.GetView();
-    rc.projection = camera.GetProjection();
+
 
     // 定数バッファの更新
     {
         XMMATRIX V = XMLoadFloat4x4(&camera.GetView());
         XMMATRIX P = XMLoadFloat4x4(&camera.GetProjection());
 
+		// シーン定数バッファの更新（スロット b1 に統一）
         scene_constants scene{};
         scene.camera_position.x = cameraPosition.x;
         scene.camera_position.y = cameraPosition.y;
@@ -286,7 +304,7 @@ void scene_game::render(float elapsedTime)
         dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
         dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
-        // ライト定数バッファの更新（スロット b2 に統一）
+        // ライト定数バッファの更新（スロット b3 に統一）
         light_constants lightConstants{};
         lightConstants.ambient_color = ambient_color;
         lightConstants.directional_light_direction = directional_light_direction;
@@ -295,37 +313,34 @@ void scene_game::render(float elapsedTime)
 		memcpy_s(lightConstants.spotLights, sizeof(lightConstants.spotLights), spotLights, sizeof(spotLights));
         dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &lightConstants, 0, 0);
 
+        // スロット b3 のみ設定
+        dc->VSSetConstantBuffers(3, 1, light_constant_buffer.GetAddressOf());
+        dc->PSSetConstantBuffers(3, 1, light_constant_buffer.GetAddressOf());
+
+		// 半球ライティング定数バッファの更新（スロット b4 に統一）
+        hemisphere_light_constants hemisphereLightConstants{};
+        hemisphereLightConstants.sky_color = sky_color;
+        hemisphereLightConstants.ground_color = ground_color;
+        hemisphereLightConstants.hemisphere_weight.x = hemisphere_weight;
+        dc->UpdateSubresource(hemisphere_light_constant_buffer.Get(), 0, 0, &hemisphereLightConstants, 0, 0);
         // スロット b4 のみ設定
-        dc->VSSetConstantBuffers(4, 1, light_constant_buffer.GetAddressOf());
-        dc->PSSetConstantBuffers(4, 1, light_constant_buffer.GetAddressOf());
+        dc->VSSetConstantBuffers(4, 1, hemisphere_light_constant_buffer.GetAddressOf());
+		dc->PSSetConstantBuffers(4, 1, hemisphere_light_constant_buffer.GetAddressOf());
+
+        // フォグ定数バッファの更新（スロット b5 に統一）
+        fog_constants fogConstants{};
+        fogConstants.fog_color = fog_color;
+        fogConstants.fog_range = fog_range;
+        dc->UpdateSubresource(fog_constant_buffer.Get(), 0, 0, &fogConstants, 0, 0);
+        // スロット b5 のみ設定
+		dc->VSSetConstantBuffers(5, 1, fog_constant_buffer.GetAddressOf());
+		dc->PSSetConstantBuffers(5, 1, fog_constant_buffer.GetAddressOf());
     }
     
-    dc->IASetInputLayout(mesh_input_layout.Get());
+    /*dc->IASetInputLayout(mesh_input_layout.Get());
     dc->VSSetShader(mesh_vertex_shader.Get(), nullptr, 0);
-    dc->PSSetShader(mesh_pixel_shader.Get(), nullptr, 0);
+    dc->PSSetShader(mesh_pixel_shader.Get(), nullptr, 0);*/
 
-
-    //	モデルクラスでのラスタライザーステート設定をきったからここで設定する
-    rc.deviceContext->RSSetState(rc.renderState->GetRasterizerState(RasterizerState::SolidCullBack));
-
-    // プレイヤーの描画
-    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
-
-
-
-    // ステージの描画
-    stage::Instance().render(rc, modelRenderer);
-
-    // ピッチャーの描画
-    Pitcher::Instance().Render(rc, modelRenderer);
-
-    Player::Instance().Render(rc, modelRenderer);
-
-    // レンダーステート設定
-    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
-    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
-    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
-    //shapeRenderer->Render(dc, camera.GetView(), camera.GetProjection(), rc.lightDirection);
 
     // サンプラーステートを設定
     ID3D11SamplerState* samplerStates[] = {
@@ -334,6 +349,28 @@ void scene_game::render(float elapsedTime)
         renderState->GetSamplerState(SamplerState::LinearWrap)
     };
     dc->PSSetSamplers(0, 3, samplerStates);
+
+    // レンダーステート設定
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
+
+    // ステージの描画
+    stage::Instance().render(rc, modelRenderer);
+
+	// プレイヤー・ピッチャーの描画(カリングなしで両面描画)
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+
+    // ピッチャーの描画
+    Pitcher::Instance().Render(rc, modelRenderer);
+
+	// プレイヤーの描画
+    Player::Instance().Render(rc, modelRenderer);
+
+    
+    // プレイヤー描画後、元のカリング状態に戻しておく
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
+
 
     if(showPhysxDebug)
 	Physics::Instance().Render(camera.GetView(), camera.GetProjection(), rc.lightDirection);
