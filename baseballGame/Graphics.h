@@ -67,6 +67,14 @@ public:
 	// モデルレンダラ取得
 	ModelRenderer* GetModelRenderer() const { return modelRenderer.get(); }
 
+	//深度ステンシルビュー取得
+	ID3D11DepthStencilView* GetDepthStencilView() const { return depthStencilView.Get(); }
+
+	//レンダーターゲットビュー取得
+	ID3D11RenderTargetView* GetRenderTargetView() const { return renderTargetView.Get(); }
+
+	//レンダーターゲットビューのアドレスを取得
+	ID3D11RenderTargetView** GetRenderTargetViewAddress() { return renderTargetView.GetAddressOf(); }
 private:
 	HWND											hWnd = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11Device>			device;

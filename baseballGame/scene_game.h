@@ -11,6 +11,10 @@
 #include "sprite.h"
 #include "ModelRenderer.h"
 
+CONST LONG SCREEN_WIDTH{ 1280 };
+CONST LONG SCREEN_HEIGHT{ 720 };
+CONST BOOL FULLSCREEN{ FALSE };
+
 class scene_game : public scene2
 {
 private:
@@ -33,6 +37,8 @@ public:
     void uninitialize() override;
 	// GUI描画処理
 	void DrawGUI() override;
+
+    void renderShadowMap();
 
     // 定数バッファ構造体
     struct scene_constants
@@ -119,30 +125,32 @@ public:
 
 	bool showPhysxDebug = true;
 
-    //struct ShadowMapContext
-    //{
-    //    DirectX::XMFLOAT4X4 lightViewProjection;	// ライトの位置から見た射影行列
-    //    DirectX::XMFLOAT3	shadowColor;			// 影色
-    //    float				shadowBias;			// 深度バイアス
-    //};
-    //DirectX::XMFLOAT4X4     lightViewProjection;
-    //float				    shadowBias = { 0.001f }; // (ToT)
-    //DirectX::XMFLOAT3	    shadowColor = { 0.5f, 0.5f, 0.5f }; // (ToT)
+   //シャドウマップ
+    struct shadowmap_constants
+    {
+		DirectX::XMFLOAT4X4 light_view_projection; // ライトのビュー射影行列
+        float				shadow_attenuation{ 0.5f };
+        float				shadow_bias{ 0.0001f };
+        DirectX::XMFLOAT2	shadow_dummy;
+    };
 
-    
+    Microsoft::WRL::ComPtr<ID3D11Buffer> shadowmap_constant_buffer;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowmap_depth_stencil_view;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowmap_shader_resource_view;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowmap_sampler_state;
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> shadowmap_caster_vertex_shader;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> shadowmap_caster_input_layout;
 
-    //float SHADOWMAP_DRAWRECT = { 30 };
+    DirectX::XMFLOAT4X4 light_view_projection;
+    float				shadow_bias{ 0.008f };
+	float shadow_attenuation{ 0.5f };
 
-    //Microsoft::WRL::ComPtr<ID3D11Device>			 device;
-    //Microsoft::WRL::ComPtr<ID3D11Buffer>             shadowMapConstantBuffer;
-    //Microsoft::WRL::ComPtr<ID3D11DepthStencilView>   shadowMapDepthStencilView;
-    //Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowMapShaderResourceView;
-    //Microsoft::WRL::ComPtr<ID3D11SamplerState>       shadowMapSamplerState;
-    //Microsoft::WRL::ComPtr<ID3D11VertexShader>       shadowMapCasterVertexShader;
-    //Microsoft::WRL::ComPtr<ID3D11InputLayout>        shadowMapCasterInputLayout;
-    //Microsoft::WRL::ComPtr<ID3D11DeviceContext> shadowContext;
 
     Microsoft::WRL::ComPtr<ID3D11VertexShader> mesh_vertex_shader;
     Microsoft::WRL::ComPtr<ID3D11InputLayout> mesh_input_layout;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> mesh_pixel_shader;
+
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> scene_render_target_view;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> scene_shader_resource_view;
+
 };

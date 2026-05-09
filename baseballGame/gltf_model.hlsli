@@ -19,6 +19,7 @@ struct VS_OUT
     float4 w_normal : NORMAL;
     float4 w_tangent : TANGENT;
     float2 texcoord : TEXCOORD;
+    float3 shadow_texcoord : TEXCOORD1;
 };
 
 // プリミティブごとの定数バッファ（b0）
@@ -62,6 +63,15 @@ cbuffer FOG_CONSTANT_BUFFER : register(b5)
     float4 fog_color;
     float4 fog_range;
 };
+
+cbuffer SHADOWMAP_CONSTANT_BUFFER : register(b6)
+{
+    row_major float4x4 light_view_projection;
+    float shadow_attenuation;
+    float shadow_bias;
+    float2 shadow_dummy;
+};
+
 
 
 // UNIT.37

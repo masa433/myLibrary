@@ -55,6 +55,10 @@ Texture2D<float4> material_textures[5] : register(t1);
 //#define ANISOTROPIC 2
 //SamplerState sampler_states[3] : register(s0);
 
+//	シャドウマップ
+Texture2D shadow_map : register(t10);
+SamplerState shadow_sampler_state : register(s10);
+
 float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
 {
     // UNIT.35
@@ -124,6 +128,14 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
             directional_diffuse = CalcLambert(N, L, LC, 1);
             directional_specular = CalcPhongSpecular(N, L, V, LC, 1);
 
+            //	平行光源用シャドウマップ
+            float depth = shadow_map.Sample(shadow_sampler_state, pin.shadow_texcoord.xy).r;
+			//	深度値を比較して影かどうかを判定する
+            if (pin.shadow_texcoord.z - depth > shadow_bias)
+            {
+                directional_diffuse *= shadow_attenuation;
+                directional_specular *= shadow_attenuation;
+            }
         }
 
 		//	点光源

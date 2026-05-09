@@ -23,9 +23,7 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam
 extern ImWchar glyphRangesJapanese[];
 #endif
 
-CONST LONG SCREEN_WIDTH{ 1280 };
-CONST LONG SCREEN_HEIGHT{ 720 };
-CONST BOOL FULLSCREEN{ FALSE };
+
 CONST LPCWSTR APPLICATION_NAME{ L"BASEBALL" };
 
 class framework
