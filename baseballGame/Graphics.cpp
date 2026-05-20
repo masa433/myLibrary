@@ -72,6 +72,26 @@ void Graphics::Initialize(HWND hWnd)
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
+#if defined(DEBUG) || defined(_DEBUG)
+	Microsoft::WRL::ComPtr<ID3D11InfoQueue> infoQueue;
+	if (SUCCEEDED(device.As(&infoQueue)))
+	{
+		// 無視したい警告メッセージのIDリスト
+		D3D11_MESSAGE_ID hideMessages[] =
+		{
+			D3D11_MESSAGE_ID_DEVICE_DRAW_RENDERTARGETVIEW_NOT_SET, // 意図的にレンダーターゲットを外した時の警告を無視
+			D3D11_MESSAGE_ID_DEVICE_DRAW_SAMPLER_NOT_SET,          // サンプラーが未セットの警告を無視 (今回追加)
+		};
+
+		D3D11_INFO_QUEUE_FILTER filter = {};
+		filter.DenyList.NumIDs = _countof(hideMessages);
+		filter.DenyList.pIDList = hideMessages;
+
+		// フィルターを適用
+		infoQueue->AddStorageFilterEntries(&filter);
+	}
+#endif
+
 	// レンダーターゲットビューの生成
 	{
 		// スワップチェーンからバックバッファテクスチャを取得する。

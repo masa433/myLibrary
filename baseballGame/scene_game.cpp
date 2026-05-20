@@ -16,7 +16,7 @@
 
 CONST LONG SHADOWMAP_WIDTH{ 8192 };
 CONST LONG SHADOWMAP_HEIGHT{ 8192 };
-CONST float SHADOWMAP_DRAWRECT{ 30 };
+CONST float SHADOWMAP_DRAWRECT{ 100 };
 
 
 void scene_game::initialize()
@@ -202,8 +202,8 @@ void scene_game::initialize()
     ////シーン描画用のバッファ生成
     Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
     D3D11_TEXTURE2D_DESC texture2d_desc{};
-    texture2d_desc.Width = SCREEN_WIDTH;
-    texture2d_desc.Height = SCREEN_HEIGHT;
+    texture2d_desc.Width = static_cast<UINT>(screenWidth);
+    texture2d_desc.Height = static_cast<UINT>(screenHeight);
     texture2d_desc.MipLevels = 1;
     texture2d_desc.ArraySize = 1;
     texture2d_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -488,7 +488,7 @@ void scene_game::renderShadowMap()
 
 void scene_game::render(float elapsedTime)
 {
-    renderShadowMap();
+   // renderShadowMap();
 
     using namespace DirectX;
 
@@ -516,8 +516,8 @@ void scene_game::render(float elapsedTime)
     D3D11_VIEWPORT viewport{};
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
-    viewport.Width = static_cast<float>(SCREEN_WIDTH);
-    viewport.Height = static_cast<float>(SCREEN_HEIGHT);
+    viewport.Width = static_cast<float>(Graphics::Instance().GetScreenWidth());
+    viewport.Height = static_cast<float>(Graphics::Instance().GetScreenHeight());
     viewport.MinDepth = 0.0f;
     viewport.MaxDepth = 1.0f;
     dc->RSSetViewports(1, &viewport);
@@ -579,9 +579,9 @@ void scene_game::render(float elapsedTime)
 
     // サンプラーステート
     ID3D11SamplerState* samplerStates[] = {
-        renderState->GetSamplerState(SamplerState::LinearWrap),
-        renderState->GetSamplerState(SamplerState::LinearClamp),
-        renderState->GetSamplerState(SamplerState::LinearWrap)
+        renderState->GetSamplerState(SamplerState::PointWrap),
+        renderState->GetSamplerState(SamplerState::PointClamp),
+        renderState->GetSamplerState(SamplerState::PointWrap)
     };
     dc->PSSetSamplers(0, 3, samplerStates);
     dc->PSSetShaderResources(10, 1, shadowmap_shader_resource_view.GetAddressOf());

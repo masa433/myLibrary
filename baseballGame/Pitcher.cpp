@@ -316,108 +316,122 @@ void Pitcher::DrawGUI()
 
 			ImGui::Separator();
 			// 球種プリセット
+			// 球種プリセット
 			if (ImGui::Button(u8"Fastball (ストレート)"))
 			{
 				horizontalBreak = 0.0f;
-				verticalBreak = 20.0f;
+				verticalBreak = 0.0f;//ややホップするような感じ
 				ballSpeedKmh = 150.0f; // 速い
-				ballAngle = { 0.5f,DirectX::XMConvertToRadians(90.0f),0.0f };
-				rotationSpeed = { 0.0f,0.0f,-100.0f };//バックスピン
+				ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f };
+				rotationSpeed = { 0.0f, 0.0f, -150.0f }; // バックスピン
+				throwDirection.x = 0.03f;
+				launchAngleDegrees = -1.5f;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(u8"Slider (スライダー)"))
 			{
-				horizontalBreak = -15.0f; // 右方向に曲がる
-				verticalBreak = -5.0f;   // 少し落ちる
-				ballSpeedKmh = 130.0f;  // 少し遅い
+				horizontalBreak = 15.0f; // 左方向に曲がる
+				verticalBreak = -5.0f;    // 少し落ちる
+				ballSpeedKmh = 130.0f;    // 少し遅い
 				ballAngle = { -0.2f, 0.0f, 0.0f };
-				rotationSpeed = { 0.0f,0.0f,-100.0f };//サイドスピン
+				rotationSpeed = { 0.0f, 0.0f, -100.0f }; // サイドスピン
+				throwDirection.x = 0.0f;
+				launchAngleDegrees = 0.5f;
 			}
 			if (ImGui::Button(u8"Curveball (カーブ)"))
 			{
-				horizontalBreak = -10.0f; // 左方向に曲がる
-				verticalBreak = -15.0f;   // 大きく落ちる
-				ballSpeedKmh = 110.0f;  // 遅い
-				ballAngle = { 0.5f,DirectX::XMConvertToRadians(90.0f),0.0f };
-				rotationSpeed = { 0.0f,0.0f,150.0f };//トップスピン
+				horizontalBreak = 5.0f; // 左方向に曲がる
+				verticalBreak = -10.0f;   // 大きく落ちる
+				ballSpeedKmh = 110.0f;    // 遅い
+				ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
+				rotationSpeed = { 0.0f, 0.0f, 150.0f }; // トップスピン
+				throwDirection.x = 0.01f;
+				launchAngleDegrees = 4.0f; // カーブはやや下向きに投げる
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(u8"Changeup (チェンジアップ)"))
 			{
-				horizontalBreak = 10.0f;
-				verticalBreak = -12.0f; // 落ちる
-				ballSpeedKmh = 120.0f;  // 遅い
-				rotationSpeed = { 100.0f,0.0f,100.0f };//ミックス回転
+				horizontalBreak = -5.0f;  // 右方向に少し曲がる
+				verticalBreak = -5.0f;   // 落ちる
+				ballSpeedKmh = 120.0f;    // 遅い
+				rotationSpeed = { 100.0f, 0.0f, 100.0f }; // ミックス回転
+				throwDirection.x = 0.03f;
+				launchAngleDegrees = 0.0f;
 			}
-			if(ImGui::Button(u8"Forkball (フォーク)"))
+			if (ImGui::Button(u8"Forkball (フォーク)"))
 			{
 				horizontalBreak = 0.0f;
-				verticalBreak = -30.0f; // 大きく落ちる
+				verticalBreak = -30.0f;   // 非常に大きく落ちる
+				ballSpeedKmh = 130.0f;    // 少し遅い
 				ballAngle.y = 0.0f;
-				rotationSpeed = { -40.0f,0.0f,10.0f };//回転は少なめ
-				ballSpeedKmh = 130.0f;  // 遅い
-				
+				throwDirection.x = 0.03f;
+				launchAngleDegrees = -0.5f;
+				rotationSpeed = { -40.0f, 0.0f, 10.0f }; // 回転は少なめ
 			}
 			ImGui::SameLine();
-			if(ImGui::Button(u8"Two-seam(ツーシーム)"))
+			if (ImGui::Button(u8"Two-seam(ツーシーム)"))
 			{
-				horizontalBreak = 10.0f;
-				verticalBreak = -10.0f; // 少し落ちる
+				horizontalBreak = -10.0f;  // 右方向に少し曲がる
+				verticalBreak = -7.0f;   // 少し落ちる
+				//ballSpeedKmh = 140.0f;    // 少し速い
 				ballAngle.y = 0.0f;
 				ballAngle.x = 0.2f;
-				rotationSpeed = { -100.0f,0.0f,0.0f };//回転は少なめ
-				ballSpeedKmh = 140.0f;  // 遅い
+				rotationSpeed = { -100.0f, 0.0f, 0.0f }; // 回転は少なめ
 			}
 			if (ImGui::Button(u8"Cutter (カットボール)"))
 			{
-				horizontalBreak = -10.0f; // 左方向に少し曲がる
+				horizontalBreak = 8.0f; // 左方向に少し曲がる
 				verticalBreak = -2.0f;    // 少し落ちる
-				ballSpeedKmh = 140.0f;    // 速い
+				//ballSpeedKmh = 140.0f;    // 速い
+				ballAngle = { -0.2f, 0.0f, 0.0f };
 				rotationSpeed = { 0.0f, 0.0f, -80.0f }; // 回転速度
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(u8"Sinker (シンカー)"))
 			{
-				horizontalBreak = 5.0f;   // 右方向に少し曲がる
-				verticalBreak = -10.0f;   // 大きく落ちる
-				ballSpeedKmh = 130.0f;    // 少し遅い
-				rotationSpeed = { 0.0f, 0.0f, -120.0f }; // 回転速度
+				horizontalBreak = -15.0f;   // 右方向に少し曲がる
+				verticalBreak = -15.0f;   // 大きく落ちる
+				//ballSpeedKmh = 130.0f;    // 少し遅い
+				rotationSpeed = { 120.0f, 0.0f, 120.0f }; // 回転速度
 			}
 			if (ImGui::Button(u8"Vertical Slider (縦スライダー)"))
 			{
-				horizontalBreak = 0.0f;   // 横方向の変化なし
+				horizontalBreak = 5.0f;   // 少し横に移動
 				verticalBreak = -15.0f;   // 大きく落ちる
-				ballSpeedKmh = 125.0f;    // 遅い
+				//ballSpeedKmh = 125.0f;    // 遅い
+				ballAngle = { -0.2f, 0.0f, 0.0f };
 				rotationSpeed = { 0.0f, 0.0f, -100.0f }; // 回転速度
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(u8"Splitter (スプリット)"))
 			{
 				horizontalBreak = 0.0f;   // 横方向の変化なし
-				verticalBreak = -20.0f;   // 非常に大きく落ちる
-				ballSpeedKmh = 135.0f;    // 少し遅い
-				rotationSpeed = { 0.0f, 0.0f, -50.0f }; // 回転速度
+				verticalBreak = -15.0f;   // 非常に大きく落ちる
+				//ballSpeedKmh = 135.0f;    // 少し遅い
+				ballAngle.y = 0.0f;
+				rotationSpeed = { -40.0f, 0.0f, 10.0f }; // 回転速度
 			}
 			if (ImGui::Button(u8"Slow Curve (スローカーブ)"))
 			{
-				horizontalBreak = -5.0f;  // 左方向に少し曲がる
-				verticalBreak = -25.0f;   // 非常に大きく落ちる
-				ballSpeedKmh = 80.0f;    // 非常に遅い
+				horizontalBreak = 15.0f;  // 左方向に少し曲がる
+				verticalBreak = -20.0f;   // 非常に大きく落ちる
+				//ballSpeedKmh = 80.0f;     // 非常に遅い
+				ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
 				rotationSpeed = { 0.0f, 0.0f, 150.0f }; // トップスピン
 			}
-			if(ImGui::Button(u8"Shooter (シューター)"))
+			if (ImGui::Button(u8"Shooter (シューター)"))
 			{
-				horizontalBreak = 15.0f;  // 右方向に大きく曲がる
-				verticalBreak = -5.0f;    // 少し落ちる
-				ballSpeedKmh = 145.0f;    // 少し遅い
-				rotationSpeed = { 0.0f, 0.0f, -150.0f }; // バックスピン
-				ballAngle = { 0.5f,DirectX::XMConvertToRadians(90.0f),0.0f };
+				horizontalBreak = -5.0f;  // 大きく右に曲がる
+				verticalBreak = -5.0f;   // 少し落ちる
+				//ballSpeedKmh = 145.0f;    // 遅い
+				ballAngle = { -0.2f, 0.0f, 0.0f };
+				rotationSpeed = { 0.0f, 0.0f, -150.0f }; // 強いサイドスピン
 			}
-			if(ImGui::Button(u8"Knuckleball (ナックルボール)"))
+			if (ImGui::Button(u8"Knuckleball (ナックルボール)"))
 			{
-				horizontalBreak = 0.0f; //変化なし
-				verticalBreak = 0.0f;   //変化なし
-				ballSpeedKmh = 90.0f;    // 非常に遅い
+				horizontalBreak = 0.0f;   // 横方向の変化なし
+				verticalBreak = 0.0f;     // 縦方向の変化なし
+				//ballSpeedKmh = 90.0f;     // 非常に遅い
 				ballAngle = { 0.0f, 0.0f, 0.0f };
 				rotationSpeed = { 5.0f, 0.0f, 5.0f }; // 不規則な回転
 			}
@@ -726,23 +740,27 @@ void Pitcher::SelectPitchType()
 	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
 	//selectedPitchType = PitchType::Fastball; // デフォルトはストレート
 
-	if(randomValue<=0.25f) // 50%の確率でストレート
+	if(randomValue<=0.2f) // 50%の確率でストレート
 	{
 		selectedPitchType = PitchType::Fastball;
 	}
-	else if(randomValue<=0.5f) // 50%の確率で他の球種をランダムに選択
+	else if(randomValue<=0.4f) // 50%の確率で他の球種をランダムに選択
 	{
 		selectedPitchType = PitchType::Slider; // ここではシンカーを選択
 	}
-	else if (randomValue <= 0.75f)
+	else if (randomValue <= 0.6f)
 	{
 		selectedPitchType = PitchType::Curveball; // ここではカーブを選択
 	}
-	else if (randomValue <= 1.0f)
+	else if (randomValue <= 0.8f)
 	{
 		selectedPitchType = PitchType::Changeup; // ここではチェンジアップを選択
 	}
-
+	else if (randomValue <= 1.0f)
+	{
+		selectedPitchType = PitchType::Forkball; // ここではフォークを選択
+	}
+	
 	//if (randomValue <= 0.2f) // 20%の確率でストレート
 	//{
 	//	selectedPitchType = PitchType::Fastball;
@@ -821,6 +839,8 @@ void Pitcher::SelectPitchType()
 		verticalBreak = -30.0f;   // 非常に大きく落ちる
 		ballSpeedKmh = 130.0f;    // 少し遅い
 		ballAngle.y = 0.0f;
+		throwDirection.x = 0.03f;
+		launchAngleDegrees = -0.5f; // カーブはやや下向きに投げる
 		rotationSpeed = { -40.0f, 0.0f, 10.0f }; // 回転は少なめ
 		OutputDebugStringA("Pitch Type: Forkball\n");
 		break;

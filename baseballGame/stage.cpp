@@ -135,6 +135,21 @@ void stage::initialize()
 			actors.emplace_back(pxRigidBody);
 			triangle_meshes.emplace_back(pxTriangleMesh);
 		}
+
+		// ホームラン判定用トリガーの作成
+		physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+		physx::PxTransform triggerTransform(physx::PxVec3(hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z));
+		homeRunTrigger = pxPhysics->createRigidStatic(triggerTransform);
+
+		physx::PxBoxGeometry triggerGeometry(physx::PxVec3(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
+		physx::PxShape* triggerShape = physx::PxRigidActorExt::createExclusiveShape(*homeRunTrigger, triggerGeometry, *triggerMaterial);
+
+		// 物理的な衝突を無効にし、トリガー（重なり判定）として設定する
+		triggerShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+		triggerShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+
+		homeRunTrigger->setName("HomeRunTrigger");
+		pxScene->addActor(*homeRunTrigger);
 	}
 }
 
@@ -150,32 +165,26 @@ void stage::update(float elapsedTime)
 		ImGui::DragFloat3("Angle", &angle.x);
 	}
 
-	//if (ImGui::CollapsingHeader("Box Colliders"))
-	//{
-	//	for (size_t i = 0; i < boxColliders.size(); ++i)
-	//	{
-	//		physx::PxRigidStatic* boxCollider = boxColliders[i];
-	//		physx::PxTransform transform = boxCollider->getGlobalPose();
+	if (ImGui::CollapsingHeader("Home Run Trigger"))
+	{
+		ImGui::DragFloat3("Trigger Position", &hrTriggerPos.x, 0.5f);
+		ImGui::DragFloat3("Trigger Half Extents (Size)", &hrTriggerHalfExtents.x, 0.5f);
 
-	//		// ボックスの位置を操作
-	//		ImGui::DragFloat3(("Box Position " + std::to_string(i)).c_str(), &boxPositions[i].x, 0.1f);
+		if (homeRunTrigger)
+		{
+			// 位置の更新
+			physx::PxTransform transform(physx::PxVec3(hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z));
+			homeRunTrigger->setGlobalPose(transform);
 
-	//		// ボックスのサイズを操作
-	//		ImGui::DragFloat3(("Box Size " + std::to_string(i)).c_str(), &boxSizes[i].x, 0.1f);
-
-	//		// 位置を更新
-	//		transform.p = boxPositions[i];
-	//		boxCollider->setGlobalPose(transform);
-
-	//		// サイズを更新
-	//		physx::PxShape* shape = nullptr;
-	//		boxCollider->getShapes(&shape, 1);
-	//		if (shape)
-	//		{
-	//			shape->setGeometry(physx::PxBoxGeometry(boxSizes[i]));
-	//		}
-	//	}
-	//}
+			// サイズの更新
+			physx::PxShape* shape = nullptr;
+			homeRunTrigger->getShapes(&shape, 1);
+			if (shape)
+			{
+				shape->setGeometry(physx::PxBoxGeometry(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
+			}
+		}
+	}
 
 #endif //  USE_IMGUI
 
