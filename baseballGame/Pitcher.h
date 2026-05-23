@@ -47,6 +47,9 @@ public:
 		const float GetReducedRadius() const { return reducedRadius; }
 
 		bool IsBallInStrikeZone() const;
+
+		void SetTheoreticalDistance(float distance) { theoreticalDistance = distance; }
+		float GetTheoreticalDistance() const { return theoreticalDistance; }
 private:
 	// モデル関連
 		std::unique_ptr<gltf_model> pitcher;
@@ -125,6 +128,7 @@ private:
 		float throwCounter = 0.0f; // 投球カウンター
 		bool hasReachedZero = false; // z = 0.0f に到達したかどうか
 
+		float theoreticalDistance = 0.0f; // 理論上の飛距離（追加）
 public:
 
 	// 状態管理

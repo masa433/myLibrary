@@ -694,22 +694,29 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					newBallVelocity = (newBallVelocity / finalSpeed) * 52.78f;
 				}
 
-				// ===== 6. 打球方向（左右の角度）の計算 =====
+				/// ===== 6. 打球方向（左右の角度）の計算 =====
 				// Z方向（バックスクリーン方向）を0度としたときの、打球速度ベクトル(XとZ) の角度を計算
-				float hitDirectionAngleDeg = std::atan2(newBallVelocity.x, newBallVelocity.z) * (180.0f / PI);
+				float originalAngleDeg = std::atan2(newBallVelocity.x, newBallVelocity.z) * (180.0f / PI);
 
-				//角度計算後、絶対値に変換する
-				hitDirectionAngleDeg = std::fabs(hitDirectionAngleDeg);
+				// 絶対値に変換
+				float hitDirectionAngleDeg = std::fabs(originalAngleDeg);
 
-
+				// 打球方向の判定（絶対値を使って判定する）
 				const char* hitResult = "ファウル";
-				if (hitDirectionAngleDeg >= 0.0f && hitDirectionAngleDeg <= 45.0f)
+				if (hitDirectionAngleDeg <= 45.0f)
 				{
-					hitResult = "フェア（ホームラン候補）";
-				}
-				else if (hitDirectionAngleDeg > 45.0f && hitDirectionAngleDeg <= 90.0f)
-				{
-					hitResult = "ファウル";
+					if (hitDirectionAngleDeg <= 15.0f)
+					{
+						hitResult = "フェア（センター方向）";
+					}
+					else if (originalAngleDeg < 0.0f) // マイナスならレフト方向
+					{
+						hitResult = "フェア（レフト方向）";
+					}
+					else // プラスならライト方向
+					{
+						hitResult = "フェア（ライト方向）";
+					}
 				}
 
 				
