@@ -36,7 +36,7 @@ void Player::Initialize()
 
 	//ステートごとのアニメーションインデックス設定
 	animation_indices[static_cast<int>(State::BattingIdle)] = 0;      // Idleアニメーション
-	animation_indices[static_cast<int>(State::HomeRun)] = 1; // BattingIdleアニメーション
+	animation_indices[static_cast<int>(State::BeforeSwing)] = 1; // BattingIdleアニメーション
 	animation_indices[static_cast<int>(State::Swinging)] = 2;   // Swingingアニメーション
 	animation_indices[static_cast<int>(State::Idle)] = 3;    // HomeRunアニメーション
 
@@ -98,7 +98,7 @@ void Player::Initialize()
 		//pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
 
         //バット専用マテリアルの作成
-        pxBatMaterial = pxPhysics->createMaterial(0.3f, 0.2f, 0.5f);
+        pxBatMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
 
 		physx::PxConvexMeshDesc pxConvexMeshDesc;
 		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
@@ -556,13 +556,13 @@ void Player::UpdateAnimation(float elapsedTime)
             // ThrowingStateTimeが0.8以上で、まだアニメーションを再生していない場合
             if (ThrowingStateTime >= 0.75f && !hasPlayHomeRun)
             {
-                ChangeState(State::HomeRun); // ホームランアニメーションに切り替え
+                ChangeState(State::BeforeSwing); // ホームランアニメーションに切り替え
                 hasPlayHomeRun = true;      // アニメーション再生済みフラグを設定
             }
         }
-        else if (current_state == State::HomeRun)
+        else if (current_state == State::BeforeSwing)
         {
-            // HomeRunアニメーションが終了したらBattingIdleに戻す
+            // BeforeSwingアニメーションが終了したらBattingIdleに戻す
             if (animation_time >= animated_model->animations[current_animation_index].duration)
             {
                 ChangeState(State::BattingIdle);

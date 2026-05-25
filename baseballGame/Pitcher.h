@@ -8,6 +8,7 @@
 #include "RenderContext.h"
 #include "physxManager.h"
 #include "ModelRenderer.h"
+#include <deque>
 
 class Pitcher : public GameObject
 {
@@ -129,6 +130,15 @@ private:
 		bool hasReachedZero = false; // z = 0.0f に到達したかどうか
 
 		float theoreticalDistance = 0.0f; // 理論上の飛距離（追加）
+
+private:
+
+	// ボールの軌跡保存用
+	std::deque<DirectX::XMFLOAT3> ballTrail;
+	const size_t MaxTrailLength = 50; // 軌跡の最大保存数
+	const float TrailRecordInterval = 0.016f; // 記録間隔
+	float trailRecordTimer = 0.0f;
+	float trailWidth = 0.05f; // 軌跡の幅
 public:
 
 	// 状態管理

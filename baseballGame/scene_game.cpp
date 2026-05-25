@@ -248,6 +248,7 @@ void scene_game::update(float elapsed_time)
 	Camera& camera = Camera::Instance();
     cameraController.SyncControllerToCamera(camera);
     cameraController.Update();
+	cameraPosition = camera.GetEye();
 
     // ステージの更新
     stage::Instance().update(elapsed_time);

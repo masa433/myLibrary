@@ -60,7 +60,7 @@ void CameraController::Update()
 	float moveX = io.MouseDelta.x * 0.02f;
 	float moveY = io.MouseDelta.y * 0.02f;
 
-	// マウス左ボタン押下中
+	// マウス右ボタン押下中
 	if (io.MouseDown[ImGuiMouseButton_Right])
 	{
 		// Y軸回転
@@ -111,6 +111,41 @@ void CameraController::Update()
 	{
 		// ズーム
 		distance -= io.MouseWheel * distance * 0.1f;
+	}
+	// Ctrlキー + 左クリック長押しで前進
+	else if (io.MouseDown[ImGuiMouseButton_Left] && io.KeyCtrl)
+	{
+		// カメラの向いている方向（フォーカスからカメラへの逆ベクトル）
+		// frontベクトルを計算（カメラが向いている前方向）
+		float frontX = focus.x - eye.x;
+		float frontY = focus.y - eye.y;
+		float frontZ = focus.z - eye.z;
+
+		// 正規化
+		float len = sqrtf(frontX * frontX + frontY * frontY + frontZ * frontZ);
+		if (len > 0.0001f)
+		{
+			frontX /= len;
+			frontY /= len;
+			frontZ /= len;
+		}
+
+		// 移動速度（distanceに比例させると遠いほど速く移動）
+		float speed = distance * 0.01f;
+
+		// フォーカス点とカメラ位置を同時に移動（カメラの向きを維持）
+		focus.x += frontX * speed;
+		focus.y += frontY * speed;
+		focus.z += frontZ * speed;
+
+		//カーソル移動で視点回転を追加
+		angleY += moveX * 0.5f;
+		if (angleY > DirectX::XM_PI)       angleY -= DirectX::XM_2PI;
+		else if (angleY < -DirectX::XM_PI) angleY += DirectX::XM_2PI;
+
+		angleX += moveY * 0.5f;
+		if (angleX > DirectX::XM_PI)       angleX -= DirectX::XM_2PI;
+		else if (angleX < -DirectX::XM_PI) angleX += DirectX::XM_2PI;
 	}
 
 	float sx = ::sinf(angleX);

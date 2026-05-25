@@ -61,8 +61,8 @@ public:
     enum class State
     {
         BattingIdle,
+        BeforeSwing,
         Swinging,
-        HomeRun,
         Idle,
         Count
     };
@@ -70,7 +70,7 @@ public:
     enum Animation
     {
         BattingIdle,
-        HomeRun,
+        BeforeSwing,
         Swing,
     };
 
