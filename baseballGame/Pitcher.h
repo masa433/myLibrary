@@ -49,6 +49,9 @@ public:
 
 		bool IsBallInStrikeZone() const;
 
+		// 風の影響を受けるエリアにボールが入っているか
+		bool IsBallInWindArea() const;
+
 		void SetTheoreticalDistance(float distance) { theoreticalDistance = distance; }
 		float GetTheoreticalDistance() const { return theoreticalDistance; }
 private:
@@ -135,7 +138,7 @@ private:
 
 	// ボールの軌跡保存用
 	std::deque<DirectX::XMFLOAT3> ballTrail;
-	const size_t MaxTrailLength = 50; // 軌跡の最大保存数
+	float MaxTrailLength = 50; // 軌跡の最大保存数
 	const float TrailRecordInterval = 0.016f; // 記録間隔
 	float trailRecordTimer = 0.0f;
 	float trailWidth = 0.05f; // 軌跡の幅
@@ -175,5 +178,20 @@ public:
 		private:
 			// ===== 新規追加 =====
 			physx::PxVec3 GetSpinAxisFromPitchType() const;
+
+private:
+	//風表現用
+	struct WindLine
+	{
+		DirectX::XMFLOAT3 position;
+		float speed;// 風の線の移動速度
+		float length;// 風の線の長さ
+		float phase;// 風の線の位相（時間経過で変化させるための変数）
+	};
+
+	std::vector<WindLine> windLines;
+	DirectX::XMFLOAT3 windDirection{ -1.0f, 0.0f, 0.2f };
+	float windStrength = 5.0f;
+	float windHeight = 0.0f; // 風の位置（時間経過で変化させるための変数）
 };
 

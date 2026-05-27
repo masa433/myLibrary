@@ -80,6 +80,23 @@ void Pitcher::Initialize()
 		ballShape->release();
 	}
 
+	// 風表現用の流線を生成
+	windLines.clear();
+	windLines.reserve(100);
+	for (int i = 0; i < 100; ++i)
+	{
+		const float t = static_cast<float>(i);
+		WindLine line{};
+		line.position = {
+			-30.0f + std::fmod(t * 7.3f, 60.0f),
+			std::fmod(t * 1.7f, 6.0f), // 高さは 相対値 (0.0 ～ 6.0) にしておく
+			-5.0f + std::fmod(t * 5.1f, 100.0f)
+		};
+		line.speed = windStrength * (0.6f + std::fmod(t * 0.37f, 1.0f));
+		line.length = 1.5f + std::fmod(t * 0.23f, 2.0f);
+		line.phase = t * 0.4f;
+		windLines.push_back(line);
+	}
 }
 
 void Pitcher::Uninitialize() 
@@ -197,6 +214,22 @@ void Pitcher::Update(float elapsedTime)
 		ballTrail.clear(); // 軌跡をクリア
 	}
 
+
+	for (auto& line : windLines)
+	{
+		line.position.x += windDirection.x * line.speed * elapsedTime;
+		line.position.y += windDirection.y * line.speed * elapsedTime;
+		line.position.z += windDirection.z * line.speed * elapsedTime;
+		line.phase += elapsedTime * 4.0f;
+
+		// 画面外に出たらループさせる
+		if (line.position.x > 100.0f) line.position.x = -100.0f;
+		else if (line.position.x < -100.0f) line.position.x = 100.0f;
+
+		// Y軸(上下)の相対範囲ループ (0.0 ～ 6.0)
+		if (line.position.y > 6.0f) line.position.y -= 6.0f;
+		else if (line.position.y < 0.0f) line.position.y += 6.0f;
+	}
 }
 
 void Pitcher::UpdateBallCollider()
@@ -230,10 +263,21 @@ bool Pitcher::IsBallInStrikeZone() const
 		(ballWorldPosition.z >= strikeZoneMinZ && ballWorldPosition.z <= strikeZoneMaxZ);
 }
 
+bool Pitcher::IsBallInWindArea() const
+{
+	// 流線の描画範囲に合わせて風の有効範囲を定義
+	if (ballWorldPosition.x < -100.0f || ballWorldPosition.x > 100.0f) return false;
+	if (ballWorldPosition.y < windHeight || ballWorldPosition.y > windHeight + 6.0f) return false;
+	if (ballWorldPosition.z < -5.0f || ballWorldPosition.z > 95.0f) return false;
+
+	return true;
+}
+
 // 描画
 void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer) 
 {
-	
+	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
+
 	pitcher->render(rc.deviceContext, transform, animated_nodes);
 	if(isBallThrown)
 	{
@@ -280,7 +324,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 	// トレイルの描画
 	if (ballTrail.size() > 1)
 	{
-		PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
+		
 
 		// 現在アクティブなカメラインスタンスのView/Projection行列を取得して利用する
 		Camera& camera = Camera::Instance(); // シングルトンなどから取得
@@ -302,7 +346,22 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 		primitiveRenderer->Render(rc.deviceContext, camera.GetView(), camera.GetProjection(), D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
 	
-	
+	// 風の描画
+	for (const auto& line : windLines)
+	{
+		DirectX::XMFLOAT3 start = line.position;
+		start.y += windHeight; // 風の高さを加算
+		DirectX::XMFLOAT3 end = {
+			line.position.x - windDirection.x * line.length,
+			(line.position.y + windHeight) - windDirection.y * line.length,
+			line.position.z - windDirection.z * line.length
+		};
+
+		DirectX::XMFLOAT4 color = { 0.8f, 0.9f, 1.0f, 0.35f };
+
+		primitiveRenderer->AddVertex(start, color);
+		primitiveRenderer->AddVertex(end, color);
+	}
 }
 
 void Pitcher::DrawGUI()
@@ -492,6 +551,10 @@ void Pitcher::DrawGUI()
 			float speedMs = ballSpeedKmh / 3.6f;
 			ImGui::Text("Speed: %.2f m/s (%.0f km/h)", speedMs, ballSpeedKmh);
 
+			//トレイルの表示
+			ImGui::DragFloat("Trail Width", &trailWidth, 0.01f, 0.01f, 1.0f, "%.2f");
+			ImGui::DragFloat("MaxTrailLength", &MaxTrailLength, 0.01f, 0.01f, 1.0f, "%.2f");
+
 		}
 
 	}
@@ -527,6 +590,33 @@ void Pitcher::DrawGUI()
 			rotationSpeed.y = rpmY * RPM_TO_RAD_PER_SEC;
 			rotationSpeed.z = rpmZ * RPM_TO_RAD_PER_SEC;
 		}
+	}
+
+	if (ImGui::CollapsingHeader("Wind Settings"))
+	{
+		// 風向の操作
+		ImGui::DragFloat3("Wind Direction", &windDirection.x, 0.01f, -1.0f, 1.0f);
+		if (ImGui::Button("Normalize Wind Direction"))
+		{
+			DirectX::XMVECTOR dir = DirectX::XMLoadFloat3(&windDirection);
+			// ゼロベクトルの場合は正規化しない
+			if (DirectX::XMVector3NotEqual(dir, DirectX::XMVectorZero()))
+			{
+				dir = DirectX::XMVector3Normalize(dir);
+				DirectX::XMStoreFloat3(&windDirection, dir);
+			}
+		}
+
+		// 風の強さの操作
+		ImGui::DragFloat("Wind Strength", &windStrength, 0.1f, 0.0f, 50.0f);
+
+		ImGui::DragFloat("Wind Height", &windHeight, 0.1f, 0.0f, 50.0f);
+
+		// 流線の描画などに強さの変更を即時反映させるため、表示用に現在の風ベクトルも表示する
+		ImGui::Text("Current Wind Velocity: (%.2f, %.2f, %.2f)",
+			windDirection.x * windStrength,
+			windDirection.y * windStrength,
+			windDirection.z * windStrength);
 	}
 	ImGui::End();
 #endif
@@ -762,24 +852,40 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 		ballCollider->addForce(lateralForce, physx::PxForceMode::eFORCE);
 	}
 
+	//現在の風の速度ベクトル
+	physx::PxVec3 windVec(0.0f, 0.0f, 0.0f);
+	if (IsBallInWindArea())
+	{
+		windVec = physx::PxVec3(windDirection.x * windStrength, windDirection.y * windStrength * windHeight, windDirection.z * windStrength);
+	}
+
 	//空気抵抗を適用
+
+	//ボールの現在の速度
 	physx::PxVec3 velocity = ballCollider->getLinearVelocity();
-	float speed = velocity.magnitude();
+
+	// 相対速度（ボールの速度 - 風の速度）を計算
+	physx::PxVec3 relativeVelocity = velocity - windVec;
+	float relativeSpeed = relativeVelocity.magnitude();
 	const float airDensity = 1.225f; //空気密度
 	const float ballRadius = 0.0365f; // ボールの半径（メートル）
 	const float ballCrossSectionalArea = DirectX::XM_PI * (ballRadius * ballRadius); // ボールの断面積
 	const float dragCoefficient = 0.47f; // 球の抗力係数
-	const float dragForceMagnitude = -0.5f * airDensity * speed * speed * dragCoefficient * ballCrossSectionalArea;
+
+	//相対速度に基づく空気抵抗力を計算
+	const float dragForceMagnitude = -0.5f * airDensity * relativeSpeed * relativeSpeed * dragCoefficient * ballCrossSectionalArea;
 	const float forceMultiplier = 0.00015f; // 力のスケーリング
-	physx::PxVec3 dragForce = velocity;
-	dragForce.normalize();
-	dragForce *= dragForceMagnitude * forceMultiplier;
-	ballCollider->addForce(dragForce, physx::PxForceMode::eFORCE);
+	physx::PxVec3 dragForce = relativeVelocity;
+	if (relativeSpeed > 0.0f) {
+		dragForce.normalize();
+		dragForce *= dragForceMagnitude * forceMultiplier;
+		ballCollider->addForce(dragForce, physx::PxForceMode::eFORCE);
+	}
 
 	// マグヌス効果を追加
 	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
 	float magnusCoefficient = 0.00000003f; // マグヌス効果を調整
-	physx::PxVec3 magnusForce = angularVelocity.cross(velocity) * magnusCoefficient;
+	physx::PxVec3 magnusForce = angularVelocity.cross(relativeVelocity) * magnusCoefficient;
 	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
 
 }
@@ -789,7 +895,7 @@ void Pitcher::SelectPitchType()
 {
 	// 乱数生成
 	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
-	//selectedPitchType = PitchType::Splitter; // デフォルトはストレート
+	selectedPitchType = PitchType::Fastball; // デフォルトはストレート
 
 	//6球種の選択確率を設定
 	//if(randomValue<= 0.2f) // 50%の確率でストレート
@@ -813,7 +919,7 @@ void Pitcher::SelectPitchType()
 	//	selectedPitchType = PitchType::Forkball; // ここではフォークを選択
 	//}
 	//7球種で選択する
-	if (randomValue <= 0.1f) 
+	/*if (randomValue <= 0.1f) 
 	{
 		selectedPitchType = PitchType::Fastball;
 	}
@@ -852,14 +958,14 @@ void Pitcher::SelectPitchType()
 	else if (randomValue <= 1.0f)
 	{
 		selectedPitchType = PitchType::Shooter;
-	}
+	}*/
 	// 球種ごとの挙動を設定
 	switch (selectedPitchType)
 	{
 	case PitchType::Fastball: // ストレート
 		horizontalBreak = 0.0f;
 		verticalBreak = 0.0f;//ややホップするような感じ
-		ballSpeedKmh = 166.0f; // 速い
+		ballSpeedKmh = 150.0f; // 速い
 		ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // バックスピン
 		throwDirection.x = 0.03f;
