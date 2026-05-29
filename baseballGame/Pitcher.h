@@ -184,6 +184,7 @@ private:
 	struct WindLine
 	{
 		DirectX::XMFLOAT3 position;
+		float baseYOffset; // 厚みの範囲に対する相対的な高さ割合
 		float speed;// 風の線の移動速度
 		float length;// 風の線の長さ
 		float phase;// 風の線の位相（時間経過で変化させるための変数）
@@ -193,5 +194,6 @@ private:
 	DirectX::XMFLOAT3 windDirection{ -1.0f, 0.0f, 0.2f };
 	float windStrength = 5.0f;
 	float windHeight = 0.0f; // 風の位置（時間経過で変化させるための変数）
+	float windThickness = 6.0f;// 風の線の厚み
 };
 

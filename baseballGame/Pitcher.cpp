@@ -38,6 +38,9 @@ void Pitcher::Initialize()
 	ballAngle = { 0.0f,DirectX::XMConvertToRadians(90.0f),0.0f };
 
 	ballDebugRadius = 0.037f; // デバッグ用の半径
+	//ballDebugRadius = 0.2f; // デバッグ用の半径を大きくして見やすくする
+	windThickness = 50.0f;// 風の影響を受けるエリアの厚さ
+	windHeight = 10.0f;// 風の影響を受けるエリアの高さ
 
 	//rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
@@ -89,9 +92,12 @@ void Pitcher::Initialize()
 		WindLine line{};
 		line.position = {
 			-30.0f + std::fmod(t * 7.3f, 60.0f),
-			std::fmod(t * 1.7f, 6.0f), // 高さは 相対値 (0.0 ～ 6.0) にしておく
+			0.0f,
 			-5.0f + std::fmod(t * 5.1f, 100.0f)
 		};
+		// Y軸の相対的な位置割合(0.0 ～ 1.0)を決定して保存する
+		line.baseYOffset = std::fmod(t * 1.7f, 1.0f);
+
 		line.speed = windStrength * (0.6f + std::fmod(t * 0.37f, 1.0f));
 		line.length = 1.5f + std::fmod(t * 0.23f, 2.0f);
 		line.phase = t * 0.4f;
@@ -218,17 +224,23 @@ void Pitcher::Update(float elapsedTime)
 	for (auto& line : windLines)
 	{
 		line.position.x += windDirection.x * line.speed * elapsedTime;
-		line.position.y += windDirection.y * line.speed * elapsedTime;
+		line.baseYOffset += (windDirection.y * line.speed * elapsedTime) / (windThickness > 0.01f ? windThickness : 0.01f);
 		line.position.z += windDirection.z * line.speed * elapsedTime;
 		line.phase += elapsedTime * 4.0f;
 
-		// 画面外に出たらループさせる
-		if (line.position.x > 100.0f) line.position.x = -100.0f;
-		else if (line.position.x < -100.0f) line.position.x = 100.0f;
+		// 画面外に出たらループさせる (X軸とZ軸)
+		if (line.position.x > 100.0f) line.position.x -= 200.0f;
+		else if (line.position.x < -100.0f) line.position.x += 200.0f;
 
-		// Y軸(上下)の相対範囲ループ (0.0 ～ 6.0)
-		if (line.position.y > 6.0f) line.position.y -= 6.0f;
-		else if (line.position.y < 0.0f) line.position.y += 6.0f;
+		if (line.position.z > 100.0f) line.position.z -= 105.0f;
+		else if (line.position.z < -5.0f) line.position.z += 105.0f;
+
+		// Y軸(上下)の相対範囲ループ (0.0 ～ 1.0)
+		if (line.baseYOffset > 1.0f) line.baseYOffset -= 1.0f;
+		else if (line.baseYOffset < 0.0f) line.baseYOffset += 1.0f;
+
+		// 実際のY座標を計算して更新
+		line.position.y = line.baseYOffset * windThickness;
 	}
 }
 
@@ -267,7 +279,7 @@ bool Pitcher::IsBallInWindArea() const
 {
 	// 流線の描画範囲に合わせて風の有効範囲を定義
 	if (ballWorldPosition.x < -100.0f || ballWorldPosition.x > 100.0f) return false;
-	if (ballWorldPosition.y < windHeight || ballWorldPosition.y > windHeight + 6.0f) return false;
+	if (ballWorldPosition.y < windHeight || ballWorldPosition.y > windHeight + windThickness) return false;
 	if (ballWorldPosition.z < -5.0f || ballWorldPosition.z > 95.0f) return false;
 
 	return true;
@@ -422,7 +434,7 @@ void Pitcher::DrawGUI()
 			ImGui::DragFloat(u8"変化が始まる距離", &breakStartDistance, 0.0f, 20.0f);
 
 			ImGui::Separator();
-			// 球種プリセット
+
 			// 球種プリセット
 			if (ImGui::Button(u8"Fastball (ストレート)"))
 			{
@@ -610,7 +622,11 @@ void Pitcher::DrawGUI()
 		// 風の強さの操作
 		ImGui::DragFloat("Wind Strength", &windStrength, 0.1f, 0.0f, 50.0f);
 
-		ImGui::DragFloat("Wind Height", &windHeight, 0.1f, 0.0f, 50.0f);
+		// 風の基本高さの操作
+		ImGui::DragFloat("Wind Height", &windHeight, 0.1f, -10.0f, 50.0f);
+
+		// 風の厚みの操作
+		ImGui::DragFloat("Wind Thickness", &windThickness, 0.1f, 0.1f, 100.0f);
 
 		// 流線の描画などに強さの変更を即時反映させるため、表示用に現在の風ベクトルも表示する
 		ImGui::Text("Current Wind Velocity: (%.2f, %.2f, %.2f)",
