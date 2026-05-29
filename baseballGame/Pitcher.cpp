@@ -113,6 +113,8 @@ void Pitcher::Initialize()
 	windDirectionSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	windDirectionSpriteRenderer = std::make_unique<sprite>(device, windDirectionSprite->texturePath.c_str());
+
+	windStrengthFontRenderer = std::make_unique<sprite>(device, L".\\resources\\fonts\\font6.png");
 }
 
 void Pitcher::Uninitialize() 
@@ -394,6 +396,27 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 			windDirectionSprite->size.x, windDirectionSprite->size.y,
 			windDirectionSprite->color.x, windDirectionSprite->color.y, windDirectionSprite->color.z, windDirectionSprite->color.w,
 			DirectX::XMConvertToDegrees(windDirectionSprite->rotation));
+
+		
+	}
+
+	if (windStrengthFontRenderer)
+	{
+		physx::PxVec3 windVec(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength);
+		float currentWindSpeed = windVec.magnitude();
+
+		char speedText[64];
+		snprintf(speedText, sizeof(speedText), "%.fm", currentWindSpeed);
+
+		// アイコンの座標に基づいてテキスト位置を決定
+		float textX = windDirectionSprite->position.x + 60.0f;
+		float textY = windDirectionSprite->position.y - 15.0f;
+
+		// 文字描画 (文字の幅と高さを適当なサイズで指定。例: 16x32 や 20x40 など適宜調整)
+		windStrengthFontRenderer->textout(rc.deviceContext, speedText,
+			textX, textY,
+			16.0f, 32.0f,
+			1.0f, 1.0f, 1.0f, 1.0f);
 	}
 }
 
