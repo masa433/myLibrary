@@ -10,6 +10,7 @@
 #include "RenderContext.h"
 #include "sprite.h"
 #include "ModelRenderer.h"
+#include "TextureManager.h"
 
 CONST LONG SCREEN_WIDTH{ 1280 };
 CONST LONG SCREEN_HEIGHT{ 720 };
@@ -116,12 +117,7 @@ public:
 
     float timeScale = 1.0f;
 
-    // ストライクゾーン表示用スプライト
-    std::unique_ptr<sprite> strikeZoneSprite;
-    bool showStrikeZoneImage = true;
-    DirectX::XMFLOAT2 spritePosition = { 560.0f, 330.0f };
-    DirectX::XMFLOAT2 spriteScale = { 0.2f, 0.25f };
-    DirectX::XMFLOAT4 spriteTint = { 1.0f, 1.0f, 1.0f, 1.0f };
+    TextureManager textureManager;
 
 	bool showPhysxDebug = true;
 

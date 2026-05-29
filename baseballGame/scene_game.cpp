@@ -91,8 +91,8 @@ void scene_game::initialize()
 	// ピッチャーの初期化
     Pitcher::Instance().Initialize();
 
-    //ストライクゾーンの初期化
-    strikeZoneSprite = std::make_unique<sprite>(device, L"./resources/sprite/strikeZone.png");
+    // テクスチャマネージャーの初期化
+    textureManager.Initialize(device, L"./resources/textures");
 
    
     // ポイントライト・スポットライトの初期位置設定
@@ -368,18 +368,6 @@ void scene_game::update(float elapsed_time)
 
 	ImGui::Checkbox("Show PhysX Debug", &showPhysxDebug);
 
-    // ストライクゾーン画像の制御
-    if (ImGui::CollapsingHeader("Strike Zone Image"))
-    {
-        ImGui::Checkbox("Show Image", &showStrikeZoneImage);
-        ImGui::DragFloat2("Screen Position", &spritePosition.x, 1.0f, 0.0f, 2000.0f);
-        ImGui::DragFloat2("Scale", &spriteScale.x, 0.01f, 0.1f, 5.0f);
-        ImGui::ColorEdit4("Tint", &spriteTint.x);
-
-        
-
-    }
-
     // タイムスケール制御
     if (ImGui::Begin("Time Control", nullptr, ImGuiWindowFlags_None))
     {
@@ -618,6 +606,8 @@ void scene_game::render(float elapsedTime)
     dc->CopyResource(dstRes, srcRes);
     srcRes->Release();
     dstRes->Release();
+
+    textureManager.Render(dc);
 }
 
 void scene_game::uninitialize()
@@ -626,6 +616,7 @@ void scene_game::uninitialize()
     Player::Instance().Uninitialize();
     stage::Instance().uninitialize();
     Pitcher::Instance().Uninitialize();
+    textureManager.Clear();
     Physics::Instance().Finalize();
 }
 
@@ -636,5 +627,7 @@ void scene_game::DrawGUI()
 
 	// ピッチャーのGUI描画
 	Pitcher::Instance().DrawGUI();
+
+    textureManager.DrawGUI();
 
 }

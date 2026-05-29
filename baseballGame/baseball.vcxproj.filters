@@ -37,6 +37,9 @@
     <ClCompile Include="texture.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
     <ClCompile Include="shader.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
@@ -160,6 +163,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="texture.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="shader.h">

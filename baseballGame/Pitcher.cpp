@@ -103,6 +103,16 @@ void Pitcher::Initialize()
 		line.phase = t * 0.4f;
 		windLines.push_back(line);
 	}
+
+	//スプライトの初期化
+	windDirectionSprite = std::make_unique<Sprite>();
+	windDirectionSprite->texturePath = L".\\resources\\textures\\windDirection.png";
+	windDirectionSprite->position = { 640.0f, 320.0f };
+	windDirectionSprite->size = { 100.0f, 70.0f };
+	windDirectionSprite->rotation = 0.0f;
+	windDirectionSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	windDirectionSpriteRenderer = std::make_unique<sprite>(device, windDirectionSprite->texturePath.c_str());
 }
 
 void Pitcher::Uninitialize() 
@@ -374,6 +384,17 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 		primitiveRenderer->AddVertex(start, color);
 		primitiveRenderer->AddVertex(end, color);
 	}
+
+	// 風向きスプライトの描画
+	if (windDirectionSprite && windDirectionSpriteRenderer)
+	{
+		windDirectionSprite->color.w = 0.8f; // 半透明にする
+		windDirectionSprite->rotation = atan2f(windDirection.x, windDirection.z); // 風向きに合わせて回転
+		windDirectionSpriteRenderer->render(rc.deviceContext, windDirectionSprite->position.x, windDirectionSprite->position.y,
+			windDirectionSprite->size.x, windDirectionSprite->size.y,
+			windDirectionSprite->color.x, windDirectionSprite->color.y, windDirectionSprite->color.z, windDirectionSprite->color.w,
+			DirectX::XMConvertToDegrees(windDirectionSprite->rotation));
+	}
 }
 
 void Pitcher::DrawGUI()
@@ -634,6 +655,19 @@ void Pitcher::DrawGUI()
 			windDirection.y * windStrength,
 			windDirection.z * windStrength);
 	}
+
+	//スプライトのデバッグ表示
+	if(ImGui::CollapsingHeader("Sprite Debug"))
+	{
+		if (windDirectionSprite)
+		{
+			ImGui::DragFloat2("Wind Direction Sprite Position", &windDirectionSprite->position.x, 1.0f, 0.0f, 1280.0f);
+			ImGui::DragFloat2("Wind Direction Sprite Size", &windDirectionSprite->size.x, 1.0f, 1.0f, 500.0f);
+			ImGui::DragFloat("Wind Direction Sprite Rotation", &windDirectionSprite->rotation, 1.0f, 0.0f, 360.0f);
+			ImGui::ColorEdit4("Wind Direction Sprite Color", &windDirectionSprite->color.x);
+		}
+	}
+
 	ImGui::End();
 #endif
 }
@@ -840,7 +874,7 @@ physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 		return physx::PxVec3(0.0f, -1200.0f * RPM_TO_RAD_PER_SEC, 2000.0f * RPM_TO_RAD_PER_SEC);
 
 	case PitchType::Shooter:  // サイドスピン最強
-		return physx::PxVec3(0.0f, 2000.0f * RPM_TO_RAD_PER_SEC, -500.0f * RPM_TO_RAD_PER_SEC);
+		return physx::PxVec3(500.0f * RPM_TO_RAD_PER_SEC, 1000.0f * RPM_TO_RAD_PER_SEC, -100.0f * RPM_TO_RAD_PER_SEC);
 
 	case PitchType::Knuckleball:  // ほぼ回転なし
 		return physx::PxVec3(50.0f * RPM_TO_RAD_PER_SEC, 50.0f * RPM_TO_RAD_PER_SEC, 50.0f * RPM_TO_RAD_PER_SEC);
@@ -913,68 +947,6 @@ void Pitcher::SelectPitchType()
 	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
 	selectedPitchType = PitchType::Fastball; // デフォルトはストレート
 
-	//6球種の選択確率を設定
-	//if(randomValue<= 0.2f) // 50%の確率でストレート
-	//{
-	//	selectedPitchType = PitchType::Fastball;
-	//}
-	//else if(randomValue<=0.4f) // 50%の確率で他の球種をランダムに選択
-	//{
-	//	selectedPitchType = PitchType::Slider; // ここではシンカーを選択
-	//}
-	//else if (randomValue <= 0.6f)
-	//{
-	//	selectedPitchType = PitchType::Curveball; // ここではカーブを選択
-	//}
-	//else if (randomValue <= 0.8f)
-	//{
-	//	selectedPitchType = PitchType::Changeup; // ここではチェンジアップを選択
-	//}
-	//else if (randomValue <= 1.0f)
-	//{
-	//	selectedPitchType = PitchType::Forkball; // ここではフォークを選択
-	//}
-	//7球種で選択する
-	/*if (randomValue <= 0.1f) 
-	{
-		selectedPitchType = PitchType::Fastball;
-	}
-	else if (randomValue <= 0.2f) 
-	{
-		selectedPitchType = PitchType::Slider;
-	}
-	else if (randomValue <= 0.3f) 
-	{
-		selectedPitchType = PitchType::Curveball;
-	}
-	else if (randomValue <= 0.4f) 
-	{
-		selectedPitchType = PitchType::Changeup;
-	}
-	else if (randomValue <= 0.5f) 
-	{
-		selectedPitchType = PitchType::Forkball;
-	}
-	else if(randomValue <= 0.6f)
-	{
-		selectedPitchType = PitchType::TwoSeam;
-	}
-	else if (randomValue <= 0.7f)
-	{
-		selectedPitchType = PitchType::Cutter;
-	}
-	else if(randomValue <= 0.8f)
-	{
-		selectedPitchType = PitchType::Sinker;
-	}
-	else if (randomValue <= 0.9f)
-	{
-		selectedPitchType = PitchType::Splitter;
-	}
-	else if (randomValue <= 1.0f)
-	{
-		selectedPitchType = PitchType::Shooter;
-	}*/
 	// 球種ごとの挙動を設定
 	switch (selectedPitchType)
 	{
@@ -1098,7 +1070,7 @@ void Pitcher::SelectPitchType()
 		horizontalBreak = -5.0f;  // 大きく右に曲がる
 		verticalBreak = -5.0f;   // 少し落ちる
 		ballSpeedKmh = 145.0f;    // 遅い
-		throwDirection.x = 0.03f;
+		throwDirection.x = 0.05f;
 		launchAngleDegrees = -1.0f;
 		ballAngle = { -0.2f, 0.0f, 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // 強いサイドスピン

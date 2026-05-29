@@ -9,6 +9,7 @@
 #include "physxManager.h"
 #include "ModelRenderer.h"
 #include <deque>
+#include "sprite.h"
 
 class Pitcher : public GameObject
 {
@@ -195,5 +196,18 @@ private:
 	float windStrength = 5.0f;
 	float windHeight = 0.0f; // 風の位置（時間経過で変化させるための変数）
 	float windThickness = 6.0f;// 風の線の厚み
+
+public:
+	//スプライト関連
+	struct Sprite
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+	std::unique_ptr<Sprite> windDirectionSprite;
+	std::unique_ptr<sprite> windDirectionSpriteRenderer;
 };
 
