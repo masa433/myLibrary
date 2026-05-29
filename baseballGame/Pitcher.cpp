@@ -108,12 +108,22 @@ void Pitcher::Initialize()
 	windDirectionSprite = std::make_unique<Sprite>();
 	windDirectionSprite->texturePath = L".\\resources\\textures\\windDirection.png";
 	windDirectionSprite->position = { 640.0f, 320.0f };
-	windDirectionSprite->size = { 100.0f, 70.0f };
+	windDirectionSprite->size = { 30, 50.0f };
 	windDirectionSprite->rotation = 0.0f;
 	windDirectionSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	windDirectionSpriteRenderer = std::make_unique<sprite>(device, windDirectionSprite->texturePath.c_str());
 
+	windGroundSprite = std::make_unique<Sprite>();
+	windGroundSprite->texturePath = L".\\resources\\textures\\ground.png";
+	windGroundSprite->position = { 640.0f, 320.0f };
+	windGroundSprite->size = { 100.0f, 50.0f };
+	windGroundSprite->rotation = 0.0f;
+	windGroundSprite->color = { 1.0f, 1.0f, 1.0f, 0.5f };
+
+	windGroundSpriteRenderer = std::make_unique<sprite>(device, windGroundSprite->texturePath.c_str());
+
+	//風速表示用のフォントの初期化
 	windStrengthFontRenderer = std::make_unique<sprite>(device, L".\\resources\\fonts\\font6.png");
 }
 
@@ -387,18 +397,22 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 		primitiveRenderer->AddVertex(end, color);
 	}
 
+	//グラウンドのスプライト描画
+	if (windGroundSprite && windGroundSpriteRenderer)
+	{
+		//windGroundSprite->color.w = 0.5f; // 半透明にする
+		windGroundSpriteRenderer->render(rc.deviceContext);
+	}
+
 	// 風向きスプライトの描画
 	if (windDirectionSprite && windDirectionSpriteRenderer)
 	{
 		windDirectionSprite->color.w = 0.8f; // 半透明にする
 		windDirectionSprite->rotation = atan2f(windDirection.x, windDirection.z); // 風向きに合わせて回転
-		windDirectionSpriteRenderer->render(rc.deviceContext, windDirectionSprite->position.x, windDirectionSprite->position.y,
-			windDirectionSprite->size.x, windDirectionSprite->size.y,
-			windDirectionSprite->color.x, windDirectionSprite->color.y, windDirectionSprite->color.z, windDirectionSprite->color.w,
-			DirectX::XMConvertToDegrees(windDirectionSprite->rotation));
-
-		
+		windDirectionSpriteRenderer->render(rc.deviceContext);
 	}
+
+	
 
 	if (windStrengthFontRenderer)
 	{
@@ -684,13 +698,63 @@ void Pitcher::DrawGUI()
 	{
 		if (windDirectionSprite)
 		{
-			ImGui::DragFloat2("Wind Direction Sprite Position", &windDirectionSprite->position.x, 1.0f, 0.0f, 1280.0f);
-			ImGui::DragFloat2("Wind Direction Sprite Size", &windDirectionSprite->size.x, 1.0f, 1.0f, 500.0f);
-			ImGui::DragFloat("Wind Direction Sprite Rotation", &windDirectionSprite->rotation, 1.0f, 0.0f, 360.0f);
-			ImGui::ColorEdit4("Wind Direction Sprite Color", &windDirectionSprite->color.x);
+			if (ImGui::DragFloat2("Wind Direction Sprite Position", &windDirectionSpriteRenderer->state.position.x, 1.0f, 0.0f, 1280.0f)) 
+			{
+				windDirectionSpriteRenderer->SaveState();
+			}
+			if (ImGui::DragFloat2("Wind Direction Sprite Size", &windDirectionSpriteRenderer->state.size.x, 1.0f, 1.0f, 500.0f))
+			{
+				windDirectionSpriteRenderer->SaveState();
+			}
+			if (ImGui::DragFloat("Wind Direction Sprite Rotation", &windDirectionSpriteRenderer->state.rotation, 1.0f, 0.0f, 360.0f))
+			{
+				windDirectionSpriteRenderer->SaveState();
+			}
+			if (ImGui::ColorEdit4("Wind Direction Sprite Color", &windDirectionSpriteRenderer->state.color.x))
+			{
+				windDirectionSpriteRenderer->SaveState();
+			}
+		}
+		ImGui::Separator();
+
+		if (windGroundSprite)
+		{
+			if (ImGui::DragFloat2("Wind Ground Sprite Position", &windGroundSpriteRenderer->state.position.x, 1.0f, 0.0f, 1280.0f))
+			{
+				windGroundSpriteRenderer->SaveState();
+			}
+			if (ImGui::DragFloat2("Wind Ground Sprite Size", &windGroundSpriteRenderer->state.size.x, 1.0f, 1.0f, 500.0f))
+			{
+				windGroundSpriteRenderer->SaveState();
+			}
+			if (ImGui::ColorEdit4("Wind Ground Sprite Color", &windGroundSpriteRenderer->state.color.x))
+			{
+				windGroundSpriteRenderer->SaveState();
+			}
+		}
+
+		// 最上位ビット(0x8000)が立っていれば「現在押されている」状態
+		bool isCtrlDown = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+		bool isZDown = (GetKeyState('Z') & 0x8000) != 0;
+
+		bool doUndo = ImGui::Button("Undo") ||
+			(isCtrlDown && isZDown);
+
+		if (doUndo) {
+			windDirectionSpriteRenderer->Undo();
+			windGroundSpriteRenderer->Undo();
+		}
+
+		bool isYDown = (GetKeyState('Y') & 0x8000) != 0;
+
+		bool doRedo = ImGui::Button("Redo") ||
+			(isCtrlDown && isYDown);
+
+		if (doRedo) {
+			windDirectionSpriteRenderer->Redo();
+			windGroundSpriteRenderer->Redo();
 		}
 	}
-
 	ImGui::End();
 #endif
 }

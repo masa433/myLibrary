@@ -177,3 +177,46 @@ void sprite::textout(ID3D11DeviceContext* immediate_context, std::string s,
 
 	}
 }
+
+// Undo・Redo用の関数
+void sprite::SaveState()
+{
+	undoStack.push_back(state);
+	if(undoStack.size() > MAX_UNDO)
+	{
+		undoStack.erase(undoStack.begin());
+	}
+	redoStack.clear();
+}
+
+void sprite::Undo()
+{
+	if(undoStack.empty())
+	{
+		return;
+	}
+	redoStack.push_back(state);
+	state = undoStack.back();
+	undoStack.pop_back();
+}
+
+void sprite::Redo()
+{
+	if(redoStack.empty())
+	{
+		return;
+	}
+	undoStack.push_back(state);
+	state = redoStack.back();
+	redoStack.pop_back();
+}
+
+// stateを使ったシンプルなrender
+void sprite::render(ID3D11DeviceContext* immediate_context)
+{
+	render(immediate_context,
+		state.position.x, state.position.y,
+		state.size.x, state.size.y,
+		state.color.x, state.color.y, state.color.z, state.color.w,
+		state.rotation);
+}

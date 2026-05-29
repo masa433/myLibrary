@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cwctype>
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 
 #include "Graphics.h"
 #include "RenderState.h"
@@ -23,6 +25,7 @@ void TextureManager::Initialize(ID3D11Device* device, const wchar_t* directory)
 	Clear();
 
 	std::filesystem::path root(directory);
+	layoutPath = (root / L"texture_layout.tsv").wstring();
 	if (!std::filesystem::exists(root))
 	{
 		return;
@@ -50,7 +53,10 @@ void TextureManager::Initialize(ID3D11Device* device, const wchar_t* directory)
 	if (!assets.empty())
 	{
 		selectedAsset = 0;
-		AddInstance(0);
+		if (!LoadLayout())
+		{
+			AddInstance(0);
+		}
 	}
 }
 
@@ -93,6 +99,12 @@ void TextureManager::Render(ID3D11DeviceContext* context)
 
 void TextureManager::DrawGUI()
 {
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.KeyCtrl && ImGui::IsKeyPressed('S', false))
+	{
+		lastMessage = SaveLayout() ? "Saved texture_layout.tsv" : "Failed to save texture_layout.tsv";
+	}
+
 	if (!ImGui::CollapsingHeader("Texture Manager"))
 	{
 		return;
@@ -120,6 +132,11 @@ void TextureManager::DrawGUI()
 		AddInstance(selectedAsset);
 	}
 	ImGui::SameLine();
+	if (ImGui::Button("Save"))
+	{
+		lastMessage = SaveLayout() ? "Saved texture_layout.tsv" : "Failed to save texture_layout.tsv";
+	}
+	ImGui::SameLine();
 	if (ImGui::Button("Duplicate") && selectedInstance >= 0 && selectedInstance < static_cast<int>(instances.size()))
 	{
 		instances.push_back(instances[selectedInstance]);
@@ -129,6 +146,10 @@ void TextureManager::DrawGUI()
 	if (ImGui::Button("Delete"))
 	{
 		RemoveSelected();
+	}
+	if (!lastMessage.empty())
+	{
+		ImGui::TextUnformatted(lastMessage.c_str());
 	}
 
 	ImGui::Separator();
@@ -185,6 +206,7 @@ void TextureManager::Clear()
 	assets.clear();
 	sprites.clear();
 	instances.clear();
+	lastMessage.clear();
 	selectedAsset = 0;
 	selectedInstance = -1;
 }
@@ -235,4 +257,126 @@ void TextureManager::RemoveSelected()
 	{
 		selectedInstance = (std::min)(selectedInstance, static_cast<int>(instances.size()) - 1);
 	}
+}
+
+bool TextureManager::SaveLayout() const
+{
+	if (layoutPath.empty())
+	{
+		return false;
+	}
+
+	std::ofstream file{ std::filesystem::path(layoutPath) };
+	if (!file)
+	{
+		return false;
+	}
+
+	file << "asset\tvisible\tx\ty\tw\th\trotation\tr\tg\tb\ta\n";
+	for (const TextureInstance& instance : instances)
+	{
+		if (instance.assetIndex < 0 || instance.assetIndex >= static_cast<int>(assets.size()))
+		{
+			continue;
+		}
+
+		file << assets[instance.assetIndex].name << '\t'
+			<< (instance.visible ? 1 : 0) << '\t'
+			<< instance.position.x << '\t'
+			<< instance.position.y << '\t'
+			<< instance.size.x << '\t'
+			<< instance.size.y << '\t'
+			<< instance.rotation << '\t'
+			<< instance.tint.x << '\t'
+			<< instance.tint.y << '\t'
+			<< instance.tint.z << '\t'
+			<< instance.tint.w << '\n';
+	}
+
+	return true;
+}
+
+bool TextureManager::LoadLayout()
+{
+	if (layoutPath.empty() || !std::filesystem::exists(layoutPath))
+	{
+		return false;
+	}
+
+	std::ifstream file{ std::filesystem::path(layoutPath) };
+	if (!file)
+	{
+		return false;
+	}
+
+	std::vector<TextureInstance> loadedInstances;
+	std::string line;
+	std::getline(file, line);
+
+	while (std::getline(file, line))
+	{
+		std::stringstream stream(line);
+		std::vector<std::string> columns;
+		std::string column;
+		TextureInstance instance{};
+
+		while (std::getline(stream, column, '\t'))
+		{
+			columns.push_back(column);
+		}
+		if (columns.size() != 11)
+		{
+			continue;
+		}
+
+		instance.assetIndex = FindAssetIndexByName(columns[0]);
+		if (instance.assetIndex < 0)
+		{
+			continue;
+		}
+
+		try
+		{
+			instance.visible = columns[1] != "0";
+			instance.position.x = std::stof(columns[2]);
+			instance.position.y = std::stof(columns[3]);
+			instance.size.x = std::stof(columns[4]);
+			instance.size.y = std::stof(columns[5]);
+			instance.rotation = std::stof(columns[6]);
+			instance.tint.x = std::stof(columns[7]);
+			instance.tint.y = std::stof(columns[8]);
+			instance.tint.z = std::stof(columns[9]);
+			instance.tint.w = std::stof(columns[10]);
+		}
+		catch (...)
+		{
+			continue;
+		}
+
+		loadedInstances.push_back(instance);
+	}
+
+	if (loadedInstances.empty())
+	{
+		return false;
+	}
+
+	instances = loadedInstances;
+	selectedInstance = 0;
+	selectedAsset = instances[0].assetIndex;
+	lastMessage = "Loaded texture_layout.tsv";
+	return true;
+}
+
+int TextureManager::FindAssetIndexByName(const std::string& name) const
+{
+	for (int i = 0; i < static_cast<int>(assets.size()); ++i)
+	{
+		if (assets[i].name == name)
+		{
+			return i;
+		}
+	}
+
+	return -1;
 }
