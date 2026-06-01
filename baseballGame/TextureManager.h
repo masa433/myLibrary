@@ -37,15 +37,10 @@ private:
 	void AddInstance(int assetIndex);
 	void MoveSelected(int direction);
 	void RemoveSelected();
-	bool SaveLayout() const;
-	bool LoadLayout();
-	int FindAssetIndexByName(const std::string& name) const;
 
 	std::vector<TextureAsset> assets;
 	std::vector<std::unique_ptr<sprite>> sprites;
 	std::vector<TextureInstance> instances;
-	std::wstring layoutPath;
-	std::string lastMessage;
 	int selectedAsset = 0;
 	int selectedInstance = -1;
 };

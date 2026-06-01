@@ -209,9 +209,7 @@ public:
 	};
 	std::unique_ptr<Sprite> windDirectionSprite;
 	std::unique_ptr<sprite> windDirectionSpriteRenderer;
-	std::unique_ptr<sprite> windStrengthFontRenderer;
 
-	std::unique_ptr<Sprite> windGroundSprite;
-	std::unique_ptr<sprite> windGroundSpriteRenderer;
+	std::unique_ptr<sprite> windStrengthFontRenderer;
 };
 
