@@ -176,6 +176,8 @@ public:
 		void SetBallHitPosition(const DirectX::XMFLOAT3& pos) { ballHitPosition = pos; }
 		const DirectX::XMFLOAT3& GetBallHitPosition() const { return ballHitPosition; }
 
+		const DirectX::XMFLOAT3 GetWindVector() const { return DirectX::XMFLOAT3(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength); }
+
 		private:
 			// ===== êVãKí«â¡ =====
 			physx::PxVec3 GetSpinAxisFromPitchType() const;
@@ -209,7 +211,8 @@ public:
 	};
 	std::unique_ptr<Sprite> windDirectionSprite;
 	std::unique_ptr<sprite> windDirectionSpriteRenderer;
-
+	std::unique_ptr<Sprite> windGroundSprite;
+	std::unique_ptr<sprite> windGroundSpriteRenderer;
 	std::unique_ptr<sprite> windStrengthFontRenderer;
 };
 

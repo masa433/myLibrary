@@ -560,11 +560,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 				// ===== ボール初速の上限設定（180 km/h） =====
 				float ballSpeed = ballVelocity.magnitude();
-				if (ballSpeed > 50.0f)  // 180 km/h ≈ 50.0 m/s
-				{
-					ballVelocity = (ballVelocity / ballSpeed) * 50.0f;
-					ballSpeed = 50.0f;
-				}
+
 
 				float batSpeed = batVelocity.magnitude();
 
@@ -679,7 +675,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 				if (physSpeed > 1e-3f)
 				{
-					float targetSpeed = (std::min)(estimatedExitVelocity, physSpeed * 0.8f);
+					float targetSpeed = (std::min)(estimatedExitVelocity, physSpeed * 1.0f);
 					newBallVelocity *= (targetSpeed / physSpeed);
 				}
 				else
@@ -719,35 +715,160 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					}
 				}
 
-				
+
+				//バレルゾーンの設定
+				//打球速度が158キロ以上かつ打球角度が26度～30度の範囲ならバレルゾーンとする
+				bool isBarrelZone = (estimatedExitVelocity >= 43.89f) && (launchAngleDeg >= 26.0f && launchAngleDeg <= 30.0f);
+				if (isBarrelZone)
+				{
+					hitResult = "バレルゾーン！";
+				}
+
+				//空気抵抗・風・マグヌスを考慮した落下点予測
+				physx::PxVec3 predictedLandingPoint = hitPos;
+				{
+					physx::PxVec3 pPos = hitPos;
+					physx::PxVec3 pVel = newBallVelocity;
+					physx::PxVec3 pSpin = spinAxis * angularVelocityRadPerSec;
+
+					DirectX::XMFLOAT3 windDX = Pitcher::Instance().GetWindVector();
+					physx::PxVec3 windVec(windDX.x, windDX.y, windDX.z);
+
+					float dt = 0.01f; // シミュレーションの時間刻み
+					float timeLimit = 10.0f; // 最大シミュレーション時間
+					float elapsedTime = 0.0f;
+
+					const float AIR_DENSITY = 1.225f; // kg/m^3
+					const float BALL_DENSITY_RADIUS = 0.0365f; // 投影面積用の半径
+					const float BALL_AREA = PI * BALL_DENSITY_RADIUS * BALL_DENSITY_RADIUS; // 投影面積
+					const float DRAG_COEFF = 0.41f; // 野球ボールの標準抗力係数
+					const float GRAVITY = -9.81f;
+
+					physx::PxScene* scene = ballCollider->getScene();
+
+					// 地面、またはスタンド等に当たるまでループ
+					while (elapsedTime < timeLimit)
+					{
+						// --- A. 物理挙動シミュレーション（次の移動先を先に計算） ---
+						physx::PxVec3 relativeVel = pVel - windVec;
+						float relativeSpeed = relativeVel.magnitude();
+						physx::PxVec3 acceleration(0.0f, GRAVITY, 0.0f);
+
+						if (relativeSpeed > 0.0f)
+						{
+							float dragMag = 0.5f * AIR_DENSITY * relativeSpeed * relativeSpeed * DRAG_COEFF * BALL_AREA;
+							physx::PxVec3 dragForce = -relativeVel.getNormalized() * dragMag;
+							acceleration += dragForce / BALL_MASS;
+
+							float angularSpeed = pSpin.magnitude();
+							if (angularSpeed > 0.0f)
+							{
+								float spinParameter = (BALL_DENSITY_RADIUS * angularSpeed) / relativeSpeed;
+								float liftCoeff = 1.5f * spinParameter;
+								if (liftCoeff > 0.4f) liftCoeff = 0.4f;
+
+								float magnusMag = 0.5f * AIR_DENSITY * relativeSpeed * relativeSpeed * liftCoeff * BALL_AREA;
+								physx::PxVec3 magnusDir = pSpin.cross(relativeVel);
+								if (magnusDir.magnitudeSquared() > 1e-4f)
+								{
+									magnusDir.normalize();
+									acceleration += (magnusDir * magnusMag) / BALL_MASS;
+								}
+							}
+						}
+
+						// 次のステップの速度と位置を仮計算
+						physx::PxVec3 nextVel = pVel + acceleration * dt;
+						physx::PxVec3 nextPos = pPos + nextVel * dt;
+
+						// ---  PhysXレイキャストによる本物のコライダー衝突判定 ---
+						if (scene)
+						{
+							physx::PxVec3 rayDir = nextPos - pPos;
+							float rayDistance = rayDir.magnitude();
+
+							if (rayDistance > 1e-4f)
+							{
+								rayDir.normalize();
+								physx::PxRaycastBuffer hitBuffer;
+
+								// 現在地(pPos)から移動先(nextPos)の間に何かコライダーがあるか光線を飛ばす
+								
+								if (scene->raycast(pPos, rayDir, rayDistance, hitBuffer))
+								{
+									physx::PxActor* hitActor = hitBuffer.block.actor;
+									if (hitActor && hitActor->getName())
+									{
+										std::string actorName = hitActor->getName();
+
+										// 名前が "Ground" または "Stand" (フェンスやスタンド) ならそこで飛行終了
+										// ※プログラムに合わせて "Wall" や "Fence" などを追加してください
+										if (actorName == "Ground" || actorName == "Stand")
+										{
+											pPos = hitBuffer.block.position; // 衝突した正確な座標を代入
+											break;
+										}
+									}
+								}
+							}
+						}
+
+						// 衝突がなければ、仮計算した次の状態を本採用してループを継続
+						pVel = nextVel;
+						pPos = nextPos;
+						elapsedTime += dt;
+					}
+
+					// ループを抜けた最終座標を、落下点として保存
+					predictedLandingPoint = pPos;
+
+				}
+
+
+
 				// ===== 7. 速度をキューに登録 =====
 				{
 					// 制限後の初速を保存
 					float limitedBallSpeedKmh = ballVelocity.magnitude() * 3.6f;
 
 					std::lock_guard<std::mutex> lock(queueMutex);
-					velocityUpdateQueue.push([ballCollider, newBallVelocity, spinAxis, angularVelocityRadPerSec,
-						limitedBallSpeedKmh, batSpeed, launchAngleDeg, hitDirectionAngleDeg, hitResult]() {
+					// キャプチャリストに predictedLandingPoint を追加
+					velocityUpdateQueue.push([ballCollider, batCollider, newBallVelocity, spinAxis, angularVelocityRadPerSec,
+						limitedBallSpeedKmh, batSpeed, launchAngleDeg, hitDirectionAngleDeg, hitResult, predictedLandingPoint]() {
 							ballCollider->setLinearVelocity(newBallVelocity);
 							ballCollider->setAngularVelocity(spinAxis * angularVelocityRadPerSec);
 							ballCollider->setLinearDamping(0.0f);
 							ballCollider->setAngularDamping(0.0f);
+
+							// ===== バットの当たり判定自体を無効化 =====
+							if (batCollider)
+							{
+								physx::PxShape* shape = nullptr;
+								if (batCollider->getShapes(&shape, 1))
+								{
+									shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+								}
+							}
 
 							// ===== デバッグ出力（速度設定直後） =====
 #ifdef _DEBUG
 							float exitVelocityKmh = newBallVelocity.magnitude() * 3.6f;
 							float spinRpm = (angularVelocityRadPerSec * 60.0f) / (2.0f * 3.14159265359f);
 
+							// 打球の飛距離（初期位置からの水平距離）を計算
+							DirectX::XMFLOAT3 hitPosPhysX = Pitcher::Instance().GetBallHitPosition();
+							float diffX = predictedLandingPoint.x - hitPosPhysX.x;
+							float diffZ = predictedLandingPoint.z - hitPosPhysX.z;
+							float predictedDistance = std::sqrt(diffX * diffX + diffZ * diffZ);
+
 							char debugMessage[512];
 							snprintf(debugMessage, sizeof(debugMessage),
-								"=== バット衝突 ===\nボール初速: %.1f km/h\nバット速度: %.1f km/h\n打球速度: %.1f km/h\n打ち出し角度(上下): %.1f°\n打球方向(左右): %.1f° [%s]\n回転: %.0f rpm\n",
-								limitedBallSpeedKmh, batSpeed * 3.6f, exitVelocityKmh, launchAngleDeg, hitDirectionAngleDeg, hitResult, spinRpm);
+								"=== バット衝突 ===\nボール初速: %.1f km/h\nバット速度: %.1f km/h\n打球速度: %.1f km/h\n打ち出し角度(上下): %.1f°\n打球方向(左右): %.1f° [%s]\n回転: %.0f rpm\n【予測飛距離】: %.1f m (X: %.1f, Z: %.1f)\n",
+								limitedBallSpeedKmh, batSpeed * 3.6f, exitVelocityKmh, launchAngleDeg, hitDirectionAngleDeg, hitResult, spinRpm, predictedDistance, predictedLandingPoint.x, predictedLandingPoint.z);
 							OutputDebugStringA(debugMessage);
 #endif
 						});
 				}
-
-				
 			}
 		}
 
@@ -803,6 +924,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					});
 			}
 		}
+
 
 		//ボールとフェンスの衝突を検知
 		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stand") ||

@@ -130,7 +130,7 @@ void Player::Initialize()
 
         // 質量の設定
 		//pxBatRigidBody->setMass(0.9f); // バットの質量を設定
-        physx::PxRigidBodyExt::updateMassAndInertia(*pxBatRigidBody, 0.9f);
+        physx::PxRigidBodyExt::setMassAndUpdateInertia(*pxBatRigidBody, 0.9f);
 
         //シーンに剛体を追加
         pxScene->addActor(*pxBatRigidBody);
@@ -641,6 +641,20 @@ void Player::ChangeState(State newState)
     {
         current_animation_index = new_index;
         animation_time = 0.0f;  // アニメーション時間をリセット
+    }
+
+    // 構えに戻った際、またはスイングを開始した際に当たり判定を復活させる
+    if (newState == State::BattingIdle)
+    {
+        if (pxBatRigidBody)
+        {
+            physx::PxShape* shape = nullptr;
+            if (pxBatRigidBody->getShapes(&shape, 1))
+            {
+                // 当たり判定を再度有効にする
+                shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+            }
+        }
     }
 }
 

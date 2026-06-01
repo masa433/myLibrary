@@ -40,7 +40,7 @@ void Pitcher::Initialize()
 	ballDebugRadius = 0.037f; // デバッグ用の半径
 	//ballDebugRadius = 0.2f; // デバッグ用の半径を大きくして見やすくする
 	windThickness = 50.0f;// 風の影響を受けるエリアの厚さ
-	windHeight = 10.0f;// 風の影響を受けるエリアの高さ
+	windHeight = 30.0f;// 風の影響を受けるエリアの高さ
 
 	//rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
 
@@ -70,8 +70,7 @@ void Pitcher::Initialize()
 		ballCollider->attachShape(*ballShape);
 
 		// ボールの質量を設定
-		//ballCollider->setMass(0.145f); // 野球の平均的な質量は約145グラム
-		physx::PxRigidBodyExt::updateMassAndInertia(*ballCollider, 0.145f); // 質量をスケーリングに基づいて設定
+		physx::PxRigidBodyExt::setMassAndUpdateInertia(*ballCollider, 0.145f); // 野球の平均的な質量は約145グラム
 
 		// 重力を有効化
 		//ballCollider->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
@@ -107,12 +106,21 @@ void Pitcher::Initialize()
 	//スプライトの初期化
 	windDirectionSprite = std::make_unique<Sprite>();
 	windDirectionSprite->texturePath = L".\\resources\\textures\\windDirection.png";
-	windDirectionSprite->position = { 640.0f, 320.0f };
-	windDirectionSprite->size = { 100.0f, 70.0f };
+	windDirectionSprite->position = { 1150.0f, 100.0f };
+	windDirectionSprite->size = { 50.0f, 70.0f };
 	windDirectionSprite->rotation = 0.0f;
 	windDirectionSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	windDirectionSpriteRenderer = std::make_unique<sprite>(device, windDirectionSprite->texturePath.c_str());
+
+	windGroundSprite = std::make_unique<Sprite>();
+	windGroundSprite->texturePath = L".\\resources\\textures\\ground.png";
+	windGroundSprite->position = { 1100.0f, 100.0f };
+	windGroundSprite->size = { 150.0f, 100.0f };
+	windGroundSprite->rotation = 0.0f;
+	windGroundSprite->color = { 1.0f, 1.0f, 1.0f, 0.9f };
+
+	windGroundSpriteRenderer = std::make_unique<sprite>(device, windGroundSprite->texturePath.c_str());
 
 	windStrengthFontRenderer = std::make_unique<sprite>(device, L".\\resources\\fonts\\font6.png");
 }
@@ -301,6 +309,14 @@ bool Pitcher::IsBallInWindArea() const
 void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer) 
 {
 	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
+	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	RenderState* renderState = Graphics::Instance().GetRenderState();
+
+	// ← 最初にモデル用の深度ステートを設定
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+
+
 
 	pitcher->render(rc.deviceContext, transform, animated_nodes);
 	if(isBallThrown)
@@ -387,10 +403,20 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 		primitiveRenderer->AddVertex(end, color);
 	}
 
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestOnly), 0); // 書き込みなし
+
+	if (windGroundSprite && windGroundSpriteRenderer)
+	{
+		windGroundSpriteRenderer->render(rc.deviceContext, windGroundSprite->position.x, windGroundSprite->position.y,
+			windGroundSprite->size.x, windGroundSprite->size.y,
+			windGroundSprite->color.x, windGroundSprite->color.y, windGroundSprite->color.z, windGroundSprite->color.w,
+			0.0f);
+	}
+
 	// 風向きスプライトの描画
 	if (windDirectionSprite && windDirectionSpriteRenderer)
 	{
-		windDirectionSprite->color.w = 0.8f; // 半透明にする
 		windDirectionSprite->rotation = atan2f(windDirection.x, windDirection.z); // 風向きに合わせて回転
 		windDirectionSpriteRenderer->render(rc.deviceContext, windDirectionSprite->position.x, windDirectionSprite->position.y,
 			windDirectionSprite->size.x, windDirectionSprite->size.y,
@@ -410,7 +436,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 
 		// アイコンの座標に基づいてテキスト位置を決定
 		float textX = windDirectionSprite->position.x + 60.0f;
-		float textY = windDirectionSprite->position.y - 15.0f;
+		float textY = windDirectionSprite->position.y + 15.0f;
 
 		// 文字描画 (文字の幅と高さを適当なサイズで指定。例: 16x32 や 20x40 など適宜調整)
 		windStrengthFontRenderer->textout(rc.deviceContext, speedText,
@@ -418,6 +444,10 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 			16.0f, 32.0f,
 			1.0f, 1.0f, 1.0f, 1.0f);
 	}
+
+	// 描画後に元に戻す
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 }
 
 void Pitcher::DrawGUI()
@@ -619,35 +649,7 @@ void Pitcher::DrawGUI()
 	{
 		ImGui::DragFloat("Ball Debug Radius", &ballDebugRadius, 0.05f, 0.05f, 5.0f, "%.2f");
 	}
-	if (ImGui::CollapsingHeader("Ball Rotation"))
-	{
-		// 角速度（rad/s）からRPMに変換して表示・操作
-		const float RAD_PER_SEC_TO_RPM = 60.0f / (2.0f * 3.14159265f);
-		const float RPM_TO_RAD_PER_SEC = (2.0f * 3.14159265f) / 60.0f;
-
-		// 各軸のRPMを計算
-		float rpmX = rotationSpeed.x * RAD_PER_SEC_TO_RPM;
-		float rpmY = rotationSpeed.y * RAD_PER_SEC_TO_RPM;
-		float rpmZ = rotationSpeed.z * RAD_PER_SEC_TO_RPM;
-
-		ImGui::Text("Spin RPM:");
-		bool rpmChanged = false;
-		rpmChanged |= ImGui::DragFloat(u8"X軸RPM (サイド/ジャイロ)", &rpmX, 10.0f, -4000.0f, 4000.0f, "%.0f RPM");
-		rpmChanged |= ImGui::DragFloat(u8"Y軸RPM (フリスビー/ジャイロ)", &rpmY, 10.0f, -4000.0f, 4000.0f, "%.0f RPM");
-		rpmChanged |= ImGui::DragFloat(u8"Z軸RPM (バック/トップスピン)", &rpmZ, 10.0f, -4000.0f, 4000.0f, "%.0f RPM");
-
-		// 合計の回転数を表示
-		float totalRpm = std::sqrt(rpmX * rpmX + rpmY * rpmY + rpmZ * rpmZ);
-		ImGui::Text(u8"総回転数: %.0f RPM", totalRpm);
-
-		if (rpmChanged)
-		{
-			rotationSpeed.x = rpmX * RPM_TO_RAD_PER_SEC;
-			rotationSpeed.y = rpmY * RPM_TO_RAD_PER_SEC;
-			rotationSpeed.z = rpmZ * RPM_TO_RAD_PER_SEC;
-		}
-	}
-
+	
 	if (ImGui::CollapsingHeader("Wind Settings"))
 	{
 		// 風向の操作
@@ -688,6 +690,13 @@ void Pitcher::DrawGUI()
 			ImGui::DragFloat2("Wind Direction Sprite Size", &windDirectionSprite->size.x, 1.0f, 1.0f, 500.0f);
 			ImGui::DragFloat("Wind Direction Sprite Rotation", &windDirectionSprite->rotation, 1.0f, 0.0f, 360.0f);
 			ImGui::ColorEdit4("Wind Direction Sprite Color", &windDirectionSprite->color.x);
+		}
+		ImGui::Separator();
+		if(windGroundSprite)
+		{
+			ImGui::DragFloat2("Wind Ground Sprite Position", &windGroundSprite->position.x, 1.0f, 0.0f, 1280.0f);
+			ImGui::DragFloat2("Wind Ground Sprite Size", &windGroundSprite->size.x, 1.0f, 1.0f, 500.0f);
+			ImGui::ColorEdit4("Wind Ground Sprite Color", &windGroundSprite->color.x);
 		}
 	}
 
@@ -929,37 +938,56 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 	physx::PxVec3 windVec(0.0f, 0.0f, 0.0f);
 	if (IsBallInWindArea())
 	{
-		windVec = physx::PxVec3(windDirection.x * windStrength, windDirection.y * windStrength * windHeight, windDirection.z * windStrength);
+		windVec = physx::PxVec3(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength);
 	}
 
 	//空気抵抗を適用
 
-	//ボールの現在の速度
 	physx::PxVec3 velocity = ballCollider->getLinearVelocity();
-
-	// 相対速度（ボールの速度 - 風の速度）を計算
 	physx::PxVec3 relativeVelocity = velocity - windVec;
 	float relativeSpeed = relativeVelocity.magnitude();
-	const float airDensity = 1.225f; //空気密度
-	const float ballRadius = 0.0365f; // ボールの半径（メートル）
-	const float ballCrossSectionalArea = DirectX::XM_PI * (ballRadius * ballRadius); // ボールの断面積
-	const float dragCoefficient = 0.47f; // 球の抗力係数
 
-	//相対速度に基づく空気抵抗力を計算
-	const float dragForceMagnitude = -0.5f * airDensity * relativeSpeed * relativeSpeed * dragCoefficient * ballCrossSectionalArea;
-	const float forceMultiplier = 0.00015f; // 力のスケーリング
-	physx::PxVec3 dragForce = relativeVelocity;
-	if (relativeSpeed > 0.0f) {
-		dragForce.normalize();
-		dragForce *= dragForceMagnitude * forceMultiplier;
+	const float airDensity = 1.225f;
+	const float ballRadius = 0.0365f;
+	const float ballArea = DirectX::XM_PI * ballRadius * ballRadius;
+	const float dragCoeff = 0.41f;
+
+	//空気抵抗
+	if (relativeSpeed > 0.0f)
+	{
+		float dragMag = 0.5f * airDensity * relativeSpeed * relativeSpeed * dragCoeff * ballArea;
+		physx::PxVec3 dragForce = -relativeVelocity.getNormalized() * dragMag;
 		ballCollider->addForce(dragForce, physx::PxForceMode::eFORCE);
 	}
 
-	// マグヌス効果を追加
-	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
-	float magnusCoefficient = 0.00000003f; // マグヌス効果を調整
-	physx::PxVec3 magnusForce = angularVelocity.cross(relativeVelocity) * magnusCoefficient;
-	ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
+	// --- マグヌス効果を適用 ---
+	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity(); // 単位: rad/s
+	float angularSpeed = angularVelocity.magnitude(); // 回転速度 (rad/s)
+
+	if (relativeSpeed > 0.0f && angularSpeed > 0.0f)
+	{
+		// 1. スピンパラメータ S の計算 (無次元量)
+		// ボールの表面速度と球速の比率。野球では通常 0.0 〜 0.4 の間に収まります
+		float spinParameter = (ballRadius * angularSpeed) / relativeSpeed;
+
+		// 2. 揚力係数 (Cl) の計算 (Nathanの実験式などをベースにした近似)
+		// おおむね Cl = 1.5 * S 付近に
+		float liftCoeff = 1.5f * spinParameter;
+		if (liftCoeff > 0.4f) liftCoeff = 0.4f; // 実物の野球ボールの限界値付近でキャップ
+
+		// 3. マグヌス力の大きさを計算
+		// 公式: Fm = 0.5 * rho * v^2 * Cl * A
+		float magnusMag = 0.5f * airDensity * relativeSpeed * relativeSpeed * liftCoeff * ballArea;
+
+		// 4. マグヌス力の向きを計算 (回転軸と進行方向のクロス積)
+		physx::PxVec3 magnusDir = angularVelocity.cross(relativeVelocity);
+		if (magnusDir.magnitudeSquared() > 0.0f)
+		{
+			magnusDir.normalize();
+			physx::PxVec3 magnusForce = magnusDir * magnusMag;
+			ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
+		}
+	}
 
 }
 

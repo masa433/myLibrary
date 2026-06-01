@@ -92,7 +92,7 @@ void scene_game::initialize()
     Pitcher::Instance().Initialize();
 
     // テクスチャマネージャーの初期化
-    textureManager.Initialize(device, L"./resources/textures");
+    textureManager.Initialize(device, L"./resources/texture");
 
    
     // ポイントライト・スポットライトの初期位置設定
