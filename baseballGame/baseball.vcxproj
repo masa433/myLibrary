@@ -197,6 +197,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Ball.cpp" />
     <ClCompile Include="BasicShader.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="camera_controller.cpp" />
@@ -241,6 +242,7 @@
     <ClCompile Include="ToonShader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Ball.h" />
     <ClInclude Include="BasicShader.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="camera_controller.h" />

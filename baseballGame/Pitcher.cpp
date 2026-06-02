@@ -32,55 +32,7 @@ void Pitcher::Initialize()
 	// アニメーション用のノードをコピー
 	animated_nodes = pitcher->nodes;
 
-	ball = std::make_unique<gltf_model>(device, ".\\resources\\ball\\ball.glb");
-	ballPosition = { 0.0f,0.0f,0.05f };
-	ballScale = { 1.0f,1.0f,1.0f };
-	ballAngle = { 0.0f,DirectX::XMConvertToRadians(90.0f),0.0f };
-
-	ballDebugRadius = 0.037f; // デバッグ用の半径
-	//ballDebugRadius = 0.2f; // デバッグ用の半径を大きくして見やすくする
-	windThickness = 50.0f;// 風の影響を受けるエリアの厚さ
-	windHeight = 30.0f;// 風の影響を受けるエリアの高さ
-
-	//rotationSpeed = { 0.0f,0.0f,-150.0f };//バックスピン
-
-	{
-		// PhysXのボールコライダーを作成
-		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
-		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
-		physx::PxScene* pxScene = Physics::Instance().GetScene();
-
-		//pxMaterial->setRestitution(0.6f);// 反発係数を設定
-		//pxMaterial->setDynamicFriction(0.4f);// 動摩擦係数を設定
-		//pxMaterial->setStaticFriction(0.5f);// 静止摩擦係数を設定
-		pxBallMaterial = pxPhysics->createMaterial(0.4f, 0.3f, 0.42f); // ボール専用のマテリアルとして保存
-		//pxMaterial->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
-
-		// ボールの球状コライダーを作成
-		physx::PxSphereGeometry ballGeometry(ballDebugRadius);
-		physx::PxTransform ballTransform(
-			physx::PxVec3(ballWorldPosition.x, ballWorldPosition.y, ballWorldPosition.z)
-		);
-
-		ballCollider = pxPhysics->createRigidDynamic(ballTransform);
-		_ASSERT_EXPR(ballCollider != nullptr, "Failed to create ball collider");
-
-		// ボールのコライダーに形状を追加
-		physx::PxShape* ballShape = pxPhysics->createShape(ballGeometry, *pxBallMaterial);
-		ballCollider->attachShape(*ballShape);
-
-		// ボールの質量を設定
-		physx::PxRigidBodyExt::setMassAndUpdateInertia(*ballCollider, 0.145f); // 野球の平均的な質量は約145グラム
-
-		// 重力を有効化
-		//ballCollider->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
-
-		// シーンに追加
-		pxScene->addActor(*ballCollider);
-
-		// 解放
-		ballShape->release();
-	}
+	Ball::Instance().Initialize();
 
 	// 風表現用の流線を生成
 	windLines.clear();
@@ -102,6 +54,9 @@ void Pitcher::Initialize()
 		line.phase = t * 0.4f;
 		windLines.push_back(line);
 	}
+
+	windHeight = 20.0f; // 風の流線の高さ
+	windThickness = 50.0f; // 風の流線の厚み
 
 	//スプライトの初期化
 	windDirectionSprite = std::make_unique<Sprite>();
@@ -127,8 +82,7 @@ void Pitcher::Initialize()
 
 void Pitcher::Uninitialize() 
 {
-	PX_RELEASE(ballCollider);
-	PX_RELEASE(pxBallMaterial);
+	Ball::Instance().Uninitialize();
 }
 
 // 更新
@@ -189,7 +143,7 @@ void Pitcher::Update(float elapsedTime)
 			OutputDebugStringA("Strike!\n");
 			hasBeenJudged = true; // 判定済みフラグを設定
 		}
-		else if (ballWorldPosition.z < strikeZonePosition.z + strikeZoneSize.z / 2.0f)
+		else if (Ball::Instance().GetWorldPosition().z < strikeZonePosition.z + strikeZoneSize.z / 2.0f)
 		{
 			// ボールがストライクゾーン外を通過した場合
 			OutputDebugStringA("Ball!\n");
@@ -201,7 +155,7 @@ void Pitcher::Update(float elapsedTime)
 	{
 		throwCounter += elapsedTime; // 投球カウンターを更新
 
-		if (!hasReachedZero && ballWorldPosition.z <= 0.0f)
+		if (!hasReachedZero && Ball::Instance().GetWorldPosition().z <= 0.0f)
 		{
 			hasReachedZero = true; // z = 0.0f に到達したことを記録
 			char debugMessage[128];
@@ -217,7 +171,7 @@ void Pitcher::Update(float elapsedTime)
 		if (trailRecordTimer >= TrailRecordInterval)
 		{
 			trailRecordTimer = 0.0f;
-			ballTrail.push_back(ballWorldPosition);
+			ballTrail.push_back(Ball::Instance().GetWorldPosition());
 			if (ballTrail.size() > MaxTrailLength)
 			{
 				ballTrail.pop_front();
@@ -231,7 +185,7 @@ void Pitcher::Update(float elapsedTime)
 	}
 
 	// ボールが地面に落ちたらリセット
-	if (ballWorldPosition.y < 0.0f)
+	if (Ball::Instance().GetWorldPosition().y < 0.0f)
 	{
 		isBallThrown = false;
 		hasBeenJudged = false; // 判定フラグをリセット
@@ -266,16 +220,7 @@ void Pitcher::Update(float elapsedTime)
 
 void Pitcher::UpdateBallCollider()
 {
-	if (!ballCollider) return;
-
-	// ボールのスケールを更新
-	physx::PxShape* ballShape;
-	ballCollider->getShapes(&ballShape, 1);
-
-	// コライダーのスケールを更新
-	physx::PxSphereGeometry ballGeometry(ballDebugRadius);
-	ballShape->setGeometry(ballGeometry);
-
+	Ball::Instance().UpdateCollider();
 }
 
 bool Pitcher::IsBallInStrikeZone() const
@@ -290,17 +235,17 @@ bool Pitcher::IsBallInStrikeZone() const
 	float strikeZoneMaxZ = strikeZonePosition.z + strikeZoneSize.z / 2.0f + 0.3f + tolerance;
 
 	// ボールがストライクゾーン内にあるかを判定
-	return (ballWorldPosition.x >= strikeZoneMinX && ballWorldPosition.x <= strikeZoneMaxX) &&
-		(ballWorldPosition.y >= strikeZoneMinY && ballWorldPosition.y <= strikeZoneMaxY) &&
-		(ballWorldPosition.z >= strikeZoneMinZ && ballWorldPosition.z <= strikeZoneMaxZ);
+	return (Ball::Instance().GetWorldPosition().x >= strikeZoneMinX && Ball::Instance().GetWorldPosition().x <= strikeZoneMaxX) &&
+		(Ball::Instance().GetWorldPosition().y >= strikeZoneMinY && Ball::Instance().GetWorldPosition().y <= strikeZoneMaxY) &&
+		(Ball::Instance().GetWorldPosition().z >= strikeZoneMinZ && Ball::Instance().GetWorldPosition().z <= strikeZoneMaxZ);
 }
 
 bool Pitcher::IsBallInWindArea() const
 {
 	// 流線の描画範囲に合わせて風の有効範囲を定義
-	if (ballWorldPosition.x < -100.0f || ballWorldPosition.x > 100.0f) return false;
-	if (ballWorldPosition.y < windHeight || ballWorldPosition.y > windHeight + windThickness) return false;
-	if (ballWorldPosition.z < -5.0f || ballWorldPosition.z > 95.0f) return false;
+	if (Ball::Instance().GetWorldPosition().x < -100.0f || Ball::Instance().GetWorldPosition().x > 100.0f) return false;
+	if (Ball::Instance().GetWorldPosition().y < windHeight || Ball::Instance().GetWorldPosition().y > windHeight + windThickness) return false;
+	if (Ball::Instance().GetWorldPosition().z < -5.0f || Ball::Instance().GetWorldPosition().z > 95.0f) return false;
 
 	return true;
 }
@@ -319,14 +264,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 
 
 	pitcher->render(rc.deviceContext, transform, animated_nodes);
-	if(isBallThrown)
-	{
-		ball->render(rc.deviceContext, ballWorldTransform, {});
-	}
-	else 
-	{
-		ball->render(rc.deviceContext, ballTransform, {});
-	}
+	Ball::Instance().Render(rc, renderer, isBallThrown);
 
 	// ShapeRenderer をボールに関連付けて描画
 	ShapeRenderer* shapeRenderer = Graphics::Instance().GetShapeRenderer();
@@ -473,27 +411,17 @@ void Pitcher::DrawGUI()
 			ImGui::DragFloat3("Angle", &angle.x);
 			ImGui::Checkbox("Play Animation", &animation_playing);
 		}
-		if (ImGui::CollapsingHeader("ball"))
+		Ball::Instance().DrawGUI();
+
+		if (ImGui::CollapsingHeader("Pitch Settings"))
 		{
-			ImGui::DragFloat3("ballPosition", &ballPosition.x);
-			ImGui::DragFloat3("ballScale", &ballScale.x);
-			ImGui::DragFloat3("ballAngle", &ballAngle.x);
-
-			ImGui::Separator();
-			ImGui::Text("Ball World Transform");
-			ImGui::DragFloat3("BallWorldPosition", &ballWorldPosition.x);
-			ImGui::DragFloat3("BallWorldAngle", &ballWorldAngle.x);
-			ImGui::DragFloat3("BallWorldScale", &ballWorldScale.x);
-
-			ImGui::Separator();
-			ImGui::Text("Pitch Settings");
 			ImGui::DragFloat("Throw Timing", &throwTiming, 0.01f, 0.0f, 1.0f);
 			ImGui::DragFloat("Ball Speed (km/h)", &ballSpeedKmh, 10.0f, 180.0f);
 			ImGui::DragFloat("Launch Angle (deg)", &launchAngleDegrees, -20.0f, 10.0f);
 
 			ImGui::Separator();
 			ImGui::Text("Throw Direction");
-			ImGui::DragFloat3("Throw Direction", &throwDirection.x, -1.0f, 1.0f); // 投球方向を操作可能に
+			ImGui::DragFloat3("Throw Direction", &throwDirection.x, -1.0f, 1.0f);
 
 			ImGui::Separator();
 			ImGui::Text("Rotation Settings");
@@ -502,152 +430,13 @@ void Pitcher::DrawGUI()
 			ImGui::SliderFloat(u8"Z軸回転速度 (バック/トップスピン)", &rotationSpeed.z, -150.0f, 150.0f);
 
 			ImGui::Separator();
-			ImGui::Text("Break Settings");
-			ImGui::DragFloat(u8"横方向の変化量", &horizontalBreak, -30.0f, 30.0f);
-			ImGui::DragFloat(u8"縦方向の変化量", &verticalBreak, -30.0f, 30.0f);
-			ImGui::DragFloat(u8"変化が始まる距離", &breakStartDistance, 0.0f, 20.0f);
-
-			ImGui::Separator();
-
-			// 球種プリセット
-			if (ImGui::Button(u8"Fastball (ストレート)"))
-			{
-				horizontalBreak = 0.0f;
-				verticalBreak = 0.0f;//ややホップするような感じ
-				ballSpeedKmh = 150.0f; // 速い
-				ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, 150.0f }; // バックスピン
-				throwDirection.x = 0.03f;
-				launchAngleDegrees = -1.5f;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Slider (スライダー)"))
-			{
-				horizontalBreak = 15.0f; // 左方向に曲がる
-				verticalBreak = -5.0f;    // 少し落ちる
-				ballSpeedKmh = 130.0f;    // 少し遅い
-				ballAngle = { -0.2f, 0.0f, 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, 100.0f }; // サイドスピン
-				throwDirection.x = 0.0f;
-				launchAngleDegrees = 0.5f;
-			}
-			if (ImGui::Button(u8"Curveball (カーブ)"))
-			{
-				horizontalBreak = 5.0f; // 左方向に曲がる
-				verticalBreak = -10.0f;   // 大きく落ちる
-				ballSpeedKmh = 110.0f;    // 遅い
-				ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, -150.0f }; // トップスピン
-				throwDirection.x = 0.01f;
-				launchAngleDegrees = 4.0f; // カーブはやや下向きに投げる
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Changeup (チェンジアップ)"))
-			{
-				horizontalBreak = -5.0f;  // 右方向に少し曲がる
-				verticalBreak = -5.0f;   // 落ちる
-				ballSpeedKmh = 120.0f;    // 遅い
-				rotationSpeed = { -100.0f, 0.0f, -100.0f }; // ミックス回転
-				throwDirection.x = 0.03f;
-				launchAngleDegrees = 0.0f;
-			}
-			if (ImGui::Button(u8"Forkball (フォーク)"))
-			{
-				horizontalBreak = 0.0f;
-				verticalBreak = -30.0f;   // 非常に大きく落ちる
-				ballSpeedKmh = 130.0f;    // 少し遅い
-				ballAngle.y = 0.0f;
-				throwDirection.x = 0.03f;
-				launchAngleDegrees = -0.5f;
-				rotationSpeed = { 40.0f, 0.0f, -10.0f }; // 回転は少なめ
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Two-seam(ツーシーム)"))
-			{
-				horizontalBreak = -10.0f;  // 右方向に少し曲がる
-				verticalBreak = -7.0f;   // 少し落ちる
-				//ballSpeedKmh = 140.0f;    // 少し速い
-				ballAngle.y = 0.0f;
-				ballAngle.x = 0.2f;
-				rotationSpeed = { 100.0f, 0.0f, 0.0f }; // 回転は少なめ
-			}
-			if (ImGui::Button(u8"Cutter (カットボール)"))
-			{
-				horizontalBreak = 8.0f; // 左方向に少し曲がる
-				verticalBreak = -2.0f;    // 少し落ちる
-				//ballSpeedKmh = 140.0f;    // 速い
-				ballAngle = { -0.2f, 0.0f, 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, 80.0f }; // 回転速度
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Sinker (シンカー)"))
-			{
-				horizontalBreak = -15.0f;   // 右方向に少し曲がる
-				verticalBreak = -15.0f;   // 大きく落ちる
-				//ballSpeedKmh = 130.0f;    // 少し遅い
-				rotationSpeed = { -120.0f, 0.0f, -120.0f }; // 回転速度
-			}
-			if (ImGui::Button(u8"Vertical Slider (縦スライダー)"))
-			{
-				horizontalBreak = 5.0f;   // 少し横に移動
-				verticalBreak = -15.0f;   // 大きく落ちる
-				//ballSpeedKmh = 125.0f;    // 遅い
-				ballAngle = { -0.2f, 0.0f, 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, 100.0f }; // 回転速度
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Splitter (スプリット)"))
-			{
-				horizontalBreak = 0.0f;   // 横方向の変化なし
-				verticalBreak = -15.0f;   // 非常に大きく落ちる
-				//ballSpeedKmh = 135.0f;    // 少し遅い
-				ballAngle.y = 0.0f;
-				rotationSpeed = { 40.0f, 0.0f, -10.0f }; // 回転速度
-			}
-			if (ImGui::Button(u8"Slow Curve (スローカーブ)"))
-			{
-				horizontalBreak = 15.0f;  // 左方向に少し曲がる
-				verticalBreak = -20.0f;   // 非常に大きく落ちる
-				//ballSpeedKmh = 80.0f;     // 非常に遅い
-				ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, -150.0f }; // トップスピン
-			}
-			if (ImGui::Button(u8"Shooter (シューター)"))
-			{
-				horizontalBreak = -5.0f;  // 大きく右に曲がる
-				verticalBreak = -5.0f;   // 少し落ちる
-				//ballSpeedKmh = 145.0f;    // 遅い
-				ballAngle = { -0.2f, 0.0f, 0.0f };
-				rotationSpeed = { 0.0f, 0.0f, 150.0f }; // 強いサイドスピン
-			}
-			if (ImGui::Button(u8"Knuckleball (ナックルボール)"))
-			{
-				horizontalBreak = 0.0f;   // 横方向の変化なし
-				verticalBreak = 0.0f;     // 縦方向の変化なし
-				//ballSpeedKmh = 90.0f;     // 非常に遅い
-				ballAngle = { 0.0f, 0.0f, 0.0f };
-				rotationSpeed = { -5.0f, 0.0f, -5.0f }; // 不規則な回転
-			}
-
-			ImGui::Separator();
 			ImGui::Checkbox("Is Ball Thrown", &isBallThrown);
 
-			ImGui::Separator();
-			// 速度情報の表示
 			float speedMs = ballSpeedKmh / 3.6f;
 			ImGui::Text("Speed: %.2f m/s (%.0f km/h)", speedMs, ballSpeedKmh);
-
-			//トレイルの表示
 			ImGui::DragFloat("Trail Width", &trailWidth, 0.01f, 0.01f, 1.0f, "%.2f");
 			ImGui::DragFloat("MaxTrailLength", &MaxTrailLength, 0.01f, 0.01f, 1.0f, "%.2f");
-
 		}
-
-	}
-	// ボールのデバッグスケールを変更するスライダー
-	if (ImGui::CollapsingHeader("Debug Settings"))
-	{
-		ImGui::DragFloat("Ball Debug Radius", &ballDebugRadius, 0.05f, 0.05f, 5.0f, "%.2f");
 	}
 	
 	if (ImGui::CollapsingHeader("Wind Settings"))
@@ -707,95 +496,25 @@ void Pitcher::DrawGUI()
 //アタッチメント処理
 void Pitcher::AttachBallToHand(float elapsedTime)
 {
-	// ボールが投げられていない場合は手に追従
 	if (!isBallThrown)
 	{
-		const char* handName = "mixamorig:RightHandMiddle1";
-
-		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(ballScale.x, ballScale.y, ballScale.z);
-		DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(ballAngle.x, ballAngle.y, ballAngle.z);
-		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(ballPosition.x, ballPosition.y, ballPosition.z);
-		DirectX::XMMATRIX ballLocalMatrix = S * R * T;
-
-		bool handFound = false;
-		for (const gltf_model::node& node : animated_nodes)
-		{
-			if (node.name == handName)
-			{
-				DirectX::XMMATRIX rightHandMatrix = DirectX::XMLoadFloat4x4(&node.global_transform);
-				DirectX::XMMATRIX pitcherWorldMatrix = DirectX::XMLoadFloat4x4(&transform);
-				DirectX::XMMATRIX ballWorldMatrix = ballLocalMatrix * rightHandMatrix * pitcherWorldMatrix;
-
-				DirectX::XMStoreFloat4x4(&ballTransform, ballWorldMatrix);
-
-				// ボールのワールド座標を保存
-				ballWorldPosition.x = ballTransform._41;
-				ballWorldPosition.y = ballTransform._42;
-				ballWorldPosition.z = ballTransform._43;
-
-				// コライダーをボールの位置に同期
-				if (ballCollider)
-				{
-					physx::PxTransform ballPhysxTransform(
-						physx::PxVec3(ballWorldPosition.x, ballWorldPosition.y, ballWorldPosition.z)
-					);
-					ballCollider->setGlobalPose(ballPhysxTransform);
-					// 速度をゼロに設定（手に追従している間は動かない）
-					ballCollider->setLinearVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
-					ballCollider->setAngularVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
-				}
-
-				// 投球開始位置を保存
-				ballStartPosition = ballWorldPosition;
-
-				handFound = true;
-				break;
-			}
-		}
-
-		// 手が見つからない場合のフォールバック
-		if (!handFound)
-		{
-			DirectX::XMMATRIX pitcherWorldMatrix = DirectX::XMLoadFloat4x4(&transform);
-			DirectX::XMMATRIX ballWorldMatrix = ballLocalMatrix * pitcherWorldMatrix;
-			DirectX::XMStoreFloat4x4(&ballTransform, ballWorldMatrix);
-		}
+		Ball::Instance().AttachToHand(animated_nodes, transform, "mixamorig:RightHandMiddle1");
+		ballStartPosition = Ball::Instance().GetStartPosition();
 	}
 	else
 	{
-		// 投球後はPhysXで動きを制御
 		ApplyPhysicsToBall(elapsedTime);
+		Ball::Instance().UpdateFromPhysics(elapsedTime, rotationSpeed);
 
-		// PhysXから位置を取得してワールド行列を更新
-		physx::PxTransform ballPhysxTransform = ballCollider->getGlobalPose();
-		ballWorldPosition.x = ballPhysxTransform.p.x;
-		ballWorldPosition.y = ballPhysxTransform.p.y;
-		ballWorldPosition.z = ballPhysxTransform.p.z;
-
-		// ボールの回転を更新
-		ballWorldAngle.x += rotationSpeed.x * elapsedTime;
-		ballWorldAngle.y += rotationSpeed.y * elapsedTime;
-		ballWorldAngle.z += rotationSpeed.z * elapsedTime;
-
-		// ボールのワールド行列を更新
-		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(ballWorldScale.x, ballWorldScale.y, ballWorldScale.z);
-		DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(ballWorldAngle.x, ballWorldAngle.y, ballWorldAngle.z);
-		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(ballWorldPosition.x, ballWorldPosition.y, ballWorldPosition.z);
-		DirectX::XMMATRIX ballWorldMatrix = S * R * T;
-		DirectX::XMStoreFloat4x4(&ballWorldTransform, ballWorldMatrix);
-
-		// 地面に落ちたらリセット
-		if (ballWorldPosition.y < 0.0f)
+		if (Ball::Instance().GetWorldPosition().y < 0.0f)
 		{
 			isBallThrown = false;
-			hasCollided = false; // 衝突フラグをリセット
+			hasCollided = false;
 			animation_time = 0.0f;
-			ballVelocity = { 0.0f, 0.0f, 0.0f };
+			Ball::Instance().ResetMotion();
 		}
 	}
 }
-
-
 // 投球開始時にタイマーをリセット
 void Pitcher::UpdateAnimation(float elapsedTime)
 {
@@ -823,8 +542,8 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 		if (!isBallThrown && animation_time >= throwTiming * animation_duration)
 		{
 			isBallThrown = true;
-			throwCounter = 0.0f; // 投球カウンターをリセット
-			hasReachedZero = false; // z = 0.0f に到達フラグをリセット
+			throwCounter = 0.0f;
+			hasReachedZero = false;
 			SetHasCollided(false);
 			SetHasCollidedWithFence(false);
 
@@ -840,31 +559,16 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			DirectX::XMStoreFloat3(&normalizedDir, dir);
 
 			physx::PxVec3 initialVelocity(normalizedDir.x * speedMs, normalizedDir.y * speedMs, normalizedDir.z * speedMs);
-			ballCollider->setLinearVelocity(initialVelocity);
+			Ball::Instance().Throw(initialVelocity, GetSpinAxisFromPitchType());
 
-			ballWorldScale = { 1.0f, 1.0f, 1.0f };
-			ballWorldAngle = ballAngle;
-
-			//球種に応じた回転を設定
-			physx::PxVec3 angularVelocity = GetSpinAxisFromPitchType();
-			ballCollider->setAngularVelocity(angularVelocity);
-
-			physx::PxRigidDynamic* ballCollider = GetBallCollider();
-			if (ballCollider)
-			{
-				ballCollider->setLinearVelocity(initialVelocity);
-				float throwSpeed = initialVelocity.magnitude();
-
-				char debugMessage[128];
-				snprintf(debugMessage, sizeof(debugMessage), "Throw Speed: %.2f km/h\n", throwSpeed * 3.6f);
-				OutputDebugStringA(debugMessage);
-			}
+			char debugMessage[128];
+			snprintf(debugMessage, sizeof(debugMessage), "Throw Speed: %.2f km/h\n", initialVelocity.magnitude() * 3.6f);
+			OutputDebugStringA(debugMessage);
 		}
 
 		pitcher->animate(current_animation_index, animation_time, animated_nodes);
 	}
 }
-
 // ===== 新規追加: 球種から角速度を計算 =====
 physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 {
@@ -918,85 +622,19 @@ physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 
 void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 {
-	if (!ballCollider) return;
-
-	// 投球開始位置からの距離を計算
-	float distanceTravel = sqrtf(
-		(ballWorldPosition.x - ballStartPosition.x) * (ballWorldPosition.x - ballStartPosition.x) +
-		(ballWorldPosition.z - ballStartPosition.z) * (ballWorldPosition.z - ballStartPosition.z)
-	);
-
-	// ナックルボールの特性: ランダムな横方向の揺れを加える
-	if (selectedPitchType == PitchType::Knuckleball)
-	{
-		float randomLateralForce = GenerateRandomFloat(-0.00001f, 0.00001f); // ランダムな横方向の力
-		physx::PxVec3 lateralForce(randomLateralForce, 0.0f, 0.0f);
-		ballCollider->addForce(lateralForce, physx::PxForceMode::eFORCE);
-	}
-
-	//現在の風の速度ベクトル
 	physx::PxVec3 windVec(0.0f, 0.0f, 0.0f);
 	if (IsBallInWindArea())
 	{
 		windVec = physx::PxVec3(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength);
 	}
 
-	//空気抵抗を適用
-
-	physx::PxVec3 velocity = ballCollider->getLinearVelocity();
-	physx::PxVec3 relativeVelocity = velocity - windVec;
-	float relativeSpeed = relativeVelocity.magnitude();
-
-	const float airDensity = 1.225f;
-	const float ballRadius = 0.0365f;
-	const float ballArea = DirectX::XM_PI * ballRadius * ballRadius;
-	const float dragCoeff = 0.41f;
-
-	//空気抵抗
-	if (relativeSpeed > 0.0f)
-	{
-		float dragMag = 0.5f * airDensity * relativeSpeed * relativeSpeed * dragCoeff * ballArea;
-		physx::PxVec3 dragForce = -relativeVelocity.getNormalized() * dragMag;
-		ballCollider->addForce(dragForce, physx::PxForceMode::eFORCE);
-	}
-
-	// --- マグヌス効果を適用 ---
-	physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity(); // 単位: rad/s
-	float angularSpeed = angularVelocity.magnitude(); // 回転速度 (rad/s)
-
-	if (relativeSpeed > 0.0f && angularSpeed > 0.0f)
-	{
-		// 1. スピンパラメータ S の計算 (無次元量)
-		// ボールの表面速度と球速の比率。野球では通常 0.0 〜 0.4 の間に収まります
-		float spinParameter = (ballRadius * angularSpeed) / relativeSpeed;
-
-		// 2. 揚力係数 (Cl) の計算 (Nathanの実験式などをベースにした近似)
-		// おおむね Cl = 1.5 * S 付近に
-		float liftCoeff = 1.5f * spinParameter;
-		if (liftCoeff > 0.4f) liftCoeff = 0.4f; // 実物の野球ボールの限界値付近でキャップ
-
-		// 3. マグヌス力の大きさを計算
-		// 公式: Fm = 0.5 * rho * v^2 * Cl * A
-		float magnusMag = 0.5f * airDensity * relativeSpeed * relativeSpeed * liftCoeff * ballArea;
-
-		// 4. マグヌス力の向きを計算 (回転軸と進行方向のクロス積)
-		physx::PxVec3 magnusDir = angularVelocity.cross(relativeVelocity);
-		if (magnusDir.magnitudeSquared() > 0.0f)
-		{
-			magnusDir.normalize();
-			physx::PxVec3 magnusForce = magnusDir * magnusMag;
-			ballCollider->addForce(magnusForce, physx::PxForceMode::eFORCE);
-		}
-	}
-
+	Ball::Instance().ApplyPitchPhysics(selectedPitchType == PitchType::Knuckleball, windVec);
 }
-
-
 void Pitcher::SelectPitchType() 
 {
 	// 乱数生成
 	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
-	selectedPitchType = PitchType::Fastball; // デフォルトはストレート
+	selectedPitchType = PitchType::Slider; // デフォルトはストレート
 
 	// 球種ごとの挙動を設定
 	switch (selectedPitchType)
@@ -1004,7 +642,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::Fastball: // ストレート
 		
 		ballSpeedKmh = 150.0f; // 速い
-		ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
+		Ball::Instance().GetBallAngle() = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // バックスピン
 		throwDirection.x = 0.03f;
 		launchAngleDegrees = -1.5f;
@@ -1014,7 +652,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::Slider: // スライダー
 		
 		ballSpeedKmh = 130.0f;    // 少し遅い
-		ballAngle = { -0.2f, 0.0f, 0.0f };
+		Ball::Instance().GetBallAngle() = { -0.2f, 0.0f, 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // サイドスピン
 		throwDirection.x = 0.0f;
 		launchAngleDegrees = 0.5f;
@@ -1024,7 +662,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::Curveball: // カーブ
 		
 		ballSpeedKmh = 110.0f;    // 遅い
-		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
+		Ball::Instance().GetBallAngle() = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // トップスピン
 		throwDirection.x = 0.01f;
 		launchAngleDegrees = 4.0f; // カーブはやや下向きに投げる
@@ -1043,7 +681,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::Forkball: // フォーク
 		
 		ballSpeedKmh = 130.0f;    // 少し遅い
-		ballAngle.y = 0.0f;
+		Ball::Instance().GetBallAngle().y = 0.0f;
 		throwDirection.x = 0.03f;
 		launchAngleDegrees = -0.5f; // カーブはやや下向きに投げる
 		rotationSpeed = { 40.0f, 0.0f, -10.0f }; // 回転は少なめ
@@ -1053,8 +691,8 @@ void Pitcher::SelectPitchType()
 	case PitchType::TwoSeam: // ツーシーム
 		
 		ballSpeedKmh = 145.0f;    // 少し速い
-		ballAngle.y = 0.0f;
-		ballAngle.x = 0.2f;
+		Ball::Instance().GetBallAngle().y = 0.0f;
+		Ball::Instance().GetBallAngle().x = 0.2f;
 		throwDirection.x = 0.03f;
 		launchAngleDegrees = -0.5f; // カーブはやや下向きに投げる
 		rotationSpeed = { 100.0f, 0.0f, 0.0f }; // 回転は少なめ
@@ -1064,7 +702,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::Cutter: // カットボール
 		
 		ballSpeedKmh = 140.0f;    // 速い
-		ballAngle = { -0.2f, 0.0f, 0.0f };
+		Ball::Instance().GetBallAngle() = { -0.2f, 0.0f, 0.0f };
 		throwDirection.x = 0.0f;
 		launchAngleDegrees = -0.5f;
 		rotationSpeed = { 0.0f, 0.0f, 80.0f }; // 回転速度
@@ -1083,7 +721,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::VerticalSlider: // 縦スライダー
 		
 		//ballSpeedKmh = 125.0f;    // 遅い
-		ballAngle = { -0.2f, 0.0f, 0.0f };
+		Ball::Instance().GetBallAngle() = { -0.2f, 0.0f, 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // 回転速度
 		OutputDebugStringA("Pitch Type: VerticalSlider\n");
 		break;
@@ -1091,7 +729,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::Splitter: // スプリット
 		
 		ballSpeedKmh = 140.0f;    // 少し遅い
-		ballAngle.y = 0.0f;
+		Ball::Instance().GetBallAngle().y = 0.0f;
 		throwDirection.x = 0.03f;
 		launchAngleDegrees = -0.5f; // カーブはやや下向きに投げる
 		rotationSpeed = { 40.0f, 0.0f, -10.0f }; // 回転速度
@@ -1101,7 +739,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::SlowCurve: // スローカーブ
 		
 		//ballSpeedKmh = 80.0f;     // 非常に遅い
-		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
+		Ball::Instance().GetBallAngle() = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // トップスピン
 		OutputDebugStringA("Pitch Type: SlowCurve\n");
 		break;
@@ -1111,7 +749,7 @@ void Pitcher::SelectPitchType()
 		ballSpeedKmh = 145.0f;    // 遅い
 		throwDirection.x = 0.05f;
 		launchAngleDegrees = -1.0f;
-		ballAngle = { -0.2f, 0.0f, 0.0f };
+		Ball::Instance().GetBallAngle() = { -0.2f, 0.0f, 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // 強いサイドスピン
 		OutputDebugStringA("Pitch Type: Shooter\n");
 		break;
@@ -1119,7 +757,7 @@ void Pitcher::SelectPitchType()
 	case PitchType::Knuckleball: // ナックルボール
 		
 		//ballSpeedKmh = 90.0f;     // 非常に遅い
-		ballAngle = { 0.0f, 0.0f, 0.0f };
+		Ball::Instance().GetBallAngle() = { 0.0f, 0.0f, 0.0f };
 		rotationSpeed = { -5.0f, 0.0f, -5.0f }; // 不規則な回転
 		OutputDebugStringA("Pitch Type: Knuckleball\n");
 		break;

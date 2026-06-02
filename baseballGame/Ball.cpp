@@ -1,0 +1,255 @@
+﻿#include "Ball.h"
+
+#include "Graphics.h"
+#include "imgui.h"
+#include <Windows.h>
+#include <algorithm>
+#include <cmath>
+#include <random>
+
+namespace
+{
+	float GenerateRandomFloat(float min, float max)
+	{
+		static std::random_device rd;
+		static std::mt19937 gen(rd());
+		std::uniform_real_distribution<float> dis(min, max);
+		return dis(gen);
+	}
+}
+
+void Ball::Initialize()
+{
+	ID3D11Device* device = Graphics::Instance().GetDevice();
+	model = std::make_unique<gltf_model>(device, ".\\resources\\ball\\ball.glb");
+
+	position = { 0.0f, 0.0f, 0.05f };
+	scale = { 1.0f, 1.0f, 1.0f };
+	angle = { 0.0f, DirectX::XMConvertToRadians(90.0f), 0.0f };
+	worldPosition = { 0.0f, 0.0f, 0.0f };
+	worldAngle = angle;
+	worldScale = { 1.0f, 1.0f, 1.0f };
+	debugRadius = 0.037f;
+
+	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
+	physx::PxScene* pxScene = Physics::Instance().GetScene();
+
+	material = pxPhysics->createMaterial(0.4f, 0.3f, 0.42f);
+	physx::PxSphereGeometry geometry(debugRadius);
+	physx::PxTransform transform(physx::PxVec3(worldPosition.x, worldPosition.y, worldPosition.z));
+
+	collider = pxPhysics->createRigidDynamic(transform);
+	_ASSERT_EXPR(collider != nullptr, "Failed to create ball collider");
+
+	physx::PxShape* shape = pxPhysics->createShape(geometry, *material);
+	collider->attachShape(*shape);
+	shape->release();
+
+	physx::PxRigidBodyExt::setMassAndUpdateInertia(*collider, 0.145f);
+	pxScene->addActor(*collider);
+}
+
+void Ball::Uninitialize()
+{
+	PX_RELEASE(collider);
+	PX_RELEASE(material);
+	model.reset();
+}
+
+void Ball::Update(float elapsedTime)
+{
+	UpdateFromPhysics(elapsedTime, { 0.0f, 0.0f, 0.0f });
+}
+
+void Ball::Render(const RenderContext& rc, ModelRenderer* renderer, bool isThrown)
+{
+	if (!model)
+	{
+		return;
+	}
+
+	model->render(rc.deviceContext, isThrown ? worldTransform : handTransform, {});
+}
+
+void Ball::DrawGUI()
+{
+#ifdef USE_IMGUI
+	if (ImGui::CollapsingHeader("ball"))
+	{
+		ImGui::DragFloat3("ballPosition", &position.x);
+		ImGui::DragFloat3("ballScale", &scale.x);
+		ImGui::DragFloat3("ballAngle", &angle.x);
+
+		ImGui::Separator();
+		ImGui::Text("Ball World Transform");
+		ImGui::DragFloat3("BallWorldPosition", &worldPosition.x);
+		ImGui::DragFloat3("BallWorldAngle", &worldAngle.x);
+		ImGui::DragFloat3("BallWorldScale", &worldScale.x);
+	}
+
+	if (ImGui::CollapsingHeader("Ball Debug Settings"))
+	{
+		ImGui::DragFloat("Ball Debug Radius", &debugRadius, 0.05f, 0.05f, 5.0f, "%.2f");
+	}
+#endif
+}
+
+void Ball::AttachToHand(const std::vector<gltf_model::node>& animatedNodes, const DirectX::XMFLOAT4X4& ownerTransform, const char* handName)
+{
+	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
+	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+	DirectX::XMMATRIX localMatrix = S * R * T;
+	DirectX::XMMATRIX ownerWorldMatrix = DirectX::XMLoadFloat4x4(&ownerTransform);
+
+	bool handFound = false;
+	for (const gltf_model::node& node : animatedNodes)
+	{
+		if (node.name == handName)
+		{
+			DirectX::XMMATRIX handMatrix = DirectX::XMLoadFloat4x4(&node.global_transform);
+			DirectX::XMMATRIX ballWorldMatrix = localMatrix * handMatrix * ownerWorldMatrix;
+			DirectX::XMStoreFloat4x4(&handTransform, ballWorldMatrix);
+			handFound = true;
+			break;
+		}
+	}
+
+	if (!handFound)
+	{
+		DirectX::XMMATRIX ballWorldMatrix = localMatrix * ownerWorldMatrix;
+		DirectX::XMStoreFloat4x4(&handTransform, ballWorldMatrix);
+	}
+
+	worldPosition.x = handTransform._41;
+	worldPosition.y = handTransform._42;
+	worldPosition.z = handTransform._43;
+	worldAngle = angle;
+	worldScale = scale;
+	startPosition = worldPosition;
+	SyncColliderToWorldPosition();
+}
+
+void Ball::UpdateFromPhysics(float elapsedTime, const DirectX::XMFLOAT3& rotationSpeed)
+{
+	if (!collider)
+	{
+		return;
+	}
+
+	physx::PxTransform pxTransform = collider->getGlobalPose();
+	worldPosition = { pxTransform.p.x, pxTransform.p.y, pxTransform.p.z };
+	worldAngle.x += rotationSpeed.x * elapsedTime;
+	worldAngle.y += rotationSpeed.y * elapsedTime;
+	worldAngle.z += rotationSpeed.z * elapsedTime;
+	UpdateWorldTransform();
+}
+
+void Ball::UpdateCollider()
+{
+	if (!collider)
+	{
+		return;
+	}
+
+	physx::PxShape* shape = nullptr;
+	if (collider->getShapes(&shape, 1) > 0 && shape)
+	{
+		shape->setGeometry(physx::PxSphereGeometry(debugRadius));
+	}
+}
+
+void Ball::ApplyPitchPhysics(bool isKnuckleball, const physx::PxVec3& windVelocity)
+{
+	if (!collider)
+	{
+		return;
+	}
+
+	if (isKnuckleball)
+	{
+		float randomLateralForce = GenerateRandomFloat(-0.00001f, 0.00001f);
+		collider->addForce(physx::PxVec3(randomLateralForce, 0.0f, 0.0f), physx::PxForceMode::eFORCE);
+	}
+
+	physx::PxVec3 currentVelocity = collider->getLinearVelocity();
+	velocity = { currentVelocity.x, currentVelocity.y, currentVelocity.z };
+
+	physx::PxVec3 relativeVelocity = currentVelocity - windVelocity;
+	float relativeSpeed = relativeVelocity.magnitude();
+
+	constexpr float airDensity = 1.225f;
+	constexpr float ballRadius = 0.0365f;
+	const float ballArea = DirectX::XM_PI * ballRadius * ballRadius;
+	constexpr float dragCoeff = 0.41f;
+
+	if (relativeSpeed > 0.0f)
+	{
+		float dragMag = 0.5f * airDensity * relativeSpeed * relativeSpeed * dragCoeff * ballArea;
+		physx::PxVec3 dragForce = -relativeVelocity.getNormalized() * dragMag;
+		collider->addForce(dragForce, physx::PxForceMode::eFORCE);
+	}
+
+	physx::PxVec3 angularVelocity = collider->getAngularVelocity();
+	float angularSpeed = angularVelocity.magnitude();
+
+	if (relativeSpeed > 0.0f && angularSpeed > 0.0f)
+	{
+		float spinParameter = (ballRadius * angularSpeed) / relativeSpeed;
+		float liftCoeff = 1.5f * spinParameter;
+		if (liftCoeff > 0.4f) liftCoeff = 0.4f;
+		float magnusMag = 0.5f * airDensity * relativeSpeed * relativeSpeed * liftCoeff * ballArea;
+
+		physx::PxVec3 magnusDir = angularVelocity.cross(relativeVelocity);
+		if (magnusDir.magnitudeSquared() > 0.0f)
+		{
+			magnusDir.normalize();
+			collider->addForce(magnusDir * magnusMag, physx::PxForceMode::eFORCE);
+		}
+	}
+}
+
+void Ball::Throw(const physx::PxVec3& initialVelocity, const physx::PxVec3& angularVelocity)
+{
+	if (!collider)
+	{
+		return;
+	}
+
+	startPosition = worldPosition;
+	worldScale = { 1.0f, 1.0f, 1.0f };
+	worldAngle = angle;
+	collider->setLinearVelocity(initialVelocity);
+	collider->setAngularVelocity(angularVelocity);
+	velocity = { initialVelocity.x, initialVelocity.y, initialVelocity.z };
+	UpdateWorldTransform();
+}
+
+void Ball::ResetMotion()
+{
+	velocity = { 0.0f, 0.0f, 0.0f };
+	if (collider)
+	{
+		collider->setLinearVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
+		collider->setAngularVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
+	}
+}
+
+void Ball::UpdateWorldTransform()
+{
+	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(worldScale.x, worldScale.y, worldScale.z);
+	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(worldAngle.x, worldAngle.y, worldAngle.z);
+	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(worldPosition.x, worldPosition.y, worldPosition.z);
+	DirectX::XMStoreFloat4x4(&worldTransform, S * R * T);
+}
+
+void Ball::SyncColliderToWorldPosition()
+{
+	if (!collider)
+	{
+		return;
+	}
+
+	collider->setGlobalPose(physx::PxTransform(physx::PxVec3(worldPosition.x, worldPosition.y, worldPosition.z)));
+	ResetMotion();
+}

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 #include <wrl.h>
 #include <DirectXMath.h>
@@ -10,11 +10,12 @@
 #include "ModelRenderer.h"
 #include <deque>
 #include "sprite.h"
+#include "Ball.h"
 
 class Pitcher : public GameObject
 {
 public:
-	//ƒCƒ“ƒXƒ^ƒ“ƒX
+	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 		static Pitcher& Instance()
 		{
 			static Pitcher instance;
@@ -39,139 +40,118 @@ public:
 		void ResetBall();
 
 public:
-		const DirectX::XMFLOAT3& GetBallPosition() const { return ballWorldPosition; }
-		const DirectX::XMFLOAT3& GetBallScale() const { return ballWorldScale; }
-		const DirectX::XMFLOAT3& GetBallAngle() const { return ballWorldAngle; }
+		const DirectX::XMFLOAT3& GetBallPosition() const { return Ball::Instance().GetWorldPosition(); }
+		const DirectX::XMFLOAT3& GetBallScale() const { return Ball::Instance().GetWorldScale(); }
+		const DirectX::XMFLOAT3& GetBallAngle() const { return Ball::Instance().GetWorldAngle(); }
 
-		const DirectX::XMFLOAT3& GetBallVelocity() const { return ballVelocity; }
-		void SetBallVelocity(const DirectX::XMFLOAT3& velocity) { ballVelocity = velocity; }
-		const float GetBallDebugRadius() const { return ballDebugRadius; }
-		const float GetReducedRadius() const { return reducedRadius; }
+		const DirectX::XMFLOAT3& GetBallVelocity() const { return Ball::Instance().GetVelocity(); }
+		void SetBallVelocity(const DirectX::XMFLOAT3& velocity) { Ball::Instance().SetVelocity(velocity); }
+		const float GetBallDebugRadius() const { return Ball::Instance().GetDebugRadius(); }
+		const float GetReducedRadius() const { return Ball::Instance().GetReducedRadius(); }
 
 		bool IsBallInStrikeZone() const;
 
-		// •—‚Ì‰e‹¿‚ğó‚¯‚éƒGƒŠƒA‚Éƒ{[ƒ‹‚ª“ü‚Á‚Ä‚¢‚é‚©
+		// é¢¨ã®å½±éŸ¿ã‚’å—ã‘ã‚‹ã‚¨ãƒªã‚¢ã«ãƒœãƒ¼ãƒ«ãŒå…¥ã£ã¦ã„ã‚‹ã‹
 		bool IsBallInWindArea() const;
 
 		void SetTheoreticalDistance(float distance) { theoreticalDistance = distance; }
 		float GetTheoreticalDistance() const { return theoreticalDistance; }
 private:
-	// ƒ‚ƒfƒ‹ŠÖ˜A
+	// ãƒ¢ãƒ‡ãƒ«é–¢é€£
 		std::unique_ptr<gltf_model> pitcher;
 		std::vector<gltf_model::node> animated_nodes;
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_context;
-		// ƒAƒjƒ[ƒVƒ‡ƒ“ŠÖ˜A
+		// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–¢é€£
 		float animation_time = 0.0f;
 		int current_animation_index = 0;
 		bool animation_playing = true;
 
-		//ƒ{[ƒ‹ŠÖ˜A
-		std::unique_ptr<gltf_model> ball;
-		DirectX::XMFLOAT4X4 ballTransform = { 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1 };
-		DirectX::XMFLOAT3 ballPosition = { 0.0f,0.0f,0.0f };
-		DirectX::XMFLOAT3 ballScale = { 1.0f,1.0f,1.0f };
-		DirectX::XMFLOAT3 ballAngle = { 0.0f,0.0f,0.0f };
+		DirectX::XMFLOAT3 ballStartPosition = { 0.0f, 0.0f, 0.0f };
+		float throwTiming = 0.4f;
+		bool isBallThrown = false;
 
-		// ƒ{[ƒ‹ê—p‚Ìƒgƒ‰ƒ“ƒXƒtƒH[ƒ€î•ñ
-		DirectX::XMFLOAT3 ballWorldPosition = { 0.0f, 0.0f, 0.0f };
-		DirectX::XMFLOAT3 ballWorldAngle = { 0.0f, 0.0f, 0.0f };
-		DirectX::XMFLOAT3 ballWorldScale = { 1.0f, 1.0f, 1.0f };
-		DirectX::XMFLOAT4X4 ballWorldTransform = {
-			1,0,0,0,
-			0,1,0,0,
-			0,0,1,0,
-			0,0,0,1
-		};
+		// ãƒœãƒ¼ãƒ«æŠ•çƒåˆ¶å¾¡
+		float ballSpeedKmh = 150.0f; // æŠ•çƒé€Ÿåº¦ï¼ˆkm/hï¼‰ - ãƒ‡ãƒãƒƒã‚°å¯èƒ½
+		float launchAngleDegrees = -2.5f; // ç™ºå°„è§’åº¦ï¼ˆåº¦ï¼‰
+		DirectX::XMFLOAT3 rotationSpeed = { 0.0f, 0.0f, 0.0f }; // å›è»¢é€Ÿåº¦ï¼ˆåº¦/ç§’ï¼‰
+		DirectX::XMFLOAT3 throwDirection = { 0.02f, 0.2f, -1.0f }; // æŠ•çƒæ–¹å‘
 
-		DirectX::XMFLOAT3 ballVelocity = { 0.0f, 0.0f, 0.0f }; // ƒ{[ƒ‹‚Ì‘¬“x
-		DirectX::XMFLOAT3 ballStartPosition = { 0.0f, 0.0f, 0.0f }; // “Š‹…ŠJnˆÊ’ui’Ç‰Áj
-		float throwTiming = 0.4f; // ƒ{[ƒ‹‚ğ—£‚·ƒ^ƒCƒ~ƒ“ƒOiƒAƒjƒ[ƒVƒ‡ƒ“ŠÔ‚Ì”ä—¦j
-		float gravity = -9.8f; // d—Í‰Á‘¬“x
-		bool isBallThrown = false; // ƒ{[ƒ‹‚ª“Š‚°‚ç‚ê‚½‚©
-		// ƒ{[ƒ‹“Š‹…§Œä
-		float ballSpeedKmh = 150.0f; // “Š‹…‘¬“xikm/hj - ƒfƒoƒbƒO‰Â”\
-		float launchAngleDegrees = -2.5f; // ”­ËŠp“xi“xj
-		DirectX::XMFLOAT3 rotationSpeed = { 0.0f, 0.0f, 0.0f }; // ‰ñ“]‘¬“xi“x/•bj
-		DirectX::XMFLOAT3 throwDirection = { 0.02f, 0.2f, -1.0f }; // “Š‹…•ûŒü
+		// å¤‰åŒ–çƒãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+		float horizontalBreak = 0.0f; // æ¨ªæ–¹å‘ã®å¤‰åŒ–é‡ï¼ˆæ­£:å³ã€è² :å·¦ï¼‰
+		float verticalBreak = 0.0f;   // ç¸¦æ–¹å‘ã®å¤‰åŒ–é‡ï¼ˆæ­£:ä¸Šã€è² :ä¸‹ï¼‰
+		float breakStartDistance = 0.0f; // å¤‰åŒ–ãŒå§‹ã¾ã‚‹è·é›¢
 
-		// •Ï‰»‹…ƒpƒ‰ƒ[ƒ^
-		float horizontalBreak = 0.0f; // ‰¡•ûŒü‚Ì•Ï‰»—Êi³:‰EA•‰:¶j
-		float verticalBreak = 0.0f;   // c•ûŒü‚Ì•Ï‰»—Êi³:ãA•‰:‰ºj
-		float breakStartDistance = 0.0f; // •Ï‰»‚ªn‚Ü‚é‹——£
-
-		float ballDebugRadius = 0.15f; // ƒfƒtƒHƒ‹ƒg‚ÌƒXƒP[ƒ‹”{—¦
+		float ballDebugRadius = 0.15f; // ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®ã‚¹ã‚±ãƒ¼ãƒ«å€ç‡
 		float reducedRadius = 0.0f;
 
 		enum class PitchType 
 		{
-			Fastball,//ƒXƒgƒŒ[ƒg
-			Slider,//ƒXƒ‰ƒCƒ_[
-			Curveball,//ƒJ[ƒu
-			Changeup,//ƒ`ƒFƒ“ƒWƒAƒbƒv
-			Forkball,//ƒtƒH[ƒN
-			TwoSeam,//ƒc[ƒV[ƒ€
-			Cutter,//ƒJƒbƒgƒ{[ƒ‹
-			Sinker,//ƒVƒ“ƒJ[
-			VerticalSlider,//cƒXƒ‰ƒCƒ_[	
-			Splitter,//ƒXƒvƒŠƒbƒg
-			SlowCurve,//ƒXƒ[ƒJ[ƒu
-			Shooter,//ƒVƒ…[ƒg
-			Knuckleball,//ƒiƒbƒNƒ‹
+			Fastball,//ã‚¹ãƒˆãƒ¬ãƒ¼ãƒˆ
+			Slider,//ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼
+			Curveball,//ã‚«ãƒ¼ãƒ–
+			Changeup,//ãƒã‚§ãƒ³ã‚¸ã‚¢ãƒƒãƒ—
+			Forkball,//ãƒ•ã‚©ãƒ¼ã‚¯
+			TwoSeam,//ãƒ„ãƒ¼ã‚·ãƒ¼ãƒ 
+			Cutter,//ã‚«ãƒƒãƒˆãƒœãƒ¼ãƒ«
+			Sinker,//ã‚·ãƒ³ã‚«ãƒ¼
+			VerticalSlider,//ç¸¦ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼	
+			Splitter,//ã‚¹ãƒ—ãƒªãƒƒãƒˆ
+			SlowCurve,//ã‚¹ãƒ­ãƒ¼ã‚«ãƒ¼ãƒ–
+			Shooter,//ã‚·ãƒ¥ãƒ¼ãƒˆ
+			Knuckleball,//ãƒŠãƒƒã‚¯ãƒ«
 		};
 
 		PitchType selectedPitchType;
 
-		//ƒXƒgƒ‰ƒCƒNƒ][ƒ“‚Ì”»’è
-		DirectX::XMFLOAT3 strikeZonePosition = { 0.0f, 0.8f, 0.0f }; // ƒXƒgƒ‰ƒCƒNƒ][ƒ“‚Ì’†SˆÊ’u
-		DirectX::XMFLOAT3 strikeZoneSize = { 0.2f, 0.3f, 0.001f }; // ƒXƒgƒ‰ƒCƒNƒ][ƒ“‚ÌƒTƒCƒYi•A‚‚³A‰œs‚«j
-		DirectX::XMFLOAT4 strikeZoneColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // ƒXƒgƒ‰ƒCƒNƒ][ƒ“‚ÌFi“§–¾“x•t‚«j
-		bool hasBeenJudged = false; // ”»’èÏ‚İƒtƒ‰ƒO
+		//ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³ã®åˆ¤å®š
+		DirectX::XMFLOAT3 strikeZonePosition = { 0.0f, 0.8f, 0.0f }; // ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³ã®ä¸­å¿ƒä½ç½®
+		DirectX::XMFLOAT3 strikeZoneSize = { 0.2f, 0.3f, 0.001f }; // ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³ã®ã‚µã‚¤ã‚ºï¼ˆå¹…ã€é«˜ã•ã€å¥¥è¡Œãï¼‰
+		DirectX::XMFLOAT4 strikeZoneColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³ã®è‰²ï¼ˆé€æ˜åº¦ä»˜ãï¼‰
+		bool hasBeenJudged = false; // åˆ¤å®šæ¸ˆã¿ãƒ•ãƒ©ã‚°
 
-		physx::PxRigidDynamic* ballCollider = nullptr; // ƒ{[ƒ‹‚ÌƒRƒ‰ƒCƒ_[
-		physx::PxMaterial* pxBallMaterial = nullptr;//ƒ{[ƒ‹ê—p‚Ìƒ}ƒeƒŠƒAƒ‹
 
-		float throwCounter = 0.0f; // “Š‹…ƒJƒEƒ“ƒ^[
-		bool hasReachedZero = false; // z = 0.0f ‚É“’B‚µ‚½‚©‚Ç‚¤‚©
+		float throwCounter = 0.0f; // æŠ•çƒã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
+		bool hasReachedZero = false; // z = 0.0f ã«åˆ°é”ã—ãŸã‹ã©ã†ã‹
 
-		float theoreticalDistance = 0.0f; // —˜_ã‚Ì”ò‹——£i’Ç‰Áj
+		float theoreticalDistance = 0.0f; // ç†è«–ä¸Šã®é£›è·é›¢ï¼ˆè¿½åŠ ï¼‰
 
 private:
 
-	// ƒ{[ƒ‹‚Ì‹OÕ•Û‘¶—p
+	// ãƒœãƒ¼ãƒ«ã®è»Œè·¡ä¿å­˜ç”¨
 	std::deque<DirectX::XMFLOAT3> ballTrail;
-	float MaxTrailLength = 50; // ‹OÕ‚ÌÅ‘å•Û‘¶”
-	const float TrailRecordInterval = 0.016f; // ‹L˜^ŠÔŠu
+	float MaxTrailLength = 50; // è»Œè·¡ã®æœ€å¤§ä¿å­˜æ•°
+	const float TrailRecordInterval = 0.016f; // è¨˜éŒ²é–“éš”
 	float trailRecordTimer = 0.0f;
-	float trailWidth = 0.05f; // ‹OÕ‚Ì•
+	float trailWidth = 0.05f; // è»Œè·¡ã®å¹…
 public:
 
-	// ó‘ÔŠÇ—
+	// çŠ¶æ…‹ç®¡ç†
 	enum class State 
 	{
-		SelectingPitch,// ‹…í‘I‘ğ’†
-		Throwing,// “Š‹…’†
+		SelectingPitch,// çƒç¨®é¸æŠä¸­
+		Throwing,// æŠ•çƒä¸­
 
 	};
 
 	State currentState = State::SelectingPitch;
-	float stateTime = 0.0f; // Œ»İ‚Ìó‘Ô‚É“ü‚Á‚Ä‚©‚ç‚ÌŒo‰ßŠÔ
+	float stateTime = 0.0f; // ç¾åœ¨ã®çŠ¶æ…‹ã«å…¥ã£ã¦ã‹ã‚‰ã®çµŒéæ™‚é–“
 
 	public:
-		physx::PxRigidDynamic* GetBallCollider() const { return ballCollider; }
+		physx::PxRigidDynamic* GetBallCollider() const { return Ball::Instance().GetCollider(); }
 
-		bool hasCollided = false; // Õ“Ëƒtƒ‰ƒO
+		bool hasCollided = false; // è¡çªãƒ•ãƒ©ã‚°
 
 		void SetHasCollided(bool collided) { hasCollided = collided; }
 		bool GetHasCollided() const { return hasCollided; }
 
 		const State GetCurrentState() const { return currentState; }
 
-		// ƒtƒFƒ“ƒX‚Æ‚ÌÕ“Ëƒtƒ‰ƒO
+		// ãƒ•ã‚§ãƒ³ã‚¹ã¨ã®è¡çªãƒ•ãƒ©ã‚°
 		bool hasCollidedWithFence = false;
 		void SetHasCollidedWithFence(bool collided) { hasCollidedWithFence = collided; }
 		bool GetHasCollidedWithFence() const { return hasCollidedWithFence; }
 
-		// ƒoƒbƒgÕ“Ë‚ÌˆÊ’u‚ğ‹L˜^
+		// ãƒãƒƒãƒˆè¡çªæ™‚ã®ä½ç½®ã‚’è¨˜éŒ²
 		DirectX::XMFLOAT3 ballHitPosition = { 0.0f, 0.0f, 0.0f };
 		void SetBallHitPosition(const DirectX::XMFLOAT3& pos) { ballHitPosition = pos; }
 		const DirectX::XMFLOAT3& GetBallHitPosition() const { return ballHitPosition; }
@@ -179,28 +159,28 @@ public:
 		const DirectX::XMFLOAT3 GetWindVector() const { return DirectX::XMFLOAT3(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength); }
 
 		private:
-			// ===== V‹K’Ç‰Á =====
+			// ===== æ–°è¦è¿½åŠ  =====
 			physx::PxVec3 GetSpinAxisFromPitchType() const;
 
 private:
-	//•—•\Œ»—p
+	//é¢¨è¡¨ç¾ç”¨
 	struct WindLine
 	{
 		DirectX::XMFLOAT3 position;
-		float baseYOffset; // Œú‚İ‚Ì”ÍˆÍ‚É‘Î‚·‚é‘Š‘Î“I‚È‚‚³Š„‡
-		float speed;// •—‚Ìü‚ÌˆÚ“®‘¬“x
-		float length;// •—‚Ìü‚Ì’·‚³
-		float phase;// •—‚Ìü‚ÌˆÊ‘ŠiŠÔŒo‰ß‚Å•Ï‰»‚³‚¹‚é‚½‚ß‚Ì•Ï”j
+		float baseYOffset; // åšã¿ã®ç¯„å›²ã«å¯¾ã™ã‚‹ç›¸å¯¾çš„ãªé«˜ã•å‰²åˆ
+		float speed;// é¢¨ã®ç·šã®ç§»å‹•é€Ÿåº¦
+		float length;// é¢¨ã®ç·šã®é•·ã•
+		float phase;// é¢¨ã®ç·šã®ä½ç›¸ï¼ˆæ™‚é–“çµŒéã§å¤‰åŒ–ã•ã›ã‚‹ãŸã‚ã®å¤‰æ•°ï¼‰
 	};
 
 	std::vector<WindLine> windLines;
 	DirectX::XMFLOAT3 windDirection{ -1.0f, 0.0f, 0.2f };
 	float windStrength = 5.0f;
-	float windHeight = 0.0f; // •—‚ÌˆÊ’uiŠÔŒo‰ß‚Å•Ï‰»‚³‚¹‚é‚½‚ß‚Ì•Ï”j
-	float windThickness = 6.0f;// •—‚Ìü‚ÌŒú‚İ
+	float windHeight = 0.0f; // é¢¨ã®ä½ç½®ï¼ˆæ™‚é–“çµŒéã§å¤‰åŒ–ã•ã›ã‚‹ãŸã‚ã®å¤‰æ•°ï¼‰
+	float windThickness = 6.0f;// é¢¨ã®ç·šã®åšã¿
 
 public:
-	//ƒXƒvƒ‰ƒCƒgŠÖ˜A
+	//ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆé–¢é€£
 	struct Sprite
 	{
 		std::wstring texturePath;
@@ -214,5 +194,6 @@ public:
 	std::unique_ptr<Sprite> windGroundSprite;
 	std::unique_ptr<sprite> windGroundSpriteRenderer;
 	std::unique_ptr<sprite> windStrengthFontRenderer;
+
 };
 
