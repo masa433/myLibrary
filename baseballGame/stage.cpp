@@ -16,7 +16,7 @@ void stage::initialize()
 	ground2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\ground.glb");
 	// 位置、スケール、回転の初期化
 	position = { 0.0f, 0.0f, 0.0f };
-	scale = { 0.01f, 0.01f, 0.01f };
+	scale = { 1.0f, 1.0f, 1.0f };
 	angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f };
 
 	//静的剛体の作成

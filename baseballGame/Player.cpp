@@ -20,12 +20,12 @@ void Player::Initialize()
     if (IsRightBatter()) 
     {
         position = { -1.0f, 0.01f, -0.4f };
-        scale = { 0.01f,0.01f,0.01f };
+        scale = { 1.0f,1.0f,1.0f };
     }
     else 
     {
         position = { 1.0f, 0.01f, -0.4f };
-		scale = { -0.01f,0.01f,0.01f };
+		scale = { -1.0f,1.0f,1.0f };
     }
     angle = { 0.0f, 0.0f, 0.0f};
 	radius = 0.5f;
@@ -48,7 +48,7 @@ void Player::Initialize()
     bat = std::make_unique<Model>(".\\resources\\object\\bat.mdl");
 	batModel = std::make_unique<gltf_model>(device, ".\\resources\\object\\bat.glb");
     batScale = { 1.2f,1.1f,1.2f };
-    batPosition = { 8.0f, 0.0f, 4.0f };
+    batPosition = { 0.08f, 0.0f, 0.05f };
     batAngle = { 0.0f, 0.0f, 1.6f, 0.0f };
 	batRadius = 0.2f;
 	batHeight = 1.0f;

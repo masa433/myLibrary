@@ -522,13 +522,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 	{
 		const physx::PxContactPair& pair = pairs[i];
 
-		// 衝突ペアの情報を出力
-		/*if (pairHeader.actors[0] && pairHeader.actors[0]->getName())
-			OutputDebugStringA(pairHeader.actors[0]->getName());
-		if (pairHeader.actors[1] && pairHeader.actors[1]->getName())
-			OutputDebugStringA(pairHeader.actors[1]->getName());*/
-
-
+	
 			// ボールとバットの衝突を検知
 		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
 			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
@@ -883,6 +877,11 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				std::lock_guard<std::mutex> lock(queueMutex);
 				velocityUpdateQueue.push([]() {
 					physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+
+					//ブレーキを適用
+					//ballCollider->setLinearDamping(0.8f); // 線形減衰を設定
+					//ballCollider->setAngularDamping(3.0f); // 角減衰を設定
+
 					physx::PxVec3 velocity = ballCollider->getLinearVelocity();
 
 					// 速度の大きさをチェック

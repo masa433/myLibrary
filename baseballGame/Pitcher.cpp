@@ -26,15 +26,15 @@ void Pitcher::Initialize()
 	pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\pitcher.glb");
 
 	position = { -0.1f,0.22f,18.15f };
-	scale = { 0.01f,0.01f,0.01f };
+	scale = { 1.0f,1.0f,1.0f };
 	angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
 
 	// アニメーション用のノードをコピー
 	animated_nodes = pitcher->nodes;
 
 	ball = std::make_unique<gltf_model>(device, ".\\resources\\ball\\ball.glb");
-	ballPosition = { 0.0f,2.0f,5.5f };
-	ballScale = { 100.0f,100.0f,100.0f };
+	ballPosition = { 0.0f,0.0f,0.05f };
+	ballScale = { 1.0f,1.0f,1.0f };
 	ballAngle = { 0.0f,DirectX::XMConvertToRadians(90.0f),0.0f };
 
 	ballDebugRadius = 0.037f; // デバッグ用の半径
