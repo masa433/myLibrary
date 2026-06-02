@@ -145,6 +145,9 @@
     <ClCompile Include="ShadowMapShader.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="UIEasing.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -289,6 +292,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="ShadowMapShader.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UiEasing.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

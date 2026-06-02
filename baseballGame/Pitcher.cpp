@@ -1002,8 +1002,7 @@ void Pitcher::SelectPitchType()
 	switch (selectedPitchType)
 	{
 	case PitchType::Fastball: // ストレート
-		horizontalBreak = 0.0f;
-		verticalBreak = 0.0f;//ややホップするような感じ
+		
 		ballSpeedKmh = 150.0f; // 速い
 		ballAngle = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // バックスピン
@@ -1013,8 +1012,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Slider: // スライダー
-		horizontalBreak = 15.0f; // 左方向に曲がる
-		verticalBreak = -5.0f;    // 少し落ちる
+		
 		ballSpeedKmh = 130.0f;    // 少し遅い
 		ballAngle = { -0.2f, 0.0f, 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // サイドスピン
@@ -1024,8 +1022,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Curveball: // カーブ
-		horizontalBreak = 5.0f; // 左方向に曲がる
-		verticalBreak = -10.0f;   // 大きく落ちる
+		
 		ballSpeedKmh = 110.0f;    // 遅い
 		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // トップスピン
@@ -1035,8 +1032,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Changeup: // チェンジアップ
-		horizontalBreak = -5.0f;  // 右方向に少し曲がる
-		verticalBreak = -5.0f;   // 落ちる
+		
 		ballSpeedKmh = 120.0f;    // 遅い
 		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // ミックス回転
 		throwDirection.x = 0.03f;
@@ -1045,8 +1041,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Forkball: // フォーク
-		horizontalBreak = 0.0f;
-		verticalBreak = -30.0f;   // 非常に大きく落ちる
+		
 		ballSpeedKmh = 130.0f;    // 少し遅い
 		ballAngle.y = 0.0f;
 		throwDirection.x = 0.03f;
@@ -1056,8 +1051,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::TwoSeam: // ツーシーム
-		horizontalBreak = -10.0f;  // 右方向に少し曲がる
-		verticalBreak = -7.0f;   // 少し落ちる
+		
 		ballSpeedKmh = 145.0f;    // 少し速い
 		ballAngle.y = 0.0f;
 		ballAngle.x = 0.2f;
@@ -1068,8 +1062,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Cutter: // カットボール
-		horizontalBreak = 8.0f; // 左方向に少し曲がる
-		verticalBreak = -2.0f;    // 少し落ちる
+		
 		ballSpeedKmh = 140.0f;    // 速い
 		ballAngle = { -0.2f, 0.0f, 0.0f };
 		throwDirection.x = 0.0f;
@@ -1079,8 +1072,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Sinker: // シンカー
-		horizontalBreak = -15.0f;   // 右方向に少し曲がる
-		verticalBreak = -15.0f;   // 大きく落ちる
+		
 		ballSpeedKmh = 130.0f;    // 少し遅い
 		throwDirection.x = 0.05f;
 		launchAngleDegrees = 1.0f;
@@ -1089,8 +1081,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::VerticalSlider: // 縦スライダー
-		horizontalBreak = 5.0f;   // 少し横に移動
-		verticalBreak = -15.0f;   // 大きく落ちる
+		
 		//ballSpeedKmh = 125.0f;    // 遅い
 		ballAngle = { -0.2f, 0.0f, 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // 回転速度
@@ -1098,8 +1089,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Splitter: // スプリット
-		horizontalBreak = 0.0f;   // 横方向の変化なし
-		verticalBreak = -15.0f;   // 非常に大きく落ちる
+		
 		ballSpeedKmh = 140.0f;    // 少し遅い
 		ballAngle.y = 0.0f;
 		throwDirection.x = 0.03f;
@@ -1109,8 +1099,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::SlowCurve: // スローカーブ
-		horizontalBreak = 15.0f;  // 左方向に少し曲がる
-		verticalBreak = -20.0f;   // 非常に大きく落ちる
+		
 		//ballSpeedKmh = 80.0f;     // 非常に遅い
 		ballAngle = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // トップスピン
@@ -1118,8 +1107,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Shooter: // シュート
-		horizontalBreak = -5.0f;  // 大きく右に曲がる
-		verticalBreak = -5.0f;   // 少し落ちる
+		
 		ballSpeedKmh = 145.0f;    // 遅い
 		throwDirection.x = 0.05f;
 		launchAngleDegrees = -1.0f;
@@ -1129,8 +1117,7 @@ void Pitcher::SelectPitchType()
 		break;
 
 	case PitchType::Knuckleball: // ナックルボール
-		horizontalBreak = 0.0f;   // 横方向の変化なし
-		verticalBreak = 0.0f;     // 縦方向の変化なし
+		
 		//ballSpeedKmh = 90.0f;     // 非常に遅い
 		ballAngle = { 0.0f, 0.0f, 0.0f };
 		rotationSpeed = { -5.0f, 0.0f, -5.0f }; // 不規則な回転

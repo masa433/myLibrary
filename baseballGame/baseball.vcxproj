@@ -201,6 +201,7 @@
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="camera_controller.cpp" />
     <ClCompile Include="collision.cpp" />
+    <ClCompile Include="UIEasing.cpp" />
     <ClCompile Include="External\imgui\imgui.cpp" />
     <ClCompile Include="External\imgui\imgui_draw.cpp" />
     <ClCompile Include="External\imgui\imgui_impl_dx11.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="camera_controller.h" />
     <ClInclude Include="collision.h" />
+    <ClInclude Include="UiEasing.h" />
     <ClInclude Include="External\imgui\imconfig.h" />
     <ClInclude Include="External\imgui\imgui.h" />
     <ClInclude Include="External\imgui\imgui_impl_dx11.h" />
