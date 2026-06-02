@@ -361,9 +361,9 @@ void scene_game::update(float elapsed_time)
         ImGui::Separator();
 
         ImGui::Text("scene_texture");
-        ImGui::Image(scene_shader_resource_view.Get(), { 256, 144 }, { 0, 0 }, { 1, 1 }, { 1, 1, 1, 1 });
+        ImGui::Image(ImTextureRef(scene_shader_resource_view.Get()), ImVec2(256, 144), ImVec2(0, 0), ImVec2(1, 1));
         ImGui::Text("shadow_map");
-        ImGui::Image(shadowmap_shader_resource_view.Get(), { 256, 256 }, { 0, 0 }, { 1, 1 }, { 1, 1, 1, 1 });
+        ImGui::Image(ImTextureRef(shadowmap_shader_resource_view.Get()), ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1));
     }
 
 	ImGui::Checkbox("Show PhysX Debug", &showPhysxDebug);

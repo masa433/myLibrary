@@ -63,12 +63,40 @@ void Ball::Update(float elapsedTime)
 
 void Ball::Render(const RenderContext& rc, ModelRenderer* renderer, bool isThrown)
 {
+
+	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
+
 	if (!model)
 	{
 		return;
 	}
 
 	model->render(rc.deviceContext, isThrown ? worldTransform : handTransform, {});
+
+	// トレイルの描画
+	if (ballTrail.size() > 1)
+	{
+
+
+		// 現在アクティブなカメラインスタンスのView/Projection行列を取得して利用する
+		Camera& camera = Camera::Instance(); // シングルトンなどから取得
+
+		// 軌跡の色（赤から白へグラデーションなど）
+		DirectX::XMFLOAT4 trailColor = { 1.0f, 0.5f, 0.0f, 1.0f };
+
+		for (size_t i = 0; i < ballTrail.size() - 1; ++i)
+		{
+			// 古いほど薄くするアルファ値の計算
+			float alpha = static_cast<float>(i) / ballTrail.size();
+			DirectX::XMFLOAT4 color = { trailColor.x, trailColor.y, trailColor.z, alpha };
+
+			primitiveRenderer->AddVertex(ballTrail[i], color);
+			primitiveRenderer->AddVertex(ballTrail[i + 1], color);
+		}
+
+		// 線の描画を実行（ラインリスト指定）
+		primitiveRenderer->Render(rc.deviceContext, camera.GetView(), camera.GetProjection(), D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	}
 }
 
 void Ball::DrawGUI()
@@ -90,6 +118,12 @@ void Ball::DrawGUI()
 	if (ImGui::CollapsingHeader("Ball Debug Settings"))
 	{
 		ImGui::DragFloat("Ball Debug Radius", &debugRadius, 0.05f, 0.05f, 5.0f, "%.2f");
+	}
+
+	if (ImGui::CollapsingHeader("Ball Trail Settings"))
+	{
+		ImGui::DragFloat("Trail Width", &trailWidth, 0.01f, 0.01f, 1.0f, "%.2f");
+		ImGui::DragFloat("MaxTrailLength", &MaxTrailLength, 0.01f, 0.01f, 1.0f, "%.2f");
 	}
 #endif
 }
@@ -128,6 +162,9 @@ void Ball::AttachToHand(const std::vector<gltf_model::node>& animatedNodes, cons
 	worldScale = scale;
 	startPosition = worldPosition;
 	SyncColliderToWorldPosition();
+	// トレイルをリセット
+	ballTrail.clear();
+	trailRecordTimer = 0.0f;
 }
 
 void Ball::UpdateFromPhysics(float elapsedTime, const DirectX::XMFLOAT3& rotationSpeed)
@@ -143,6 +180,20 @@ void Ball::UpdateFromPhysics(float elapsedTime, const DirectX::XMFLOAT3& rotatio
 	worldAngle.y += rotationSpeed.y * elapsedTime;
 	worldAngle.z += rotationSpeed.z * elapsedTime;
 	UpdateWorldTransform();
+
+	// 物理演算中（飛んでいる時）にトレイルを記録
+	trailRecordTimer += elapsedTime;
+	if (trailRecordTimer >= TrailRecordInterval)
+	{
+		trailRecordTimer = 0.0f;
+		ballTrail.push_back(worldPosition);
+		if (ballTrail.size() > MaxTrailLength)
+		{
+			ballTrail.pop_front();
+		}
+	}
+
+
 }
 
 void Ball::UpdateCollider()
@@ -223,6 +274,8 @@ void Ball::Throw(const physx::PxVec3& initialVelocity, const physx::PxVec3& angu
 	collider->setAngularVelocity(angularVelocity);
 	velocity = { initialVelocity.x, initialVelocity.y, initialVelocity.z };
 	UpdateWorldTransform();
+	ballTrail.clear();
+	trailRecordTimer = 0.0f;
 }
 
 void Ball::ResetMotion()

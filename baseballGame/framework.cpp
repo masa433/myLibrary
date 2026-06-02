@@ -7,6 +7,17 @@
 // 垂直同期間隔設定
 static const int syncInterval = 1;
 
+#ifdef USE_IMGUI
+ImWchar glyphRangesJapanese[] = {
+	0x0020, 0x00FF, // Basic Latin + Latin Supplement
+	0x3000, 0x30FF, // CJK Symbols, Hiragana, Katakana
+	0x31F0, 0x31FF, // Katakana Phonetic Extensions
+	0xFF00, 0xFFEF, // Half-width / Full-width
+	0x4E00, 0x9FAF, // CJK Unified Ideographs (kanji)
+	0,
+};
+#endif
+
 framework::framework(HWND hwnd) : hwnd(hwnd)
 {
 	hDC = GetDC(hwnd);

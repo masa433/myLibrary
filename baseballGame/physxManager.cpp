@@ -9,6 +9,7 @@
 #include "Player.h"
 #include <random>
 #include "stage.h"
+#include "Wind.h"
 
 // グローバルまたはクラス内にキューを用意
 std::queue<std::function<void()>> velocityUpdateQueue;
@@ -725,7 +726,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					physx::PxVec3 pVel = newBallVelocity;
 					physx::PxVec3 pSpin = spinAxis * angularVelocityRadPerSec;
 
-					DirectX::XMFLOAT3 windDX = Pitcher::Instance().GetWindVector();
+					DirectX::XMFLOAT3 windDX = Wind::Instance().GetWindVector();
 					physx::PxVec3 windVec(windDX.x, windDX.y, windDX.z);
 
 					float dt = 0.01f; // シミュレーションの時間刻み

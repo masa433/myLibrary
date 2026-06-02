@@ -121,7 +121,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\imgui;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -177,7 +177,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\imgui;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -202,13 +202,14 @@
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="camera_controller.cpp" />
     <ClCompile Include="collision.cpp" />
+    <ClCompile Include="External\imgui-docking\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="External\imgui-docking\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="External\imgui-docking\imgui.cpp" />
+    <ClCompile Include="External\imgui-docking\imgui_demo.cpp" />
+    <ClCompile Include="External\imgui-docking\imgui_draw.cpp" />
+    <ClCompile Include="External\imgui-docking\imgui_tables.cpp" />
+    <ClCompile Include="External\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="UIEasing.cpp" />
-    <ClCompile Include="External\imgui\imgui.cpp" />
-    <ClCompile Include="External\imgui\imgui_draw.cpp" />
-    <ClCompile Include="External\imgui\imgui_impl_dx11.cpp" />
-    <ClCompile Include="External\imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="External\imgui\imgui_ja_gryph_ranges.cpp" />
-    <ClCompile Include="External\imgui\imgui_widgets.cpp" />
     <ClCompile Include="framebuffer.cpp" />
     <ClCompile Include="fullscreen_quad.cpp" />
     <ClCompile Include="game_object.cpp" />
@@ -240,6 +241,7 @@
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="ToonShader.cpp" />
+    <ClCompile Include="Wind.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ball.h" />
@@ -247,15 +249,13 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="camera_controller.h" />
     <ClInclude Include="collision.h" />
+    <ClInclude Include="External\imgui-docking\imconfig.h" />
+    <ClInclude Include="External\imgui-docking\imgui.h" />
+    <ClInclude Include="External\imgui-docking\imgui_internal.h" />
+    <ClInclude Include="External\imgui-docking\imstb_rectpack.h" />
+    <ClInclude Include="External\imgui-docking\imstb_textedit.h" />
+    <ClInclude Include="External\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="UiEasing.h" />
-    <ClInclude Include="External\imgui\imconfig.h" />
-    <ClInclude Include="External\imgui\imgui.h" />
-    <ClInclude Include="External\imgui\imgui_impl_dx11.h" />
-    <ClInclude Include="External\imgui\imgui_impl_win32.h" />
-    <ClInclude Include="External\imgui\imgui_internal.h" />
-    <ClInclude Include="External\imgui\imstb_rectpack.h" />
-    <ClInclude Include="External\imgui\imstb_textedit.h" />
-    <ClInclude Include="External\imgui\imstb_truetype.h" />
     <ClInclude Include="framebuffer.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="fullscreen_quad.h" />
@@ -292,6 +292,7 @@
     <ClInclude Include="texture.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="ToonShader.h" />
+    <ClInclude Include="Wind.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Basic.hlsli" />

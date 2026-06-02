@@ -10,6 +10,7 @@
 #include "RenderContext.h"
 #include "physxManager.h"
 #include "ModelRenderer.h"
+#include <deque>
 
 class Ball : public GameObject
 {
@@ -85,4 +86,12 @@ private:
 
 	physx::PxRigidDynamic* collider = nullptr;
 	physx::PxMaterial* material = nullptr;
+
+private:
+	// ボールの軌跡保存用
+	std::deque<DirectX::XMFLOAT3> ballTrail;
+	float MaxTrailLength = 50; // 軌跡の最大保存数
+	const float TrailRecordInterval = 0.016f; // 記録間隔
+	float trailRecordTimer = 0.0f;
+	float trailWidth = 0.05f; // 軌跡の幅
 };

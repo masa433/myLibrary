@@ -91,24 +91,6 @@
     <ClCompile Include="shapeRenderer.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="External\imgui\imgui.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_impl_dx11.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_impl_win32.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_ja_gryph_ranges.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_widgets.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="collision.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
@@ -150,6 +132,30 @@
     </ClCompile>
     <ClCompile Include="Ball.cpp">
       <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Wind.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui-docking\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui-docking\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui-docking\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui-docking\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui-docking\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui-docking\backends\imgui_impl_dx11.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui-docking\backends\imgui_impl_win32.cpp">
+      <Filter>imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -234,30 +240,6 @@
     <ClInclude Include="shapeRenderer.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="External\imgui\imconfig.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imgui.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imgui_impl_dx11.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imgui_impl_win32.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imgui_internal.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imstb_rectpack.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imstb_textedit.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imstb_truetype.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
     <ClInclude Include="collision.h">
       <Filter>Headers</Filter>
     </ClInclude>
@@ -302,6 +284,27 @@
     </ClInclude>
     <ClInclude Include="Ball.h">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Wind.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui-docking\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui-docking\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui-docking\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui-docking\imstb_rectpack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui-docking\imstb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui-docking\imstb_truetype.h">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
