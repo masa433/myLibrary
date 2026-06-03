@@ -10,6 +10,7 @@
 #include <random>
 #include "stage.h"
 #include "Wind.h"
+#include "Ball.h"
 
 // グローバルまたはクラス内にキューを用意
 std::queue<std::function<void()>> velocityUpdateQueue;
@@ -507,14 +508,6 @@ physx::PxFilterFlags Physics::SimulationFilterShader(
 	return physx::PxFilterFlag::eDEFAULT;
 }
 
-float GenerateRandomFloat2(float min, float max)
-{
-	static std::random_device rd;
-	static std::mt19937 gen(rd());
-	std::uniform_real_distribution<float> dis(min, max);
-	return dis(gen);
-}
-
 void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs)
 {
 	//OutputDebugStringA("onContact called\n"); // ログを追加
@@ -525,8 +518,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 	
 			// ボールとバットの衝突を検知
-		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
-			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
+		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1] == Player::Instance().GetBatCollider()) ||
+			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0] == Player::Instance().GetBatCollider()))
 		{
 			// 衝突が既に処理されている場合はスキップ
 			if (Pitcher::Instance().GetHasCollided())
@@ -536,7 +529,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 			Pitcher::Instance().SetHasCollided(true);
 
-			physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+			physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 			physx::PxRigidDynamic* batCollider = Player::Instance().GetBatCollider();
 
 			if (ballCollider && batCollider)
@@ -553,9 +546,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
 				physx::PxVec3 batVelocity = batCollider->getLinearVelocity();
 
-				// ===== ボール初速の上限設定（180 km/h） =====
 				float ballSpeed = ballVelocity.magnitude();
-
 
 				float batSpeed = batVelocity.magnitude();
 
@@ -867,17 +858,18 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			}
 		}
 
-		// ボールとステージの衝突を検知
-		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Ground") ||
-			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Ground"))
+		// ボールとグラウンドの衝突を検知
+		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Ground") ||
+			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Ground"))
 		{
 			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
+			
 
 			// キューに速度変更リクエストを追加
 			{
 				std::lock_guard<std::mutex> lock(queueMutex);
 				velocityUpdateQueue.push([]() {
-					physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+					physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 
 					//ブレーキを適用
 					//ballCollider->setLinearDamping(0.8f); // 線形減衰を設定
@@ -921,93 +913,115 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						ballCollider->setLinearVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
 						ballCollider->setAngularVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
 					}
-					});
+				});
+
+				//飛距離計算
+				physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+				if (ballCollider && !Pitcher::Instance().GetHasCollidedWithGround())
+				{
+					Pitcher::Instance().SetHasCollidedWithGround(true); // 地面衝突フラグを設定
+
+					physx::PxVec3 ballPosition = ballCollider->getGlobalPose().p;
+					DirectX::XMFLOAT3 ballHitPos = Pitcher::Instance().GetBallHitPosition();
+
+					float distanceX = ballPosition.x - ballHitPos.x;
+					float distanceZ = ballPosition.z - ballHitPos.z;
+					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
+
+					char debugMessage[256];
+					snprintf(debugMessage, sizeof(debugMessage),
+						"=== ボールが地面に着地 ===\n"
+						"水平飛距離: %.2f m\n",
+						horizontalDistance);
+					OutputDebugStringA(debugMessage);
+				}
 			}
 		}
 
-
-		//ボールとフェンスの衝突を検知
-		if ((pairHeader.actors[0] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stand") ||
-			(pairHeader.actors[1] == Pitcher::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stand"))
+		//ボールとスタンドの衝突を検知
+		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stand") ||
+			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stand"))
 		{
-			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
+			Pitcher::Instance().SetHasCollided(true);
 
-			// フェンスとの衝突が初回のみ飛距離を出力
 			if (!Pitcher::Instance().GetHasCollidedWithFence())
 			{
 				Pitcher::Instance().SetHasCollidedWithFence(true);
+				Pitcher::Instance().SetHasCollidedWithGround(true);
 
-				// ボールのコライダーを取得
-				physx::PxRigidDynamic* ballCollider = Pitcher::Instance().GetBallCollider();
+				physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 				if (ballCollider)
 				{
-					// ボールの現在位置を取得（フェンス衝突位置）
-					physx::PxVec3 ballFencePosition = ballCollider->getGlobalPose().p;
+					physx::PxVec3 ballPosition = ballCollider->getGlobalPose().p;
 
-					// バット衝突時のボール位置を取得
+					// ===== ホームラン判定 =====
+					if (ballPosition.z < 67.0f || !Pitcher::Instance().GetHasPassedHomeRunZone())
+					{
+						char debugMessage[256];
+						snprintf(debugMessage, sizeof(debugMessage),
+							"ファウル：x=%.2f y=%.2f z=%.2f\n",
+							ballPosition.x, ballPosition.y, ballPosition.z);
+						OutputDebugStringA(debugMessage);
+					}
+					else
+					{
+						if (ballPosition.y >= 4.0f)
+						{
+							char debugMessage[256];
+							snprintf(debugMessage, sizeof(debugMessage),
+								"ホームラン！：ボールの高さ %.2f m\n",
+								ballPosition.y);
+							OutputDebugStringA(debugMessage);
+						}
+						else
+						{
+							char debugMessage[256];
+							snprintf(debugMessage, sizeof(debugMessage),
+								"フェンスに当たったがホームランではない：ボールの高さ %.2f m\n",
+								ballPosition.y);
+							OutputDebugStringA(debugMessage);
+						}
+					}
+
+					// ===== 飛距離計算 =====
+					physx::PxVec3 ballFencePosition = ballCollider->getGlobalPose().p;
 					DirectX::XMFLOAT3 ballHitPos = Pitcher::Instance().GetBallHitPosition();
 
-					// 実測飛距離を計算（3次元）
 					float distanceX = ballFencePosition.x - ballHitPos.x;
 					float distanceY = ballFencePosition.y - ballHitPos.y;
 					float distanceZ = ballFencePosition.z - ballHitPos.z;
-					float measuredDistance = sqrtf(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ);
 					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
 
-					// ===== 推定飛距離の計算（スタンドがなくグラウンドに着地していたら何メートルか） =====
 					physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
 					float exitVelocity = ballVelocity.magnitude();
-
-					// 打球角度を計算（速度ベクトルから）
-					float launchAngle = std::atan2(ballVelocity.y,
-						sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z));
-
-					// 投射体運動の計算
-					// グラウンドレベル（y = 0）に着地するまでの水平距離を計算
-					const float GRAVITY = 9.81f;
-					const float GROUND_LEVEL = 0.0f;
 					float estimatedDistance = 0.0f;
 
 					if (exitVelocity > 0.1f)
 					{
-						// 初期高さ（ボール衝突時のY座標）
-						float initialHeight = ballHitPos.y;
+						float launchAngle = std::atan2(ballVelocity.y,
+							sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z));
 
-						// 着地時間を計算: y = y0 + v_y*t - 0.5*g*t^2
-						// 0 = initialHeight + (exitVelocity * sin(launchAngle)) * t - 0.5 * GRAVITY * t^2
-						// 整理すると: 0.5 * g * t^2 - v_y * t - y0 = 0
+						float initialHeight = ballHitPos.y;
 						float v_y = exitVelocity * sinf(launchAngle);
-						float a = 0.5f * GRAVITY;
+						float a = 0.5f * 9.81f;
 						float b = -v_y;
 						float c = -initialHeight;
-
-						// 二次方程式の解
 						float discriminant = b * b - 4.0f * a * c;
+
 						if (discriminant >= 0.0f)
 						{
-							float t = (-b + sqrtf(discriminant)) / (2.0f * a); // 正の解を取得
-
+							float t = (-b + sqrtf(discriminant)) / (2.0f * a);
 							if (t > 0.0f)
 							{
-								// 水平速度を計算
-								float v_horizontal = exitVelocity * cosf(launchAngle);
-
-								// 着地までの水平距離を計算
-								estimatedDistance = v_horizontal * t;
+								estimatedDistance = exitVelocity * cosf(launchAngle) * t;
 							}
 						}
 					}
 
-					// 総飛距離 = 水平飛距離 + 推定飛距離
-					// （推定飛距離はスタンドがなかった場合にグラウンドに着地するまでの距離）
 					float totalDistance = horizontalDistance + estimatedDistance;
 
-
-					// 飛距離を出力
 					char debugMessage[768];
-					snprintf(
-						debugMessage,
-						sizeof(debugMessage),
+					snprintf(debugMessage, sizeof(debugMessage),
 						"=== ボールがフェンスに入った ===\n"
 						"水平飛距離（実測）: %.2f m\n"
 						"推定飛距離（スタンドなしでグラウンド着地）: %.2f m\n"
@@ -1021,6 +1035,67 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		}
 		
 
+		//ボールとポールの衝突を検知
+		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Pole") ||
+			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Pole"))
+		{
+			Pitcher::Instance().SetHasCollided(true); // 衝突フラグを設定
+			Pitcher::Instance().SetHasCollidedWithGround(true); // 地面衝突フラグを設定
+
+			//ポールに当たったら無条件でホームラン判定
+			// 初回のみ判定（スタンド衝突済みの場合はスキップ）
+			if (!Pitcher::Instance().GetHasCollidedWithFence())
+			{
+				Pitcher::Instance().SetHasCollidedWithFence(true);
+
+				char debugMessage[256];
+				snprintf(debugMessage, sizeof(debugMessage),
+					"ホームラン！：ポールに衝突");
+				OutputDebugStringA(debugMessage);
+			}
+		}
 	}
 }
 
+void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
+{
+	for (physx::PxU32 i = 0; i < count; i++)
+	{
+		const physx::PxTriggerPair& pair = pairs[i];
+
+		// 削除済みアクターは無視
+		if (pair.flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER |
+			physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
+			continue;
+
+		// ボールが HomeRunTrigger に入った瞬間
+		if (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
+		{
+			bool ballIsTriggerActor = (pair.otherActor == Ball::Instance().GetBallCollider());
+			bool triggerIsHomeRun = (pair.triggerActor->getName() &&
+				std::string(pair.triggerActor->getName()) == "HomeRunTrigger");
+
+			if (ballIsTriggerActor && triggerIsHomeRun)
+			{
+				physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+				if (ballCollider)
+				{
+					physx::PxVec3 ballPos = ballCollider->getGlobalPose().p;
+
+					
+					{
+						// トリガー通過でホームラン確定フラグをON
+						Pitcher::Instance().SetHasPassedHomeRunZone(true);
+
+						char debugMessage[256];
+						snprintf(debugMessage, sizeof(debugMessage),
+							"ホームランゾーン通過！",
+							ballPos.y);
+						OutputDebugStringA(debugMessage);
+					}
+					
+				}
+			}
+		}
+	}
+}

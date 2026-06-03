@@ -56,7 +56,7 @@ public:
 	float GetReducedRadius() const { return reducedRadius; }
 	const DirectX::XMFLOAT3& GetStartPosition() const { return startPosition; }
 
-	physx::PxRigidDynamic* GetCollider() const { return collider; }
+	physx::PxRigidDynamic* GetBallCollider() const { return collider; }
 
 private:
 	void UpdateWorldTransform();

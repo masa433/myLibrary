@@ -124,8 +124,7 @@ public:
 	float stateTime = 0.0f; // 現在の状態に入ってからの経過時間
 
 	public:
-		physx::PxRigidDynamic* GetBallCollider() const { return Ball::Instance().GetCollider(); }
-
+		
 		bool hasCollided = false; // 衝突フラグ
 
 		void SetHasCollided(bool collided) { hasCollided = collided; }
@@ -138,14 +137,24 @@ public:
 		void SetHasCollidedWithFence(bool collided) { hasCollidedWithFence = collided; }
 		bool GetHasCollidedWithFence() const { return hasCollidedWithFence; }
 
+		//グラウンドとの衝突フラグ
+		bool hasCollidedWithGround = false;
+		void SetHasCollidedWithGround(bool collided) { hasCollidedWithGround = collided; }
+		bool GetHasCollidedWithGround() const { return hasCollidedWithGround; }
+
 		// バット衝突時の位置を記録
 		DirectX::XMFLOAT3 ballHitPosition = { 0.0f, 0.0f, 0.0f };
 		void SetBallHitPosition(const DirectX::XMFLOAT3& pos) { ballHitPosition = pos; }
 		const DirectX::XMFLOAT3& GetBallHitPosition() const { return ballHitPosition; }
 
+		bool m_hasPassedHomeRunZone = false;
+		bool GetHasPassedHomeRunZone() const { return m_hasPassedHomeRunZone; }
+		void SetHasPassedHomeRunZone(bool value) { m_hasPassedHomeRunZone = value; }
+
 		private:
 			// ===== 新規追加 =====
 			physx::PxVec3 GetSpinAxisFromPitchType() const;
+
 
 
 };

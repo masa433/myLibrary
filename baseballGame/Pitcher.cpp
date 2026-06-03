@@ -133,6 +133,8 @@ void Pitcher::Update(float elapsedTime)
 		hasBeenJudged = false; // 判定フラグをリセット
 		hasCollided = false; // 衝突フラグをリセット
 		hasCollidedWithFence = false; // フェンス衝突フラグをリセット
+		m_hasPassedHomeRunZone = false; // ホームランゾーン通過フラグをリセット
+		hasCollidedWithGround = false; // 地面衝突フラグをリセット
 	}
 
 	Wind::Instance().Update(elapsedTime);
@@ -282,6 +284,8 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 			isBallThrown = false;
 			hasCollided = false;
 			animation_time = 0.0f;
+			hasCollidedWithFence = false;
+			hasCollidedWithGround = false;
 			Ball::Instance().ResetMotion();
 		}
 	}
@@ -317,6 +321,8 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			hasReachedZero = false;
 			SetHasCollided(false);
 			SetHasCollidedWithFence(false);
+			m_hasPassedHomeRunZone = false;
+			hasCollidedWithGround = false;
 
 			float speedMs = ballSpeedKmh / 3.6f;
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
@@ -405,7 +411,7 @@ void Pitcher::SelectPitchType()
 {
 	// 乱数生成
 	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
-	selectedPitchType = PitchType::Slider; // デフォルトはストレート
+	selectedPitchType = PitchType::Fastball; // デフォルトはストレート
 
 	// 球種ごとの挙動を設定
 	switch (selectedPitchType)
