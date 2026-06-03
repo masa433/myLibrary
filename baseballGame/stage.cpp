@@ -24,6 +24,9 @@ void stage::initialize()
 	hrTriggerPos = { 0.0f, 55.0f, 67.5f }; // トリガーの初期位置
 	hrTriggerHalfExtents = { 67.0f, 55.0f, 0.5f }; // トリガーの半分のサイズ(XYZ)
 
+	ffTriggerPos = { 0.0f, 55.0f, 19.5f }; // トリガーの初期位置
+	ffTriggerHalfExtents = { 19.5f, 55.0f, 0.5f }; // トリガーの半分のサイズ(XYZ)
+
 	//静的剛体の作成
 	{
 		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
@@ -198,21 +201,38 @@ void stage::initialize()
 
 
 		// ホームラン判定用トリガーの作成
-		physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
-		physx::PxTransform triggerTransform(physx::PxVec3(hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z));
-		homeRunTrigger = pxPhysics->createRigidStatic(triggerTransform);
+		{
+			physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+			physx::PxTransform triggerTransform(physx::PxVec3(hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z));
+			homeRunTrigger = pxPhysics->createRigidStatic(triggerTransform);
 
-		physx::PxBoxGeometry triggerGeometry(physx::PxVec3(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
-		physx::PxShape* triggerShape = physx::PxRigidActorExt::createExclusiveShape(*homeRunTrigger, triggerGeometry, *triggerMaterial);
+			physx::PxBoxGeometry triggerGeometry(physx::PxVec3(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
+			physx::PxShape* triggerShape = physx::PxRigidActorExt::createExclusiveShape(*homeRunTrigger, triggerGeometry, *triggerMaterial);
 
-		// 物理的な衝突を無効にし、トリガー（重なり判定）として設定する
-		triggerShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
-		triggerShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+			// 物理的な衝突を無効にし、トリガー（重なり判定）として設定する
+			triggerShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+			triggerShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
 
-		homeRunTrigger->setName("HomeRunTrigger");
-		pxScene->addActor(*homeRunTrigger);
+			homeRunTrigger->setName("HomeRunTrigger");
+			pxScene->addActor(*homeRunTrigger);
+		}
 
-		
+		// フェアかファウルかの判定用トリガーの作成
+		{
+			physx::PxMaterial* ffTriggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+			physx::PxTransform ffTriggerTransform(physx::PxVec3(ffTriggerPos.x, ffTriggerPos.y, ffTriggerPos.z));
+			fairFoulTrigger = pxPhysics->createRigidStatic(ffTriggerTransform);
+
+			physx::PxBoxGeometry ffTriggerGeometry(physx::PxVec3(ffTriggerHalfExtents.x, ffTriggerHalfExtents.y, ffTriggerHalfExtents.z));
+			physx::PxShape* ffTriggerShape = physx::PxRigidActorExt::createExclusiveShape(*fairFoulTrigger, ffTriggerGeometry, *ffTriggerMaterial);
+
+			// 物理的な衝突を無効にし、トリガー（重なり判定）として設定する
+			ffTriggerShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+			ffTriggerShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+
+			fairFoulTrigger->setName("FairFoulTrigger");
+			pxScene->addActor(*fairFoulTrigger);
+		}
 	}
 }
 
@@ -245,6 +265,25 @@ void stage::update(float elapsedTime)
 			if (shape)
 			{
 				shape->setGeometry(physx::PxBoxGeometry(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
+			}
+		}
+	}
+
+	if(ImGui::CollapsingHeader("Fair/Foul Trigger"))
+	{
+		ImGui::DragFloat3("Trigger Position", &ffTriggerPos.x, 0.5f);
+		ImGui::DragFloat3("Trigger Half Extents (Size)", &ffTriggerHalfExtents.x, 0.5f);
+		if (fairFoulTrigger)
+		{
+			// 位置の更新
+			physx::PxTransform transform(physx::PxVec3(ffTriggerPos.x, ffTriggerPos.y, ffTriggerPos.z));
+			fairFoulTrigger->setGlobalPose(transform);
+			// サイズの更新
+			physx::PxShape* shape = nullptr;
+			fairFoulTrigger->getShapes(&shape, 1);
+			if (shape)
+			{
+				shape->setGeometry(physx::PxBoxGeometry(ffTriggerHalfExtents.x, ffTriggerHalfExtents.y, ffTriggerHalfExtents.z));
 			}
 		}
 	}
