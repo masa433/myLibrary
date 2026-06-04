@@ -47,8 +47,4 @@ public:
 	DirectX::XMFLOAT3 hrTriggerPos = { 0.0f, 10.0f, -80.0f }; // トリガーの初期位置
 	DirectX::XMFLOAT3 hrTriggerHalfExtents = { 60.0f, 20.0f, 10.0f }; // トリガーの半分のサイズ(XYZ)
 
-	//フェアかファウルかの判定用のボックストリガーコライダー
-	physx::PxRigidStatic* fairFoulTrigger = nullptr;
-	DirectX::XMFLOAT3 ffTriggerPos = { 0.0f, 10.0f, -80.0f }; // トリガーの初期位置
-	DirectX::XMFLOAT3 ffTriggerHalfExtents = { 60.0f, 20.0f, 10.0f }; // トリガーの半分のサイズ(XYZ)
 };

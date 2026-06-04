@@ -928,10 +928,17 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					float distanceZ = ballPosition.z - ballHitPos.z;
 					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
 
+					// フェア/ファウル判定
+						// ホームベース(z=0)からポール位置(±67, z=67)を結ぶ直線の傾き = 67/67 = 1.0
+						// |x| <= z なら2本の直線の間（フェアゾーン）
+					bool isFair = (ballPosition.z >= 0.0f) && (std::fabs(ballPosition.x) <= ballPosition.z);
+
 					char debugMessage[256];
 					snprintf(debugMessage, sizeof(debugMessage),
 						"=== ボールが地面に着地 ===\n"
+						"判定: %s\n"
 						"水平飛距離: %.2f m\n",
+						isFair ? "フェア" : "ファウル",
 						horizontalDistance);
 					OutputDebugStringA(debugMessage);
 				}

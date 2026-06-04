@@ -135,10 +135,42 @@ void Pitcher::Update(float elapsedTime)
 		hasCollidedWithFence = false; // フェンス衝突フラグをリセット
 		m_hasPassedHomeRunZone = false; // ホームランゾーン通過フラグをリセット
 		hasCollidedWithGround = false; // 地面衝突フラグをリセット
+		m_hasPassedFairFoulTrigger = false; // フェア/ファウル判定トリガー通過フラグをリセット
 	}
 
 	Wind::Instance().Update(elapsedTime);
-	
+
+	// ボールが転がり中（グラウンド着地済み・まだ判定前）のみ監視
+	if (GetHasCollidedWithGround() &&
+		!GetHasCollidedWithFence() && !GetHasBeenJudged())
+	{
+		physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+		if (ballCollider)
+		{
+			physx::PxVec3 ballPos = ballCollider->getGlobalPose().p;
+
+			// z=19.5未満の間だけ監視（超えたらもうフェア確定ゾーン）
+			if (ballPos.z < 19.5f)
+			{
+				bool isFair = (ballPos.z >= 0.0f) &&
+					(std::fabs(ballPos.x) <= ballPos.z);
+
+				if (!isFair)
+				{
+					// フェア範囲外に出た → ファウル確定
+					// 二重判定防止のため地面衝突フラグで流用
+					SetHasBeenJudged(true);
+
+					char debugMessage[256];
+					snprintf(debugMessage, sizeof(debugMessage),
+						"ファウル：転がってファウルラインを越えた x=%.2f z=%.2f\n",
+						ballPos.x, ballPos.z);
+					OutputDebugStringA(debugMessage);
+				}
+			}
+		}
+	}
+
 }
 
 void Pitcher::UpdateBallCollider()
@@ -286,6 +318,8 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 			animation_time = 0.0f;
 			hasCollidedWithFence = false;
 			hasCollidedWithGround = false;
+			m_hasPassedFairFoulTrigger = false;
+			m_hasPassedHomeRunZone = false;
 			Ball::Instance().ResetMotion();
 		}
 	}
@@ -323,6 +357,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			SetHasCollidedWithFence(false);
 			m_hasPassedHomeRunZone = false;
 			hasCollidedWithGround = false;
+			m_hasPassedFairFoulTrigger = false;
 
 			float speedMs = ballSpeedKmh / 3.6f;
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
