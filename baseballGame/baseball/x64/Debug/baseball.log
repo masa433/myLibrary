@@ -1,2 +1,12 @@
-﻿  Pitcher.cpp
+﻿  Ball.cpp
+  Pitcher.cpp
+  Player.cpp
+  Wind.cpp
+  physxManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\physxManager.cpp(1099,15): warning C4474: 'snprintf': 書式文字列に渡された引数の数が多すぎます
+      C:\Users\2240021\Desktop\myLibrary\baseballGame\physxManager.cpp(1099,15):
+      プレースホルダーとそのパラメーターには 0 の可変個引数が必要ですが、1 が指定されています。
+  
+  scene_game.cpp
+  コードを生成中...
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

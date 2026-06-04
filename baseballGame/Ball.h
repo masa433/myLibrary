@@ -94,4 +94,40 @@ private:
 	const float TrailRecordInterval = 0.016f; // 記録間隔
 	float trailRecordTimer = 0.0f;
 	float trailWidth = 0.05f; // 軌跡の幅
+
+public:
+	bool hasCollided = false; // 衝突フラグ
+	void SetHasCollided(bool collided) { hasCollided = collided; }
+	bool GetHasCollided() const { return hasCollided; }
+
+	// フェンスとの衝突フラグ
+	bool hasCollidedWithFence = false;
+	void SetHasCollidedWithFence(bool collided) { hasCollidedWithFence = collided; }
+	bool GetHasCollidedWithFence() const { return hasCollidedWithFence; }
+
+	//グラウンドとの衝突フラグ
+	bool hasCollidedWithGround = false;
+	void SetHasCollidedWithGround(bool collided) { hasCollidedWithGround = collided; }
+	bool GetHasCollidedWithGround() const { return hasCollidedWithGround; }
+
+	// バット衝突時の位置を記録
+	DirectX::XMFLOAT3 ballHitPosition = { 0.0f, 0.0f, 0.0f };
+	void SetBallHitPosition(const DirectX::XMFLOAT3& pos) { ballHitPosition = pos; }
+	const DirectX::XMFLOAT3& GetBallHitPosition() const { return ballHitPosition; }
+
+	bool m_hasPassedHomeRunZone = false;
+	bool GetHasPassedHomeRunZone() const { return m_hasPassedHomeRunZone; }
+	void SetHasPassedHomeRunZone(bool value) { m_hasPassedHomeRunZone = value; }
+
+	bool m_hasPassedFairFoulTrigger = false;
+	bool GetHasPassedFairFoulTrigger() const { return m_hasPassedFairFoulTrigger; }
+	void SetHasPassedFairFoulTrigger(bool value) { m_hasPassedFairFoulTrigger = value; }
+
+	bool hasBeenJudged = false;
+	bool GetHasBeenJudged() const { return hasBeenJudged; }
+	void SetHasBeenJudged(bool value) { hasBeenJudged = value; }
+
+	bool foulLogged = false;
+	bool GetFoulLogged() const { return foulLogged; }
+	void SetFoulLogged(bool value) { foulLogged = value; }
 };

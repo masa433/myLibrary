@@ -51,8 +51,6 @@ public:
 
 		bool IsBallInStrikeZone() const;
 
-		void SetTheoreticalDistance(float distance) { theoreticalDistance = distance; }
-		float GetTheoreticalDistance() const { return theoreticalDistance; }
 private:
 	// モデル関連
 		std::unique_ptr<gltf_model> pitcher;
@@ -105,8 +103,6 @@ private:
 		float throwCounter = 0.0f; // 投球カウンター
 		bool hasReachedZero = false; // z = 0.0f に到達したかどうか
 
-		float theoreticalDistance = 0.0f; // 理論上の飛距離（追加）
-
 private:
 
 	
@@ -125,39 +121,9 @@ public:
 
 	public:
 		
-		bool hasCollided = false; // 衝突フラグ
-
-		void SetHasCollided(bool collided) { hasCollided = collided; }
-		bool GetHasCollided() const { return hasCollided; }
-
 		const State GetCurrentState() const { return currentState; }
 
-		// フェンスとの衝突フラグ
-		bool hasCollidedWithFence = false;
-		void SetHasCollidedWithFence(bool collided) { hasCollidedWithFence = collided; }
-		bool GetHasCollidedWithFence() const { return hasCollidedWithFence; }
-
-		//グラウンドとの衝突フラグ
-		bool hasCollidedWithGround = false;
-		void SetHasCollidedWithGround(bool collided) { hasCollidedWithGround = collided; }
-		bool GetHasCollidedWithGround() const { return hasCollidedWithGround; }
-
-		// バット衝突時の位置を記録
-		DirectX::XMFLOAT3 ballHitPosition = { 0.0f, 0.0f, 0.0f };
-		void SetBallHitPosition(const DirectX::XMFLOAT3& pos) { ballHitPosition = pos; }
-		const DirectX::XMFLOAT3& GetBallHitPosition() const { return ballHitPosition; }
-
-		bool m_hasPassedHomeRunZone = false;
-		bool GetHasPassedHomeRunZone() const { return m_hasPassedHomeRunZone; }
-		void SetHasPassedHomeRunZone(bool value) { m_hasPassedHomeRunZone = value; }
-
-		bool m_hasPassedFairFoulTrigger = false;
-		bool GetHasPassedFairFoulTrigger() const { return m_hasPassedFairFoulTrigger; }
-		void SetHasPassedFairFoulTrigger(bool value) { m_hasPassedFairFoulTrigger = value; }
-
-		bool hasBeenJudged = false;
-		bool GetHasBeenJudged() const { return hasBeenJudged; }
-		void SetHasBeenJudged(bool value) { hasBeenJudged = value; }
+		
 
 		private:
 			// ===== 新規追加 =====

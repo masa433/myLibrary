@@ -8,6 +8,7 @@
 #include "PrimitiveRenderer.h"
 #include "camera.h"
 #include "Wind.h"
+#include "Ball.h"
 
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
@@ -84,7 +85,7 @@ void Pitcher::Update(float elapsedTime)
 		{
 			currentState = State::SelectingPitch; // 球種選択状態に戻る
 			animation_time = 0.0f; // アニメーション時間をリセット
-			hasBeenJudged = false; // 判定フラグをリセット
+			Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
 		}
 		break;
 	}
@@ -95,19 +96,19 @@ void Pitcher::Update(float elapsedTime)
 	AttachBallToHand(elapsedTime);
 
 	// ストライク/ボールの判定
-	if (isBallThrown && !hasBeenJudged)
+	if (isBallThrown && !Ball::Instance().GetHasBeenJudged())
 	{
 		// ボールがストライクゾーン内に入ったかを確認
 		if (IsBallInStrikeZone())
 		{
 			OutputDebugStringA("Strike!\n");
-			hasBeenJudged = true; // 判定済みフラグを設定
+			Ball::Instance().SetHasBeenJudged(true); // 判定済みフラグを設定
 		}
 		else if (Ball::Instance().GetWorldPosition().z < strikeZonePosition.z + strikeZoneSize.z / 2.0f)
 		{
 			// ボールがストライクゾーン外を通過した場合
 			OutputDebugStringA("Ball!\n");
-			hasBeenJudged = true; // 判定済みフラグを設定
+			Ball::Instance().SetHasBeenJudged(true); // 判定済みフラグを設定
 		}
 	}
 
@@ -130,19 +131,20 @@ void Pitcher::Update(float elapsedTime)
 	if (Ball::Instance().GetWorldPosition().y < 0.0f)
 	{
 		isBallThrown = false;
-		hasBeenJudged = false; // 判定フラグをリセット
-		hasCollided = false; // 衝突フラグをリセット
-		hasCollidedWithFence = false; // フェンス衝突フラグをリセット
-		m_hasPassedHomeRunZone = false; // ホームランゾーン通過フラグをリセット
-		hasCollidedWithGround = false; // 地面衝突フラグをリセット
-		m_hasPassedFairFoulTrigger = false; // フェア/ファウル判定トリガー通過フラグをリセット
+		Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
+		Ball::Instance().SetHasCollided(false); // 衝突フラグをリセット
+		Ball::Instance().SetHasCollidedWithFence(false); // フェンス衝突フラグをリセット
+		Ball::Instance().SetHasPassedHomeRunZone(false); // ホームランゾーン通過フラグをリセット
+		Ball::Instance().SetHasCollidedWithGround(false); // 地面衝突フラグをリセット
+		Ball::Instance().SetHasPassedFairFoulTrigger(false); // フェア/ファウル判定トリガー通過フラグをリセット
+		Ball::Instance().SetFoulLogged(false); // ファウルログフラグをリセット
 	}
 
 	Wind::Instance().Update(elapsedTime);
 
 	// ボールが転がり中（グラウンド着地済み・まだ判定前）のみ監視
-	if (GetHasCollidedWithGround() &&
-		!GetHasCollidedWithFence() && !GetHasBeenJudged())
+	if (Ball::Instance().GetHasCollidedWithGround() &&
+		!Ball::Instance().GetHasCollidedWithFence() && !Ball::Instance().GetHasBeenJudged() && !Ball::Instance().GetFoulLogged())
 	{
 		physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 		if (ballCollider)
@@ -159,7 +161,9 @@ void Pitcher::Update(float elapsedTime)
 				{
 					// フェア範囲外に出た → ファウル確定
 					// 二重判定防止のため地面衝突フラグで流用
-					SetHasBeenJudged(true);
+					Ball::Instance().SetHasBeenJudged(true);
+
+					Ball::Instance().SetFoulLogged(true); // ファウルログフラグを設定
 
 					char debugMessage[256];
 					snprintf(debugMessage, sizeof(debugMessage),
@@ -314,12 +318,14 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 		if (Ball::Instance().GetWorldPosition().y < 0.0f)
 		{
 			isBallThrown = false;
-			hasCollided = false;
+			Ball::Instance().SetHasCollided(false);
 			animation_time = 0.0f;
-			hasCollidedWithFence = false;
-			hasCollidedWithGround = false;
-			m_hasPassedFairFoulTrigger = false;
-			m_hasPassedHomeRunZone = false;
+			Ball::Instance().SetHasCollidedWithFence(false);
+			Ball::Instance().SetHasCollidedWithGround(false);
+			Ball::Instance().SetHasPassedFairFoulTrigger(false);
+			Ball::Instance().SetHasPassedHomeRunZone(false);
+			Ball::Instance().SetHasBeenJudged(false);
+			Ball::Instance().SetFoulLogged(false);
 			Ball::Instance().ResetMotion();
 		}
 	}
@@ -353,11 +359,13 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			isBallThrown = true;
 			throwCounter = 0.0f;
 			hasReachedZero = false;
-			SetHasCollided(false);
-			SetHasCollidedWithFence(false);
-			m_hasPassedHomeRunZone = false;
-			hasCollidedWithGround = false;
-			m_hasPassedFairFoulTrigger = false;
+			Ball::Instance().SetHasCollided(false);
+			Ball::Instance().SetHasCollidedWithFence(false);
+			Ball::Instance().SetHasPassedHomeRunZone(false);
+			Ball::Instance().SetHasCollidedWithGround(false);
+			Ball::Instance().SetHasPassedFairFoulTrigger(false);
+			Ball::Instance().SetHasBeenJudged(false);
+			Ball::Instance().SetFoulLogged(false);
 
 			float speedMs = ballSpeedKmh / 3.6f;
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
