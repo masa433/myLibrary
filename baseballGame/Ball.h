@@ -130,4 +130,8 @@ public:
 	bool foulLogged = false;
 	bool GetFoulLogged() const { return foulLogged; }
 	void SetFoulLogged(bool value) { foulLogged = value; }
+
+	bool throughStrikeZone = false;
+	bool GetThroughStrikeZone() const { return throughStrikeZone; }
+	void SetThroughStrikeZone(bool value) { throughStrikeZone = value; }
 };

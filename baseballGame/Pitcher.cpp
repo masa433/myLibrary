@@ -37,13 +37,47 @@ void Pitcher::Initialize()
 	Ball::Instance().Initialize();
 
 	Wind::Instance().Initialize();
+
+	boxPosition = { 0.0f, 0.8f, 0.0f }; // ストライクゾーンの位置を設定
+	boxSize = { 0.43f, 0.6f, 0.2f }; // ストライクゾーンのサイズを設定
+
+	// ホームラン判定用トリガーの作成
+	{
+		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
+		physx::PxScene* pxScene = Physics::Instance().GetScene();
+
+		physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+		physx::PxTransform triggerTransform(physx::PxVec3(boxPosition.x, boxPosition.y, boxPosition.z));
+		strikeZoneTrigger = pxPhysics->createRigidStatic(triggerTransform);
+
+		physx::PxBoxGeometry triggerGeometry(physx::PxVec3(boxSize.x / 2.0f, boxSize.y / 2.0f, boxSize.z / 2.0f));
+		physx::PxShape* triggerShape = physx::PxRigidActorExt::createExclusiveShape(*strikeZoneTrigger, triggerGeometry, *triggerMaterial);
+
+		// 物理的な衝突を無効にし、トリガー（重なり判定）として設定する
+		triggerShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+		triggerShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+
+		strikeZoneTrigger->setName("StrikeZoneTrigger");
+		pxScene->addActor(*strikeZoneTrigger);
+
+		
+	}
 	
+	
+
 }
 
 void Pitcher::Uninitialize() 
 {
 	Ball::Instance().Uninitialize();
 	Wind::Instance().Uninitialize();
+	if (strikeZoneTrigger)
+	{
+		physx::PxScene* pxScene = Physics::Instance().GetScene();
+		pxScene->removeActor(*strikeZoneTrigger);
+		strikeZoneTrigger->release();
+		strikeZoneTrigger = nullptr;
+	}
 }
 
 // 更新
@@ -72,7 +106,18 @@ void Pitcher::Update(float elapsedTime)
 		{
 			currentState = State::Throwing;
 			stateTime = 0.0f;
+			hasReachedZero = false;
+			throwCounter = 0.0f;
 			SelectPitchType(); // 球種選択
+			Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
+			Ball::Instance().SetHasCollided(false); // 衝突フラグをリセット
+			Ball::Instance().SetHasCollidedWithFence(false); // フェンス衝突フラグをリセット
+			Ball::Instance().SetHasPassedHomeRunZone(false); // ホームランゾーン通過フラグをリセット
+			Ball::Instance().SetHasCollidedWithGround(false); // 地面衝突フラグをリセット
+			Ball::Instance().SetHasPassedFairFoulTrigger(false); // フェア/ファウル判定トリガー通過フラグをリセット
+			Ball::Instance().SetFoulLogged(false); // ファウルログフラグをリセット
+			Ball::Instance().SetThroughStrikeZone(false); // ストライクゾーン通過フラグをリセット
+			OutputDebugStringA("Judgment reset\n");
 		}
 		break;
 
@@ -85,7 +130,7 @@ void Pitcher::Update(float elapsedTime)
 		{
 			currentState = State::SelectingPitch; // 球種選択状態に戻る
 			animation_time = 0.0f; // アニメーション時間をリセット
-			Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
+			//Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
 		}
 		break;
 	}
@@ -95,37 +140,37 @@ void Pitcher::Update(float elapsedTime)
 	UpdateBallCollider();
 	AttachBallToHand(elapsedTime);
 
-	// ストライク/ボールの判定
-	if (isBallThrown && !Ball::Instance().GetHasBeenJudged())
-	{
-		// ボールがストライクゾーン内に入ったかを確認
-		if (IsBallInStrikeZone())
-		{
-			OutputDebugStringA("Strike!\n");
-			Ball::Instance().SetHasBeenJudged(true); // 判定済みフラグを設定
-		}
-		else if (Ball::Instance().GetWorldPosition().z < strikeZonePosition.z + strikeZoneSize.z / 2.0f)
-		{
-			// ボールがストライクゾーン外を通過した場合
-			OutputDebugStringA("Ball!\n");
-			Ball::Instance().SetHasBeenJudged(true); // 判定済みフラグを設定
-		}
-	}
-
+	
+	//ストライク・ボール判定用のz=0.0f到達監視
 	if (isBallThrown)
 	{
-		throwCounter += elapsedTime; // 投球カウンターを更新
+		throwCounter += elapsedTime;
 
 		if (!hasReachedZero && Ball::Instance().GetWorldPosition().z <= 0.0f)
 		{
-			hasReachedZero = true; // z = 0.0f に到達したことを記録
-			char debugMessage[128];
-			snprintf(debugMessage, sizeof(debugMessage), "Time to reach z=0.0f: %.2f seconds\n", throwCounter);
-			OutputDebugStringA(debugMessage);
+			physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+			if (ballCollider)
+			{
+				hasReachedZero = true;
+
+				char debugMessage[256];
+				if (Ball::Instance().GetThroughStrikeZone())
+				{
+					snprintf(debugMessage, sizeof(debugMessage), "ストライク！\n");
+				}
+				else
+				{
+					snprintf(debugMessage, sizeof(debugMessage), "ボール！\n");
+				}
+				OutputDebugStringA(debugMessage);
+
+				char timeMessage[128];
+				snprintf(timeMessage, sizeof(timeMessage),
+					"Time to reach z=0.0f: %.2f seconds\n", throwCounter);
+				OutputDebugStringA(timeMessage);
+			}
 		}
 	}
-
-	
 
 	// ボールが地面に落ちたらリセット
 	if (Ball::Instance().GetWorldPosition().y < 0.0f)
@@ -138,6 +183,7 @@ void Pitcher::Update(float elapsedTime)
 		Ball::Instance().SetHasCollidedWithGround(false); // 地面衝突フラグをリセット
 		Ball::Instance().SetHasPassedFairFoulTrigger(false); // フェア/ファウル判定トリガー通過フラグをリセット
 		Ball::Instance().SetFoulLogged(false); // ファウルログフラグをリセット
+		Ball::Instance().SetThroughStrikeZone(false); // ストライクゾーン通過フラグをリセット
 	}
 
 	Wind::Instance().Update(elapsedTime);
@@ -174,7 +220,6 @@ void Pitcher::Update(float elapsedTime)
 			}
 		}
 	}
-
 }
 
 void Pitcher::UpdateBallCollider()
@@ -182,22 +227,7 @@ void Pitcher::UpdateBallCollider()
 	Ball::Instance().UpdateCollider();
 }
 
-bool Pitcher::IsBallInStrikeZone() const
-{
-	// ストライクゾーンの最小値と最大値を計算
-	float tolerance = 0.1f; // 変化球の影響を考慮した許容範囲
-	float strikeZoneMinX = strikeZonePosition.x - strikeZoneSize.x / 2.0f - 0.3f - tolerance;
-	float strikeZoneMaxX = strikeZonePosition.x + strikeZoneSize.x / 2.0f + 0.3f + tolerance;
-	float strikeZoneMinY = strikeZonePosition.y - strikeZoneSize.y / 2.0f - 0.3f - tolerance;
-	float strikeZoneMaxY = strikeZonePosition.y + strikeZoneSize.y / 2.0f + 0.3f + tolerance;
-	float strikeZoneMinZ = strikeZonePosition.z - strikeZoneSize.z / 2.0f - 0.3f - tolerance;
-	float strikeZoneMaxZ = strikeZonePosition.z + strikeZoneSize.z / 2.0f + 0.3f + tolerance;
 
-	// ボールがストライクゾーン内にあるかを判定
-	return (Ball::Instance().GetWorldPosition().x >= strikeZoneMinX && Ball::Instance().GetWorldPosition().x <= strikeZoneMaxX) &&
-		(Ball::Instance().GetWorldPosition().y >= strikeZoneMinY && Ball::Instance().GetWorldPosition().y <= strikeZoneMaxY) &&
-		(Ball::Instance().GetWorldPosition().z >= strikeZoneMinZ && Ball::Instance().GetWorldPosition().z <= strikeZoneMaxZ);
-}
 
 // 描画
 void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer) 
@@ -208,39 +238,6 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 
 	pitcher->render(rc.deviceContext, transform, animated_nodes);
 	Ball::Instance().Render(rc, renderer, isBallThrown);
-
-	// ShapeRenderer をボールに関連付けて描画
-	ShapeRenderer* shapeRenderer = Graphics::Instance().GetShapeRenderer();
-	const DirectX::XMFLOAT3& ballPosition = Pitcher::Instance().GetBallPosition(); // ボールの位置を取得
-	const DirectX::XMFLOAT3& ballScale = Pitcher::Instance().GetBallScale();       // ボールのスケールを取得
-	float tolerance = 0.1f; // 変化球の影響を考慮した許容範囲
-	// ストライクゾーンの範囲を描画
-	DirectX::XMFLOAT3 strikeZoneMin = {
-		strikeZonePosition.x - strikeZoneSize.x / 2.0f - 0.3f - tolerance,
-		strikeZonePosition.y - strikeZoneSize.y / 2.0f - 0.3f - tolerance,
-		strikeZonePosition.z - strikeZoneSize.z / 2.0f - 0.3f - tolerance
-	};
-	DirectX::XMFLOAT3 strikeZoneMax = {
-		strikeZonePosition.x + strikeZoneSize.x / 2.0f + 0.3f + tolerance,
-		strikeZonePosition.y + strikeZoneSize.y / 2.0f + 0.3f + tolerance,
-		strikeZonePosition.z + strikeZoneSize.z / 2.0f + 0.3f + tolerance
-	};
-
-	// ストライクゾーンを描画（緑色の半透明ボックス）
-	//shapeRenderer->DrawBox(strikeZonePosition, {}, strikeZoneSize, strikeZoneColor);
-
-	//// strikeZoneMin を赤い球体で描画
-	//shapeRenderer->DrawSphere(strikeZoneMin, 0.1f, { 1, 0, 0, 1 }); // 半径 0.1f の赤い球体
-
-	//// strikeZoneMax を青い球体で描画
-	//shapeRenderer->DrawSphere(strikeZoneMax, 0.1f, { 0, 0, 1, 1 }); // 半径 0.1f の青い球体
-
-	//// スケールを ImGui の値に基づいて変更
-	//reducedRadius = (ballScale.x / ballScale.x) * ballDebugRadius;
-
-	//// ShapeRenderer で描画
-	//shapeRenderer->DrawSphere(ballPosition, reducedRadius, { 1, 0, 0, 1 }); // スケールを適用
-	//shapeRenderer->Render(rc.context, rc.camera->GetView(), rc.camera->GetProjection(), rc.light->GetDirectionalLight().direction);
 
 	
 	Wind::Instance().Render(rc);
@@ -259,8 +256,23 @@ void Pitcher::DrawGUI()
 
 		if (ImGui::CollapsingHeader(u8"ストライクゾーン"))
 		{
-			ImGui::DragFloat3("StrikeZone Position", &strikeZonePosition.x, 0.1f);
-			ImGui::DragFloat3("StrikeZone Size", &strikeZoneSize.x, 0.1f);
+			ImGui::DragFloat3("StrikeZone Position", &boxPosition.x, 0.1f);
+			ImGui::DragFloat3("StrikeZone Size", &boxSize.x, 0.1f);
+
+			if (strikeZoneTrigger)
+			{
+				// 位置の更新
+				physx::PxTransform transform(physx::PxVec3(boxPosition.x, boxPosition.y, boxPosition.z));
+				strikeZoneTrigger->setGlobalPose(transform);
+				// サイズの更新
+				physx::PxShape* shape = nullptr;
+				strikeZoneTrigger->getShapes(&shape, 1);
+				if (shape)
+				{
+					shape->setGeometry(physx::PxBoxGeometry(boxSize.x / 2.0f, boxSize.y / 2.0f, boxSize.z / 2.0f));
+				}
+			}
+
 			ImGui::Text("Adjust the strike zone to ensure proper height.");
 		}
 		if (ImGui::CollapsingHeader("Pitcher Animation Control"))
@@ -326,6 +338,7 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 			Ball::Instance().SetHasPassedHomeRunZone(false);
 			Ball::Instance().SetHasBeenJudged(false);
 			Ball::Instance().SetFoulLogged(false);
+			Ball::Instance().SetThroughStrikeZone(false); // ストライクゾーン通過フラグをリセット
 			Ball::Instance().ResetMotion();
 		}
 	}
@@ -366,6 +379,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			Ball::Instance().SetHasPassedFairFoulTrigger(false);
 			Ball::Instance().SetHasBeenJudged(false);
 			Ball::Instance().SetFoulLogged(false);
+			Ball::Instance().SetThroughStrikeZone(false); // ストライクゾーン通過フラグをリセット
 
 			float speedMs = ballSpeedKmh / 3.6f;
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);

@@ -93,10 +93,7 @@ private:
 
 		PitchType selectedPitchType;
 
-		//ストライクゾーンの判定
-		DirectX::XMFLOAT3 strikeZonePosition = { 0.0f, 0.8f, 0.0f }; // ストライクゾーンの中心位置
-		DirectX::XMFLOAT3 strikeZoneSize = { 0.2f, 0.3f, 0.001f }; // ストライクゾーンのサイズ（幅、高さ、奥行き）
-		DirectX::XMFLOAT4 strikeZoneColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // ストライクゾーンの色（透明度付き）
+		
 		//bool hasBeenJudged = false; // 判定済みフラグ
 
 
@@ -105,7 +102,11 @@ private:
 
 private:
 
-	
+	//ストライクゾーンのトリガーボックス
+	physx::PxRigidStatic* strikeZoneTrigger = nullptr;
+	DirectX::XMFLOAT3 boxSize = { 0.43f, 0.6f, 0.001f }; // トリガーボックスのサイズ
+	DirectX::XMFLOAT3 boxPosition = { 0.0f, 0.8f, 0.0f }; // トリガーボックスの位置
+
 public:
 
 	// 状態管理
@@ -118,16 +119,13 @@ public:
 
 	State currentState = State::SelectingPitch;
 	float stateTime = 0.0f; // 現在の状態に入ってからの経過時間
-
-	public:
-		
-		const State GetCurrentState() const { return currentState; }
+	const State GetCurrentState() const { return currentState; }
 
 		
 
-		private:
-			// ===== 新規追加 =====
-			physx::PxVec3 GetSpinAxisFromPitchType() const;
+private:
+	// ===== 新規追加 =====
+	physx::PxVec3 GetSpinAxisFromPitchType() const;
 
 
 

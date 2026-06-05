@@ -528,6 +528,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			}
 
 			Ball::Instance().SetHasCollided(true);
+			Ball::Instance().SetThroughStrikeZone(true); // 衝突したらストライクゾーンを通過したとみなす
 
 			physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 			physx::PxRigidDynamic* batCollider = Player::Instance().GetBatCollider();
@@ -1101,6 +1102,20 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 					}
 					
 				}
+			}
+		}
+
+		//ボールがストライクゾーンを通った瞬間
+		// onTrigger — フラグONのみ、ログは出さない
+		if (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
+		{
+			bool ballIsTriggerActor = (pair.otherActor == Ball::Instance().GetBallCollider());
+			bool triggerIsStrikeZone = (pair.triggerActor->getName() &&
+				std::string(pair.triggerActor->getName()) == "StrikeZoneTrigger");
+
+			if (ballIsTriggerActor && triggerIsStrikeZone)
+			{
+				Ball::Instance().SetThroughStrikeZone(true);
 			}
 		}
 	}
