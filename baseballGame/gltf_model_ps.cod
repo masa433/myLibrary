@@ -223,7 +223,7 @@ dcl_temps 18
 //   v6.x <- is_front_face; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 65 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+#line 65 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl"
 mov r0.x, cb0[4].x
 ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r1.x, r0.x, l(24), t0.xxxx  // r1.x <- m.pbr_metallic_roughness.basecolor_factor.x
 ld_structured_indexable(structured_buffer, stride=96)(mixed,mixed,mixed,mixed) r1.y, r0.x, l(28), t0.xxxx  // r1.y <- m.pbr_metallic_roughness.basecolor_factor.y
@@ -356,7 +356,7 @@ mov r6.xyz, cb4[0].xyzx
 mov r7.xyz, cb4[1].xyzx
 mov r0.z, cb4[2].x
 
-#line 108 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 108 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
 dp3 r2.w, r0.xywx, r5.xyzx
 mul r2.w, r2.w, l(0.500000)
 add r2.w, r2.w, l(0.500000)  // r2.w <- factor
@@ -368,7 +368,7 @@ mul r5.xyz, r2.wwww, r5.xyzx
 add r5.xyz, r5.xyzx, r7.xyzx
 mul r5.xyz, r0.zzzz, r5.xyzx  // r5.x <- <CalcHemiSphereLight return value>.x; r5.y <- <CalcHemiSphereLight return value>.y; r5.z <- <CalcHemiSphereLight return value>.z
 
-#line 121 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+#line 121 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl"
 add r4.xyz, r4.xyzx, r5.xyzx
 
 #line 126
@@ -386,7 +386,7 @@ mov r5.xyz, r5.xyzx
 mov r6.xyz, r6.xyzx
 itof r7.xyz, l(1, 1, 1, 0)
 
-#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
 mov r8.xyz, -r5.xyzx
 dp3 r0.z, r0.xywx, r8.xyzx
 max r0.z, r0.z, l(0.000000)
@@ -396,7 +396,7 @@ min r0.z, r0.z, l(1.000000)  // r0.z <- power
 mul r8.xyz, r0.zzzz, r6.xyzx
 mul r7.xyz, r7.xyzx, r8.xyzx  // r7.x <- <CalcLambert return value>.x; r7.y <- <CalcLambert return value>.y; r7.z <- <CalcLambert return value>.z
 
-#line 128 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+#line 128 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl"
 mov r7.xyz, r7.xyzx  // r7.x <- directional_diffuse.x; r7.y <- directional_diffuse.y; r7.z <- directional_diffuse.z
 
 #line 129
@@ -407,7 +407,7 @@ mov r2.xyz, r2.xyzx
 mov r6.xyz, r6.xyzx
 itof r8.xyz, l(1, 1, 1, 0)
 
-#line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
 dp3 r0.z, r5.xyzx, r0.xywx
 add r0.z, r0.z, r0.z
 mov r0.z, -r0.z
@@ -430,7 +430,7 @@ exp r0.z, r0.z  // r0.z <- power
 mul r5.xyz, r0.zzzz, r6.xyzx
 mul r5.xyz, r8.xyzx, r5.xyzx  // r5.x <- <CalcPhongSpecular return value>.x; r5.y <- <CalcPhongSpecular return value>.y; r5.z <- <CalcPhongSpecular return value>.z
 
-#line 129 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+#line 129 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl"
 mov r5.xyz, r5.xyzx  // r5.x <- directional_specular.x; r5.y <- directional_specular.y; r5.z <- directional_specular.z
 
 #line 132
@@ -510,7 +510,7 @@ loop
   mov r12.xyz, r12.xyzx
   itof r14.xyz, l(1, 1, 1, 0)
 
-#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
   mov r15.xyz, -r11.xyzx
   dp3 r3.w, r13.xyzx, r15.xyzx
   max r3.w, r3.w, l(0.000000)
@@ -520,7 +520,7 @@ loop
   mul r13.xyz, r3.wwww, r12.xyzx
   mul r13.xyz, r14.xyzx, r13.xyzx  // r13.x <- <CalcLambert return value>.x; r13.y <- <CalcLambert return value>.y; r13.z <- <CalcLambert return value>.z
 
-#line 155 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+#line 155 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl"
   mul r13.xyz, r4.wwww, r13.xyzx
   add r9.xyz, r9.xyzx, r13.xyzx
 
@@ -532,7 +532,7 @@ loop
   mov r12.xyz, r12.xyzx
   itof r15.xyz, l(1, 1, 1, 0)
 
-#line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
   dp3 r3.w, r11.xyzx, r13.xyzx
   add r3.w, r3.w, r3.w
   mov r3.w, -r3.w
@@ -555,7 +555,7 @@ loop
   mul r11.xyz, r3.wwww, r12.xyzx
   mul r11.xyz, r15.xyzx, r11.xyzx  // r11.x <- <CalcPhongSpecular return value>.x; r11.y <- <CalcPhongSpecular return value>.y; r11.z <- <CalcPhongSpecular return value>.z
 
-#line 156 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+#line 156 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl"
   mul r11.xyz, r4.wwww, r11.xyzx
   add r10.xyz, r10.xyzx, r11.xyzx
 
@@ -649,7 +649,7 @@ loop
   mov r14.xyz, r14.xyzx
   itof r16.xyz, l(1, 1, 1, 0)
 
-#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
   mov r17.xyz, -r13.xyzx
   dp3 r4.w, r15.xyzx, r17.xyzx
   max r4.w, r4.w, l(0.000000)
@@ -659,7 +659,7 @@ loop
   mul r15.xyz, r4.wwww, r14.xyzx
   mul r15.xyz, r16.xyzx, r15.xyzx  // r15.x <- <CalcLambert return value>.x; r15.y <- <CalcLambert return value>.y; r15.z <- <CalcLambert return value>.z
 
-#line 176 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+#line 176 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl"
   mul r15.xyz, r3.wwww, r15.xyzx
   add r11.xyz, r11.xyzx, r15.xyzx
 
@@ -671,7 +671,7 @@ loop
   mov r14.xyz, r14.xyzx
   itof r17.xyz, l(1, 1, 1, 0)
 
-#line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
   dp3 r4.w, r13.xyzx, r15.xyzx
   add r4.w, r4.w, r4.w
   mov r4.w, -r4.w
@@ -694,7 +694,7 @@ loop
   mul r13.xyz, r4.wwww, r14.xyzx
   mul r13.xyz, r17.xyzx, r13.xyzx  // r13.x <- <CalcPhongSpecular return value>.x; r13.y <- <CalcPhongSpecular return value>.y; r13.z <- <CalcPhongSpecular return value>.z
 
-#line 177 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+#line 177 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl"
   mul r13.xyz, r3.wwww, r13.xyzx
   add r12.xyz, r12.xyzx, r13.xyzx
 
@@ -730,7 +730,7 @@ add r3.xyz, r3.xyzx, v1.xyzx
 dp3 r2.z, r3.xyzx, r3.xyzx
 sqrt r2.z, r2.z
 
-#line 122 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 122 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
 mov r2.w, -r2.x
 add r2.z, r2.w, r2.z
 mov r2.x, -r2.x
@@ -745,7 +745,7 @@ add r0.xyzw, r0.xyzw, r3.xyzw
 mul r0.xyzw, r0.xyzw, r2.xxxx
 add r0.xyzw, r0.xyzw, r1.xyzw  // r0.x <- <CalcFog return value>.x; r0.y <- <CalcFog return value>.y; r0.z <- <CalcFog return value>.z; r0.w <- <CalcFog return value>.w
 
-#line 188 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.hlsl"
+#line 188 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl"
 mov r0.xyzw, r0.xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w <- color.w
 
 #line 189

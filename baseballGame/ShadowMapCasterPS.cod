@@ -100,7 +100,7 @@ dcl_temps 3
 //   v6.x <- pin.shadowTexcoord.x; v6.y <- pin.shadowTexcoord.y; v6.z <- pin.shadowTexcoord.z; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 21 "C:\Users\2240021\Desktop\myLibrary\baseballGame\ShadowMapCasterPS.hlsl"
+#line 21 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\ShadowMapCasterPS.hlsl"
 sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v1.xyxx, t0.xyzw, s0
 mul r0.xyzw, r0.xyzw, cb1[0].xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w <- color.w
 

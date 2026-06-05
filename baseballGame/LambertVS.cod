@@ -91,7 +91,7 @@ dcl_temps 8
 //   o1.x <- <main return value>.texcoord.x; o1.y <- <main return value>.texcoord.y; 
 //   o0.x <- <main return value>.vertex.x; o0.y <- <main return value>.vertex.y; o0.z <- <main return value>.vertex.z; o0.w <- <main return value>.vertex.w
 //
-#line 11 "C:\Users\2240021\Desktop\myLibrary\baseballGame\LambertVS.hlsl"
+#line 11 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\LambertVS.hlsl"
 itof r0.xyz, l(0, 0, 0, 0)  // r0.x <- vout.position.x; r0.y <- vout.position.y; r0.z <- vout.position.z
 itof r1.xyz, l(0, 0, 0, 0)  // r1.x <- vout.tangent.x; r1.y <- vout.tangent.y; r1.z <- vout.tangent.z
 
@@ -99,7 +99,7 @@ itof r1.xyz, l(0, 0, 0, 0)  // r1.x <- vout.tangent.x; r1.y <- vout.tangent.y; r
 nop 
 mov r2.xyzw, v0.xyzw
 
-#line 8 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Skinning.hlsli"
+#line 8 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\Skinning.hlsli"
 itof r3.xyzw, l(0, 0, 0, 0)  // r3.x <- p.x; r3.y <- p.y; r3.z <- p.z; r3.w <- p.w
 
 #line 13
@@ -147,7 +147,7 @@ add r2.xyzw, r2.xyzw, r3.xyzw  // r2.x <- p.x; r2.y <- p.y; r2.z <- p.z; r2.w <-
 #line 15
 mov r2.xyzw, r2.xyzw  // r2.x <- <SkinningPosition return value>.x; r2.y <- <SkinningPosition return value>.y; r2.z <- <SkinningPosition return value>.z; r2.w <- <SkinningPosition return value>.w
 
-#line 13 "C:\Users\2240021\Desktop\myLibrary\baseballGame\LambertVS.hlsl"
+#line 13 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\LambertVS.hlsl"
 mov r2.xyzw, r2.xyzw  // r2.x <- position.x; r2.y <- position.y; r2.z <- position.z; r2.w <- position.w
 
 #line 14
@@ -166,7 +166,7 @@ mov r3.xy, v3.xyxx  // r3.x <- vout.texcoord.x; r3.y <- vout.texcoord.y
 nop 
 mov r4.xyz, v4.xyzx
 
-#line 20 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Skinning.hlsli"
+#line 20 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\Skinning.hlsli"
 itof r5.xyz, l(0, 0, 0, 0)  // r5.x <- v.x; r5.y <- v.y; r5.z <- v.z
 
 #line 25
@@ -218,7 +218,7 @@ add r4.xyz, r4.xyzx, r5.xyzx  // r4.x <- v.x; r4.y <- v.y; r4.z <- v.z
 #line 27
 mov r4.xyz, r4.xyzx  // r4.x <- <SkinningVector return value>.x; r4.y <- <SkinningVector return value>.y; r4.z <- <SkinningVector return value>.z
 
-#line 16 "C:\Users\2240021\Desktop\myLibrary\baseballGame\LambertVS.hlsl"
+#line 16 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\LambertVS.hlsl"
 mov r4.xyz, r4.xyzx  // r4.x <- vout.normal.x; r4.y <- vout.normal.y; r4.z <- vout.normal.z
 
 #line 18

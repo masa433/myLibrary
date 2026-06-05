@@ -49,7 +49,7 @@ dcl_temps 2
 //   v1.x <- pin.normal.x; v1.y <- pin.normal.y; v1.z <- pin.normal.z; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 5 "C:\Users\2240021\Desktop\myLibrary\baseballGame\SolidShapeRendererPS.hlsl"
+#line 5 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\SolidShapeRendererPS.hlsl"
 dp3 r0.x, v1.xyzx, v1.xyzx
 rsq r0.x, r0.x
 mul r0.xyz, r0.xxxx, v1.xyzx  // r0.x <- N.x; r0.y <- N.y; r0.z <- N.z

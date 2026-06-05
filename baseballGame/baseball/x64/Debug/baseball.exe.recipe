@@ -64,10 +64,16 @@
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\shadowmap_caster_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\SolidShapeRendererPS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\SolidShapeRendererVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\SolidShapeRendererPS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\ToonShaderPS.cso</FullPath>
@@ -80,12 +86,6 @@
     </ContentFile>
     <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\WiredShapeRendererVS.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_ps.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_vs.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

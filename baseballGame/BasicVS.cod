@@ -79,11 +79,11 @@ dcl_temps 5
 //   o1.x <- <main return value>.texcoord.x; o1.y <- <main return value>.texcoord.y; 
 //   o0.x <- <main return value>.vertex.x; o0.y <- <main return value>.vertex.y; o0.z <- <main return value>.vertex.z; o0.w <- <main return value>.vertex.w
 //
-#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\BasicVS.hlsl"
+#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\BasicVS.hlsl"
 nop 
 mov r0.xyzw, v0.xyzw
 
-#line 8 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Skinning.hlsli"
+#line 8 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\Skinning.hlsli"
 itof r1.xyzw, l(0, 0, 0, 0)  // r1.x <- p.x; r1.y <- p.y; r1.z <- p.z; r1.w <- p.w
 
 #line 13
@@ -131,7 +131,7 @@ add r0.xyzw, r0.xyzw, r1.xyzw  // r0.x <- p.x; r0.y <- p.y; r0.z <- p.z; r0.w <-
 #line 15
 mov r0.xyzw, r0.xyzw  // r0.x <- <SkinningPosition return value>.x; r0.y <- <SkinningPosition return value>.y; r0.z <- <SkinningPosition return value>.z; r0.w <- <SkinningPosition return value>.w
 
-#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\BasicVS.hlsl"
+#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\BasicVS.hlsl"
 mov r0.xyzw, r0.xyzw  // r0.x <- position.x; r0.y <- position.y; r0.z <- position.z; r0.w <- position.w
 
 #line 13

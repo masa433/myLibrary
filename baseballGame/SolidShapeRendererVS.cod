@@ -53,7 +53,7 @@ dcl_temps 6
 //   o1.x <- <main return value>.normal.x; o1.y <- <main return value>.normal.y; o1.z <- <main return value>.normal.z; 
 //   o0.x <- <main return value>.position.x; o0.y <- <main return value>.position.y; o0.z <- <main return value>.position.z; o0.w <- <main return value>.position.w
 //
-#line 5 "C:\Users\2240021\Desktop\myLibrary\baseballGame\SolidShapeRendererVS.hlsl"
+#line 5 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\SolidShapeRendererVS.hlsl"
 itof r0.x, l(0)  // r0.x <- normal.w
 
 #line 8

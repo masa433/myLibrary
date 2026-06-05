@@ -109,7 +109,7 @@ dcl_temps 11
 //   o1.x <- <main return value>.w_position.x; o1.y <- <main return value>.w_position.y; o1.z <- <main return value>.w_position.z; o1.w <- <main return value>.w_position.w; 
 //   o0.x <- <main return value>.position.x; o0.y <- <main return value>.position.y; o0.z <- <main return value>.position.z; o0.w <- <main return value>.position.w
 //
-#line 5 "C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_vs.hlsl"
+#line 5 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_vs.hlsl"
 mov r0.x, v2.w  // r0.x <- sigma
 
 #line 7

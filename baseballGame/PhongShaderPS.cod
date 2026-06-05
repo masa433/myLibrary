@@ -81,7 +81,7 @@ dcl_temps 14
 //   v4.x <- pin.tangent.x; v4.y <- pin.tangent.y; v4.z <- pin.tangent.z; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 14 "C:\Users\2240021\Desktop\myLibrary\baseballGame\PhongShaderPS.hlsl"
+#line 14 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\PhongShaderPS.hlsl"
 sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v1.xyxx, t0.xyzw, s0
 mul r0.xyzw, r0.xyzw, cb1[0].xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w <- color.w
 
@@ -173,7 +173,7 @@ if_nz r2.w
   mov r10.xyz, cb0[8].xyzx
   mov r4.xyz, r4.xyzx
 
-#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
   mov r11.xyz, -r9.xyzx
   dp3 r1.w, r1.xyzx, r11.xyzx
   max r1.w, r1.w, l(0.000000)
@@ -183,7 +183,7 @@ if_nz r2.w
   mul r10.xyz, r1.wwww, r10.xyzx
   mul r10.xyz, r4.xyzx, r10.xyzx  // r10.x <- <CalcLambert return value>.x; r10.y <- <CalcLambert return value>.y; r10.z <- <CalcLambert return value>.z
 
-#line 44 "C:\Users\2240021\Desktop\myLibrary\baseballGame\PhongShaderPS.hlsl"
+#line 44 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\PhongShaderPS.hlsl"
   mul r7.xyz, r2.wwww, r10.xyzx
 
 #line 45
@@ -194,7 +194,7 @@ if_nz r2.w
   mov r10.xyz, cb0[8].xyzx
   mov r5.xyz, r5.xyzx
 
-#line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
   dp3 r1.w, r9.xyzx, r1.xyzx
   add r1.w, r1.w, r1.w
   mov r1.w, -r1.w
@@ -217,7 +217,7 @@ if_nz r2.w
   mul r9.xyz, r1.wwww, r10.xyzx
   mul r9.xyz, r5.xyzx, r9.xyzx  // r9.x <- <CalcPhongSpecular return value>.x; r9.y <- <CalcPhongSpecular return value>.y; r9.z <- <CalcPhongSpecular return value>.z
 
-#line 45 "C:\Users\2240021\Desktop\myLibrary\baseballGame\PhongShaderPS.hlsl"
+#line 45 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\PhongShaderPS.hlsl"
   mul r8.xyz, r2.wwww, r9.xyzx
 
 #line 46
@@ -283,7 +283,7 @@ if_nz r2.w
   mov r12.xyz, cb0[11].xyzx
   mov r4.xyz, r4.xyzx
 
-#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 12 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
   mov r13.xyz, -r11.xyzx
   dp3 r2.w, r1.xyzx, r13.xyzx
   max r2.w, r2.w, l(0.000000)
@@ -293,7 +293,7 @@ if_nz r2.w
   mul r12.xyz, r2.wwww, r12.xyzx
   mul r4.xyz, r4.xyzx, r12.xyzx  // r4.x <- <CalcLambert return value>.x; r4.y <- <CalcLambert return value>.y; r4.z <- <CalcLambert return value>.z
 
-#line 65 "C:\Users\2240021\Desktop\myLibrary\baseballGame\PhongShaderPS.hlsl"
+#line 65 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\PhongShaderPS.hlsl"
   mul r4.xyz, r1.wwww, r4.xyzx
   add r9.xyz, r4.xyzx, r9.xyzx
 
@@ -305,7 +305,7 @@ if_nz r2.w
   mov r4.xyz, cb0[11].xyzx
   mov r5.xyz, r5.xyzx
 
-#line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shading_function.hlsli"
+#line 27 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli"
   dp3 r2.w, r11.xyzx, r1.xyzx
   add r2.w, r2.w, r2.w
   mov r2.w, -r2.w
@@ -328,7 +328,7 @@ if_nz r2.w
   mul r1.xyz, r1.xxxx, r4.xyzx
   mul r1.xyz, r5.xyzx, r1.xyzx  // r1.x <- <CalcPhongSpecular return value>.x; r1.y <- <CalcPhongSpecular return value>.y; r1.z <- <CalcPhongSpecular return value>.z
 
-#line 66 "C:\Users\2240021\Desktop\myLibrary\baseballGame\PhongShaderPS.hlsl"
+#line 66 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\PhongShaderPS.hlsl"
   mul r1.xyz, r1.wwww, r1.xyzx
   add r10.xyz, r1.xyzx, r10.xyzx
 

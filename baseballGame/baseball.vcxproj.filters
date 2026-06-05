@@ -1,154 +1,130 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{9f64f4ff-d9e0-43d7-88e1-13e6d3656a89}</UniqueIdentifier>
-      <Extensions>hlsl;hlsli</Extensions>
-    </Filter>
-    <Filter Include="Headers">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resources">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Sources">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="imgui">
-      <UniqueIdentifier>{5d2ed881-4062-49d0-a1ce-86240074d016}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="framework.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Game\Ball.cpp">
+      <Filter>Sources\Game</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Game\game_object.cpp">
+      <Filter>Sources\Game</Filter>
     </ClCompile>
-    <ClCompile Include="sprite.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Game\Pitcher.cpp">
+      <Filter>Sources\Game</Filter>
     </ClCompile>
-    <ClCompile Include="sprite_batch.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Game\Player.cpp">
+      <Filter>Sources\Game</Filter>
     </ClCompile>
-    <ClCompile Include="texture.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Game\stage.cpp">
+      <Filter>Sources\Game</Filter>
     </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Game\Wind.cpp">
+      <Filter>Sources\Game</Filter>
     </ClCompile>
-    <ClCompile Include="shader.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Graphics\GpuResourceUtils.cpp">
+      <Filter>Sources\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="framebuffer.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Graphics\Graphics.cpp">
+      <Filter>Sources\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="fullscreen_quad.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Graphics\RenderState.cpp">
+      <Filter>Sources\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="gltf_model.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Graphics\texture.cpp">
+      <Filter>Sources\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="scene_game.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Graphics\TextureManager.cpp">
+      <Filter>Sources\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="camera.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Camera\camera.cpp">
+      <Filter>Sources\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="camera_controller.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Camera\camera_controller.cpp">
+      <Filter>Sources\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="stage.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Input\game_pad.cpp">
+      <Filter>Sources\Input</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Input\input.cpp">
+      <Filter>Sources\Input</Filter>
     </ClCompile>
-    <ClCompile Include="game_object.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Input\mouse.cpp">
+      <Filter>Sources\Input</Filter>
     </ClCompile>
-    <ClCompile Include="game_pad.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\System\framebuffer.cpp">
+      <Filter>Sources\System</Filter>
     </ClCompile>
-    <ClCompile Include="input.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\System\framework.cpp">
+      <Filter>Sources\System</Filter>
     </ClCompile>
-    <ClCompile Include="mouse.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\System\fullscreen_quad.cpp">
+      <Filter>Sources\System</Filter>
     </ClCompile>
-    <ClCompile Include="RenderState.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\System\main.cpp">
+      <Filter>Sources\System</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Scene\scene_game.cpp">
+      <Filter>Sources\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Pitcher.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Renderer\ModelRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="shapeRenderer.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Renderer\PrimitiveRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="collision.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Renderer\shapeRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="physxManager.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Renderer\sprite.cpp">
+      <Filter>Sources\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="PrimitiveRenderer.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Renderer\sprite_batch.cpp">
+      <Filter>Sources\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Renderer\UIEasing.cpp">
+      <Filter>Sources\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ModelRenderer.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Physics\physxManager.cpp">
+      <Filter>Sources\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="ModelResource.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Model\gltf_model.cpp">
+      <Filter>Sources\Model</Filter>
     </ClCompile>
-    <ClCompile Include="GpuResourceUtils.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Model\Model.cpp">
+      <Filter>Sources\Model</Filter>
     </ClCompile>
-    <ClCompile Include="BasicShader.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Model\ModelResource.cpp">
+      <Filter>Sources\Model</Filter>
     </ClCompile>
-    <ClCompile Include="LambertShader.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Shader\BasicShader.cpp">
+      <Filter>Sources\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="PhongShader.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Shader\LambertShader.cpp">
+      <Filter>Sources\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="ToonShader.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Shader\PhongShader.cpp">
+      <Filter>Sources\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowMapShader.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Shader\shader.cpp">
+      <Filter>Sources\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="UIEasing.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Shader\ShadowMapShader.cpp">
+      <Filter>Sources\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="Ball.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Shader\ToonShader.cpp">
+      <Filter>Sources\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="Wind.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\Collision\collision.cpp">
+      <Filter>Sources\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="External\imgui-docking\imgui.cpp">
+    <ClCompile Include="imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="External\imgui-docking\imgui_demo.cpp">
+    <ClCompile Include="imgui\imgui_draw.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="External\imgui-docking\imgui_draw.cpp">
+    <ClCompile Include="imgui\imgui_ja_gryph_ranges.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="External\imgui-docking\imgui_tables.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui-docking\imgui_widgets.cpp">
+    <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="External\imgui-docking\backends\imgui_impl_dx11.cpp">
@@ -157,293 +133,352 @@
     <ClCompile Include="External\imgui-docking\backends\imgui_impl_win32.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Game\Ball.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
-    <ClInclude Include="high_resolution_timer.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Game\game_object.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
-    <ClInclude Include="misc.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Game\Pitcher.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
-    <ClInclude Include="sprite.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Game\Player.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
-    <ClInclude Include="sprite_batch.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Game\stage.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
-    <ClInclude Include="texture.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Game\Wind.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
-    <ClInclude Include="TextureManager.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Graphics\GpuResourceUtils.h">
+      <Filter>Sources\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="shader.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Graphics\Graphics.h">
+      <Filter>Sources\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="framebuffer.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Graphics\RenderContext.h">
+      <Filter>Sources\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="fullscreen_quad.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Graphics\RenderState.h">
+      <Filter>Sources\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="gltf_model.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Graphics\texture.h">
+      <Filter>Sources\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="scene_game.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Graphics\TextureManager.h">
+      <Filter>Sources\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="scene.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Camera\camera.h">
+      <Filter>Sources\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="camera.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Camera\camera_controller.h">
+      <Filter>Sources\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="camera_controller.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Input\game_pad.h">
+      <Filter>Sources\Input</Filter>
     </ClInclude>
-    <ClInclude Include="stage.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Input\input.h">
+      <Filter>Sources\Input</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Input\mouse.h">
+      <Filter>Sources\Input</Filter>
     </ClInclude>
-    <ClInclude Include="game_object.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\System\framebuffer.h">
+      <Filter>Sources\System</Filter>
     </ClInclude>
-    <ClInclude Include="input.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\System\framework.h">
+      <Filter>Sources\System</Filter>
     </ClInclude>
-    <ClInclude Include="game_pad.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\System\fullscreen_quad.h">
+      <Filter>Sources\System</Filter>
     </ClInclude>
-    <ClInclude Include="mouse.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\System\high_resolution_timer.h">
+      <Filter>Sources\System</Filter>
     </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\System\misc.h">
+      <Filter>Sources\System</Filter>
     </ClInclude>
-    <ClInclude Include="RenderContext.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Scene\scene.h">
+      <Filter>Sources\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="RenderState.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Scene\scene_game.h">
+      <Filter>Sources\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Renderer\ModelRenderer.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Pitcher.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Renderer\PrimitiveRenderer.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="shapeRenderer.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Renderer\shapeRenderer.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="collision.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Renderer\sprite.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="physxManager.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Renderer\sprite_batch.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="PrimitiveRenderer.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Renderer\UiEasing.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Physics\physxManager.h">
+      <Filter>Sources\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="ModelRenderer.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Model\gltf_model.h">
+      <Filter>Sources\Model</Filter>
     </ClInclude>
-    <ClInclude Include="ModelResource.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Model\Model.h">
+      <Filter>Sources\Model</Filter>
     </ClInclude>
-    <ClInclude Include="GpuResourceUtils.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Model\ModelResource.h">
+      <Filter>Sources\Model</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderId.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Shader\BasicShader.h">
+      <Filter>Sources\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="BasicShader.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Shader\LambertShader.h">
+      <Filter>Sources\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="LambertShader.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Shader\PhongShader.h">
+      <Filter>Sources\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="PhongShader.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Shader\shader.h">
+      <Filter>Sources\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="ToonShader.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Shader\ShaderId.h">
+      <Filter>Sources\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="ShadowMapShader.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Shader\ShadowMapShader.h">
+      <Filter>Sources\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="UiEasing.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Shader\ToonShader.h">
+      <Filter>Sources\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="Ball.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Collision\collision.h">
+      <Filter>Sources\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="Wind.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Sources\Light\Light.h">
+      <Filter>Sources\Light</Filter>
     </ClInclude>
-    <ClInclude Include="External\imgui-docking\imconfig.h">
+    <ClInclude Include="imgui\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="External\imgui-docking\imgui.h">
+    <ClInclude Include="imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="External\imgui-docking\imgui_internal.h">
+    <ClInclude Include="imgui\imgui_internal.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="External\imgui-docking\imstb_rectpack.h">
+    <ClInclude Include="imgui\imstb_rectpack.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="External\imgui-docking\imstb_textedit.h">
+    <ClInclude Include="imgui\imstb_textedit.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="External\imgui-docking\imstb_truetype.h">
+    <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui-docking\backends\imgui_impl_dx11.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui-docking\backends\imgui_impl_win32.h">
       <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="sprite.hlsli">
+    <None Include="Shaders\Basic.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="fullscreen_quad.hlsli">
+    <None Include="Shaders\bidirectional_reflectance_distribution_function.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="gltf_model.hlsli">
+    <None Include="Shaders\fullscreen_quad.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="bidirectional_reflectance_distribution_function.hlsli">
+    <None Include="Shaders\gltf_model.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="image_based_lighting.hlsli">
+    <None Include="Shaders\image_based_lighting.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="WiredShapeRenderer.hlsli">
+    <None Include="Shaders\Lambert.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="PrimitiveRenderer.hlsli">
+    <None Include="Shaders\Lights.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="SolidShapeRenderer.hlsli">
+    <None Include="Shaders\PhongShader.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Basic.hlsli">
+    <None Include="Shaders\phong_shader.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Lambert.hlsli">
+    <None Include="Shaders\PrimitiveRenderer.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Scene.hlsli">
+    <None Include="Shaders\Scene.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Skinning.hlsli">
+    <None Include="Shaders\shading_function.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="PhongShader.hlsli">
+    <None Include="Shaders\ShadowMapCaster.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="ToonShader.hlsli">
+    <None Include="Shaders\Skinning.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="ShadowMapCaster.hlsli">
+    <None Include="Shaders\SolidShapeRenderer.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shading_function.hlsli">
+    <None Include="Shaders\sprite.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="phong_shader.hlsli">
+    <None Include="Shaders\ToonShader.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Lights.hlsli">
+    <None Include="Shaders\WiredShapeRenderer.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="sprite_vs.hlsl">
+    <FxCompile Include="Shaders\BasicPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="sprite_ps.hlsl">
+    <FxCompile Include="Shaders\BasicVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="fullscreen_quad_vs.hlsl">
+    <FxCompile Include="Shaders\blur_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="fullscreen_quad_ps.hlsl">
+    <FxCompile Include="Shaders\fullscreen_quad_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="luminance_extraction_ps.hlsl">
+    <FxCompile Include="Shaders\fullscreen_quad_vs.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="blur_ps.hlsl">
+    <FxCompile Include="Shaders\gltf_model_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="gltf_model_vs.hlsl">
+    <FxCompile Include="Shaders\gltf_model_vs.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="gltf_model_ps.hlsl">
+    <FxCompile Include="Shaders\LambertPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="WiredShapeRendererPS.hlsl">
+    <FxCompile Include="Shaders\LambertVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="WiredShapeRendererVS.hlsl">
+    <FxCompile Include="Shaders\luminance_extraction_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="PrimitiveRendererVS.hlsl">
+    <FxCompile Include="Shaders\PhongShaderPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="PrimitiveRendererPS.hlsl">
+    <FxCompile Include="Shaders\PhongShaderVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SolidShapeRendererVS.hlsl">
+    <FxCompile Include="Shaders\phong_shader_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SolidShapeRendererPS.hlsl">
+    <FxCompile Include="Shaders\phong_shader_vs.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="BasicVS.hlsl">
+    <FxCompile Include="Shaders\PrimitiveRendererPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="BasicPS.hlsl">
+    <FxCompile Include="Shaders\PrimitiveRendererVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="LambertVS.hlsl">
+    <FxCompile Include="Shaders\ShadowMapCasterPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="LambertPS.hlsl">
+    <FxCompile Include="Shaders\ShadowMapCasterVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="PhongShaderVS.hlsl">
+    <FxCompile Include="Shaders\shadowmap_caster_vs.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="PhongShaderPS.hlsl">
+    <FxCompile Include="Shaders\SolidShapeRendererPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ToonShaderVS.hlsl">
+    <FxCompile Include="Shaders\SolidShapeRendererVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ToonShaderPS.hlsl">
+    <FxCompile Include="Shaders\sprite_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ShadowMapCasterPS.hlsl">
+    <FxCompile Include="Shaders\sprite_vs.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ShadowMapCasterVS.hlsl">
+    <FxCompile Include="Shaders\ToonShaderPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="phong_shader_vs.hlsl">
+    <FxCompile Include="Shaders\ToonShaderVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="phong_shader_ps.hlsl">
+    <FxCompile Include="Shaders\WiredShapeRendererPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shadowmap_caster_vs.hlsl">
+    <FxCompile Include="Shaders\WiredShapeRendererVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{27dc4e56-777a-4329-83e7-c80db7ebf67d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{964412b9-b910-408e-a8df-7247c19c58c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Game">
+      <UniqueIdentifier>{aa6ff14f-91a4-418a-99d6-4d51ec0941cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Graphics">
+      <UniqueIdentifier>{db310b51-10fc-491d-b247-87f58ed8af59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Camera">
+      <UniqueIdentifier>{3f013e4e-080c-418d-9c30-489b1a696f6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Input">
+      <UniqueIdentifier>{2dcaa47c-a73f-4d28-9da0-a9ada918a9c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\System">
+      <UniqueIdentifier>{49b28c3d-b48a-49f2-af8d-add66499f182}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Scene">
+      <UniqueIdentifier>{9a6ee45f-5cd7-42cd-be8f-2867f6f555c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Renderer">
+      <UniqueIdentifier>{7d97e13b-0edd-4105-89d6-074375d5ea9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Physics">
+      <UniqueIdentifier>{9e43bb78-3ff4-4bbc-9ad4-b18258e80e44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Model">
+      <UniqueIdentifier>{d93e75d0-29b5-48a4-8522-d3789f72b2d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Shader">
+      <UniqueIdentifier>{30770ae6-4335-4ac2-a926-da990853d91c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Collision">
+      <UniqueIdentifier>{0cc9509b-09fb-4383-a533-cd1b6ac625e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Light">
+      <UniqueIdentifier>{a03efc0f-b9d3-4263-a270-e002f7238406}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{fb19dac7-484f-4c85-9ad2-d4101527830d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

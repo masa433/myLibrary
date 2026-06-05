@@ -81,7 +81,7 @@ dcl_temps 5
 //   v4.x <- pin.tangent.x; v4.y <- pin.tangent.y; v4.z <- pin.tangent.z; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 13 "C:\Users\2240021\Desktop\myLibrary\baseballGame\ToonShaderPS.hlsl"
+#line 13 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\ToonShaderPS.hlsl"
 sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v1.xyxx, t0.xyzw, s0
 mul r0.xyzw, r0.xyzw, cb1[0].xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w <- color.w
 

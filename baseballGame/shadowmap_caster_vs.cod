@@ -83,7 +83,7 @@ dcl_temps 10
 //   o1.x <- <main return value>.w_position.x; o1.y <- <main return value>.w_position.y; o1.z <- <main return value>.w_position.z; o1.w <- <main return value>.w_position.w; 
 //   o0.x <- <main return value>.position.x; o0.y <- <main return value>.position.y; o0.z <- <main return value>.position.z; o0.w <- <main return value>.position.w
 //
-#line 5 "C:\Users\2240021\Desktop\myLibrary\baseballGame\shadowmap_caster_vs.hlsl"
+#line 5 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shadowmap_caster_vs.hlsl"
 itof r0.xyzw, l(0, 0, 0, 0)  // r0.x <- vout.w_position.x; r0.y <- vout.w_position.y; r0.z <- vout.w_position.z; r0.w <- vout.w_position.w
 itof r1.xyzw, l(0, 0, 0, 0)  // r1.x <- vout.w_normal.x; r1.y <- vout.w_normal.y; r1.z <- vout.w_normal.z; r1.w <- vout.w_normal.w
 itof r2.xyzw, l(0, 0, 0, 0)  // r2.x <- vout.w_tangent.x; r2.y <- vout.w_tangent.y; r2.z <- vout.w_tangent.z; r2.w <- vout.w_tangent.w

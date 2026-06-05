@@ -84,7 +84,7 @@ dcl_temps 7
 //   v3.x <- pin.texcoord.x; v3.y <- pin.texcoord.y; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 11 "C:\Users\2240021\Desktop\myLibrary\baseballGame\phong_shader_ps.hlsl"
+#line 11 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\phong_shader_ps.hlsl"
 sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v3.xyxx, t0.xyzw, s0  // r0.x <- diffuse_color.x; r0.y <- diffuse_color.y; r0.z <- diffuse_color.z; r0.w <- diffuse_color.w
 
 #line 12

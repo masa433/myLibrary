@@ -44,7 +44,7 @@ dcl_temps 5
 //   v2.x <- pin.texcoord.x; v2.y <- pin.texcoord.y; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 10 "C:\Users\2240021\Desktop\myLibrary\baseballGame\blur_ps.hlsl"
+#line 10 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\blur_ps.hlsl"
 mov r0.x, l(0)  // r0.x <- mip_level
 
 #line 11
