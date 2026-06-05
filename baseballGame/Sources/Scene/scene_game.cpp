@@ -12,6 +12,7 @@
 #include "GpuResourceUtils.h"
 #include "shader.h"
 #include "texture.h"
+#include "sprite.h"
 
 CONST LONG SHADOWMAP_WIDTH{ 8192 };
 CONST LONG SHADOWMAP_HEIGHT{ 8192 };
@@ -75,6 +76,18 @@ void scene_game::initialize()
 		buffer_desc.ByteWidth = sizeof(shadowmap_constants);
 		hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, shadowmap_constant_buffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		//高輝度抽出の定数バッファの作成
+		buffer_desc.ByteWidth = sizeof(luminance_extract_constants);
+		hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, luminance_extract_constant_buffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+        //	ガウスフィルター用定数バッファ      
+        buffer_desc.ByteWidth = sizeof(gaussian_filter_constants);
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, gaussian_filter_constant_buffer.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        
+
     }
     
 
@@ -237,6 +250,98 @@ void scene_game::initialize()
 
         create_vs_from_cso(device,"shadowmap_caster_vs.cso", shadowmap_caster_vertex_shader.GetAddressOf(), shadowmap_caster_input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
     }
+
+    //	スプライトシェーダー準備
+    {
+        D3D11_INPUT_ELEMENT_DESC input_element_desc[]
+        {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+        create_vs_from_cso(device, "sprite_vs.cso", sprite_vertex_shader.GetAddressOf(), sprite_input_layout.GetAddressOf(), input_element_desc, _countof(input_element_desc));
+        create_ps_from_cso(device, "sprite_ps.cso", sprite_pixel_shader.GetAddressOf());
+
+     
+    }
+
+    //高輝度抽出バッファ生成
+    {
+        D3D11_TEXTURE2D_DESC texture2d_desc{};
+        texture2d_desc.Width = SCREEN_WIDTH;
+        texture2d_desc.Height = SCREEN_HEIGHT;
+        texture2d_desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        texture2d_desc.MipLevels = 1;
+        texture2d_desc.ArraySize = 1;
+        texture2d_desc.SampleDesc.Count = 1;
+        texture2d_desc.SampleDesc.Quality = 0;
+        texture2d_desc.Usage = D3D11_USAGE_DEFAULT;
+        texture2d_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+        texture2d_desc.CPUAccessFlags = 0;
+        texture2d_desc.MiscFlags = 0;
+
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
+		hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        //	レンダーターゲットビュー生成
+        hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, luminance_extract_render_target_view.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        //	シェーダーリソースビュー生成
+        hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, luminance_extract_shader_resource_view.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    }
+
+    //	高輝度抽出暈しバッファ生成
+    {
+        D3D11_TEXTURE2D_DESC texture2d_desc{};
+        texture2d_desc.Width = SCREEN_WIDTH;
+        texture2d_desc.Height = SCREEN_HEIGHT;
+        texture2d_desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        texture2d_desc.MipLevels = 1;
+        texture2d_desc.ArraySize = 1;
+        texture2d_desc.SampleDesc.Count = 1;
+        texture2d_desc.SampleDesc.Quality = 0;
+        texture2d_desc.Usage = D3D11_USAGE_DEFAULT;
+        texture2d_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+        texture2d_desc.CPUAccessFlags = 0;
+        texture2d_desc.MiscFlags = 0;
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
+        hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        //	レンダーターゲットビュー生成
+        hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, bokeh_luminance_extract_render_target_view.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        //	シェーダーリソースビュー生成
+        hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, bokeh_luminance_extract_shader_resource_view.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    }
+
+
+    //高輝度抽出用シェーダー
+    {
+        D3D11_INPUT_ELEMENT_DESC input_element_desc[]
+        {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+            { "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "JOINTS", 0, DXGI_FORMAT_R16G16B16A16_UINT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "WEIGHTS", 0,DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+        create_ps_from_cso(device, "luminance_extract_ps.cso", luminance_extract_pixel_shader.GetAddressOf());
+        luminance_extract_pass_sprite = std::make_unique<sprite>(device, scene_shader_resource_view);
+
+        //	高輝度抽出バッファぼかし用
+        create_ps_from_cso(device, "gaussian_filtering_ps.cso", gaussian_filter_pixel_shader.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        bokeh_luminance_extract_pass_sprite = std::make_unique<sprite>(device, luminance_extract_shader_resource_view);
+
+
+        //ぼかした結果を利用するスプライト
+        add_luminance_extract_pass_sprite = std::make_unique<sprite>(device, bokeh_luminance_extract_shader_resource_view);
+	}
 }
 
 void scene_game::update(float elapsed_time)
@@ -367,6 +472,19 @@ void scene_game::update(float elapsed_time)
 
 	ImGui::Checkbox("Show PhysX Debug", &showPhysxDebug);
 
+    if (ImGui::CollapsingHeader("bloom"))
+    {
+        ImGui::Text("luminance_extract");
+        ImGui::SliderFloat("threshold", &luminance_extract_constant.threshold, 0.0f, 2.0f);
+        ImGui::SliderFloat("intensity", &luminance_extract_constant.intensity, 0.0f, 10.0f);
+        ImGui::Image(ImTextureRef(luminance_extract_shader_resource_view.Get()), ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1));
+
+        ImGui::Text("bokeh_luminance_extract");
+        ImGui::SliderInt("kernel", &gaussian_filter_data.kernel_size, 1, KernelMax);
+        ImGui::SliderFloat("sigma", &gaussian_filter_data.sigma, 1.0f, 50.0f);
+        ImGui::Image(ImTextureRef(bokeh_luminance_extract_shader_resource_view.Get()), ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1));
+    }
+
     // タイムスケール制御
     if (ImGui::Begin("Time Control", nullptr, ImGuiWindowFlags_None))
     {
@@ -495,7 +613,8 @@ void scene_game::render(float elapsedTime)
 	//ポイントライトの描画
     for (int i = 0; i < 6; ++i)
     {
-        shapeRenderer->DrawPointLight(DirectX::XMFLOAT3(pointLights[i].position.x, pointLights[i].position.y, pointLights[i].position.z), pointLights[i].range, pointLights[i].color);
+        //大きさは変わらない
+        shapeRenderer->DrawPointLight(DirectX::XMFLOAT3(pointLights[i].position.x, pointLights[i].position.y, pointLights[i].position.z), 0.1, pointLights[i].color);
     }
 
 	//スポットライトの描画
@@ -609,6 +728,11 @@ void scene_game::render(float elapsedTime)
     if (showPhysxDebug)
         Physics::Instance().Render(camera.GetView(), camera.GetProjection(), rc.lightDirection);
 
+    // ここで高輝度抽出とぼかしを実行してパスのSRVを更新する
+    luminance_extract_pass(elapsedTime);
+    bokeh_luminance_extract_pass(elapsedTime);
+
+
     // 使い終わったらシャドウマップをアンバインド
     ID3D11ShaderResourceView* null_srv[] = { nullptr };
     dc->PSSetShaderResources(10, 1, null_srv);
@@ -626,6 +750,217 @@ void scene_game::render(float elapsedTime)
     dstRes->Release();
 
     textureManager.Render(dc);
+
+    //	ぼかした結果を加算合成
+    {
+        dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+        dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+        dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+
+        //	シェーダー設定
+        dc->VSSetShader(sprite_vertex_shader.Get(), nullptr, 0);
+        dc->PSSetShader(sprite_pixel_shader.Get(), nullptr, 0);
+        dc->IASetInputLayout(sprite_input_layout.Get());
+
+        add_luminance_extract_pass_sprite->render(dc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+}
+
+void scene_game::luminance_extract_pass(float elapsedTime)
+{
+    ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+
+    //バックバッファ指定
+    {
+
+        // 高輝度抽出用のレンダーターゲットをクリアしてセット
+        float clear_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+        dc->ClearRenderTargetView(luminance_extract_render_target_view.Get(), clear_color);
+        dc->OMSetRenderTargets(1, luminance_extract_render_target_view.GetAddressOf(), nullptr);
+
+    }
+
+    //ビューポートの設定
+    {
+        D3D11_VIEWPORT scene_viewport{};
+        scene_viewport.TopLeftX = 0;
+        scene_viewport.TopLeftY = 0;
+        scene_viewport.Width = static_cast<float>(SCREEN_WIDTH);
+        scene_viewport.Height = static_cast<float>(SCREEN_HEIGHT);
+        scene_viewport.MinDepth = 0.0f;
+        scene_viewport.MaxDepth = 1.0f;
+        dc->RSSetViewports(1, &scene_viewport);
+    }
+
+    //リソース設定
+    {
+        //	定数バッファ設定
+        static constexpr int SceneCBVIndex = 1;
+		scene_constants scene{};
+		scene.camera_position.x = cameraPosition.x;
+		scene.camera_position.y = cameraPosition.y;
+		scene.camera_position.z = cameraPosition.z;
+		Camera& camera = Camera::Instance();
+		DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&camera.GetView());
+		DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&camera.GetProjection());
+		DirectX::XMStoreFloat4x4(&scene.view_projection, V * P);
+        dc->UpdateSubresource(constant_buffer.Get(), 0, 0, &scene, 0, 0);
+        dc->PSSetConstantBuffers(SceneCBVIndex, 1, constant_buffer.GetAddressOf());
+
+        //	サンプラステート設定
+        static constexpr int SamplerStateIndex = 0;
+        ID3D11SamplerState* sampler_states[] =
+        {
+            Graphics::Instance().GetRenderState()->GetSamplerState(SamplerState::LinearClamp),
+
+        };
+
+		dc->PSSetSamplers(SamplerStateIndex, ARRAYSIZE(sampler_states), sampler_states);
+		dc->VSSetSamplers(SamplerStateIndex, ARRAYSIZE(sampler_states), sampler_states);
+
+        //	高輝度抽出用情報設定
+        static constexpr int LuminanceExtractCBVIndex = 2;
+        dc->UpdateSubresource(luminance_extract_constant_buffer.Get(), 0, 0, &luminance_extract_constant, 0, 0);
+		dc->PSSetConstantBuffers(LuminanceExtractCBVIndex, 1, luminance_extract_constant_buffer.GetAddressOf());
+		
+    }
+
+    //描画
+    {
+        dc->OMSetBlendState(Graphics::Instance().GetRenderState()->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+        dc->OMSetDepthStencilState(Graphics::Instance().GetRenderState()->GetDepthStencilState(DepthState::TestAndWrite), 0);
+        dc->RSSetState(Graphics::Instance().GetRenderState()->GetRasterizerState(RasterizerState::SolidCullNone));
+
+        dc->VSSetShader(sprite_vertex_shader.Get(), nullptr, 0);
+        dc->PSSetShader(luminance_extract_pixel_shader.Get(), nullptr, 0);
+        dc->IASetInputLayout(sprite_input_layout.Get());
+
+        luminance_extract_pass_sprite->render(dc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    }
+
+    //シェーダー登録解除
+    {
+
+        dc->VSSetShader(nullptr, nullptr, 0);
+        dc->PSSetShader(nullptr, nullptr, 0);
+        dc->IASetInputLayout(nullptr);
+    }
+}
+
+void scene_game::calculate_gaussian_filter_constant(gaussian_filter_constants& constant, const gaussian_filter_datas& data)
+{
+    //偶数の場合は奇数に直す
+	int kernel_size = data.kernel_size;
+    if (kernel_size % 2 == 0)
+    {
+        kernel_size++;
+    }
+    constant.kernel_size = static_cast<float>(kernel_size);
+    constant.texcel.x = 1.0f / data.texture_size.x;
+    constant.texcel.y = 1.0f / data.texture_size.y;
+
+    //重みを算出
+	float sum = 0.0f;
+	int id = 0;
+    for(int y = -kernel_size / 2; y <= kernel_size / 2; y++)
+    {
+        for (int x = -kernel_size / 2; x <= kernel_size / 2; x++)
+        {
+            constant.weights[id].x = (float)x;
+            constant.weights[id].y = (float)y;
+            constant.weights[id].z = (float)exp(-(x * x + y * y) / (2.0f * data.sigma * data.sigma)) / (2.0f * DirectX::XM_PI * data.sigma);
+            sum += constant.weights[id].z;
+            id++;
+
+        }
+	}
+    //平均化
+    for(int i = 0; i < KernelMax * KernelMax; i++)
+    {
+        constant.weights[i].z /= sum;
+	}
+}
+
+void scene_game::bokeh_luminance_extract_pass(float elapsedTime)
+{
+    ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+    //バックバッファ指定
+    {
+       
+        dc->OMSetRenderTargets(1, bokeh_luminance_extract_render_target_view.GetAddressOf(), nullptr);
+
+        
+        float color[4] = { 0, 0, 0, 1 }; // 黒
+        dc->ClearRenderTargetView(
+            bokeh_luminance_extract_render_target_view.Get(),
+            color
+        );
+
+    }
+    //ビューポートの設定
+    {
+        D3D11_VIEWPORT scene_viewport{};
+        scene_viewport.TopLeftX = 0;
+        scene_viewport.TopLeftY = 0;
+        scene_viewport.Width = static_cast<float>(SCREEN_WIDTH);
+        scene_viewport.Height = static_cast<float>(SCREEN_HEIGHT);
+        scene_viewport.MinDepth = 0.0f;
+        scene_viewport.MaxDepth = 1.0f;
+        dc->RSSetViewports(1, &scene_viewport);
+    }
+    //リソース設定
+    {
+        //	定数バッファ設定
+        static constexpr int SceneCBVIndex = 1;
+        scene_constants scene{};
+        scene.camera_position.x = cameraPosition.x;
+        scene.camera_position.y = cameraPosition.y;
+        scene.camera_position.z = cameraPosition.z;
+        Camera& camera = Camera::Instance();
+        DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&camera.GetView());
+        DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&camera.GetProjection());
+        DirectX::XMStoreFloat4x4(&scene.view_projection, V * P);
+        dc->UpdateSubresource(constant_buffer.Get(), 0, 0, &scene, 0, 0);
+        dc->PSSetConstantBuffers(SceneCBVIndex, 1, constant_buffer.GetAddressOf());
+        //	サンプラステート設定
+        static constexpr int SamplerStateIndex = 0;
+        ID3D11SamplerState* sampler_states[] =
+        {
+            Graphics::Instance().GetRenderState()->GetSamplerState(SamplerState::LinearClamp),
+        };
+        dc->PSSetSamplers(SamplerStateIndex, ARRAYSIZE(sampler_states), sampler_states);
+        
+        //	ガウシアンフィルター情報設定
+        {
+            gaussian_filter_constants gaussian_filter_constant;
+            calculate_gaussian_filter_constant(gaussian_filter_constant, gaussian_filter_data);
+
+            //	定数バッファを設定
+            static constexpr int GaussianFilterCBVIndex = 2;
+            dc->UpdateSubresource(gaussian_filter_constant_buffer.Get(), 0, 0, &gaussian_filter_constant, 0, 0);
+            dc->PSSetConstantBuffers(GaussianFilterCBVIndex, 1, gaussian_filter_constant_buffer.GetAddressOf());
+        }
+
+    }
+    //描画
+    {
+        dc->OMSetBlendState(Graphics::Instance().GetRenderState()->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+        dc->OMSetDepthStencilState(Graphics::Instance().GetRenderState()->GetDepthStencilState(DepthState::TestAndWrite), 0);
+        dc->RSSetState(Graphics::Instance().GetRenderState()->GetRasterizerState(RasterizerState::SolidCullNone));
+        dc->VSSetShader(sprite_vertex_shader.Get(), nullptr, 0);
+        dc->PSSetShader(gaussian_filter_pixel_shader.Get(), nullptr, 0);
+        dc->IASetInputLayout(sprite_input_layout.Get());
+        bokeh_luminance_extract_pass_sprite->render(dc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    //シェーダー登録解除
+    {
+
+        dc->VSSetShader(nullptr, nullptr, 0);
+        dc->PSSetShader(nullptr, nullptr, 0);
+        dc->IASetInputLayout(nullptr);
+    }
+
 }
 
 void scene_game::uninitialize()

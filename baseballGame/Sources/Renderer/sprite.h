@@ -13,6 +13,7 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertex_buffer;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shader_resource_view;
 	D3D11_TEXTURE2D_DESC texture2d_desc;
+	bool isLoadFile = false;
 
 	void render(ID3D11DeviceContext* immediate_context,
 		float dx, float dy,//ãÈå`ÇÃç∂è„ÇÃç¿ïW
@@ -30,6 +31,7 @@ public:
 	void render(ID3D11DeviceContext* immediate_context, float dx, float dy, float dw, float dh);
 
 	sprite(ID3D11Device* device, const wchar_t* filename);
+	sprite(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shader_resource_view);
 	~sprite();
 
 	void textout(ID3D11DeviceContext* immediate_context, std::string s,

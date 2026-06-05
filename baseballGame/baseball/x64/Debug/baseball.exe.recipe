@@ -22,6 +22,9 @@
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\fullscreen_quad_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\gaussian_filtering_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
@@ -35,6 +38,9 @@
     </ContentFile>
     <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\luminance_extraction_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\luminance_extract_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\PhongShaderPS.cso</FullPath>
