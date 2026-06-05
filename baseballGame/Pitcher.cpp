@@ -272,8 +272,6 @@ void Pitcher::DrawGUI()
 					shape->setGeometry(physx::PxBoxGeometry(boxSize.x / 2.0f, boxSize.y / 2.0f, boxSize.z / 2.0f));
 				}
 			}
-
-			ImGui::Text("Adjust the strike zone to ensure proper height.");
 		}
 		if (ImGui::CollapsingHeader("Pitcher Animation Control"))
 		{
@@ -403,6 +401,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 		pitcher->animate(current_animation_index, animation_time, animated_nodes);
 	}
 }
+
 // ===== 新規追加: 球種から角速度を計算 =====
 physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 {

@@ -54,6 +54,9 @@ void Player::Initialize()
 	batHeight = 1.0f;
 
     meshScale = { 0.03f,0.012f,0.03f };
+
+	sweetSpotOffset = { 0.0f, 0.75f, 0.0f };
+	sweetSpotScale = { 0.2f, 0.2f, 0.2f };
    
     //バット型の凸形状のメッシュ作成
     {
@@ -134,6 +137,31 @@ void Player::Initialize()
 
         //シーンに剛体を追加
         pxScene->addActor(*pxBatRigidBody);
+    }
+
+    //同じpxBatRigidBodyにスイートスポットシェイプを追加(バットの芯)
+    {
+        
+        physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
+        physx::PxScene* pxScene = Physics::Instance().GetScene();
+
+		physx::PxMaterial* sweetSpotMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+
+        physx::PxBoxGeometry sweetSpotGeometry(
+            sweetSpotScale.x * 0.5f, // バットの芯の幅の半分
+            sweetSpotScale.y * 0.5f, // バットの芯の高さの半分
+            sweetSpotScale.z * 0.5f  // バットの芯の奥行きの半分
+		);
+
+		//ローカルオフセットを指定してシェイプを作成
+        physx::PxTransform sweetSpotLocalPose(physx::PxVec3(sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z));
+        physx::PxShape* sweetSpotShape = physx::PxRigidActorExt::createExclusiveShape(
+        *pxBatRigidBody, sweetSpotGeometry, *sweetSpotMaterial);
+
+        sweetSpotShape->setLocalPose(sweetSpotLocalPose);
+        sweetSpotShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+        sweetSpotShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+        sweetSpotShape->setName("BatSweetSpot");
     }
 }
 
@@ -387,6 +415,25 @@ void Player::DrawGUI()
                 UpdatePhysXMeshTransform(meshScale);
             }
            
+
+			//バットのスイートスポットの位置とサイズ
+			ImGui::DragFloat3("Sweet Spot Offset", &sweetSpotOffset.x, 0.01f, -1.0f, 1.0f);
+			ImGui::DragFloat3("Sweet Spot Scale", &sweetSpotScale.x, 0.01f, 0.01f, 1.0f);
+
+            if (batSweetSpot)
+            {
+                // 位置の更新
+                physx::PxTransform transform(physx::PxVec3(sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z));
+                batSweetSpot->setGlobalPose(transform);
+
+                // サイズの更新
+                physx::PxShape* shape = nullptr;
+                batSweetSpot->getShapes(&shape, 1);
+                if (shape)
+                {
+                    shape->setGeometry(physx::PxBoxGeometry(sweetSpotScale.x / 2.0f, sweetSpotScale.y / 2.0f, sweetSpotScale.z / 2.0f));
+                }
+            }
         }
 
         // アニメーションデバッグ用
@@ -526,6 +573,41 @@ void Player::AttachBatToHand()
                 // キネマティックモードに設定（アニメーションに追従）
                 pxBatRigidBody->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
                 pxBatRigidBody->setKinematicTarget(pxTransform);
+            }
+
+			// スイートスポットの位置も更新
+            if (batSweetSpot)
+            {
+                // ローカルオフセットをワールド行列で変換（スケール・回転・位置すべて考慮）
+                DirectX::XMMATRIX offsetMatrix = DirectX::XMMatrixTranslation(
+                    sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z);
+                DirectX::XMMATRIX sweetSpotWorldMatrix = offsetMatrix * batWorldMatrix;
+
+                // 位置・回転を取り出す
+                DirectX::XMVECTOR scale;
+                DirectX::XMVECTOR rotation;
+                DirectX::XMVECTOR translation;
+                DirectX::XMMatrixDecompose(&scale, &rotation, &translation, sweetSpotWorldMatrix);
+
+                DirectX::XMFLOAT4 quatFloat;
+                DirectX::XMStoreFloat4(&quatFloat, rotation);
+
+                physx::PxTransform sweetSpotTransform(
+                    physx::PxVec3(
+                        DirectX::XMVectorGetX(translation),
+                        DirectX::XMVectorGetY(translation),
+                        DirectX::XMVectorGetZ(translation)
+                    ),
+                    physx::PxQuat(
+                        quatFloat.x,
+                        quatFloat.y,
+                        quatFloat.z,
+                        quatFloat.w
+                    )
+                );
+
+                batSweetSpot->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+                batSweetSpot->setKinematicTarget(sweetSpotTransform);
             }
 
             // ボーンが見つかったらループを抜ける

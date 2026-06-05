@@ -137,4 +137,14 @@ private:
     float ThrowingStateTime = 0.0f;
 	bool hasPlayHomeRun = false;
 	bool isRightBatter = true; // 右打者かどうかのフラグ
+
+private:
+	physx::PxRigidDynamic* batSweetSpot = nullptr; // バットのスイートスポット用の剛体
+	DirectX::XMFLOAT3 sweetSpotOffset = { 0.0f, 0.8f, 0.0f }; // スイートスポットのオフセット位置
+	DirectX::XMFLOAT3 sweetSpotScale = { 0.0f, 0.0f, 0.0f }; // スイートスポットのスケール
+
+public:
+	bool isInSweetSpot = false; // スイートスポットがヒットしたかどうかのフラグ
+	bool GetIsInSweetSpot() const { return isInSweetSpot; } // スイートスポットヒット判定のゲッターメソッド
+	void SetIsInSweetSpot(bool hit) { isInSweetSpot = hit; } // スイートスポットヒット判定のセッターメソッド
 };

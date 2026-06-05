@@ -662,20 +662,28 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 				if (physSpeed > 1e-3f)
 				{
-					float targetSpeed = (std::min)(estimatedExitVelocity, physSpeed * 1.0f);
+					float targetSpeed = (std::min)(estimatedExitVelocity, physSpeed * 0.8f);
 					newBallVelocity *= (targetSpeed / physSpeed);
 				}
 				else
 				{
 					newBallVelocity = collisionNormal * estimatedExitVelocity;
 				}
-
-				// ===== 打球速度の上限設定（190 km/h） =====
-				float finalSpeed = newBallVelocity.magnitude();
-				if (finalSpeed > 52.78f)  // 190 km/h ≈ 52.78 m/s
+				if(Player::Instance().GetIsInSweetSpot())
 				{
-					newBallVelocity = (newBallVelocity / finalSpeed) * 52.78f;
+					newBallVelocity *= 1.05f;// スイートスポットなら5%速度アップ
 				}
+				else if (!Player::Instance().GetIsInSweetSpot())
+				{
+					newBallVelocity *= 0.8f;// デッドスポットなら20%速度ダウン
+				}
+
+				//// ===== 打球速度の上限設定（190 km/h） =====
+				//float finalSpeed = newBallVelocity.magnitude();
+				//if (finalSpeed > 52.78f)  // 190 km/h ≈ 52.78 m/s
+				//{
+				//	newBallVelocity = (newBallVelocity / finalSpeed) * 52.78f;
+				//}
 
 				/// ===== 6. 打球方向（左右の角度）の計算 =====
 				// Z方向（バックスクリーン方向）を0度としたときの、打球速度ベクトル(XとZ) の角度を計算
@@ -1116,6 +1124,39 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			if (ballIsTriggerActor && triggerIsStrikeZone)
 			{
 				Ball::Instance().SetThroughStrikeZone(true);
+			}
+		}
+
+		// バットのスイートスポットトリガーをボールが通った瞬間
+		if (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
+		{
+			bool ballIsTriggerActor = (pair.otherActor == Ball::Instance().GetBallCollider());
+			bool triggerIsSweetSpot = (pair.triggerShape->getName() &&
+				std::string(pair.triggerShape->getName()) == "BatSweetSpot");
+
+			if (ballIsTriggerActor && triggerIsSweetSpot)
+			{
+				Player::Instance().SetIsInSweetSpot(true);
+				// デバッグ出力
+#ifdef _DEBUG
+				char debugMessage[256];
+				snprintf(debugMessage, sizeof(debugMessage),
+					"スイートスポットに入った！");
+				OutputDebugStringA(debugMessage);
+#endif
+			}
+		}
+
+		// スイートスポットからボールが出た瞬間
+		if (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
+		{
+			bool ballIsTriggerActor = (pair.otherActor == Ball::Instance().GetBallCollider());
+			bool triggerIsSweetSpot = (pair.triggerShape->getName() &&
+				std::string(pair.triggerShape->getName()) == "BatSweetSpot");
+
+			if (ballIsTriggerActor && triggerIsSweetSpot)
+			{
+				Player::Instance().SetIsInSweetSpot(false);
 			}
 		}
 	}
