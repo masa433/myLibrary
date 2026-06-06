@@ -67,7 +67,7 @@ sprite::sprite(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11ShaderResource
 	if (shader_resource_view)
 	{
 		isLoadFile = false;
-		shader_resource_view.Get()->AddRef();
+		//shader_resource_view.Get()->AddRef();
 		this->shader_resource_view = shader_resource_view;
 		// 
 		Microsoft::WRL::ComPtr<ID3D11Resource> resource;
@@ -189,8 +189,7 @@ void sprite::render(ID3D11DeviceContext* immediate_context, float dx, float dy, 
 
 sprite::~sprite() 
 {
-	if (!isLoadFile)
-		shader_resource_view->Release();
+	
 }
 
 void sprite::textout(ID3D11DeviceContext* immediate_context, std::string s,

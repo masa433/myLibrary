@@ -1,4 +1,5 @@
 #include "Lights.hlsli"
+#define SPOTLIGHT_COUNT 16
 
 // 頂点シェーダーへの入力構造体
 struct VS_IN
@@ -46,7 +47,7 @@ cbuffer LIGHT_CONSTANT_BUFFER : register(b3)
     float4 directional_light_direction;
     float4 directional_light_color;
     point_lights pointLights[6];
-    spot_lights spotLights[6];
+    spot_lights spotLights[SPOTLIGHT_COUNT];
 };
 
 // 半球ライト定数バッファ（b4）

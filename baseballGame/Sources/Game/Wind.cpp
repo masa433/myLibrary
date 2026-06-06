@@ -4,10 +4,21 @@
 #include "physxManager.h"
 #include "imgui.h"
 #include "Ball.h"
+#include <shader.h>
 
 void Wind::Initialize()
 {
 	ID3D11Device* device = Graphics::Instance().GetDevice();
+
+	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,        0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	create_vs_from_cso(device, "sprite_vs.cso", spriteVS.GetAddressOf(), spriteInputLayout.GetAddressOf(),
+		input_element_desc, _countof(input_element_desc));
+	create_ps_from_cso(device, "sprite_ps.cso", spritePS.GetAddressOf());
 
 	// スプライトの初期化
 	windDirectionSprite = std::make_unique<Sprite>();
@@ -109,6 +120,10 @@ void Wind::Render(const RenderContext& rc)
 		primitiveRenderer->AddVertex(end, color);
 	}
 
+	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+	dc->PSSetShader(spritePS.Get(), nullptr, 0);
+	dc->IASetInputLayout(spriteInputLayout.Get());
+
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0); // 書き込みなし
 
@@ -152,9 +167,14 @@ void Wind::Render(const RenderContext& rc)
 	}
 
 	// 描画後に元に戻す
+	dc->VSSetShader(nullptr, nullptr, 0);
+	dc->PSSetShader(nullptr, nullptr, 0);
+	dc->IASetInputLayout(nullptr);
+
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 }
+
 
 void Wind::DrawGUI()
 {

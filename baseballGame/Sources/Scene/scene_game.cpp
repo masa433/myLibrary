@@ -129,7 +129,7 @@ void scene_game::initialize()
         pointLights[4].intensity = 10;
         pointLights[4].color = { 1, 1, 1, 1 };
         ZeroMemory(&pointLights[5], sizeof(point_lights) * 3);
-        spotLights[0].position = { 15, 3, 15, 0 };
+        /*spotLights[0].position = { 15, 3, 15, 0 };
         spotLights[0].direction = { -1, -1, -1, 0 };
         spotLights[0].range = 100;
         spotLights[0].color = { 1, 0, 0, 1 };
@@ -145,7 +145,51 @@ void scene_game::initialize()
         spotLights[3].direction = { +1, -1, +1, 0 };
         spotLights[3].range = 100;
         spotLights[3].color = { 1, 1, 1, 1 };
-        ZeroMemory(&spotLights[4], sizeof(spot_lights) * 2);
+        ZeroMemory(&spotLights[4], sizeof(spot_lights) * (SPOTLIGHT_COUNT - 4));*/
+
+       
+        TowerLight towers[4] = {
+    { { -100.0f, 0, -70.0f }, 80.0f },  // 三塁側前
+    { {  100.0f, 0, -70.0f }, 80.0f },  // 一塁側前
+    { { -100.0f, 0,  100.0f }, 70.0f },  // 左翼側後
+    { {  100.0f, 0,  100.0f }, 70.0f },  // 右翼側後
+        };
+
+        // 各塔が照らすターゲット（内野の各エリア）
+        DirectX::XMFLOAT3 targets[4] = {
+            {  5.0f, 0,  5.0f },   // 内野中心付近
+            { -5.0f, 0,  5.0f },
+            {  55.0f, 0, 80.0f },
+            { -55.0f, 0, 80.0f },
+        };
+
+		int index = 0;
+        for (int i = 0; i < 4; ++i)
+        {
+            DirectX::XMFLOAT3 towerPos = {
+                towers[i].pos.x, towers[i].height, towers[i].pos.z
+            };
+
+            for(int j = 0;j<4; ++j)
+            {
+                DirectX::XMFLOAT3 target = targets[j];
+
+                // 方向ベクトル計算
+                DirectX::XMVECTOR P = DirectX::XMLoadFloat3(&towerPos);
+                DirectX::XMVECTOR T = DirectX::XMLoadFloat3(&target);
+                DirectX::XMVECTOR D = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(T, P));
+
+                spotLights[index].position = { towerPos.x, towerPos.y, towerPos.z, 0 };
+                DirectX::XMStoreFloat4(
+                    reinterpret_cast<DirectX::XMFLOAT4*>(&spotLights[index].direction), D);
+                spotLights[index].color = { 1.0f, 0.95f, 0.85f, 1.0f }; // 白熱灯っぽい色
+                spotLights[index].range = 150.0f;
+                spotLights[index].intensity = 5.0f;
+                spotLights[index].innerCorn = cosf(DirectX::XMConvertToRadians(10.0f));
+                spotLights[index].outerCorn = cosf(DirectX::XMConvertToRadians(30.0f));
+                index++;
+			}
+        }
     }
 
     // ライトから見たシーンの深度描画用バッファ
@@ -425,7 +469,7 @@ void scene_game::update(float elapsed_time)
         }
         if (ImGui::TreeNode("spots"))
         {
-            for (int i = 0; i < 6; ++i)
+            for (int i = 0; i < SPOTLIGHT_COUNT; ++i)
             {
                 std::string p = std::string("position") + std::to_string(i);
                 ImGui::SliderFloat3(p.c_str(), &spotLights[i].position.x, -10.0f, +10.0f);
@@ -618,7 +662,7 @@ void scene_game::render(float elapsedTime)
     }
 
 	//スポットライトの描画
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < SPOTLIGHT_COUNT; ++i)
     {
         shapeRenderer->DrawSpotLight(
             DirectX::XMFLOAT3(spotLights[i].position.x, spotLights[i].position.y, spotLights[i].position.z),
@@ -629,6 +673,7 @@ void scene_game::render(float elapsedTime)
             spotLights[i].color
         );
 	}
+    
     
 
     // バックバッファに直接描画
@@ -725,6 +770,14 @@ void scene_game::render(float elapsedTime)
     Player::Instance().Render(rc, modelRenderer);
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
+    // ShapeRenderer の描画実行
+    shapeRenderer->Render(
+        dc,
+        camera.GetView(),
+        camera.GetProjection(),
+        rc.lightDirection
+    );
+
     if (showPhysxDebug)
         Physics::Instance().Render(camera.GetView(), camera.GetProjection(), rc.lightDirection);
 
@@ -753,7 +806,7 @@ void scene_game::render(float elapsedTime)
 
     //	ぼかした結果を加算合成
     {
-        dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+        dc->OMSetBlendState(renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
         dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
         dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
@@ -887,15 +940,10 @@ void scene_game::bokeh_luminance_extract_pass(float elapsedTime)
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
     //バックバッファ指定
     {
-       
-        dc->OMSetRenderTargets(1, bokeh_luminance_extract_render_target_view.GetAddressOf(), nullptr);
 
-        
         float color[4] = { 0, 0, 0, 1 }; // 黒
-        dc->ClearRenderTargetView(
-            bokeh_luminance_extract_render_target_view.Get(),
-            color
-        );
+        dc->ClearRenderTargetView(bokeh_luminance_extract_render_target_view.Get(),color);
+        dc->OMSetRenderTargets(1, bokeh_luminance_extract_render_target_view.GetAddressOf(), nullptr);
 
     }
     //ビューポートの設定

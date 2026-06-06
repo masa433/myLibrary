@@ -52,7 +52,7 @@
 //       float outerCorn;               // Offset:  392
 //       float intensity;               // Offset:  396
 //
-//   } spotLights[6];                   // Offset:  336 Size:   384
+//   } spotLights[16];                  // Offset:  336 Size:  1024
 //
 // }
 //
@@ -193,7 +193,7 @@ ps_5_0
 dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_constantbuffer CB0[5], immediateIndexed
 dcl_constantbuffer CB1[5], immediateIndexed
-dcl_constantbuffer CB3[45], dynamicIndexed
+dcl_constantbuffer CB3[85], dynamicIndexed
 dcl_constantbuffer CB4[3], immediateIndexed
 dcl_constantbuffer CB5[2], immediateIndexed
 dcl_constantbuffer CB6[5], immediateIndexed
@@ -575,7 +575,7 @@ mov r11.xyz, r6.xyzx  // r11.x <- spot_diffuse.x; r11.y <- spot_diffuse.y; r11.z
 mov r12.xyz, r8.xyzx  // r12.x <- spot_specular.x; r12.y <- spot_specular.y; r12.z <- spot_specular.z
 mov r2.w, r0.z  // r2.w <- j
 loop 
-  ilt r3.w, r2.w, l(6)
+  ilt r3.w, r2.w, l(16)
   breakc_z r3.w
 
 #line 164

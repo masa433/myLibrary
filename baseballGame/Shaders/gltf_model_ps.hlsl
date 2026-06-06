@@ -158,7 +158,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
 
 		//	スポットライト
         float3 spot_diffuse = 0, spot_specular = 0;
-        for (int j = 0; j < 6; ++j)
+        for (int j = 0; j < SPOTLIGHT_COUNT; ++j)
         {
           
             float3 L = pin.w_position.xyz - spotLights[j].position.xyz;

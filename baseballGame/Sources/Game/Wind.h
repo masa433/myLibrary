@@ -59,4 +59,9 @@ private:
 	std::unique_ptr<Sprite> windGroundSprite;
 	std::unique_ptr<sprite> windGroundSpriteRenderer;
 	std::unique_ptr<sprite> windStrengthFontRenderer;
+
+	// シェーダー関連メンバーを追加
+	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
 };

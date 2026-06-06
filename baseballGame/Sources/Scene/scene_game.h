@@ -76,6 +76,7 @@ public:
 		float intensity;
 		
     };
+    static constexpr int SPOTLIGHT_COUNT = 16;
 
     struct light_constants
     {
@@ -83,7 +84,7 @@ public:
         DirectX::XMFLOAT4 directional_light_direction;
         DirectX::XMFLOAT4 directional_light_color;
 		point_lights pointLights[6]; // 最大6つのポイントライト
-		spot_lights spotLights[6]; // 最大6つのスポットライト
+		spot_lights spotLights[SPOTLIGHT_COUNT]; // 最大16つのスポットライト
     };
     Microsoft::WRL::ComPtr<ID3D11Buffer> light_constant_buffer;
 
@@ -91,7 +92,15 @@ public:
     DirectX::XMFLOAT4 directional_light_direction{ 0.0f, 1.0f, 0.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_color{ 1.0f, 1.0f, 1.0f, 1.0f };
 	point_lights pointLights[6];
-	spot_lights spotLights[6];
+    
+    spot_lights spotLights[SPOTLIGHT_COUNT];
+
+    struct TowerLight
+    {
+        DirectX::XMFLOAT3 pos;   // 塔の位置
+        float height;             // 高さ
+    };
+
 
     //半球ライティング
     struct hemisphere_light_constants
