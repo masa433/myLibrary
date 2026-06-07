@@ -1,5 +1,5 @@
 #include "Lights.hlsli"
-#define SPOTLIGHT_COUNT 16
+#define SPOTLIGHT_COUNT 36
 
 // 頂点シェーダーへの入力構造体
 struct VS_IN
