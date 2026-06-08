@@ -55,9 +55,6 @@ Texture2D<float4> material_textures[5] : register(t1);
 //#define ANISOTROPIC 2
 //SamplerState sampler_states[3] : register(s0);
 
-//	シャドウマップ
-Texture2D shadow_map : register(t10);
-//SamplerState shadow_sampler_state : register(s10);
 
 //	カスケードシャドウマップ
 static const int ShadowBufferSize = 4;
@@ -70,7 +67,7 @@ cbuffer CASCADE_SHADOWMAP_CONSTANT_BUFFER : register(b8)
     float2 cascade_shadow_dummy;
 };
 Texture2D cascade_shadow_map[4] : register(t20);
-SamplerState shadow_sampler_state : register(s5);
+SamplerState cascade_shadow_sampler_state : register(s5);
 
 float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
 {
@@ -165,7 +162,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
         wvpPos.x >= 0 && wvpPos.x <= 1 &&
         wvpPos.y >= 0 && wvpPos.y <= 1)
                 {
-                    float depth = cascade_shadow_map[index].Sample(shadow_sampler_state, wvpPos.xy).r;
+                    float depth = cascade_shadow_map[index].Sample(cascade_shadow_sampler_state, wvpPos.xy).r;
                     if (wvpPos.z - depth > cascade_shadow_bias[index])
                     {
                         directional_diffuse *= cascade_shadow_attenuation;

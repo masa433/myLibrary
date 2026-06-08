@@ -39,8 +39,6 @@ public:
 	// GUI描画処理
 	void DrawGUI() override;
 
-    void renderShadowMap(float elapsedTime);
-
     // 定数バッファ構造体
     struct scene_constants
     {
@@ -91,8 +89,6 @@ public:
         DirectX::XMFLOAT2	shadow_dummy;
     };
     cascade_shadowmap_constants cascade_shadow_constant;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> cascade_shadowmap_pixel_shader;
-
 
     struct light_constants
     {
@@ -105,6 +101,8 @@ public:
     };
     Microsoft::WRL::ComPtr<ID3D11Buffer> light_constant_buffer;
     Microsoft::WRL::ComPtr<ID3D11Buffer> cascade_shadowmap_constant_buffer;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> cascade_shadowmap_sampler_state;
+
 
     DirectX::XMFLOAT4 ambient_color{ 1.0f, 1.0f, 1.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_direction{ 0.0f, 1.0f, 0.0f, 1.0f };
@@ -149,28 +147,6 @@ public:
 
 	bool showPhysxDebug = true;
 
-   //シャドウマップ
-    struct shadowmap_constants
-    {
-		DirectX::XMFLOAT4X4 light_view_projection; // ライトのビュー射影行列
-        float				shadow_attenuation{ 0.5f };
-        float				shadow_bias{ 0.0001f };
-        DirectX::XMFLOAT2	shadow_dummy;
-    };
-
-    Microsoft::WRL::ComPtr<ID3D11Buffer> shadowmap_constant_buffer;
-    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowmap_depth_stencil_view;
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowmap_shader_resource_view;
-    Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowmap_sampler_state;
-    Microsoft::WRL::ComPtr<ID3D11VertexShader> shadowmap_caster_vertex_shader;
-    Microsoft::WRL::ComPtr<ID3D11InputLayout> shadowmap_caster_input_layout;
-
-    DirectX::XMFLOAT4X4 light_view_projection;
-    float				shadow_bias{ 0.008f };
-	float shadow_attenuation{ 0.5f };
-
-
-    Microsoft::WRL::ComPtr<ID3D11VertexShader> mesh_vertex_shader;
     Microsoft::WRL::ComPtr<ID3D11InputLayout> mesh_input_layout;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> mesh_pixel_shader;
 
