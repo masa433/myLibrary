@@ -153,7 +153,7 @@ void scene_game::initialize()
         ZeroMemory(&spotLights[4], sizeof(spot_lights) * (SPOTLIGHT_COUNT - 4));*/
 
        
-        TowerLight towers[6] = {
+        TowerLight towers[SPOTLIGHT_COUNT] = {
     { { -80.0f, 0, -90.0f }, 100.0f },  // 三塁側前
     { {  80.0f, 0, -90.0f }, 100.0f },  // 一塁側前
 	{ { -150.0f, 0, 25.0f }, 100.0f },  // 中央前
@@ -163,7 +163,7 @@ void scene_game::initialize()
         };
 
         // 各塔が照らすターゲット（内野の各エリア）
-        DirectX::XMFLOAT3 targets[6] = {
+        DirectX::XMFLOAT3 targets[SPOTLIGHT_COUNT] = {
             {  5.0f, 0,  5.0f },   // 内野中心付近
             { -5.0f, 0,  5.0f },
             {  5.0f, 0,  37.5f },
@@ -172,38 +172,36 @@ void scene_game::initialize()
             { -55.0f, 0, 80.0f },
         };
 
-		float ranges[6] = { 200.0f, 200.0f, 200.0f, 200.0f, 200.0f, 200.0f }; // 各塔の照射範囲
-
+		float ranges[SPOTLIGHT_COUNT] = { 200.0f, 200.0f, 200.0f, 200.0f, 200.0f, 200.0f }; // 各塔の照射範囲
 
 		int index = 0;
 
         if(showSpotLights)
         {
-            for (int i = 0; i < 6; ++i)
+            for (int i = 0; i < SPOTLIGHT_COUNT; ++i)
             {
                 DirectX::XMFLOAT3 towerPos = {
                     towers[i].pos.x, towers[i].height, towers[i].pos.z
                 };
 
-                for (int j = 0; j < 6; ++j)
-                {
-                    DirectX::XMFLOAT3 target = targets[j];
+                
+                DirectX::XMFLOAT3 target = targets[i];
 
-                    // 方向ベクトル計算
-                    DirectX::XMVECTOR P = DirectX::XMLoadFloat3(&towerPos);
-                    DirectX::XMVECTOR T = DirectX::XMLoadFloat3(&target);
-                    DirectX::XMVECTOR D = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(T, P));
+                // 方向ベクトル計算
+                DirectX::XMVECTOR P = DirectX::XMLoadFloat3(&towerPos);
+                DirectX::XMVECTOR T = DirectX::XMLoadFloat3(&target);
+                DirectX::XMVECTOR D = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(T, P));
 
-                    spotLights[index].position = { towerPos.x, towerPos.y, towerPos.z, 0 };
-                    DirectX::XMStoreFloat4(
-                        reinterpret_cast<DirectX::XMFLOAT4*>(&spotLights[index].direction), D);
-                    spotLights[index].color = { 1.0f, 0.95f, 0.85f, 1.0f }; // 白熱灯っぽい色
-                    spotLights[index].range = ranges[i];
-                    spotLights[index].intensity = 0.5f;
-                    spotLights[index].innerCorn = cosf(DirectX::XMConvertToRadians(10.0f));
-                    spotLights[index].outerCorn = cosf(DirectX::XMConvertToRadians(30.0f));
-                    index++;
-                }
+                spotLights[index].position = { towerPos.x, towerPos.y, towerPos.z, 0 };
+                DirectX::XMStoreFloat4(
+                    reinterpret_cast<DirectX::XMFLOAT4*>(&spotLights[index].direction), D);
+                spotLights[index].color = { 1.0f, 0.95f, 0.85f, 1.0f }; // 白熱灯っぽい色
+                spotLights[index].range = ranges[i];
+                spotLights[index].intensity = 5.0f;
+                spotLights[index].innerCorn = cosf(DirectX::XMConvertToRadians(10.0f));
+                spotLights[index].outerCorn = cosf(DirectX::XMConvertToRadians(30.0f));
+                index++;
+                
             }
         }
     }
@@ -315,6 +313,7 @@ void scene_game::initialize()
         }
     }
 
+   
     ////シーン描画用のバッファ生成
     Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
     D3D11_TEXTURE2D_DESC texture2d_desc{};
@@ -516,14 +515,17 @@ void scene_game::update(float elapsed_time)
         {
             for (int i = 0; i < 6; ++i)
             {
-                std::string p = std::string("position") + std::to_string(i);
-                ImGui::SliderFloat3(p.c_str(), &pointLights[i].position.x, -10.0f, +10.0f);
-                std::string c = std::string("color") + std::to_string(i);
-                ImGui::ColorEdit3(c.c_str(), &pointLights[i].color.x);
-                std::string it = std::string("intensity") + std::to_string(i);
-                ImGui::SliderFloat(it.c_str(), &pointLights[i].intensity, 0.0f, +100.0f);
-				std::string r = std::string("range") + std::to_string(i);  
-				ImGui::SliderFloat(r.c_str(), &pointLights[i].range, 0.0f, +1000.0f);
+                if (ImGui::TreeNode((std::string("pointLight") + std::to_string(i)).c_str()))
+                {
+                    
+                    ImGui::SliderFloat3("position", &pointLights[i].position.x, -10.0f, +10.0f);
+                    
+                    ImGui::ColorEdit3("color", &pointLights[i].color.x);
+                    ImGui::SliderFloat("intensity", &pointLights[i].intensity, 0.0f, +100.0f);
+                    ImGui::SliderFloat("range", &pointLights[i].range, 0.0f, +1000.0f);
+                    ImGui::TreePop();
+                    ImGui::Separator();
+                }
             }
             ImGui::TreePop();
         }
@@ -533,20 +535,18 @@ void scene_game::update(float elapsed_time)
 
             for (int i = 0; i < SPOTLIGHT_COUNT; ++i)
             {
-                std::string p = std::string("position") + std::to_string(i);
-                ImGui::SliderFloat3(p.c_str(), &spotLights[i].position.x, -10.0f, +10.0f);
-                std::string d = std::string("direction") + std::to_string(i);
-                ImGui::SliderFloat3(d.c_str(), &spotLights[i].direction.x, 0.0f, +1.0f);
-                std::string c = std::string("color") + std::to_string(i);
-                ImGui::ColorEdit3(c.c_str(), &spotLights[i].color.x);
-                std::string r = std::string("range") + std::to_string(i);
-                ImGui::SliderFloat(r.c_str(), &spotLights[i].range, 0.0f, +1000.0f);
-                std::string ic = std::string("inner") + std::to_string(i);
-                ImGui::SliderFloat(ic.c_str(), &spotLights[i].innerCorn, -1.0f, +1.0f);
-                std::string oc = std::string("outer") + std::to_string(i);
-                ImGui::SliderFloat(oc.c_str(), &spotLights[i].outerCorn, -1.0f, +1.0f);
-				std::string it = std::string("intensity") + std::to_string(i);
-				ImGui::SliderFloat(it.c_str(), &spotLights[i].intensity, 0.0f, +1000.0f);
+                if (ImGui::TreeNode((std::string("spotLight") + std::to_string(i)).c_str()))
+                {
+                    ImGui::SliderFloat3("position", &spotLights[i].position.x, -10.0f, +10.0f);
+                    ImGui::SliderFloat3("direction", &spotLights[i].direction.x, 0.0f, +1.0f);
+                    ImGui::ColorEdit3("color", &spotLights[i].color.x);
+                    ImGui::SliderFloat("range", &spotLights[i].range, 0.0f, +1000.0f);
+                    ImGui::SliderFloat("innerCorn", &spotLights[i].innerCorn, -1.0f, +1.0f);
+                    ImGui::SliderFloat("outerCorn", &spotLights[i].outerCorn, -1.0f, +1.0f);
+					ImGui::SliderFloat("intensity", &spotLights[i].intensity, 0.0f, +100.0f);
+                    ImGui::TreePop();
+                    ImGui::Separator();
+                }
             }
             ImGui::TreePop();
  
@@ -732,7 +732,6 @@ void scene_game::render(float elapsedTime)
         renderShadowMap(elapsedTime);
     }
 
-
     using namespace DirectX;
 
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
@@ -768,9 +767,10 @@ void scene_game::render(float elapsedTime)
                 spotLights[i].color
             );
 		}
+
+		
     }
 
-    
     // バックバッファに直接描画
    
     float clear_color[4] = { 0.2f, 0.4f, 0.6f, 1.0f };
@@ -841,6 +841,7 @@ void scene_game::render(float elapsedTime)
         shadowmapConstants.light_view_projection = light_view_projection;
         shadowmapConstants.shadow_attenuation = shadow_attenuation;
         shadowmapConstants.shadow_bias = shadow_bias;
+		shadowmapConstants.use_cascade = use_cascade_shadow_map;
         dc->UpdateSubresource(shadowmap_constant_buffer.Get(), 0, 0, &shadowmapConstants, 0, 0);
         dc->VSSetConstantBuffers(6, 1, shadowmap_constant_buffer.GetAddressOf());
         dc->PSSetConstantBuffers(6, 1, shadowmap_constant_buffer.GetAddressOf());
@@ -870,12 +871,7 @@ void scene_game::render(float elapsedTime)
     {
         dc->PSSetShaderResources(10, 1, shadowmap_shader_resource_view.GetAddressOf());
     }
-    dc->PSSetSamplers(5, 1, shadowmap_sampler_state.GetAddressOf());
-
-    // レンダーステート
-   /* dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
-    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
-    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));*/
+    dc->PSSetSamplers(10, 1, shadowmap_sampler_state.GetAddressOf());
 
     stage::Instance().render(rc, modelRenderer);
 
@@ -902,11 +898,21 @@ void scene_game::render(float elapsedTime)
 
     // 使い終わったらシャドウマップをアンバインド
     ID3D11ShaderResourceView* null_srv[] = { nullptr };
-    dc->PSSetShaderResources(20, 1, null_srv);
+    dc->PSSetShaderResources(10, 1, null_srv);
+
+	//カスケードシャドウマップをアンバインド
+    if (use_cascade_shadow_map)
+    {
+        ID3D11ShaderResourceView* nullSRVs[ShadowBufferSize] = {};
+        dc->PSSetShaderResources(20, ShadowBufferSize, nullSRVs);
+	}
 
     // バックバッファに戻してコピー
     ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
     dc->OMSetRenderTargets(1, &backBufferRTV, nullptr);
+
+    ID3D11ShaderResourceView* nullSpotSRVs[] = { nullptr };
+    dc->PSSetShaderResources(30, 1, nullSpotSRVs);
 
     ID3D11Resource* srcRes = nullptr;
     ID3D11Resource* dstRes = nullptr;
@@ -986,7 +992,7 @@ void scene_game::renderCascadeShadowMap(float elapsedTime)
         200.0f,  // 遠景
     };
 
-	float fov_y = DirectX::XMConvertToRadians(45);
+	static constexpr float fov_y = DirectX::XMConvertToRadians(45);
     float aspect_ratio = static_cast<float>(Graphics::Instance().GetScreenWidth()) / Graphics::Instance().GetScreenHeight();
 
     // SRVのバインドを事前に解除
@@ -1138,9 +1144,9 @@ void scene_game::renderCascadeShadowMap(float elapsedTime)
 			
 			scene.view_projection = light_view_projection;
 			
-			dc->UpdateSubresource(shadowmap_constant_buffer.Get(), 0, 0, &scene, 0, 0);
-			dc->VSSetConstantBuffers(SceneCBVIndex, 1, shadowmap_constant_buffer.GetAddressOf());
-			dc->PSSetConstantBuffers(SceneCBVIndex, 1, shadowmap_constant_buffer.GetAddressOf());
+			dc->UpdateSubresource(cascade_shadowmap_constant_buffer.Get(), 0, 0, &scene, 0, 0);
+			dc->VSSetConstantBuffers(SceneCBVIndex, 1, cascade_shadowmap_constant_buffer.GetAddressOf());
+			dc->PSSetConstantBuffers(SceneCBVIndex, 1, cascade_shadowmap_constant_buffer.GetAddressOf());
         }
 
 		//モデルの描画

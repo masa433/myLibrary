@@ -1,5 +1,7 @@
 #include "Lights.hlsli"
-#define SPOTLIGHT_COUNT 36
+#define SPOTLIGHT_COUNT 6
+#define ShadowBufferSize 4
+
 
 // 頂点シェーダーへの入力構造体
 struct VS_IN
@@ -70,10 +72,19 @@ cbuffer SHADOWMAP_CONSTANT_BUFFER : register(b6)
     row_major float4x4 light_view_projection;
     float shadow_attenuation;
     float shadow_bias;
-    float2 shadow_dummy;
+    bool use_cascade;
+    float shadow_dummy;
 };
 
-
+//	カスケードシャドウマップ
+cbuffer CASCADE_SHADOWMAP_CONSTANT_BUFFER : register(b8)
+{
+    row_major float4x4 cascade_light_view_projection[ShadowBufferSize];
+    float4 cascade_shadow_bias;
+    float cascade_shadow_attenuation;
+    bool display_cascade_area;
+    float2 cascade_shadow_dummy;
+};
 
 // UNIT.37
 static const uint PRIMITIVE_MAX_JOINTS = 512;

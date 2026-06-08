@@ -57,20 +57,11 @@ Texture2D<float4> material_textures[5] : register(t1);
 
 //	シャドウマップ
 Texture2D shadow_map : register(t10);
-//SamplerState shadow_sampler_state : register(s10);
+SamplerState shadow_sampler_state : register(s10);
 
-//	カスケードシャドウマップ
-static const int ShadowBufferSize = 4;
-cbuffer CASCADE_SHADOWMAP_CONSTANT_BUFFER : register(b8)
-{
-    row_major float4x4 cascade_light_view_projection[ShadowBufferSize];
-    float4 cascade_shadow_bias;
-    float cascade_shadow_attenuation;
-    bool display_cascade_area;
-    float2 cascade_shadow_dummy;
-};
-Texture2D cascade_shadow_map[4] : register(t20);
-SamplerState shadow_sampler_state : register(s5);
+// カスケードシャドウマップ
+Texture2D cascade_shadow_map[ShadowBufferSize] : register(t20);
+SamplerState cascade_shadow_sampler_state : register(s5);
 
 float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
 {
@@ -141,57 +132,61 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
             directional_diffuse = CalcLambert(N, L, LC, 1);
             directional_specular = CalcPhongSpecular(N, L, V, LC, 1);
 
-   //         //	平行光源用シャドウマップ
-   //         float depth = shadow_map.Sample(shadow_sampler_state, pin.shadow_texcoord.xy).r;
-			////	深度値を比較して影かどうかを判定する
-   //         if (pin.shadow_texcoord.z - depth > shadow_bias)
-   //         {
-   //             directional_diffuse *= shadow_attenuation;
-   //             directional_specular *= shadow_attenuation;
-   //         }
-            
-            //  カスケードシャドウマップ
-            int debug_shadowmap_index = -1;
-            for (int index = 0; index < ShadowBufferSize; ++index)
+            if(use_cascade)
             {
-    // ワールド座標 → ライトNDC座標
-                float4 wvpPos = mul(float4(pin.w_position.xyz, 1.0f), cascade_light_view_projection[index]);
-                wvpPos /= wvpPos.w;
-                wvpPos.y = -wvpPos.y;
-                wvpPos.xy = 0.5f * wvpPos.xy + 0.5f;
-
-    // このカスケードの範囲内か判定
-                if (wvpPos.z >= 0 && wvpPos.z <= 1 &&
-        wvpPos.x >= 0 && wvpPos.x <= 1 &&
-        wvpPos.y >= 0 && wvpPos.y <= 1)
+                //  カスケードシャドウマップ
+                int debug_shadowmap_index = -1;
+                for (int index = 0; index < ShadowBufferSize; ++index)
                 {
-                    float depth = cascade_shadow_map[index].Sample(shadow_sampler_state, wvpPos.xy).r;
-                    if (wvpPos.z - depth > cascade_shadow_bias[index])
+                    // ワールド座標 → ライトNDC座標
+                    float4 wvpPos = mul(float4(pin.w_position.xyz, 1.0f), cascade_light_view_projection[index]);
+                    wvpPos /= wvpPos.w;
+                    wvpPos.y = -wvpPos.y;
+                    wvpPos.xy = 0.5f * wvpPos.xy + 0.5f;
+
+                    // このカスケードの範囲内か判定
+                    if (wvpPos.z >= 0 && wvpPos.z <= 1 && wvpPos.x >= 0 && wvpPos.x <= 1 && wvpPos.y >= 0 && wvpPos.y <= 1)
                     {
-                        directional_diffuse *= cascade_shadow_attenuation;
-                        directional_specular *= cascade_shadow_attenuation;
+                        float depth = cascade_shadow_map[index].Sample(shadow_sampler_state, wvpPos.xy).r;
+                        if (wvpPos.z - depth > cascade_shadow_bias[index])
+                        {
+                            directional_diffuse *= cascade_shadow_attenuation;
+                            directional_specular *= cascade_shadow_attenuation;
+                        }
+                        debug_shadowmap_index = index;
+                        break;
                     }
-                    debug_shadowmap_index = index;
-                    break;
+                }
+                
+                 // カスケードエリア可視化（デバッグ用）
+                if (display_cascade_area)
+                {
+                    if (debug_shadowmap_index >= 0)
+                    {
+                        float col = rcp((float) (debug_shadowmap_index / 3 + 1));
+                        float r = debug_shadowmap_index % 3 == 0;
+                        float g = debug_shadowmap_index % 3 == 1;
+                        float b = debug_shadowmap_index % 3 == 2;
+                        color.rgb = float3(r, g, b) * col;
+                    }
+                    else
+                    {
+                        color.rgb = 0;
+                    }
+                }
+            }
+            else
+            {
+                //	平行光源用シャドウマップ
+                float depth = shadow_map.Sample(shadow_sampler_state, pin.shadow_texcoord.xy).r;
+			    //	深度値を比較して影かどうかを判定する
+                if (pin.shadow_texcoord.z - depth > shadow_bias)
+                {
+                    directional_diffuse *= shadow_attenuation;
+                    directional_specular *= shadow_attenuation;
                 }
             }
 
-// カスケードエリア可視化（デバッグ用）
-            if (display_cascade_area)
-            {
-                if (debug_shadowmap_index >= 0)
-                {
-                    float col = rcp((float) (debug_shadowmap_index / 3 + 1));
-                    float r = debug_shadowmap_index % 3 == 0;
-                    float g = debug_shadowmap_index % 3 == 1;
-                    float b = debug_shadowmap_index % 3 == 2;
-                    color.rgb = float3(r, g, b) * col;
-                }
-                else
-                {
-                    color.rgb = 0;
-                }
-            }
         }
 
 		//	点光源
@@ -229,6 +224,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
             float area = spotLights[j].innerCorn - spotLights[j].outerCorn;
             attenuation *= saturate(1.0f - (spotLights[j].innerCorn - angle) / area);
             float3 LC = spotLights[j].color.rgb * spotLights[j].intensity;
+           
             spot_diffuse += CalcLambert(N, L, LC, 1) * attenuation;
             spot_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation;
         }

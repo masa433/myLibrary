@@ -29,7 +29,8 @@
 //   row_major float4x4 light_view_projection;// Offset:    0 Size:    64
 //   float shadow_attenuation;          // Offset:   64 Size:     4 [unused]
 //   float shadow_bias;                 // Offset:   68 Size:     4 [unused]
-//   float2 shadow_dummy;               // Offset:   72 Size:     8 [unused]
+//   bool use_cascade;                  // Offset:   72 Size:     4 [unused]
+//   float shadow_dummy;                // Offset:   76 Size:     4 [unused]
 //
 // }
 //

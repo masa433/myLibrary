@@ -76,7 +76,7 @@ public:
 		float intensity;
 		
     };
-    static constexpr int SPOTLIGHT_COUNT = 36;
+    static constexpr int SPOTLIGHT_COUNT = 6;
 
     //	カスケードシャドウマップ数
     static constexpr int ShadowBufferSize = 4;
@@ -91,9 +91,8 @@ public:
         DirectX::XMFLOAT2	shadow_dummy;
     };
     cascade_shadowmap_constants cascade_shadow_constant;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> cascade_shadowmap_pixel_shader;
 
-
+ 
     struct light_constants
     {
         DirectX::XMFLOAT4 ambient_color;
@@ -155,7 +154,8 @@ public:
 		DirectX::XMFLOAT4X4 light_view_projection; // ライトのビュー射影行列
         float				shadow_attenuation{ 0.5f };
         float				shadow_bias{ 0.0001f };
-        DirectX::XMFLOAT2	shadow_dummy;
+        bool 				use_cascade;
+        float	            shadow_dummy;
     };
 
     Microsoft::WRL::ComPtr<ID3D11Buffer> shadowmap_constant_buffer;

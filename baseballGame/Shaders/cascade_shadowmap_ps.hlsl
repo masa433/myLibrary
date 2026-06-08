@@ -57,16 +57,6 @@ Texture2D<float4> material_textures[5] : register(t1);
 //#define ANISOTROPIC 2
 //SamplerState sampler_states[3] : register(s0);
 
-//	カスケードシャドウマップ
-static const int ShadowBufferSize = 4;
-cbuffer CASCADE_SHADOWMAP_CONSTANT_BUFFER : register(b10)
-{
-    row_major float4x4 cascade_light_view_projection[ShadowBufferSize];
-    float4 cascade_shadow_bias;
-    float cascade_shadow_attenuation;
-    bool display_cascade_area;
-    float2 cascade_shadow_dummy;
-};
 
 Texture2D cascade_shadow_map[4] : register(t10);
 SamplerState shadow_sampler_state : register(s10);
