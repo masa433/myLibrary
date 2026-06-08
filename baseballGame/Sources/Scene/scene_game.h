@@ -34,6 +34,9 @@ private:
     //	ガウスフィルター
     static constexpr int KernelMax = 25;
 
+    // スポットライトシャドウマップ関連
+    static constexpr int SpotShadowCount = 6; // light_max と一致させる
+
      // 定数バッファ構造体
     struct scene_constants
     {
@@ -96,6 +99,15 @@ private:
         float				shadow_attenuation{ 0.5f };	//	影色
         bool				display_cascade_area;
         DirectX::XMFLOAT2	shadow_dummy;
+    };
+
+	//スポットシャドウマップ用定数バッファ
+    struct spot_shadowmap_constants
+    {
+        DirectX::XMFLOAT4X4 light_view_projection[SpotShadowCount];
+        float shadow_attenuation{ 0.5f };
+        float shadow_bias{ 0.005f };
+        DirectX::XMFLOAT2 dummy;
     };
 
     //半球ライティング
@@ -257,5 +269,13 @@ private:
 
     bool	use_cascade_shadow_map = true;
 
-   
+private:
+	//スポットシャドウマップ
+    Microsoft::WRL::ComPtr<ID3D11Buffer>             spot_shadowmap_constant_buffer;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>   spot_shadowmap_depth_stencil_views[SpotShadowCount];
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spot_shadowmap_shader_resource_views[SpotShadowCount];
+    spot_shadowmap_constants spot_shadow_constant;
+
+	void renderSpotShadowMap(float elapsedTime);
+
 };

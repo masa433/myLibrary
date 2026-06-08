@@ -1,5 +1,5 @@
 #include "Lights.hlsli"
-#define SPOTLIGHT_COUNT 6
+#define SPOT_SHADOW_COUNT 6
 #define ShadowBufferSize 4
 
 
@@ -50,7 +50,7 @@ cbuffer LIGHT_CONSTANT_BUFFER : register(b3)
     float4 directional_light_color;
     uint4 light_count; // y : 点光源の数, z : スポットライトの数
     point_lights pointLights[6];
-    spot_lights spotLights[SPOTLIGHT_COUNT];
+    spot_lights spotLights[6];
 };
 
 // 半球ライト定数バッファ（b4）
@@ -86,6 +86,16 @@ cbuffer CASCADE_SHADOWMAP_CONSTANT_BUFFER : register(b8)
     bool display_cascade_area;
     float2 cascade_shadow_dummy;
 };
+
+cbuffer SPOT_SHADOWMAP_CONSTANT_BUFFER : register(b7)
+{
+    row_major float4x4 spot_light_view_projection[SPOT_SHADOW_COUNT];
+    float spot_shadow_attenuation;
+    float spot_shadow_bias;
+    float2 spot_shadow_dummy;
+};
+
+Texture2D spot_shadow_map[SPOT_SHADOW_COUNT] : register(t30);
 
 // UNIT.37
 static const uint PRIMITIVE_MAX_JOINTS = 512;

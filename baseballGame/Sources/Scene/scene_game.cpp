@@ -93,6 +93,10 @@ void scene_game::initialize()
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, cascade_shadowmap_constant_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
+		//スポットシャドウ用定数バッファ
+        buffer_desc.ByteWidth = sizeof(spot_shadowmap_constants);
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, spot_shadowmap_constant_buffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
     
 
@@ -271,7 +275,47 @@ void scene_game::initialize()
         }
     }
 
-   
+    //スポットシャドウマップ生成
+    {
+        D3D11_TEXTURE2D_DESC texture2d_desc{};
+        texture2d_desc.Width = ShadowmapSize;
+        texture2d_desc.Height = ShadowmapSize;
+        texture2d_desc.MipLevels = 1;
+        texture2d_desc.ArraySize = 1;
+        texture2d_desc.Format = DXGI_FORMAT_R32_TYPELESS;
+        texture2d_desc.SampleDesc.Count = 1;
+        texture2d_desc.SampleDesc.Quality = 0;
+        texture2d_desc.Usage = D3D11_USAGE_DEFAULT;
+        texture2d_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+        texture2d_desc.CPUAccessFlags = 0;
+        texture2d_desc.MiscFlags = 0;
+
+        for (int index = 0; index < SpotShadowCount; ++index)
+        {
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> depth_buffer{};
+            hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.GetAddressOf());
+            _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+            D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
+            dsv_desc.Format = DXGI_FORMAT_D32_FLOAT;
+            dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+            dsv_desc.Texture2D.MipSlice = 0;
+            hr = device->CreateDepthStencilView(depth_buffer.Get(), &dsv_desc,
+                spot_shadowmap_depth_stencil_views[index].GetAddressOf());
+            _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+            D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc{};
+            srv_desc.Format = DXGI_FORMAT_R32_FLOAT;
+            srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            srv_desc.Texture2D.MostDetailedMip = 0;
+            srv_desc.Texture2D.MipLevels = 1;
+            hr = device->CreateShaderResourceView(depth_buffer.Get(), &srv_desc,
+                spot_shadowmap_shader_resource_views[index].GetAddressOf());
+            _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+        }
+
+    }
     ////シーン描画用のバッファ生成
     Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
     D3D11_TEXTURE2D_DESC texture2d_desc{};
@@ -604,6 +648,69 @@ void scene_game::update(float elapsed_time)
 #endif
 }
 
+void scene_game::renderSpotShadowMap(float elapsedTime)
+{
+    ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+    RenderState* renderState = Graphics::Instance().GetRenderState();
+    ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
+
+    RenderContext rc;
+    rc.deviceContext = dc;
+    rc.renderState = renderState;
+
+    // ビューポートはシャドウマップサイズに固定
+    D3D11_VIEWPORT viewport{};
+    viewport.Width = static_cast<float>(ShadowmapSize);
+    viewport.Height = static_cast<float>(ShadowmapSize);
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    dc->RSSetViewports(1, &viewport);
+
+    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
+    dc->IASetInputLayout(shadowmap_caster_input_layout.Get());
+    dc->VSSetShader(shadowmap_caster_vertex_shader.Get(), nullptr, 0);
+    dc->PSSetShader(nullptr, nullptr, 0);
+
+    const int count = static_cast<int>(spotLights.size());
+    for (int i = 0; i < count && i < SpotShadowCount; ++i)
+    {
+        // DSVクリア & バインド
+        dc->ClearDepthStencilView(spot_shadowmap_depth_stencil_views[i].Get(),
+            D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+        dc->OMSetRenderTargets(0, nullptr, spot_shadowmap_depth_stencil_views[i].Get());
+
+        // ライトビュー行列（位置 → 照射方向）
+        using namespace DirectX;
+        XMVECTOR pos = XMLoadFloat4(&spotLights[i].position);
+        XMVECTOR dir = XMVector3Normalize(XMLoadFloat4(&spotLights[i].direction));
+        XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+        if (fabsf(XMVectorGetY(dir)) > 0.99f)
+            up = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+        XMMATRIX V = XMMatrixLookToLH(pos, dir, up);
+
+        // ライトプロジェクション行列（outerCorn の2倍をFovYに）
+        float fovY = spotLights[i].outerCorn * 2.0f; // outerCorn はラジアン半角
+        XMMATRIX P = XMMatrixPerspectiveFovLH(fovY, 1.0f, 0.1f, spotLights[i].range);
+
+        XMStoreFloat4x4(&spot_shadow_constant.light_view_projection[i], V * P);
+
+        // 定数バッファを更新してVSにセット（b1のview_projectionを上書き）
+        scene_constants scene{};
+        scene.camera_position = { spotLights[i].position.x,
+                                  spotLights[i].position.y,
+                                  spotLights[i].position.z, 1.0f };
+        scene.view_projection = spot_shadow_constant.light_view_projection[i];
+        dc->UpdateSubresource(constant_buffer.Get(), 0, 0, &scene, 0, 0);
+        dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
+
+        stage::Instance().render(rc, modelRenderer);
+        Pitcher::Instance().Render(rc, modelRenderer);
+        Player::Instance().Render(rc, modelRenderer);
+    }
+}
+
 void scene_game::renderShadowMap(float elapsedTime) 
 {
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
@@ -703,6 +810,8 @@ void scene_game::render(float elapsedTime)
     {
         renderShadowMap(elapsedTime);
     }
+
+    renderSpotShadowMap(elapsedTime);
 
     using namespace DirectX;
 
@@ -824,6 +933,13 @@ void scene_game::render(float elapsedTime)
         dc->UpdateSubresource(shadowmap_constant_buffer.Get(), 0, 0, &shadowmapConstants, 0, 0);
         dc->VSSetConstantBuffers(6, 1, shadowmap_constant_buffer.GetAddressOf());
         dc->PSSetConstantBuffers(6, 1, shadowmap_constant_buffer.GetAddressOf());
+
+        // スポットシャドウマップ定数バッファ更新 (b7)
+        spot_shadow_constant.shadow_attenuation = shadow_attenuation; // 既存の値を流用
+        spot_shadow_constant.shadow_bias = 0.005f;
+        dc->UpdateSubresource(spot_shadowmap_constant_buffer.Get(), 0, 0, &spot_shadow_constant, 0, 0);
+        dc->VSSetConstantBuffers(7, 1, spot_shadowmap_constant_buffer.GetAddressOf());
+        dc->PSSetConstantBuffers(7, 1, spot_shadowmap_constant_buffer.GetAddressOf());
     }
 
     // サンプラーステート
@@ -850,6 +966,13 @@ void scene_game::render(float elapsedTime)
     {
         dc->PSSetShaderResources(10, 1, shadowmap_shader_resource_view.GetAddressOf());
     }
+
+    // スポットシャドウマップSRVをt30～t35にバインド
+    for (int i = 0; i < SpotShadowCount; ++i)
+    {
+        dc->PSSetShaderResources(30 + i, 1, spot_shadowmap_shader_resource_views[i].GetAddressOf());
+    }
+
     dc->PSSetSamplers(10, 1, shadowmap_sampler_state.GetAddressOf());
 
     stage::Instance().render(rc, modelRenderer);
@@ -886,12 +1009,13 @@ void scene_game::render(float elapsedTime)
         dc->PSSetShaderResources(20, ShadowBufferSize, nullSRVs);
 	}
 
+    // 既存の1スロットアンバインドを6スロットに拡張
+    ID3D11ShaderResourceView* nullSpotSRVs[SpotShadowCount] = {};
+    dc->PSSetShaderResources(30, SpotShadowCount, nullSpotSRVs);
+
     // バックバッファに戻してコピー
     ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
     dc->OMSetRenderTargets(1, &backBufferRTV, nullptr);
-
-    ID3D11ShaderResourceView* nullSpotSRVs[] = { nullptr };
-    dc->PSSetShaderResources(30, 1, nullSpotSRVs);
 
     ID3D11Resource* srcRes = nullptr;
     ID3D11Resource* dstRes = nullptr;

@@ -210,7 +210,8 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
 
 		//	スポットライト
         float3 spot_diffuse = 0, spot_specular = 0;
-        for (int j = 0; j < SPOTLIGHT_COUNT; ++j)
+        [unroll]
+        for (int j = 0; j < 6; ++j)
         {
           
             if(j >= light_count.z)
@@ -229,8 +230,53 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
             attenuation *= saturate(1.0f - (spotLights[j].innerCorn - angle) / area);
             float3 LC = spotLights[j].color.rgb * spotLights[j].intensity;
            
-            spot_diffuse += CalcLambert(N, L, LC, 1) * attenuation;
-            spot_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation;
+            //スポットシャドウマップ判定
+            float spot_shadow = 1.0f;
+    {
+                float4 lpos = mul(float4(pin.w_position.xyz, 1.0f),
+                          spot_light_view_projection[j]);
+                lpos.xyz /= lpos.w;
+
+                // NDC → UV変換
+                float2 uv = lpos.xy * float2(0.5f, -0.5f) + 0.5f;
+
+                // 視錐台内かチェック
+                if (lpos.z >= 0.0f && lpos.z <= 1.0f &&
+            uv.x >= 0.0f && uv.x <= 1.0f &&
+            uv.y >= 0.0f && uv.y <= 1.0f)
+                {
+                    float depth = 0.0f;
+
+                    switch (j)
+                    {
+                        case 0:
+                            depth = spot_shadow_map[0].Sample(shadow_sampler_state, uv).r;
+                            break;
+                        case 1:
+                            depth = spot_shadow_map[1].Sample(shadow_sampler_state, uv).r;
+                            break;
+                        case 2:
+                            depth = spot_shadow_map[2].Sample(shadow_sampler_state, uv).r;
+                            break;
+                        case 3:
+                            depth = spot_shadow_map[3].Sample(shadow_sampler_state, uv).r;
+                            break;
+                        case 4:
+                            depth = spot_shadow_map[4].Sample(shadow_sampler_state, uv).r;
+                            break;
+                        case 5:
+                            depth = spot_shadow_map[5].Sample(shadow_sampler_state, uv).r;
+                            break;
+                    }
+                    if (lpos.z - depth > spot_shadow_bias)
+                    {
+                        spot_shadow = spot_shadow_attenuation;
+                    }
+                }
+            }
+            
+            spot_diffuse += CalcLambert(N, L, LC, 1) * attenuation * spot_shadow;
+            spot_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation * spot_shadow;
         }
 		
 		//	合算
