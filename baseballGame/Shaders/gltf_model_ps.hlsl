@@ -193,7 +193,8 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
         float3 point_diffuse = 0, point_specular = 0;
         for (int i = 0; i < 6; ++i)
         {
-            
+            if(i>= light_count.y)
+                break;
          
             float3 L = pin.w_position.xyz - pointLights[i].position.xyz;
             float len = length(L);
@@ -212,6 +213,9 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
         for (int j = 0; j < SPOTLIGHT_COUNT; ++j)
         {
           
+            if(j >= light_count.z)
+                break;
+            
             float3 L = pin.w_position.xyz - spotLights[j].position.xyz;
             float len = length(L);
             if (len >= spotLights[j].range)

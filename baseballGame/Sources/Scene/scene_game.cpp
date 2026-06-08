@@ -111,99 +111,57 @@ void scene_game::initialize()
     // テクスチャマネージャーの初期化
     textureManager.Initialize(device, L"./resources/texture");
 
-   
-    // ポイントライト・スポットライトの初期位置設定
+    pointLights.resize(6);
+    for (int i = 0; i < 6; ++i)
     {
-        pointLights[0].position.x = 10;
-        pointLights[0].position.y = 1;
-        pointLights[0].intensity = 10;
-        pointLights[0].color = { 1, 0, 0, 1 };
-        pointLights[1].position.x = -10;
-        pointLights[1].position.y = 1;
-        pointLights[1].intensity = 10;
-        pointLights[1].color = { 0, 1, 0, 1 };
-        pointLights[2].position.y = 1;
-        pointLights[2].position.z = 10;
-        pointLights[2].intensity = 10;
-        pointLights[2].position.y = 1;
-        pointLights[2].color = { 0, 0, 1, 1 };
-        pointLights[3].position.y = 1;
-        pointLights[3].position.z = -10;
-        pointLights[3].intensity = 10;
-        pointLights[3].color = { 1, 1, 1, 1 };
-        pointLights[4].intensity = 10;
-        pointLights[4].color = { 1, 1, 1, 1 };
-        ZeroMemory(&pointLights[5], sizeof(point_lights) * 3);
-        /*spotLights[0].position = { 15, 3, 15, 0 };
-        spotLights[0].direction = { -1, -1, -1, 0 };
-        spotLights[0].range = 100;
-        spotLights[0].color = { 1, 0, 0, 1 };
-        spotLights[1].position = { -15, 3, 15, 0 };
-        spotLights[1].direction = { +1, -1, -1, 0 };
-        spotLights[1].range = 100;
-        spotLights[1].color = { 0, 1, 0, 1 };
-        spotLights[2].position = { 15, 3, -15, 0 };
-        spotLights[2].direction = { -1, -1, +1, 0 };
-        spotLights[2].range = 100;
-        spotLights[2].color = { 0, 0, 1, 1 };
-        spotLights[3].position = { -15, 3, -15, 0 };
-        spotLights[3].direction = { +1, -1, +1, 0 };
-        spotLights[3].range = 100;
-        spotLights[3].color = { 1, 1, 1, 1 };
-        ZeroMemory(&spotLights[4], sizeof(spot_lights) * (SPOTLIGHT_COUNT - 4));*/
+        pointLights[i].position = { (float)(rand() % 100 - 50), 1, (float)(rand() % 100 - 50), 0 };
+        pointLights[i].range = 10;
+        pointLights[i].color = { 1, 1, 1, 1 };
+		pointLights[i].intensity = 1.0f;
+    }
+    spotLights.resize(6);
 
-       
-        TowerLight towers[SPOTLIGHT_COUNT] = {
-    { { -80.0f, 0, -90.0f }, 100.0f },  // 三塁側前
-    { {  80.0f, 0, -90.0f }, 100.0f },  // 一塁側前
-	{ { -150.0f, 0, 25.0f }, 100.0f },  // 中央前
-    { {  150.0f, 0, 25.0f }, 100.0f },  // 中央前
-    { { -80.0f, 0,  120.0f }, 70.0f },  // 左翼側後
-    { {  80.0f, 0,  120.0f }, 70.0f },  // 右翼側後
-        };
+    // 位置
+    spotLights[0].position = { 80.0f, 100.0f, -90.0f, 1.0f };
+    spotLights[1].position = { -80.0f, 100.0f, -90.0f, 1.0f };
+    spotLights[2].position = { -160.0f, 100.0f, 40.0f, 1.0f };
+    spotLights[3].position = { 160.0f, 100.0f, 40.0f, 1.0f };
+    spotLights[4].position = { 80.0f, 80.0f, 140.0f, 1.0f };
+    spotLights[5].position = { -80.0f, 80.0f, 140.0f, 1.0f };
 
-        // 各塔が照らすターゲット（内野の各エリア）
-        DirectX::XMFLOAT3 targets[SPOTLIGHT_COUNT] = {
-            {  5.0f, 0,  5.0f },   // 内野中心付近
-            { -5.0f, 0,  5.0f },
-            {  5.0f, 0,  37.5f },
-            { -5.0f, 0,  37.5f },
-            {  55.0f, 0, 80.0f },
-            { -55.0f, 0, 80.0f },
-        };
+    // 狙う場所
+    DirectX::XMFLOAT3 targets[6] =
+    {
+        {  5.0f, 0.0f,  5.0f },
+        { -5.0f, 0.0f,  5.0f },
+        {  5.0f, 0.0f, 37.5f },
+        { -5.0f, 0.0f, 37.5f },
+        { 55.0f, 0.0f, 70.0f },
+        {-55.0f, 0.0f, 70.0f }
+    };
 
-		float ranges[SPOTLIGHT_COUNT] = { 200.0f, 200.0f, 200.0f, 200.0f, 200.0f, 200.0f }; // 各塔の照射範囲
+    for (int i = 0; i < 6; ++i)
+    {
+        DirectX::XMVECTOR pos =
+            DirectX::XMLoadFloat4(&spotLights[i].position);
 
-		int index = 0;
+        DirectX::XMVECTOR target =
+            DirectX::XMVectorSet(
+                targets[i].x,
+                targets[i].y,
+                targets[i].z,
+                0.0f);
 
-        if(showSpotLights)
-        {
-            for (int i = 0; i < SPOTLIGHT_COUNT; ++i)
-            {
-                DirectX::XMFLOAT3 towerPos = {
-                    towers[i].pos.x, towers[i].height, towers[i].pos.z
-                };
+        DirectX::XMVECTOR dir =
+            DirectX::XMVector3Normalize(target - pos);
 
-                
-                DirectX::XMFLOAT3 target = targets[i];
+        DirectX::XMStoreFloat4(&spotLights[i].direction, dir);
 
-                // 方向ベクトル計算
-                DirectX::XMVECTOR P = DirectX::XMLoadFloat3(&towerPos);
-                DirectX::XMVECTOR T = DirectX::XMLoadFloat3(&target);
-                DirectX::XMVECTOR D = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(T, P));
-
-                spotLights[index].position = { towerPos.x, towerPos.y, towerPos.z, 0 };
-                DirectX::XMStoreFloat4(
-                    reinterpret_cast<DirectX::XMFLOAT4*>(&spotLights[index].direction), D);
-                spotLights[index].color = { 1.0f, 0.95f, 0.85f, 1.0f }; // 白熱灯っぽい色
-                spotLights[index].range = ranges[i];
-                spotLights[index].intensity = 5.0f;
-                spotLights[index].innerCorn = cosf(DirectX::XMConvertToRadians(10.0f));
-                spotLights[index].outerCorn = cosf(DirectX::XMConvertToRadians(30.0f));
-                index++;
-                
-            }
-        }
+        spotLights[i].color = { 1,1,1,1 };
+        spotLights[i].range = 100.0f;
+        spotLights[i].intensity = 3.0f;
+        spotLights[i].innerCorn = DirectX::XMConvertToRadians(30.0f);
+        spotLights[i].outerCorn = DirectX::XMConvertToRadians(60.0f);
     }
 
     // ライトから見たシーンの深度描画用バッファ
@@ -513,39 +471,53 @@ void scene_game::update(float elapsed_time)
     
         if (ImGui::TreeNode("points"))
         {
-            for (int i = 0; i < 6; ++i)
+            for (int i = 0; i < pointLights.size(); ++i)
             {
-                if (ImGui::TreeNode((std::string("pointLight") + std::to_string(i)).c_str()))
+                if (ImGui::TreeNode((std::string("point ") + std::to_string(i)).data()))
                 {
-                    
-                    ImGui::SliderFloat3("position", &pointLights[i].position.x, -10.0f, +10.0f);
-                    
+                    ImGui::SliderFloat3("position", &pointLights[i].position.x, -100.0f, +100.0f);
                     ImGui::ColorEdit3("color", &pointLights[i].color.x);
                     ImGui::SliderFloat("intensity", &pointLights[i].intensity, 0.0f, +100.0f);
-                    ImGui::SliderFloat("range", &pointLights[i].range, 0.0f, +1000.0f);
-                    ImGui::TreePop();
+                    ImGui::SliderFloat("range", &pointLights[i].range, 0.1f, +100.0f);
                     ImGui::Separator();
+                    ImGui::TreePop();
                 }
             }
             ImGui::TreePop();
         }
         if (ImGui::TreeNode("spots"))
         {
-            ImGui::Checkbox("showSpotLights", &showSpotLights);
-
-            for (int i = 0; i < SPOTLIGHT_COUNT; ++i)
+            for (int i = 0; i < spotLights.size(); ++i)
             {
-                if (ImGui::TreeNode((std::string("spotLight") + std::to_string(i)).c_str()))
+                if (ImGui::TreeNode((std::string("spot ") + std::to_string(i)).data()))
                 {
-                    ImGui::SliderFloat3("position", &spotLights[i].position.x, -10.0f, +10.0f);
-                    ImGui::SliderFloat3("direction", &spotLights[i].direction.x, 0.0f, +1.0f);
+                    ImGui::SliderFloat3("position", &spotLights[i].position.x, -100.0f, +100.0f);
+                    if (ImGui::SliderFloat3("direction", &spotLights[i].direction.x, -1.0f, +1.0f))
+                    {
+                        float x = spotLights[i].direction.x * spotLights[i].direction.x
+                            + spotLights[i].direction.y * spotLights[i].direction.y
+                            + spotLights[i].direction.z * spotLights[i].direction.z;
+                        x = sqrtf(x);
+                        spotLights[i].direction.x /= x;
+                        spotLights[i].direction.y /= x;
+                        spotLights[i].direction.z /= x;
+                    }
                     ImGui::ColorEdit3("color", &spotLights[i].color.x);
-                    ImGui::SliderFloat("range", &spotLights[i].range, 0.0f, +1000.0f);
-                    ImGui::SliderFloat("innerCorn", &spotLights[i].innerCorn, -1.0f, +1.0f);
-                    ImGui::SliderFloat("outerCorn", &spotLights[i].outerCorn, -1.0f, +1.0f);
-					ImGui::SliderFloat("intensity", &spotLights[i].intensity, 0.0f, +100.0f);
-                    ImGui::TreePop();
+                    ImGui::SliderFloat("intensity", &spotLights[i].intensity, 0.0f, +100.0f);
+                    ImGui::SliderFloat("range", &spotLights[i].range, 0.1f, +1000.0f);
+                    float inner_corn = DirectX::XMConvertToDegrees(spotLights[i].innerCorn);
+                    if (ImGui::SliderFloat("inner", &inner_corn, 0.0f, +89.0f))
+                    {
+                        spotLights[i].innerCorn = DirectX::XMConvertToRadians(inner_corn);
+                    }
+
+                    float outer_corn = DirectX::XMConvertToDegrees(spotLights[i].outerCorn);
+                    if (ImGui::SliderFloat("outer", &outer_corn, 0.0f, +89.0f))
+                    {
+                        spotLights[i].outerCorn = DirectX::XMConvertToRadians(outer_corn);
+                    }
                     ImGui::Separator();
+                    ImGui::TreePop();
                 }
             }
             ImGui::TreePop();
@@ -747,16 +719,15 @@ void scene_game::render(float elapsedTime)
 
     
 	//ポイントライトの描画
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < pointLights.size(); ++i)
     {
         //大きさは変わらない
         shapeRenderer->DrawPointLight(DirectX::XMFLOAT3(pointLights[i].position.x, pointLights[i].position.y, pointLights[i].position.z), 0.1, pointLights[i].color);
     }
 
 	//スポットライトの描画
-    if (showSpotLights)
-    {
-        for (int i = 0; i < SPOTLIGHT_COUNT; ++i)
+    
+        for (int i = 0; i < spotLights.size(); ++i)
         {
             shapeRenderer->DrawSpotLight(
                 DirectX::XMFLOAT3(spotLights[i].position.x, spotLights[i].position.y, spotLights[i].position.z),
@@ -767,9 +738,6 @@ void scene_game::render(float elapsedTime)
                 spotLights[i].color
             );
 		}
-
-		
-    }
 
     // バックバッファに直接描画
    
@@ -809,18 +777,29 @@ void scene_game::render(float elapsedTime)
         dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
         dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
+        static constexpr int LightCBVIndex = 3;
         light_constants lightConstants{};
         lightConstants.ambient_color = ambient_color;
         lightConstants.directional_light_direction = directional_light_direction;
         lightConstants.directional_light_color = directional_light_color;
-        memcpy_s(lightConstants.pointLights, sizeof(lightConstants.pointLights), pointLights, sizeof(pointLights));
-        if (showSpotLights)
+        for (auto& point_light : pointLights)
         {
-            memcpy_s(lightConstants.spotLights, sizeof(lightConstants.spotLights), spotLights, sizeof(spotLights));
+			lightConstants.point_light[lightConstants.light_count.y] = point_light;
+            if (++lightConstants.light_count.y == light_constants::light_max)
+                break;
         }
+        for (auto& spot_light : spotLights)
+        {
+            lightConstants.spot_light[lightConstants.light_count.z] = spot_light;
+            lightConstants.spot_light[lightConstants.light_count.z].innerCorn = cosf(spot_light.innerCorn);
+            lightConstants.spot_light[lightConstants.light_count.z].outerCorn = cosf(spot_light.outerCorn);
+            if (++lightConstants.light_count.z == light_constants::light_max)
+                break;
+		}
+
         dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &lightConstants, 0, 0);
-        dc->VSSetConstantBuffers(3, 1, light_constant_buffer.GetAddressOf());
-        dc->PSSetConstantBuffers(3, 1, light_constant_buffer.GetAddressOf());
+        dc->VSSetConstantBuffers(LightCBVIndex, 1, light_constant_buffer.GetAddressOf());
+        dc->PSSetConstantBuffers(LightCBVIndex, 1, light_constant_buffer.GetAddressOf());
 
         hemisphere_light_constants hemisphereLightConstants{};
         hemisphereLightConstants.sky_color = sky_color;

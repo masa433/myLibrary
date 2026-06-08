@@ -48,6 +48,7 @@ cbuffer LIGHT_CONSTANT_BUFFER : register(b3)
     float4 ambient_color;
     float4 directional_light_direction;
     float4 directional_light_color;
+    uint4 light_count; // y : 点光源の数, z : スポットライトの数
     point_lights pointLights[6];
     spot_lights spotLights[SPOTLIGHT_COUNT];
 };
