@@ -73,6 +73,8 @@ cbuffer SHADOWMAP_CONSTANT_BUFFER : register(b6)
     float2 shadow_dummy;
 };
 
+
+
 // UNIT.37
 static const uint PRIMITIVE_MAX_JOINTS = 512;
 cbuffer PRIMITIVE_JOINT_CONSTANTS : register(b2)

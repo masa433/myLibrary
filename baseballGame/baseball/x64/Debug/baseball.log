@@ -1,27 +1,3 @@
-﻿C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\cascade_shadowmap_ps.hlsl(160,35-59): warning X3550: sampler array index must be a literal expression, forcing loop to unroll
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\cascade_shadowmap_ps.hlsl(192,38-62): warning X3556: integer divides may be much slower, try using uints if possible.
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\cascade_shadowmap_ps.hlsl(193,23-47): warning X3556: integer modulus may be much slower, try using uints if possible.
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\cascade_shadowmap_ps.hlsl(194,23-47): warning X3556: integer modulus may be much slower, try using uints if possible.
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\cascade_shadowmap_ps.hlsl(195,23-47): warning X3556: integer modulus may be much slower, try using uints if possible.
-  
-  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\cascade_shadowmap_ps.cod
-  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\cascade_shadowmap_ps.cso
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(165,35-59): warning X3550: sampler array index must be a literal expression, forcing loop to unroll
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(181,46-70): warning X3556: integer divides may be much slower, try using uints if possible.
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(182,31-55): warning X3556: integer modulus may be much slower, try using uints if possible.
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(183,31-55): warning X3556: integer modulus may be much slower, try using uints if possible.
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(184,31-55): warning X3556: integer modulus may be much slower, try using uints if possible.
-  
-  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cod
-  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cso
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
-  
-  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_vs.cod
-  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_vs.cso
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
-  
-  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\shadowmap_caster_vs.cod
-  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\shadowmap_caster_vs.cso
+﻿  scene_game.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(754,139): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe
