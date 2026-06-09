@@ -15,7 +15,8 @@
 #include "sprite.h"
 
 //	シャドウマップサイズ
-static constexpr UINT ShadowmapSize = 2048;
+static constexpr UINT ShadowmapSize = 4096;
+static constexpr UINT SpotShadowmapSize = 4096;
 static constexpr float ShadowmapDrawRect = 60;
 
 
@@ -162,7 +163,7 @@ void scene_game::initialize()
         DirectX::XMStoreFloat4(&spotLights[i].direction, dir);
 
         spotLights[i].color = { 1,1,1,1 };
-        spotLights[i].range = 100.0f;
+        spotLights[i].range = 250.0f;
         spotLights[i].intensity = 3.0f;
         spotLights[i].innerCorn = DirectX::XMConvertToRadians(30.0f);
         spotLights[i].outerCorn = DirectX::XMConvertToRadians(60.0f);
@@ -278,8 +279,8 @@ void scene_game::initialize()
     //スポットシャドウマップ生成
     {
         D3D11_TEXTURE2D_DESC texture2d_desc{};
-        texture2d_desc.Width = ShadowmapSize;
-        texture2d_desc.Height = ShadowmapSize;
+        texture2d_desc.Width = SpotShadowmapSize;
+        texture2d_desc.Height = SpotShadowmapSize;
         texture2d_desc.MipLevels = 1;
         texture2d_desc.ArraySize = 1;
         texture2d_desc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -447,6 +448,13 @@ void scene_game::initialize()
         //ぼかした結果を利用するスプライト
         add_luminance_extract_pass_sprite = std::make_unique<sprite>(device, bokeh_luminance_extract_shader_resource_view);
 	}
+
+    //ドローコール表示用
+	D3D11_QUERY_DESC query_desc{};
+    query_desc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
+    query_desc.MiscFlags = 0;
+    hr = device->CreateQuery(&query_desc, pipeline_stats_query.GetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 }
 
 void scene_game::update(float elapsed_time)
@@ -630,6 +638,13 @@ void scene_game::update(float elapsed_time)
         ImGui::Image(ImTextureRef(bokeh_luminance_extract_shader_resource_view.Get()), ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1));
     }
 
+    if (ImGui::CollapsingHeader("Performance"))
+    {
+        ImGui::Text("Draw Calls (VS invokes) : %llu", pipeline_stats.VSInvocations);
+        ImGui::Text("Primitives rendered     : %llu", pipeline_stats.IAPrimitives);
+        ImGui::Text("FPS                     : %.1f", ImGui::GetIO().Framerate);
+    }
+
     // タイムスケール制御
     if (ImGui::Begin("Time Control", nullptr, ImGuiWindowFlags_None))
     {
@@ -660,8 +675,8 @@ void scene_game::renderSpotShadowMap(float elapsedTime)
 
     // ビューポートはシャドウマップサイズに固定
     D3D11_VIEWPORT viewport{};
-    viewport.Width = static_cast<float>(ShadowmapSize);
-    viewport.Height = static_cast<float>(ShadowmapSize);
+    viewport.Width = static_cast<float>(SpotShadowmapSize);
+    viewport.Height = static_cast<float>(SpotShadowmapSize);
     viewport.MinDepth = 0.0f;
     viewport.MaxDepth = 1.0f;
     dc->RSSetViewports(1, &viewport);
@@ -683,24 +698,26 @@ void scene_game::renderSpotShadowMap(float elapsedTime)
 
         // ライトビュー行列（位置 → 照射方向）
         using namespace DirectX;
-        XMVECTOR pos = XMLoadFloat4(&spotLights[i].position);
-        XMVECTOR dir = XMVector3Normalize(XMLoadFloat4(&spotLights[i].direction));
-        XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+        XMFLOAT3 posF3 = {spotLights[i].position.x, spotLights[i].position.y, spotLights[i].position.z};
+		XMFLOAT3 dirF3 = { spotLights[i].direction.x, spotLights[i].direction.y, spotLights[i].direction.z };
+
+        XMVECTOR pos = XMLoadFloat3(&posF3);
+        XMVECTOR dir = XMVector3Normalize(XMLoadFloat3(&dirF3));
+        XMVECTOR up = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
         if (fabsf(XMVectorGetY(dir)) > 0.99f)
             up = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
         XMMATRIX V = XMMatrixLookToLH(pos, dir, up);
 
         // ライトプロジェクション行列（outerCorn の2倍をFovYに）
         float fovY = spotLights[i].outerCorn * 2.0f; // outerCorn はラジアン半角
-        XMMATRIX P = XMMatrixPerspectiveFovLH(fovY, 1.0f, 0.1f, spotLights[i].range);
+        XMMATRIX P = XMMatrixPerspectiveFovLH(fovY, 1.0f, 1.0f, spotLights[i].range);
 
         XMStoreFloat4x4(&spot_shadow_constant.light_view_projection[i], V * P);
 
         // 定数バッファを更新してVSにセット（b1のview_projectionを上書き）
         scene_constants scene{};
-        scene.camera_position = { spotLights[i].position.x,
-                                  spotLights[i].position.y,
-                                  spotLights[i].position.z, 1.0f };
+        scene.camera_position = { posF3.x,posF3.y,posF3.z, 1.0f };
         scene.view_projection = spot_shadow_constant.light_view_projection[i];
         dc->UpdateSubresource(constant_buffer.Get(), 0, 0, &scene, 0, 0);
         dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
@@ -811,7 +828,13 @@ void scene_game::render(float elapsedTime)
         renderShadowMap(elapsedTime);
     }
 
-    renderSpotShadowMap(elapsedTime);
+    //renderSpotShadowMap(elapsedTime);
+    spot_shadow_frame_count++;
+    if(spot_shadow_frame_count >= spot_shadow_update_interval)
+    {
+        renderSpotShadowMap(elapsedTime);
+        spot_shadow_frame_count = 0;
+	}
 
     using namespace DirectX;
 
@@ -826,7 +849,14 @@ void scene_game::render(float elapsedTime)
 
     Camera& camera = Camera::Instance();
 
-    
+    // 前フレームの結果を取得（ノンブロッキング）
+    dc->GetData(pipeline_stats_query.Get(), &pipeline_stats,
+        sizeof(pipeline_stats), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+
+    // 今フレームの計測開始
+    dc->Begin(pipeline_stats_query.Get());
+
+
 	//ポイントライトの描画
     for (int i = 0; i < pointLights.size(); ++i)
     {
@@ -983,15 +1013,19 @@ void scene_game::render(float elapsedTime)
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
     // ShapeRenderer の描画実行
-    shapeRenderer->Render(
-        dc,
-        camera.GetView(),
-        camera.GetProjection(),
-        rc.lightDirection
-    );
 
     if (showPhysxDebug)
+
+    {
+        shapeRenderer->Render(
+            dc,
+            camera.GetView(),
+            camera.GetProjection(),
+            rc.lightDirection
+        );
+
         Physics::Instance().Render(camera.GetView(), camera.GetProjection(), rc.lightDirection);
+    }
 
     // ここで高輝度抽出とぼかしを実行してパスのSRVを更新する
     luminance_extract_pass(elapsedTime);
@@ -1040,6 +1074,9 @@ void scene_game::render(float elapsedTime)
 
         add_luminance_extract_pass_sprite->render(dc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
+
+    //計測終了
+	dc->End(pipeline_stats_query.Get());
 }
 
 //カスケードシャドウマップ生成関数

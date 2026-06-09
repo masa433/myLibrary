@@ -99,10 +99,10 @@
 // cbuffer SPOT_SHADOWMAP_CONSTANT_BUFFER
 // {
 //
-//   row_major float4x4 spot_light_view_projection[6];// Offset:    0 Size:   384
-//   float spot_shadow_attenuation;     // Offset:  384 Size:     4
-//   float spot_shadow_bias;            // Offset:  388 Size:     4
-//   float2 spot_shadow_dummy;          // Offset:  392 Size:     8 [unused]
+//   row_major float4x4 spot_light_view_projection[4];// Offset:    0 Size:   256
+//   float spot_shadow_attenuation;     // Offset:  256 Size:     4
+//   float spot_shadow_bias;            // Offset:  260 Size:     4
+//   float2 spot_shadow_dummy;          // Offset:  264 Size:     8 [unused]
 //
 // }
 //
@@ -192,8 +192,6 @@
 // spot_shadow_map[1]                texture  float4          2d            t31      1 
 // spot_shadow_map[2]                texture  float4          2d            t32      1 
 // spot_shadow_map[3]                texture  float4          2d            t33      1 
-// spot_shadow_map[4]                texture  float4          2d            t34      1 
-// spot_shadow_map[5]                texture  float4          2d            t35      1 
 // PRIMITIVE_CONSTANT_BUFFER         cbuffer      NA          NA            cb0      1 
 // SCENE_CONSTANT_BUFFER             cbuffer      NA          NA            cb1      1 
 // LIGHT_CONSTANT_BUFFER             cbuffer      NA          NA            cb3      1 
@@ -233,7 +231,7 @@ dcl_constantbuffer CB4[3], immediateIndexed
 dcl_constantbuffer CB5[2], immediateIndexed
 dcl_constantbuffer CB6[5], immediateIndexed
 dcl_constantbuffer CB8[18], immediateIndexed
-dcl_constantbuffer CB7[25], dynamicIndexed
+dcl_constantbuffer CB7[17], dynamicIndexed
 dcl_sampler s1, mode_default
 dcl_sampler s2, mode_default
 dcl_sampler s10, mode_default
@@ -249,8 +247,6 @@ dcl_resource_texture2d (float,float,float,float) t30
 dcl_resource_texture2d (float,float,float,float) t31
 dcl_resource_texture2d (float,float,float,float) t32
 dcl_resource_texture2d (float,float,float,float) t33
-dcl_resource_texture2d (float,float,float,float) t34
-dcl_resource_texture2d (float,float,float,float) t35
 dcl_input_ps linear v1.xyz
 dcl_input_ps linear v2.xyz
 dcl_input_ps linear v3.xyzw
@@ -1139,11 +1135,11 @@ if_z r2.w
 #line 271
       mov r0.z, -r0.z
       add r0.z, r0.z, r13.z
-      lt r0.z, cb7[24].y, r0.z
+      lt r0.z, cb7[16].y, r0.z
       if_nz r0.z
 
 #line 273
-        mov r7.w, cb7[24].x
+        mov r7.w, cb7[16].x
 
 #line 274
       endif 
@@ -1365,11 +1361,11 @@ if_z r0.z
 #line 271
         mov r5.w, -r5.w
         add r5.w, r5.w, r13.z
-        lt r5.w, cb7[24].y, r5.w
+        lt r5.w, cb7[16].y, r5.w
         if_nz r5.w
 
 #line 273
-          mov r7.w, cb7[24].x
+          mov r7.w, cb7[16].x
 
 #line 274
         endif 
@@ -1592,11 +1588,11 @@ if_z r0.z
 #line 271
         mov r5.w, -r5.w
         add r5.w, r5.w, r13.z
-        lt r5.w, cb7[24].y, r5.w
+        lt r5.w, cb7[16].y, r5.w
         if_nz r5.w
 
 #line 273
-          mov r7.w, cb7[24].x
+          mov r7.w, cb7[16].x
 
 #line 274
         endif 
@@ -1760,13 +1756,12 @@ if_z r0.z
       mov r7.w, l(1.000000)  // r7.w <- spot_shadow
 
 #line 236
-      imul null, r8.w, r5.w, l(4)
-      mul r13.xyzw, v1.xxxx, cb7[r8.w + 0].xyzw
-      mul r14.xyzw, v1.yyyy, cb7[r8.w + 1].xyzw
+      mul r13.xyzw, v1.xxxx, cb7[12].xyzw
+      mul r14.xyzw, v1.yyyy, cb7[13].xyzw
       add r13.xyzw, r13.xyzw, r14.xyzw
-      mul r14.xyzw, v1.zzzz, cb7[r8.w + 2].xyzw
+      mul r14.xyzw, v1.zzzz, cb7[14].xyzw
       add r13.xyzw, r13.xyzw, r14.xyzw
-      mul r14.xyzw, l(1.000000, 1.000000, 1.000000, 1.000000), cb7[r8.w + 3].xyzw
+      mul r14.xyzw, l(1.000000, 1.000000, 1.000000, 1.000000), cb7[15].xyzw
       add r13.xyzw, r13.xyzw, r14.xyzw  // r13.x <- lpos.x; r13.y <- lpos.y; r13.z <- lpos.z; r13.w <- lpos.w
 
 #line 238
@@ -1807,7 +1802,7 @@ if_z r0.z
           case l(4)
 
 #line 265
-          sample_indexable(texture2d)(float,float,float,float) r5.w, r13.xyxx, t34.yzwx, s10
+          sample_indexable(texture2d)(float,float,float,float) r5.w, r13.xyxx, t30.yzwx, s10
           mov r5.w, r5.w  // r5.w <- depth
 
 #line 266
@@ -1819,11 +1814,11 @@ if_z r0.z
 #line 271
         mov r5.w, -r5.w
         add r5.w, r5.w, r13.z
-        lt r5.w, cb7[24].y, r5.w
+        lt r5.w, cb7[16].y, r5.w
         if_nz r5.w
 
 #line 273
-          mov r7.w, cb7[24].x
+          mov r7.w, cb7[16].x
 
 #line 274
         endif 
@@ -1987,13 +1982,12 @@ if_z r0.z
       mov r7.w, l(1.000000)  // r7.w <- spot_shadow
 
 #line 236
-      imul null, r8.w, r5.w, l(4)
-      mul r13.xyzw, v1.xxxx, cb7[r8.w + 0].xyzw
-      mul r14.xyzw, v1.yyyy, cb7[r8.w + 1].xyzw
+      mul r13.xyzw, v1.xxxx, cb7[0].xyzw
+      mul r14.xyzw, v1.yyyy, cb7[1].xyzw
       add r13.xyzw, r13.xyzw, r14.xyzw
-      mul r14.xyzw, v1.zzzz, cb7[r8.w + 2].xyzw
+      mul r14.xyzw, v1.zzzz, cb7[2].xyzw
       add r13.xyzw, r13.xyzw, r14.xyzw
-      mul r14.xyzw, l(1.000000, 1.000000, 1.000000, 1.000000), cb7[r8.w + 3].xyzw
+      mul r14.xyzw, l(1.000000, 1.000000, 1.000000, 1.000000), cb7[3].xyzw
       add r13.xyzw, r13.xyzw, r14.xyzw  // r13.x <- lpos.x; r13.y <- lpos.y; r13.z <- lpos.z; r13.w <- lpos.w
 
 #line 238
@@ -2024,7 +2018,7 @@ if_z r0.z
           case l(4)
 
 #line 265
-          sample_indexable(texture2d)(float,float,float,float) r5.w, r13.xyxx, t34.yzwx, s10
+          sample_indexable(texture2d)(float,float,float,float) r5.w, r13.xyxx, t30.yzwx, s10
           mov r5.w, r5.w  // r5.w <- depth
 
 #line 266
@@ -2034,7 +2028,7 @@ if_z r0.z
           case l(5)
 
 #line 268
-          sample_indexable(texture2d)(float,float,float,float) r5.w, r13.xyxx, t35.yzwx, s10
+          sample_indexable(texture2d)(float,float,float,float) r5.w, r13.xyxx, t30.yzwx, s10
           mov r5.w, r5.w  // r5.w <- depth
 
 #line 269
@@ -2046,11 +2040,11 @@ if_z r0.z
 #line 271
         mov r5.w, -r5.w
         add r5.w, r5.w, r13.z
-        lt r5.w, cb7[24].y, r5.w
+        lt r5.w, cb7[16].y, r5.w
         if_nz r5.w
 
 #line 273
-          mov r7.w, cb7[24].x
+          mov r7.w, cb7[16].x
 
 #line 274
         endif 
@@ -2203,12 +2197,12 @@ if_z r0.z
       mov r2.w, l(1.000000)  // r2.w <- spot_shadow
 
 #line 236
-      mul r13.xyzw, v1.xxxx, cb7[20].xyzw
-      mul r14.xyzw, v1.yyyy, cb7[21].xyzw
+      mul r13.xyzw, v1.xxxx, cb7[0].xyzw
+      mul r14.xyzw, v1.yyyy, cb7[1].xyzw
       add r13.xyzw, r13.xyzw, r14.xyzw
-      mul r14.xyzw, v1.zzzz, cb7[22].xyzw
+      mul r14.xyzw, v1.zzzz, cb7[2].xyzw
       add r13.xyzw, r13.xyzw, r14.xyzw
-      mul r14.xyzw, l(1.000000, 1.000000, 1.000000, 1.000000), cb7[23].xyzw
+      mul r14.xyzw, l(1.000000, 1.000000, 1.000000, 1.000000), cb7[3].xyzw
       add r13.xyzw, r13.xyzw, r14.xyzw  // r13.x <- lpos.x; r13.y <- lpos.y; r13.z <- lpos.z; r13.w <- lpos.w
 
 #line 238
@@ -2242,7 +2236,7 @@ if_z r0.z
           case l(5)
 
 #line 268
-          sample_indexable(texture2d)(float,float,float,float) r4.w, r13.xyxx, t35.yzwx, s10
+          sample_indexable(texture2d)(float,float,float,float) r4.w, r13.xyxx, t30.yzwx, s10
           mov r4.w, r4.w  // r4.w <- depth
 
 #line 269
@@ -2256,11 +2250,11 @@ if_z r0.z
 #line 271
         mov r3.w, -r4.w
         add r3.w, r3.w, r13.z
-        lt r3.w, cb7[24].y, r3.w
+        lt r3.w, cb7[16].y, r3.w
         if_nz r3.w
 
 #line 273
-          mov r2.w, cb7[24].x
+          mov r2.w, cb7[16].x
 
 #line 274
         endif 
@@ -2377,4 +2371,4 @@ mov r0.xyzw, r0.xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w
 #line 291
 mov o0.xyzw, r0.xyzw
 ret 
-// Approximately 1302 instruction slots used
+// Approximately 1300 instruction slots used

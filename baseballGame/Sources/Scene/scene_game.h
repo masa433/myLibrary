@@ -35,7 +35,7 @@ private:
     static constexpr int KernelMax = 25;
 
     // スポットライトシャドウマップ関連
-    static constexpr int SpotShadowCount = 6; // light_max と一致させる
+    static constexpr int SpotShadowCount = 4; // light_max と一致させる
 
      // 定数バッファ構造体
     struct scene_constants
@@ -278,4 +278,12 @@ private:
 
 	void renderSpotShadowMap(float elapsedTime);
 
+    // 影の更新頻度を下げる
+	int spot_shadow_update_interval = 3; // 影の更新間隔（秒）
+	int spot_shadow_frame_count = 0; // フレームカウンタ
+
+private:
+    //ドローコール表示用
+    Microsoft::WRL::ComPtr<ID3D11Query> pipeline_stats_query;
+    D3D11_QUERY_DATA_PIPELINE_STATISTICS pipeline_stats = {};
 };
