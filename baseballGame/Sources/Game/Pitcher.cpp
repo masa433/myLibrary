@@ -41,6 +41,8 @@ void Pitcher::Initialize()
 	boxPosition = { 0.0f, 0.8f, 0.0f }; // ストライクゾーンの位置を設定
 	boxSize = { 0.43f, 0.6f, 0.2f }; // ストライクゾーンのサイズを設定
 
+	pitcher->build_static_batches(device);
+
 	// ホームラン判定用トリガーの作成
 	{
 		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
@@ -236,7 +238,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
-	pitcher->render(rc.deviceContext, transform, animated_nodes);
+	pitcher->render_batched(rc.deviceContext, transform, animated_nodes);
 	Ball::Instance().Render(rc, renderer, isBallThrown);
 
 	

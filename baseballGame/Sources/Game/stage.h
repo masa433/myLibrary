@@ -41,10 +41,12 @@ private:
 	std::vector<physx::PxActor*> actors;
 	DirectX::XMFLOAT4X4					transform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 
+	
 public:
 	//ホームラン判定用のボックストリガーコライダー
 	physx::PxRigidStatic* homeRunTrigger = nullptr;
 	DirectX::XMFLOAT3 hrTriggerPos = { 0.0f, 10.0f, -80.0f }; // トリガーの初期位置
 	DirectX::XMFLOAT3 hrTriggerHalfExtents = { 60.0f, 20.0f, 10.0f }; // トリガーの半分のサイズ(XYZ)
+
 
 };

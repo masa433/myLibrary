@@ -27,6 +27,7 @@ void scene_game::initialize()
 
     ID3D11Device* device = Graphics::Instance().GetDevice();
 
+   
     // カメラ設定をここに移動
     float screenWidth = Graphics::Instance().GetScreenWidth();
     float screenHeight = Graphics::Instance().GetScreenHeight();
@@ -800,7 +801,7 @@ void scene_game::renderShadowMap(float elapsedTime)
         }
 
         //モデルの描画
-		stage::Instance().render(rc,modelRenderer);
+		stage::Instance().render(rc, modelRenderer);
 
         // プレイヤー・ピッチャーの描画(カリングなしで両面描画)
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
@@ -973,12 +974,14 @@ void scene_game::render(float elapsedTime)
     }
 
     // サンプラーステート
-    ID3D11SamplerState* samplerStates[] = {
-        renderState->GetSamplerState(SamplerState::PointWrap),
-        renderState->GetSamplerState(SamplerState::PointClamp),
-        renderState->GetSamplerState(SamplerState::PointWrap)
+    ID3D11SamplerState* sampler_states[] =
+    {
+        Graphics::Instance().GetRenderState()->GetSamplerState(SamplerState::PointClamp),        // s0: POINT
+        Graphics::Instance().GetRenderState()->GetSamplerState(SamplerState::LinearClamp),  // s1: LINEAR
+        Graphics::Instance().GetRenderState()->GetSamplerState(SamplerState::AnisotropicClamp),  // s2: ANISOTROPIC
     };
-    dc->PSSetSamplers(0, 3, samplerStates);
+    dc->PSSetSamplers(0, ARRAYSIZE(sampler_states), sampler_states);
+    dc->VSSetSamplers(0, ARRAYSIZE(sampler_states), sampler_states);
     if (use_cascade_shadow_map)
     {
 		

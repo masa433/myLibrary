@@ -63,6 +63,13 @@ public:
 			int material; // 使用するマテリアルのインデックス
 			std::map<std::string, buffer_view> vertex_buffer_views; // 頂点属性名とバッファの対応表
 			buffer_view index_buffer_view; // インデックスバッファ
+
+			//バッチング用のCPU側の頂点データ
+			std::vector<DirectX::XMFLOAT3> cpu_positions;
+			std::vector<DirectX::XMFLOAT3> cpu_normals;
+			std::vector<DirectX::XMFLOAT4> cpu_tangents;
+			std::vector<DirectX::XMFLOAT2> cpu_texcoords;
+			std::vector<uint32_t>          cpu_indices;
 		};
 		std::vector<primitive> primitives; // メッシュを構成するプリミティブの配列
 	};
@@ -222,4 +229,28 @@ public:
 		 DirectX::XMFLOAT4X4 matrices[PRIMITIVE_MAX_JOINTS];
 	 };
 	 Microsoft::WRL::ComPtr<ID3D11Buffer> primitive_joint_cbuffer;
+
+	 //STATIC_BATCHING
+	 struct batched_primitive
+	 {
+		 int material{ -1 };
+		 Microsoft::WRL::ComPtr<ID3D11Buffer> position_buffer;
+		 Microsoft::WRL::ComPtr<ID3D11Buffer> normal_buffer;
+		 Microsoft::WRL::ComPtr<ID3D11Buffer> tangent_buffer;
+		 Microsoft::WRL::ComPtr<ID3D11Buffer> texcoord_buffer;
+		 Microsoft::WRL::ComPtr<ID3D11Buffer> joint_buffer;//ダミー
+		 Microsoft::WRL::ComPtr<ID3D11Buffer> weight_buffer;//ダミー
+		 Microsoft::WRL::ComPtr<ID3D11Buffer> index_buffer;
+		 UINT index_count{ 0 };
+	 };
+
+	 std::vector<batched_primitive> batched_primitives;
+
+	 // ロード後に1回呼ぶ
+	 void build_static_batches(ID3D11Device* device);
+
+	 // バッチを使った描画（スキンなしモデル用）
+	 void render_batched(ID3D11DeviceContext* immediate_context,
+		 const DirectX::XMFLOAT4X4& world, const std::vector<node>& animated_nodes);
+
 };

@@ -16,6 +16,12 @@ void stage::initialize()
 	ground2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\ground.glb");
 	pole = std::make_unique<Model>(".\\resources\\field\\pole.mdl");
 	pole2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\pole.glb");
+
+	stand2->build_static_batches(device);
+	ground2->build_static_batches(device);
+	pole2->build_static_batches(device);
+
+
 	// 位置、スケール、回転の初期化
 	position = { 0.0f, 0.0f, 0.0f };
 	scale = { 1.0f, 1.0f, 1.0f };
@@ -267,11 +273,10 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 {
 	//renderer->Render(rc, transform, stand.get(), ShaderId::ShadowMap);
 	//renderer->Render(rc, transform, ground.get(), ShaderId::ShadowMap);
-	stand2->render(rc.deviceContext, transform, {});
-	ground2->render(rc.deviceContext, transform, {});
-	pole2->render(rc.deviceContext, transform, {});
+	stand2->render_batched(rc.deviceContext, transform, {});
+	ground2->render_batched(rc.deviceContext, transform, {});
+	pole2->render_batched(rc.deviceContext, transform, {});
 }
-
 
 // 終了
 void stage::uninitialize()

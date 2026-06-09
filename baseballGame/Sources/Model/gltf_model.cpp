@@ -293,6 +293,24 @@ void gltf_model::fetch_meshes(ID3D11Device* device, const tinygltf::Model& gltf_
 			      primitive.index_buffer_view.buffer.ReleaseAndGetAddressOf());
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
+			// インデックスのCPUコピー
+			{
+				const uint8_t* src = gltf_model.buffers.at(gltf_buffer_view.buffer).data.data()
+					+ gltf_buffer_view.byteOffset + gltf_accessor.byteOffset;
+				primitive.cpu_indices.resize(gltf_accessor.count);
+				if (gltf_accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+				{
+					const uint16_t* src16 = reinterpret_cast<const uint16_t*>(src);
+					for (size_t i = 0; i < gltf_accessor.count; ++i)
+						primitive.cpu_indices[i] = src16[i];
+				}
+				else // UNSIGNED_INT
+				{
+					memcpy(primitive.cpu_indices.data(), src,
+						gltf_accessor.count * sizeof(uint32_t));
+				}
+			}
+
 			//Create vertex buffer(頂点バッファ)
 			for (std::map<std::string, int>::const_reference gltf_attribute : gltf_primitive.attributes)
 			{
@@ -313,6 +331,40 @@ void gltf_model::fetch_meshes(ID3D11Device* device, const tinygltf::Model& gltf_
 				_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 				
 				primitive.vertex_buffer_views.emplace(std::make_pair(gltf_attribute.first, vertex_buffer_view));
+
+				// CPU上の頂点属性データもコピーする（スキニング計算のため）
+				if (gltf_attribute.first == "POSITION")
+				{
+					const uint8_t* src = gltf_model.buffers.at(gltf_buffer_view.buffer).data.data()
+						+ gltf_buffer_view.byteOffset + gltf_accessor.byteOffset;
+					primitive.cpu_positions.resize(gltf_accessor.count);
+					memcpy(primitive.cpu_positions.data(), src, primitive.cpu_positions.size() * sizeof(DirectX::XMFLOAT3));
+				}
+				else if (gltf_attribute.first == "NORMAL")
+				{
+					const uint8_t* src = gltf_model.buffers.at(gltf_buffer_view.buffer).data.data()
+						+ gltf_buffer_view.byteOffset + gltf_accessor.byteOffset;
+					primitive.cpu_normals.resize(gltf_accessor.count);
+					memcpy(primitive.cpu_normals.data(), src,
+						gltf_accessor.count * sizeof(DirectX::XMFLOAT3));
+				}
+				else if (gltf_attribute.first == "TANGENT")
+				{
+					const uint8_t* src = gltf_model.buffers.at(gltf_buffer_view.buffer).data.data()
+						+ gltf_buffer_view.byteOffset + gltf_accessor.byteOffset;
+					primitive.cpu_tangents.resize(gltf_accessor.count);
+					memcpy(primitive.cpu_tangents.data(), src,
+						gltf_accessor.count * sizeof(DirectX::XMFLOAT4));
+				}
+				else if (gltf_attribute.first == "TEXCOORD_0")
+				{
+					const uint8_t* src = gltf_model.buffers.at(gltf_buffer_view.buffer).data.data()
+						+ gltf_buffer_view.byteOffset + gltf_accessor.byteOffset;
+					primitive.cpu_texcoords.resize(gltf_accessor.count);
+					memcpy(primitive.cpu_texcoords.data(), src,
+						gltf_accessor.count * sizeof(DirectX::XMFLOAT2));
+				}
+				
 			}
 
 			      // Add dummy attributes if any are missing. 
@@ -810,3 +862,399 @@ int gltf_model::GetNodeIndex(const char* name) const
 	return -1;
 }
 
+void gltf_model::build_static_batches(ID3D11Device* device)
+{
+	using namespace DirectX;
+
+	//マテリアルIDごとに頂点データを集約するための構造体
+	struct vertex_data
+	{
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT4 tangent;
+		XMFLOAT2 texcoord;
+	};
+
+	//マテリアルIDごとに頂点データを集約するためのマップ
+	std::unordered_map<int, std::vector<vertex_data>> batched_vertices;
+	std::unordered_map<int, std::vector<uint32_t>> batched_indices;
+
+	//スキンなしノードのプリミティブだけ収集
+	std::function<void(int)> collect{ [&](int node_index)
+	{
+		const node& nd{ nodes.at(node_index) };
+
+		//スキンありは対象外
+		if (nd.skin == -1 && nd.mesh > -1)
+		{
+			const mesh& m{ meshes.at(nd.mesh) };
+			XMMATRIX global = XMLoadFloat4x4(&nd.global_transform);
+
+			for (const auto& prim : m.primitives)
+			{
+				// 頂点バッファからCPUデータを読み直す手段がないため、
+				// CPU側データは fetch_meshes 時に保存しておく必要がある。
+				auto& verts = batched_vertices[prim.material];
+				auto& inds = batched_indices[prim.material];
+
+				//既存超点数
+				uint32_t base_vertex = static_cast<uint32_t>(verts.size());
+
+				//POSITIONなどの頂点属性を読み取るためのバッファビュー
+				const auto& pos_bv = prim.vertex_buffer_views.at("POSITION");
+				const auto& norm_bv = prim.vertex_buffer_views.at("NORMAL");
+				const auto& tan_bv = prim.vertex_buffer_views.at("TANGENT");
+				const auto& tex_bv = prim.vertex_buffer_views.at("TEXCOORD_0");
+
+				size_t vertex_count = pos_bv.count();
+				for (size_t v = 0; v < vertex_count; ++v)
+				{
+					vertex_data vd{};
+
+					//CPUバッファから読む
+					if (prim.cpu_positions.size() > v)
+					{
+						// ノードのglobal_transformを適用してワールド空間に変換
+						XMVECTOR p = XMVector3TransformCoord(
+							XMLoadFloat3(&prim.cpu_positions[v]), global);
+						XMStoreFloat3(&vd.position, p);
+
+						XMVECTOR n = XMVector3TransformNormal(
+							XMLoadFloat3(&prim.cpu_normals[v]), global);
+						XMStoreFloat3(&vd.normal, XMVector3Normalize(n));
+
+						if (prim.cpu_tangents.size() > v)
+						{
+							XMVECTOR t = XMVector3TransformNormal(
+								XMLoadFloat3(reinterpret_cast<const XMFLOAT3*>(
+									&prim.cpu_tangents[v])), global);
+							vd.tangent = { XMVectorGetX(t), XMVectorGetY(t),
+										   XMVectorGetZ(t), prim.cpu_tangents[v].w };
+						}
+						if (prim.cpu_texcoords.size() > v)
+							vd.texcoord = prim.cpu_texcoords[v];
+					}
+					verts.push_back(vd);
+				}
+				//インデックスをコピー
+				for (uint32_t idx : prim.cpu_indices)
+				{
+					inds.push_back(idx + base_vertex);
+				}
+			}
+		}
+		for(int child : nd.children)
+		{
+			collect(child);
+		}
+	}};
+
+	//シーンのルートノードから収集開始
+	for (int root : scenes.at(0).nodes)
+	{
+		collect(root);
+	}
+
+	//D3D11バッファを作成
+	for (auto& [mat_id, verts] : batched_vertices)
+	{
+		auto& bp = batched_primitives.emplace_back();
+		bp.material = mat_id;
+
+		auto& indices = batched_indices.at(mat_id);
+		bp.index_count = static_cast<UINT>(indices.size());
+
+		//各属性を分離して格納
+		std::vector<XMFLOAT3> positions, normals;
+		std::vector<XMFLOAT4> tangents;
+		std::vector<XMFLOAT2> texcoords;
+		for (auto& v : verts)
+		{
+			positions.push_back(v.position);
+			normals.push_back(v.normal);
+			tangents.push_back(v.tangent);
+			texcoords.push_back(v.texcoord);
+			//JOINTS_0やWEIGHTS_0はスキンなしなのでダミー値を入れる
+		}
+
+		//ダミーバッファ
+		std::vector<uint16_t> dummy_joints(verts.size() * 4, 0);
+		std::vector<float> dummy_weights(verts.size() * 4, 0.0f);
+
+		auto create_vb = [&](ID3D11Device* dev, const void* data, size_t bytes,
+			ID3D11Buffer** out)
+			{
+				D3D11_BUFFER_DESC bd{};
+				bd.ByteWidth = static_cast<UINT>(bytes);
+				bd.Usage = D3D11_USAGE_DEFAULT;
+				bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+				D3D11_SUBRESOURCE_DATA sd{ data };
+				HRESULT hr = dev->CreateBuffer(&bd, &sd, out);
+				_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+			};
+
+		create_vb(device, positions.data(), positions.size() * sizeof(XMFLOAT3), bp.position_buffer.GetAddressOf());
+		create_vb(device, normals.data(), normals.size() * sizeof(XMFLOAT3), bp.normal_buffer.GetAddressOf());
+		create_vb(device, tangents.data(), tangents.size() * sizeof(XMFLOAT4), bp.tangent_buffer.GetAddressOf());
+		create_vb(device, texcoords.data(), texcoords.size() * sizeof(XMFLOAT2), bp.texcoord_buffer.GetAddressOf());
+		create_vb(device, dummy_joints.data(), dummy_joints.size() * sizeof(uint16_t), bp.joint_buffer.GetAddressOf());
+		create_vb(device, dummy_weights.data(), dummy_weights.size() * sizeof(float), bp.weight_buffer.GetAddressOf());
+
+
+		// インデックスバッファ
+		D3D11_BUFFER_DESC ibd{};
+		ibd.ByteWidth = static_cast<UINT>(indices.size() * sizeof(uint32_t));
+		ibd.Usage = D3D11_USAGE_DEFAULT;
+		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		D3D11_SUBRESOURCE_DATA isd{ indices.data() };
+		HRESULT hr = device->CreateBuffer(&ibd, &isd, bp.index_buffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	}
+}
+
+void gltf_model::render_batched(ID3D11DeviceContext* immediate_context,
+    const DirectX::XMFLOAT4X4& world, const std::vector<node>& animated_nodes)
+{
+    using namespace DirectX;
+
+    const std::vector<node>& nodes{
+        animated_nodes.size() > 0 ? animated_nodes : gltf_model::nodes };
+
+    immediate_context->VSSetShader(vertex_shader.Get(), nullptr, 0);
+    immediate_context->PSSetShader(pixel_shader.Get(), nullptr, 0);
+    immediate_context->IASetInputLayout(input_layout.Get());
+    immediate_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    immediate_context->PSSetShaderResources(0, 1, material_resource_view.GetAddressOf());
+
+    // -------------------------------------------------------
+    // ① スキンありノード → 通常描画（アニメーション対応）
+    // -------------------------------------------------------
+    std::function<void(int)> traverse_skinned{ [&](int node_index)->void
+    {
+        const node& nd{ nodes.at(node_index) };
+
+        if (nd.skin > -1)
+        {
+            // ボーン行列を更新
+            const skin& sk{ skins.at(nd.skin) };
+            primitive_joint_constants joint_data{};
+            for (size_t ji = 0; ji < sk.joints.size(); ++ji)
+            {
+                XMStoreFloat4x4(&joint_data.matrices[ji],
+                    XMLoadFloat4x4(&sk.inverse_bind_matrices.at(ji)) *
+                    XMLoadFloat4x4(&nodes.at(sk.joints.at(ji)).global_transform) *
+                    XMMatrixInverse(nullptr, XMLoadFloat4x4(&nd.global_transform)));
+            }
+            immediate_context->UpdateSubresource(
+                primitive_joint_cbuffer.Get(), 0, 0, &joint_data, 0, 0);
+            immediate_context->VSSetConstantBuffers(2, 1, primitive_joint_cbuffer.GetAddressOf());
+
+            if (nd.mesh > -1)
+            {
+                const mesh& m{ meshes.at(nd.mesh) };
+                for (const auto& prim : m.primitives)
+                {
+                    // テクスチャバインド
+                    const material& mat{ materials.at(prim.material) };
+                    const int tex_indices[]
+                    {
+                        mat.data.pbr_metallic_roughness.basecolor_texture.index,
+                        mat.data.pbr_metallic_roughness.metallic_roughness_texture.index,
+                        mat.data.normal_texture.index,
+                        mat.data.emissive_texture.index,
+                        mat.data.occlusion_texture.index,
+                    };
+                    ID3D11ShaderResourceView* null_srv{};
+                    std::vector<ID3D11ShaderResourceView*> srvs(_countof(tex_indices));
+                    for (int i = 0; i < (int)srvs.size(); ++i)
+                        srvs[i] = tex_indices[i] > -1
+                            ? texture_resource_views.at(
+                                textures.at(tex_indices[i]).source).Get()
+                            : null_srv;
+                    immediate_context->PSSetShaderResources(1, (UINT)srvs.size(), srvs.data());
+
+                    // 定数バッファ
+                    primitive_constants prim_data{};
+                    prim_data.material    = prim.material;
+                    prim_data.has_tangent = prim.vertex_buffer_views.at("TANGENT").buffer != nullptr;
+                    prim_data.skin        = nd.skin;
+                    XMStoreFloat4x4(&prim_data.world,
+                        XMLoadFloat4x4(&nd.global_transform) * XMLoadFloat4x4(&world));
+                    immediate_context->UpdateSubresource(
+                        primitive_cbuffer.Get(), 0, 0, &prim_data, 0, 0);
+                    immediate_context->VSSetConstantBuffers(0, 1, primitive_cbuffer.GetAddressOf());
+                    immediate_context->PSSetConstantBuffers(0, 1, primitive_cbuffer.GetAddressOf());
+
+                    // 頂点バッファ
+                    ID3D11Buffer* vbs[]
+                    {
+                        prim.vertex_buffer_views.at("POSITION").buffer.Get(),
+                        prim.vertex_buffer_views.at("NORMAL").buffer.Get(),
+                        prim.vertex_buffer_views.at("TANGENT").buffer.Get(),
+                        prim.vertex_buffer_views.at("TEXCOORD_0").buffer.Get(),
+                        prim.vertex_buffer_views.at("JOINTS_0").buffer.Get(),
+                        prim.vertex_buffer_views.at("WEIGHTS_0").buffer.Get(),
+                    };
+                    UINT strides[]
+                    {
+                        (UINT)prim.vertex_buffer_views.at("POSITION").stride_in_bytes,
+                        (UINT)prim.vertex_buffer_views.at("NORMAL").stride_in_bytes,
+                        (UINT)prim.vertex_buffer_views.at("TANGENT").stride_in_bytes,
+                        (UINT)prim.vertex_buffer_views.at("TEXCOORD_0").stride_in_bytes,
+                        (UINT)prim.vertex_buffer_views.at("JOINTS_0").stride_in_bytes,
+                        (UINT)prim.vertex_buffer_views.at("WEIGHTS_0").stride_in_bytes,
+                    };
+                    UINT offsets[_countof(vbs)]{};
+                    immediate_context->IASetVertexBuffers(0, _countof(vbs), vbs, strides, offsets);
+                    immediate_context->IASetIndexBuffer(
+                        prim.index_buffer_view.buffer.Get(),
+                        prim.index_buffer_view.format, 0);
+                    immediate_context->DrawIndexed(
+                        (UINT)prim.index_buffer_view.count(), 0, 0);
+                }
+            }
+        }
+
+        for (int child : nd.children)
+            traverse_skinned(child);
+    }};
+
+    // スキンありノードを先に描画
+    bool has_skinned = false;
+    for (const auto& nd : nodes)
+        if (nd.skin > -1) { has_skinned = true; break; }
+
+    if (has_skinned)
+    {
+        for (int root : scenes.at(0).nodes)
+            traverse_skinned(root);
+    }
+
+    // -------------------------------------------------------
+    // ② スキンなしノード → バッチから描画
+    // -------------------------------------------------------
+	//バッチ未構築なら通常描画にフォールバック
+	if (batched_primitives.empty())
+	{
+		//スキンなしノードだけ通常描画
+		std::function<void(int)> traverse_static{ [&](int node_index)->void
+		{
+			const node& nd{ nodes.at(node_index) };
+
+			if (nd.skin == -1 && nd.mesh > -1)
+			{
+				const mesh& m{ meshes.at(nd.mesh) };
+				for (const auto& prim : m.primitives)
+				{
+					const material& mat{ materials.at(prim.material) };
+					const int tex_indices[]
+					{
+						mat.data.pbr_metallic_roughness.basecolor_texture.index,
+						mat.data.pbr_metallic_roughness.metallic_roughness_texture.index,
+						mat.data.normal_texture.index,
+						mat.data.emissive_texture.index,
+						mat.data.occlusion_texture.index,
+					};
+					ID3D11ShaderResourceView* null_srv{};
+					std::vector<ID3D11ShaderResourceView*> srvs(_countof(tex_indices));
+					for (int i = 0; i < (int)srvs.size(); ++i)
+						srvs[i] = tex_indices[i] > -1
+							? texture_resource_views.at(
+								textures.at(tex_indices[i]).source).Get()
+							: null_srv;
+					immediate_context->PSSetShaderResources(1, (UINT)srvs.size(), srvs.data());
+
+					primitive_constants prim_data{};
+					prim_data.material = prim.material;
+					prim_data.has_tangent = prim.vertex_buffer_views.at("TANGENT").buffer != nullptr;
+					prim_data.skin = -1;
+					XMStoreFloat4x4(&prim_data.world,
+						XMLoadFloat4x4(&nd.global_transform) * XMLoadFloat4x4(&world));
+					immediate_context->UpdateSubresource(
+						primitive_cbuffer.Get(), 0, 0, &prim_data, 0, 0);
+					immediate_context->VSSetConstantBuffers(0, 1, primitive_cbuffer.GetAddressOf());
+					immediate_context->PSSetConstantBuffers(0, 1, primitive_cbuffer.GetAddressOf());
+
+					ID3D11Buffer* vbs[]
+					{
+						prim.vertex_buffer_views.at("POSITION").buffer.Get(),
+						prim.vertex_buffer_views.at("NORMAL").buffer.Get(),
+						prim.vertex_buffer_views.at("TANGENT").buffer.Get(),
+						prim.vertex_buffer_views.at("TEXCOORD_0").buffer.Get(),
+						prim.vertex_buffer_views.at("JOINTS_0").buffer.Get(),
+						prim.vertex_buffer_views.at("WEIGHTS_0").buffer.Get(),
+					};
+					UINT strides[]
+					{
+						(UINT)prim.vertex_buffer_views.at("POSITION").stride_in_bytes,
+						(UINT)prim.vertex_buffer_views.at("NORMAL").stride_in_bytes,
+						(UINT)prim.vertex_buffer_views.at("TANGENT").stride_in_bytes,
+						(UINT)prim.vertex_buffer_views.at("TEXCOORD_0").stride_in_bytes,
+						(UINT)prim.vertex_buffer_views.at("JOINTS_0").stride_in_bytes,
+						(UINT)prim.vertex_buffer_views.at("WEIGHTS_0").stride_in_bytes,
+					};
+					UINT offsets[_countof(vbs)]{};
+					immediate_context->IASetVertexBuffers(0, _countof(vbs), vbs, strides, offsets);
+					immediate_context->IASetIndexBuffer(
+						prim.index_buffer_view.buffer.Get(),
+						prim.index_buffer_view.format, 0);
+					immediate_context->DrawIndexed(
+						(UINT)prim.index_buffer_view.count(), 0, 0);
+				}
+			}
+			for (int child : nd.children)
+				traverse_static(child);
+		} };
+
+		for (int root : scenes.at(0).nodes)
+			traverse_static(root);
+
+		return; //バッチ描画はしない
+	}
+
+    primitive_constants prim_data{};
+    XMStoreFloat4x4(&prim_data.world, XMLoadFloat4x4(&world));
+    prim_data.skin        = -1;
+    prim_data.has_tangent =  1;
+
+    for (auto& bp : batched_primitives)
+    {
+        prim_data.material = bp.material;
+
+        const material& mat{ materials.at(bp.material) };
+        const int tex_indices[]
+        {
+            mat.data.pbr_metallic_roughness.basecolor_texture.index,
+            mat.data.pbr_metallic_roughness.metallic_roughness_texture.index,
+            mat.data.normal_texture.index,
+            mat.data.emissive_texture.index,
+            mat.data.occlusion_texture.index,
+        };
+        ID3D11ShaderResourceView* null_srv{};
+        std::vector<ID3D11ShaderResourceView*> srvs(_countof(tex_indices));
+        for (int i = 0; i < (int)srvs.size(); ++i)
+            srvs[i] = tex_indices[i] > -1
+                ? texture_resource_views.at(textures.at(tex_indices[i]).source).Get()
+                : null_srv;
+        immediate_context->PSSetShaderResources(1, (UINT)srvs.size(), srvs.data());
+
+        immediate_context->UpdateSubresource(primitive_cbuffer.Get(), 0, 0, &prim_data, 0, 0);
+        immediate_context->VSSetConstantBuffers(0, 1, primitive_cbuffer.GetAddressOf());
+        immediate_context->PSSetConstantBuffers(0, 1, primitive_cbuffer.GetAddressOf());
+
+        ID3D11Buffer* vbs[] =
+        {
+            bp.position_buffer.Get(),
+            bp.normal_buffer.Get(),
+            bp.tangent_buffer.Get(),
+            bp.texcoord_buffer.Get(),
+            bp.joint_buffer.Get(),
+            bp.weight_buffer.Get(),
+        };
+        UINT strides[] = { 12, 12, 16, 8, 8, 16 };
+        UINT offsets[6]{};
+        immediate_context->IASetVertexBuffers(0, 6, vbs, strides, offsets);
+        immediate_context->IASetIndexBuffer(bp.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+        immediate_context->DrawIndexed(bp.index_count, 0, 0);
+    }
+}

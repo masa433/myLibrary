@@ -58,6 +58,9 @@ void Player::Initialize()
 
 	sweetSpotOffset = { 0.0f, 0.75f, 0.0f };
 	sweetSpotScale = { 0.2f, 0.2f, 0.2f };
+
+	animated_model->build_static_batches(device);
+	batModel->build_static_batches(device);
    
     //バット型の凸形状のメッシュ作成
     {
@@ -301,11 +304,11 @@ void Player::UpdateLookAt(const DirectX::XMFLOAT3& targetPosition)
 // プレイヤー固有のレンダリング処理
 void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
 {
-    animated_model->render(rc.deviceContext, transform, animated_nodes);
+    animated_model->render_batched(rc.deviceContext, transform, animated_nodes);
     
 
     //renderer->Render(rc, batTransform, bat.get(), ShaderId::Phong);
-    batModel->render(rc.deviceContext, batTransform, {});
+    batModel->render_batched(rc.deviceContext, batTransform, {});
   
 }
 

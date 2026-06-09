@@ -10,6 +10,8 @@ enum class SamplerState
 	PointClamp,
 	LinearWrap,
 	LinearClamp,
+	AnisotropicWrap,
+	AnisotropicClamp,
 
 	EnumCount
 };
