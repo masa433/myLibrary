@@ -601,6 +601,7 @@ void scene_game::update(float elapsed_time)
 			
             ImGui::Checkbox("display_cascade_area", &cascade_shadow_constant.display_cascade_area);
             ImGui::SliderFloat("shadow attenuation", &cascade_shadow_constant.shadow_attenuation, 0.0f, 1.0f);
+			ImGui::SliderFloat4("shadow bias", &cascade_shadow_constant.shadow_bias.x, 0.0f, +0.01f);
 
 
             for (int index = 0; index < ShadowBufferSize; ++index)
@@ -851,11 +852,11 @@ void scene_game::render(float elapsedTime)
     Camera& camera = Camera::Instance();
 
     // 前フレームの結果を取得（ノンブロッキング）
-    dc->GetData(pipeline_stats_query.Get(), &pipeline_stats,
-        sizeof(pipeline_stats), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+    /*dc->GetData(pipeline_stats_query.Get(), &pipeline_stats,
+        sizeof(pipeline_stats), D3D11_ASYNC_GETDATA_DONOTFLUSH);*/
 
     // 今フレームの計測開始
-    dc->Begin(pipeline_stats_query.Get());
+    //dc->Begin(pipeline_stats_query.Get());
 
 
 	//ポイントライトの描画
@@ -1079,7 +1080,7 @@ void scene_game::render(float elapsedTime)
     }
 
     //計測終了
-	dc->End(pipeline_stats_query.Get());
+	//dc->End(pipeline_stats_query.Get());
 }
 
 //カスケードシャドウマップ生成関数

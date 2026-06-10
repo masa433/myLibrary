@@ -182,7 +182,7 @@ private:
 
 	// ƒ‰ƒCƒgŠÖ˜A
     DirectX::XMFLOAT4 ambient_color{ 1.0f, 1.0f, 1.0f, 1.0f };
-    DirectX::XMFLOAT4 directional_light_direction{ 0.0f, 1.0f, 0.0f, 1.0f };
+    DirectX::XMFLOAT4 directional_light_direction{ 0.0f, -1.0f, 0.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_color{ 1.0f, 1.0f, 1.0f, 1.0f };
     std::vector<point_lights> pointLights;
     std::vector<spot_lights> spotLights;
