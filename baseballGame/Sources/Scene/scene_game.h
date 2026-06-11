@@ -71,13 +71,15 @@ private:
 
     struct light_constants
     {
-        static constexpr int light_max = 6;
+        static constexpr int light_max = 36;
         DirectX::XMFLOAT4 ambient_color;
         DirectX::XMFLOAT4 directional_light_direction;
         DirectX::XMFLOAT4 directional_light_color;
+		float directional_light_intensity;
+		DirectX::XMFLOAT3 dummy; // 4の倍数にするためのダミー
         DirectX::XMUINT4	light_count{ 0, 0, 0, 0 };	//	x : 空き, y : ポイントライト数, z : スポットライト数, w : 空き。
-        point_lights point_light[light_max]; // 最大6つのポイントライト
-        spot_lights spot_light[light_max]; // 最大6つのスポットライト
+        point_lights point_light[light_max]; // 最大36のポイントライト
+        spot_lights spot_light[6]; // 最大6つのスポットライト
 
     };
 
@@ -195,6 +197,7 @@ private:
     DirectX::XMFLOAT4 ambient_color{ 1.0f, 1.0f, 1.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_direction{ 0.0f, -1.0f, 0.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_color{ 1.0f, 1.0f, 1.0f, 1.0f };
+	float directional_light_intensity = 0.5f;
     std::vector<point_lights> pointLights;
     std::vector<spot_lights> spotLights;
     Microsoft::WRL::ComPtr<ID3D11Buffer> light_constant_buffer;
@@ -244,7 +247,7 @@ private:
 	DirectX::XMFLOAT3 sun_world_pos = { 0.0f, 5000.0f, 0.0f }; // UV座標 (0～1)
     float             sun_size = 800.0f;   // ワールド単位
     float             sun_glow_scale = 1.0f;
-    float             sun_distance = 9000.0f;  // カメラからの距離
+    float             sun_distance = 1000.0f;  // カメラからの距離
 
 private:	
     //	2D描画関係

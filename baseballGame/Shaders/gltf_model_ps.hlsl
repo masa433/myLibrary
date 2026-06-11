@@ -128,9 +128,9 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
         float3 directional_diffuse = 0, directional_specular = 0;
 		{
             float3 L = normalize(directional_light_direction.xyz);
-            float3 LC = directional_light_color.rgb * directional_light_color.a;
+            float3 LC = directional_light_color.rgb * directional_light_color.a * directional_light_intensity;
             directional_diffuse = CalcLambert(N, L, LC, 1);
-            directional_specular = CalcPhongSpecular(N, L, V, LC, 1);
+            //directional_specular = CalcPhongSpecular(N, L, V, LC, 1);
 
             if(use_cascade)
             {
@@ -191,7 +191,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
 
 		//	点光源
         float3 point_diffuse = 0, point_specular = 0;
-        for (int i = 0; i < 6; ++i)
+        for (int i = 0; i < light_count.y; ++i)
         {
             if(i>= light_count.y)
                 break;
@@ -205,7 +205,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
             L /= len;
             float3 LC = pointLights[i].color.rgb * pointLights[i].intensity;
             point_diffuse += CalcLambert(N, L, LC, 1) * attenuation;
-            point_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation;
+            //point_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation;
         }
 
 		//	スポットライト
@@ -276,7 +276,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
             }
             
             spot_diffuse += CalcLambert(N, L, LC, 1) * attenuation * spot_shadow;
-            spot_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation * spot_shadow;
+            //spot_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation * spot_shadow;
         }
 		
 		//	合算

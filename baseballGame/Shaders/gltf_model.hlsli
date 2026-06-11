@@ -50,9 +50,12 @@ cbuffer LIGHT_CONSTANT_BUFFER : register(b3)
     float4 ambient_color;
     float4 directional_light_direction;
     float4 directional_light_color;
+    float directional_light_intensity;
+    float3 dummy; // 4の倍数にするためのダミー
     uint4 light_count; // y : 点光源の数, z : スポットライトの数
-    point_lights pointLights[6];
+    point_lights pointLights[36];
     spot_lights spotLights[6];
+    
 };
 
 // 半球ライト定数バッファ（b4）

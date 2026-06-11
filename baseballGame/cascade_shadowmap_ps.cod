@@ -31,31 +31,33 @@
 //   float4 ambient_color;              // Offset:    0 Size:    16
 //   float4 directional_light_direction;// Offset:   16 Size:    16
 //   float4 directional_light_color;    // Offset:   32 Size:    16
-//   uint4 light_count;                 // Offset:   48 Size:    16 [unused]
+//   float directional_light_intensity; // Offset:   48 Size:     4 [unused]
+//   float3 dummy;                      // Offset:   52 Size:    12 [unused]
+//   uint4 light_count;                 // Offset:   64 Size:    16 [unused]
 //   
 //   struct point_lights
 //   {
 //       
-//       float4 position;               // Offset:   64
-//       float4 color;                  // Offset:   80
-//       float intensity;               // Offset:   96
-//       float range;                   // Offset:  100
-//       float2 dummy;                  // Offset:  104
+//       float4 position;               // Offset:   80
+//       float4 color;                  // Offset:   96
+//       float intensity;               // Offset:  112
+//       float range;                   // Offset:  116
+//       float2 dummy;                  // Offset:  120
 //
-//   } pointLights[6];                  // Offset:   64 Size:   288 [unused]
+//   } pointLights[36];                 // Offset:   80 Size:  1728 [unused]
 //   
 //   struct spot_lights
 //   {
 //       
-//       float4 position;               // Offset:  352
-//       float4 direction;              // Offset:  368
-//       float4 color;                  // Offset:  384
-//       float range;                   // Offset:  400
-//       float innerCorn;               // Offset:  404
-//       float outerCorn;               // Offset:  408
-//       float intensity;               // Offset:  412
+//       float4 position;               // Offset: 1808
+//       float4 direction;              // Offset: 1824
+//       float4 color;                  // Offset: 1840
+//       float range;                   // Offset: 1856
+//       float innerCorn;               // Offset: 1860
+//       float outerCorn;               // Offset: 1864
+//       float intensity;               // Offset: 1868
 //
-//   } spotLights[6];                   // Offset:  352 Size:   384 [unused]
+//   } spotLights[6];                   // Offset: 1808 Size:   384 [unused]
 //
 // }
 //

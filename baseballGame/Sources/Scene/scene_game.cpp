@@ -1,4 +1,4 @@
-#include "scene_game.h"
+ï»¿#include "scene_game.h"
 #include "camera.h"
 #include <DirectXMath.h>
 #include "imgui.h"
@@ -14,7 +14,7 @@
 #include "texture.h"
 #include "sprite.h"
 
-//	ƒVƒƒƒhƒEƒ}ƒbƒvƒTƒCƒY
+//	ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã‚µã‚¤ã‚º
 static constexpr UINT ShadowmapSize = 4096;
 static constexpr UINT SpotShadowmapSize = 4096;
 static constexpr float ShadowmapDrawRect = 60;
@@ -28,7 +28,7 @@ void scene_game::initialize()
     ID3D11Device* device = Graphics::Instance().GetDevice();
 
    
-    // ƒJƒƒ‰İ’è‚ğ‚±‚±‚ÉˆÚ“®
+    // ã‚«ãƒ¡ãƒ©è¨­å®šã‚’ã“ã“ã«ç§»å‹•
     float screenWidth = Graphics::Instance().GetScreenWidth();
     float screenHeight = Graphics::Instance().GetScreenHeight();
 
@@ -46,7 +46,7 @@ void scene_game::initialize()
     );
     cameraController.SyncCameraToController(camera);
 
-    //’è”ƒoƒbƒtƒ@‚Ìì¬
+    //å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
     {
         D3D11_BUFFER_DESC buffer_desc{};
         buffer_desc.Usage = D3D11_USAGE_DEFAULT;
@@ -55,95 +55,168 @@ void scene_game::initialize()
         buffer_desc.MiscFlags = 0;
         buffer_desc.StructureByteStride = 0;
 
-		// ƒV[ƒ“’è”ƒoƒbƒtƒ@‚Ìì¬
+		// ã‚·ãƒ¼ãƒ³å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
         buffer_desc.ByteWidth = sizeof(scene_constants);
         HRESULT hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, constant_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		// ƒ‰ƒCƒg’è”ƒoƒbƒtƒ@‚Ìì¬
+		// ãƒ©ã‚¤ãƒˆå®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
 		buffer_desc.ByteWidth = sizeof(light_constants);
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, light_constant_buffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		// ”¼‹…ƒ‰ƒCƒeƒBƒ“ƒO’è”ƒoƒbƒtƒ@‚Ìì¬
+		// åŠçƒãƒ©ã‚¤ãƒ†ã‚£ãƒ³ã‚°å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
 		buffer_desc.ByteWidth = sizeof(hemisphere_light_constants);
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, hemisphere_light_constant_buffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		// ƒtƒHƒO’è”ƒoƒbƒtƒ@‚Ìì¬
+		// ãƒ•ã‚©ã‚°å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
         buffer_desc.ByteWidth = sizeof(fog_constants);
 		hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, fog_constant_buffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		//ƒVƒƒƒhƒEƒ}ƒbƒv‚Ì’è”ƒoƒbƒtƒ@‚Ìì¬
+		//ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã®å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
 		buffer_desc.ByteWidth = sizeof(shadowmap_constants);
 		hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, shadowmap_constant_buffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		//‚‹P“x’Šo‚Ì’è”ƒoƒbƒtƒ@‚Ìì¬
+		//é«˜è¼åº¦æŠ½å‡ºã®å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
 		buffer_desc.ByteWidth = sizeof(luminance_extract_constants);
 		hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, luminance_extract_constant_buffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-        //	ƒKƒEƒXƒtƒBƒ‹ƒ^[—p’è”ƒoƒbƒtƒ@      
+        //	ã‚¬ã‚¦ã‚¹ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡      
         buffer_desc.ByteWidth = sizeof(gaussian_filter_constants);
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, gaussian_filter_constant_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
         
-        //ƒJƒXƒP[ƒhƒVƒƒƒhƒE—p’è”ƒoƒbƒtƒ@
+        //ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
         buffer_desc.ByteWidth = sizeof(cascade_shadowmap_constants);
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, cascade_shadowmap_constant_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		//ƒXƒ|ƒbƒgƒVƒƒƒhƒE—p’è”ƒoƒbƒtƒ@
+		//ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
         buffer_desc.ByteWidth = sizeof(spot_shadowmap_constants);
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, spot_shadowmap_constant_buffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
     
 
-    //•¨—ƒVƒXƒeƒ€‚Ì‰Šú‰»
+    //ç‰©ç†ã‚·ã‚¹ãƒ†ãƒ ã®åˆæœŸåŒ–
 	Physics::Instance().Initialize();
 
-    // ƒXƒe[ƒW‚Ì‰Šú‰»
+    // ã‚¹ãƒ†ãƒ¼ã‚¸ã®åˆæœŸåŒ–
     stage::Instance().initialize();
 
-    // ƒvƒŒƒCƒ„[‚Ì‰Šú‰»
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åˆæœŸåŒ–
     Player::Instance().Initialize();
 
-	// ƒsƒbƒ`ƒƒ[‚Ì‰Šú‰»
+	// ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®åˆæœŸåŒ–
     Pitcher::Instance().Initialize();
 
-    // ƒeƒNƒXƒ`ƒƒƒ}ƒl[ƒWƒƒ[‚Ì‰Šú‰»
+    // ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼ã®åˆæœŸåŒ–
     textureManager.Initialize(device, L"./resources/texture");
 
-    pointLights.resize(6);
+    pointLights.resize(36);
+    using namespace DirectX;
+
+    // ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ä¸­å¿ƒï¼ˆå¤§ã¾ã‹ãªç…§å°„ã‚¿ãƒ¼ã‚²ãƒƒãƒˆï¼‰
+    XMVECTOR fieldCenter = XMVectorSet(0.f, 0.f, 20.f, 0.f);
+
+    struct LightPanel {
+        XMFLOAT3 center;
+        XMFLOAT3 right;  // ãƒ‘ãƒãƒ«æ¨ªæ–¹å‘ï¼ˆãƒ©ã‚¤ãƒˆãŒæ¨ªã«ä¸¦ã¶æ–¹å‘ï¼‰
+        XMFLOAT3 up;     // ãƒ‘ãƒãƒ«ç¸¦æ–¹å‘ï¼ˆãƒ©ã‚¤ãƒˆãŒç¸¦ã«ä¸¦ã¶æ–¹å‘ï¼‰
+        float halfW;
+        float halfH;
+    };
+
+    // å„å¡”ã®ä¸­å¿ƒä½ç½®
+    XMFLOAT3 towerPositions[6] = {
+        {  80.f, 95.f, -80.f },
+        { -80.f, 95.f, -80.f },
+        {-150.f, 95.f,  40.f },
+        { 150.f, 95.f,  40.f },
+        {  75.f,  80.f, 135.f },
+        { -75.f,  80.f, 135.f },
+    };
+
+    LightPanel panels[6];
     for (int i = 0; i < 6; ++i)
     {
-        pointLights[i].position = { (float)(rand() % 100 - 50), 1, (float)(rand() % 100 - 50), 0 };
-        pointLights[i].range = 10;
-        pointLights[i].color = { 1, 1, 1, 1 };
-		pointLights[i].intensity = 1.0f;
+        XMVECTOR pos = XMLoadFloat3(&towerPositions[i]);
+        // ãƒ©ã‚¤ãƒˆå¡” â†’ ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ä¸­å¿ƒã¸ã®æ–¹å‘ï¼ˆæ°´å¹³æˆåˆ†ã®ã¿ï¼‰
+        XMVECTOR toField = XMVectorSet(
+            fieldCenter.m128_f32[0] - towerPositions[i].x,
+            0.f,
+            fieldCenter.m128_f32[2] - towerPositions[i].z,
+            0.f);
+        toField = XMVector3Normalize(toField);
+
+        XMVECTOR worldUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+
+        // ãƒ‘ãƒãƒ«æ¨ªæ–¹å‘ = ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰æ–¹å‘ Ã— ä¸Š  ï¼ˆãƒ©ã‚¤ãƒˆå¡”ã‚’æ­£é¢ã‹ã‚‰è¦‹ã¦å·¦å³ï¼‰
+        XMVECTOR right = XMVector3Normalize(XMVector3Cross(worldUp, toField));
+        // ãƒ‘ãƒãƒ«ç¸¦æ–¹å‘ = å¸¸ã«ä¸Šå‘ã
+        XMVECTOR up = worldUp;
+
+        XMStoreFloat3(&panels[i].center, pos);
+        XMStoreFloat3(&panels[i].right, right);
+        XMStoreFloat3(&panels[i].up, up);
+        panels[i].halfW = 12.f;  // æ¨ªæ–¹å‘ã®åŠå¹…
+        panels[i].halfH = 4.f;  // ç¸¦æ–¹å‘ã®åŠé«˜
     }
+
+    // æ ¼å­çŠ¶ã«é…ç½®ï¼ˆæ¨ª3Ã—ç¸¦2 = 6å€‹/å¡” Ã— 6å¡” = 36å€‹ï¼‰
+    const int gridX = 3, gridY = 2;
+    pointLights.clear();
+
+    for (auto& panel : panels)
+    {
+        for (int gy = 0; gy < gridY; ++gy)
+        {
+            for (int gx = 0; gx < gridX; ++gx)
+            {
+                // -1.0 ã€œ +1.0 ã«æ­£è¦åŒ–ã—ã¦ãƒ‘ãƒãƒ«é¢ä¸Šã«å‡ç­‰é…ç½®
+                float tx = (gridX > 1) ? (gx / float(gridX - 1) * 2.f - 1.f) : 0.f;
+                float ty = (gridY > 1) ? (gy / float(gridY - 1) * 2.f - 1.f) : 0.f;
+
+                XMVECTOR c = XMLoadFloat3(&panel.center);
+                XMVECTOR r = XMLoadFloat3(&panel.right);
+                XMVECTOR u = XMLoadFloat3(&panel.up);
+                XMVECTOR offset = r * (tx * panel.halfW) + u * (ty * panel.halfH);
+                XMVECTOR finalPos = c + offset;
+
+                point_lights pl{};
+                XMStoreFloat3(reinterpret_cast<XMFLOAT3*>(&pl.position), finalPos);
+                pl.position.w = 1.f;
+                pl.range = 50.f;
+                pl.color = { 1.f, 0.98f, 0.9f, 1.f };
+                pl.intensity = 1.0f;
+                pointLights.push_back(pl);
+            }
+        }
+    }
+
     spotLights.resize(6);
 
-    // ˆÊ’u
-    spotLights[0].position = { 80.0f, 100.0f, -90.0f, 1.0f };
-    spotLights[1].position = { -80.0f, 100.0f, -90.0f, 1.0f };
-    spotLights[2].position = { -160.0f, 100.0f, 40.0f, 1.0f };
-    spotLights[3].position = { 160.0f, 100.0f, 40.0f, 1.0f };
-    spotLights[4].position = { 80.0f, 80.0f, 140.0f, 1.0f };
-    spotLights[5].position = { -80.0f, 80.0f, 140.0f, 1.0f };
+    // ä½ç½®
+    spotLights[0].position = { 80.0f, 95.0f, -80.0f, 1.0f };
+    spotLights[1].position = { -80.0f, 95.0f, -80.0f, 1.0f };
+    spotLights[2].position = { -150.0f, 95.0f, 40.0f, 1.0f };
+    spotLights[3].position = { 150.0f, 95.0f, 40.0f, 1.0f };
+    spotLights[4].position = { 75.0f, 80.0f, 135.0f, 1.0f };
+    spotLights[5].position = { -75.0f, 80.0f, 135.0f, 1.0f };
 
-    // ‘_‚¤êŠ
+    // ç‹™ã†å ´æ‰€
     DirectX::XMFLOAT3 targets[6] =
     {
         {  5.0f, 0.0f,  5.0f },
         { -5.0f, 0.0f,  5.0f },
         {  5.0f, 0.0f, 37.5f },
         { -5.0f, 0.0f, 37.5f },
-        { 55.0f, 0.0f, 70.0f },
-        {-55.0f, 0.0f, 70.0f }
+        { 5.0f, 0.0f, 10.0f },
+        {-5.0f, 0.0f, 10.0f }
     };
 
     for (int i = 0; i < 6; ++i)
@@ -170,7 +243,7 @@ void scene_game::initialize()
         spotLights[i].outerCorn = DirectX::XMConvertToRadians(60.0f);
     }
 
-    // ƒ‰ƒCƒg‚©‚çŒ©‚½ƒV[ƒ“‚Ì[“x•`‰æ—pƒoƒbƒtƒ@
+    // ãƒ©ã‚¤ãƒˆã‹ã‚‰è¦‹ãŸã‚·ãƒ¼ãƒ³ã®æ·±åº¦æç”»ç”¨ãƒãƒƒãƒ•ã‚¡
     {
 
         Microsoft::WRL::ComPtr<ID3D11Texture2D> depth_buffer{};
@@ -189,7 +262,7 @@ void scene_game::initialize()
         HRESULT hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-        //	[“xƒXƒeƒ“ƒVƒ‹ƒrƒ…[¶¬
+        //	æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
         D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc{};
         depth_stencil_view_desc.Format = DXGI_FORMAT_D32_FLOAT;
         depth_stencil_view_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -199,7 +272,7 @@ void scene_game::initialize()
             shadowmap_depth_stencil_view.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-        //	ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[¶¬
+        //	ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
         D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc{};
         shader_resource_view_desc.Format = DXGI_FORMAT_R32_FLOAT;
         shader_resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -210,7 +283,7 @@ void scene_game::initialize()
             shadowmap_shader_resource_view.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-        // ƒTƒ“ƒvƒ‰ƒXƒe[ƒg‚Ì¶¬
+        // ã‚µãƒ³ãƒ—ãƒ©ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆ
         {
             D3D11_SAMPLER_DESC sampler_desc{};
             sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
@@ -232,7 +305,7 @@ void scene_game::initialize()
 
     }
 
-    //ƒJƒXƒP[ƒhƒVƒƒƒhƒEƒ}ƒbƒv¶¬
+    //ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”Ÿæˆ
     {
         D3D11_TEXTURE2D_DESC texture2d_desc{};
         texture2d_desc.Width = ShadowmapSize;
@@ -253,7 +326,7 @@ void scene_game::initialize()
             hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.GetAddressOf());
             _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-            //	[“xƒXƒeƒ“ƒVƒ‹ƒrƒ…[¶¬
+            //	æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
             D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc{};
             depth_stencil_view_desc.Format = DXGI_FORMAT_D32_FLOAT;
             depth_stencil_view_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -263,7 +336,7 @@ void scene_game::initialize()
                 cascade_shadowmap_depth_stencil_views[index].GetAddressOf());
             _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-            //	ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[¶¬
+            //	ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
             D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc{};
             shader_resource_view_desc.Format = DXGI_FORMAT_R32_FLOAT;
             shader_resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -277,7 +350,7 @@ void scene_game::initialize()
         }
     }
 
-    //ƒXƒ|ƒbƒgƒVƒƒƒhƒEƒ}ƒbƒv¶¬
+    //ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”Ÿæˆ
     {
         D3D11_TEXTURE2D_DESC texture2d_desc{};
         texture2d_desc.Width = SpotShadowmapSize;
@@ -318,7 +391,7 @@ void scene_game::initialize()
         }
 
     }
-    ////ƒV[ƒ“•`‰æ—p‚Ìƒoƒbƒtƒ@¶¬
+    ////ã‚·ãƒ¼ãƒ³æç”»ç”¨ã®ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆ
     Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
     D3D11_TEXTURE2D_DESC texture2d_desc{};
     texture2d_desc.Width = static_cast<UINT>(screenWidth);
@@ -335,15 +408,15 @@ void scene_game::initialize()
     hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-    //	ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[¶¬
+    //	ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
     hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, scene_render_target_view.GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-    //	ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[¶¬
+    //	ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
     hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, scene_shader_resource_view.GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-    //ƒVƒƒƒhƒEƒ}ƒbƒv¶¬—pƒVƒF[ƒ_[
+    //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”Ÿæˆç”¨ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
     {
         D3D11_INPUT_ELEMENT_DESC input_element_desc[]
         {
@@ -358,7 +431,7 @@ void scene_game::initialize()
         create_vs_from_cso(device,"shadowmap_caster_vs.cso", shadowmap_caster_vertex_shader.GetAddressOf(), shadowmap_caster_input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
     }
 
-    //	ƒXƒvƒ‰ƒCƒgƒVƒF[ƒ_[€”õ
+    //	ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚·ã‚§ãƒ¼ãƒ€ãƒ¼æº–å‚™
     {
         D3D11_INPUT_ELEMENT_DESC input_element_desc[]
         {
@@ -372,7 +445,7 @@ void scene_game::initialize()
      
     }
 
-    //‚‹P“x’Šoƒoƒbƒtƒ@¶¬
+    //é«˜è¼åº¦æŠ½å‡ºãƒãƒƒãƒ•ã‚¡ç”Ÿæˆ
     {
         D3D11_TEXTURE2D_DESC texture2d_desc{};
         texture2d_desc.Width = SCREEN_WIDTH;
@@ -391,15 +464,15 @@ void scene_game::initialize()
         Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
 		hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-        //	ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[¶¬
+        //	ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
         hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, luminance_extract_render_target_view.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-        //	ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[¶¬
+        //	ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
         hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, luminance_extract_shader_resource_view.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
 
-    //	‚‹P“x’Šoò‚µƒoƒbƒtƒ@¶¬
+    //	é«˜è¼åº¦æŠ½å‡ºæšˆã—ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆ
     {
         D3D11_TEXTURE2D_DESC texture2d_desc{};
         texture2d_desc.Width = SCREEN_WIDTH;
@@ -417,16 +490,16 @@ void scene_game::initialize()
         Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
         hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-        //	ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[¶¬
+        //	ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
         hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, bokeh_luminance_extract_render_target_view.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-        //	ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[¶¬
+        //	ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
         hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, bokeh_luminance_extract_shader_resource_view.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
 
 
-    //‚‹P“x’Šo—pƒVƒF[ƒ_[
+    //é«˜è¼åº¦æŠ½å‡ºç”¨ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
     {
         D3D11_INPUT_ELEMENT_DESC input_element_desc[]
         {
@@ -440,24 +513,24 @@ void scene_game::initialize()
         create_ps_from_cso(device, "luminance_extract_ps.cso", luminance_extract_pixel_shader.GetAddressOf());
         luminance_extract_pass_sprite = std::make_unique<sprite>(device, scene_shader_resource_view);
 
-        //	‚‹P“x’Šoƒoƒbƒtƒ@‚Ú‚©‚µ—p
+        //	é«˜è¼åº¦æŠ½å‡ºãƒãƒƒãƒ•ã‚¡ã¼ã‹ã—ç”¨
         create_ps_from_cso(device, "gaussian_filtering_ps.cso", gaussian_filter_pixel_shader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
         bokeh_luminance_extract_pass_sprite = std::make_unique<sprite>(device, luminance_extract_shader_resource_view);
 
 
-        //‚Ú‚©‚µ‚½Œ‹‰Ê‚ğ—˜—p‚·‚éƒXƒvƒ‰ƒCƒg
+        //ã¼ã‹ã—ãŸçµæœã‚’åˆ©ç”¨ã™ã‚‹ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ
         add_luminance_extract_pass_sprite = std::make_unique<sprite>(device, bokeh_luminance_extract_shader_resource_view);
 	}
 
-    //ƒhƒ[ƒR[ƒ‹•\¦—p
+    //ãƒ‰ãƒ­ãƒ¼ã‚³ãƒ¼ãƒ«è¡¨ç¤ºç”¨
 	D3D11_QUERY_DESC query_desc{};
     query_desc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
     query_desc.MiscFlags = 0;
     hr = device->CreateQuery(&query_desc, pipeline_stats_query.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-    //‘¾—zƒrƒ‹ƒ{[ƒh‚Ì‰Šú‰»
+    //å¤ªé™½ãƒ“ãƒ«ãƒœãƒ¼ãƒ‰ã®åˆæœŸåŒ–
     {
 		D3D11_INPUT_ELEMENT_DESC input_element_desc[]
         {
@@ -468,13 +541,13 @@ void scene_game::initialize()
         create_ps_from_cso(device, "sun_billboard_ps.cso", sun_pixel_shader.GetAddressOf());
 
 
-		//’¸“_ƒoƒbƒtƒ@‚Ìì¬
+		//é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
         DirectX::XMFLOAT2 corners[4] =
         {
             { -1, -1 }, { +1, -1 }, { +1, +1 }, { -1, +1 }
         };
 
-		//’¸“_ƒoƒbƒtƒ@‚Ìì¬
+		//é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
         D3D11_BUFFER_DESC vbd{};
         vbd.Usage = D3D11_USAGE_IMMUTABLE;
         vbd.ByteWidth = sizeof(corners);
@@ -483,7 +556,7 @@ void scene_game::initialize()
         hr = device->CreateBuffer(&vbd, &vd, sun_billboard_vb.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		//ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@‚Ìì¬
+		//ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
 		UINT indices[6] = { 0, 1, 2, 0, 2, 3 };  
 		D3D11_BUFFER_DESC ibd{};
         ibd.Usage = D3D11_USAGE_IMMUTABLE;
@@ -493,7 +566,7 @@ void scene_game::initialize()
         hr = device->CreateBuffer(&ibd, &id, sun_billboard_ib.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		//’è”ƒoƒbƒtƒ@‚Ìì¬
+		//å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
         D3D11_BUFFER_DESC cbd{};
         cbd.Usage = D3D11_USAGE_DEFAULT;
         cbd.ByteWidth = sizeof(SunConstants);
@@ -507,22 +580,22 @@ void scene_game::update(float elapsed_time)
 {
 	elapsed_time *= timeScale;
 
-    // ƒJƒƒ‰ƒRƒ“ƒgƒ[ƒ‰[‚ÌXV
+    // ã‚«ãƒ¡ãƒ©ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã®æ›´æ–°
 	Camera& camera = Camera::Instance();
     cameraController.SyncControllerToCamera(camera);
     cameraController.Update();
 	cameraPosition = camera.GetEye();
 
-    // ƒXƒe[ƒW‚ÌXV
+    // ã‚¹ãƒ†ãƒ¼ã‚¸ã®æ›´æ–°
     stage::Instance().update(elapsed_time);
 
-    // ƒvƒŒƒCƒ„[‚ÌXV
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ›´æ–°
     Player::Instance().Update(elapsed_time);
 
-	// ƒsƒbƒ`ƒƒ[‚ÌXV
+	// ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®æ›´æ–°
     Pitcher::Instance().Update(elapsed_time);
 
-    // •¨—ƒVƒXƒeƒ€‚ÌXV
+    // ç‰©ç†ã‚·ã‚¹ãƒ†ãƒ ã®æ›´æ–°
     Physics::Instance().Update(elapsed_time);
 
 
@@ -566,6 +639,7 @@ void scene_game::update(float elapsed_time)
         ImGui::ColorEdit3("ambient_color", &ambient_color.x);
         ImGui::SliderFloat3("directional_light_direction", &directional_light_direction.x, -1.0f, +1.0f);
         ImGui::ColorEdit3("directional_light_color", &directional_light_color.x);
+		ImGui::SliderFloat("directional_light_intensity", &directional_light_intensity, 0.0f, +100.0f);
     
         if (ImGui::TreeNode("points"))
         {
@@ -640,7 +714,7 @@ void scene_game::update(float elapsed_time)
     {
         ImGui::Checkbox("use_cascade_shadow_map", &use_cascade_shadow_map);
 
-        //	ƒeƒNƒXƒ`ƒƒ•\¦
+        //	ãƒ†ã‚¯ã‚¹ãƒãƒ£è¡¨ç¤º
         if (use_cascade_shadow_map)
         {
 			
@@ -701,16 +775,16 @@ void scene_game::update(float elapsed_time)
         ImGui::DragFloat3("sun_offset", &sun_world_pos.x, 0.1f, -10000.0f, 10000.0f);
     }
 
-    // ƒ^ƒCƒ€ƒXƒP[ƒ‹§Œä
+    // ã‚¿ã‚¤ãƒ ã‚¹ã‚±ãƒ¼ãƒ«åˆ¶å¾¡
     if (ImGui::Begin("Time Control", nullptr, ImGuiWindowFlags_None))
     {
         ImGui::SliderFloat("Time Scale", &timeScale, 0.0f, 2.0f);
-        if (ImGui::Button(u8"ˆê’â~ (0.0)"))
+        if (ImGui::Button(u8"ä¸€æ™‚åœæ­¢ (0.0)"))
         {
             timeScale = 0.0f;
         }
         ImGui::SameLine();
-        if (ImGui::Button(u8"’Êí‘¬“x (1.0)"))
+        if (ImGui::Button(u8"é€šå¸¸é€Ÿåº¦ (1.0)"))
         {
             timeScale = 1.0f;
         }
@@ -729,7 +803,7 @@ void scene_game::renderSpotShadowMap(float elapsedTime)
     rc.deviceContext = dc;
     rc.renderState = renderState;
 
-    // ƒrƒ…[ƒ|[ƒg‚ÍƒVƒƒƒhƒEƒ}ƒbƒvƒTƒCƒY‚ÉŒÅ’è
+    // ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã¯ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã‚µã‚¤ã‚ºã«å›ºå®š
     D3D11_VIEWPORT viewport{};
     viewport.Width = static_cast<float>(SpotShadowmapSize);
     viewport.Height = static_cast<float>(SpotShadowmapSize);
@@ -747,12 +821,12 @@ void scene_game::renderSpotShadowMap(float elapsedTime)
     const int count = static_cast<int>(spotLights.size());
     for (int i = 0; i < count && i < SpotShadowCount; ++i)
     {
-        // DSVƒNƒŠƒA & ƒoƒCƒ“ƒh
+        // DSVã‚¯ãƒªã‚¢ & ãƒã‚¤ãƒ³ãƒ‰
         dc->ClearDepthStencilView(spot_shadowmap_depth_stencil_views[i].Get(),
             D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
         dc->OMSetRenderTargets(0, nullptr, spot_shadowmap_depth_stencil_views[i].Get());
 
-        // ƒ‰ƒCƒgƒrƒ…[s—ñiˆÊ’u ¨ ÆË•ûŒüj
+        // ãƒ©ã‚¤ãƒˆãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ï¼ˆä½ç½® â†’ ç…§å°„æ–¹å‘ï¼‰
         using namespace DirectX;
 
         XMFLOAT3 posF3 = {spotLights[i].position.x, spotLights[i].position.y, spotLights[i].position.z};
@@ -765,13 +839,13 @@ void scene_game::renderSpotShadowMap(float elapsedTime)
             up = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
         XMMATRIX V = XMMatrixLookToLH(pos, dir, up);
 
-        // ƒ‰ƒCƒgƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñiouterCorn ‚Ì2”{‚ğFovY‚Éj
-        float fovY = spotLights[i].outerCorn * 2.0f; // outerCorn ‚Íƒ‰ƒWƒAƒ“”¼Šp
+        // ãƒ©ã‚¤ãƒˆãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ï¼ˆouterCorn ã®2å€ã‚’FovYã«ï¼‰
+        float fovY = spotLights[i].outerCorn * 2.0f; // outerCorn ã¯ãƒ©ã‚¸ã‚¢ãƒ³åŠè§’
         XMMATRIX P = XMMatrixPerspectiveFovLH(fovY, 1.0f, 1.0f, spotLights[i].range);
 
         XMStoreFloat4x4(&spot_shadow_constant.light_view_projection[i], V * P);
 
-        // ’è”ƒoƒbƒtƒ@‚ğXV‚µ‚ÄVS‚ÉƒZƒbƒgib1‚Ìview_projection‚ğã‘‚«j
+        // å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚’æ›´æ–°ã—ã¦VSã«ã‚»ãƒƒãƒˆï¼ˆb1ã®view_projectionã‚’ä¸Šæ›¸ãï¼‰
         scene_constants scene{};
         scene.camera_position = { posF3.x,posF3.y,posF3.z, 1.0f };
         scene.view_projection = spot_shadow_constant.light_view_projection[i];
@@ -790,18 +864,18 @@ void scene_game::renderShadowMap(float elapsedTime)
     RenderState* renderState = Graphics::Instance().GetRenderState();
     ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
 
-    // •`‰æƒRƒ“ƒeƒLƒXƒgİ’è
+    // æç”»ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆè¨­å®š
     RenderContext rc;
     rc.deviceContext = dc;
     rc.renderState = renderState;
 
 	HRESULT hr = S_OK;
-    //ƒVƒƒƒhƒEƒ}ƒbƒv¶¬ˆ—
+    //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”Ÿæˆå‡¦ç†
     {
-        //ƒVƒƒƒhƒEƒ}ƒbƒv—p‚Ì[“xƒoƒbƒtƒ@‚Éİ’è
+        //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”¨ã®æ·±åº¦ãƒãƒƒãƒ•ã‚¡ã«è¨­å®š
 		dc->ClearDepthStencilView(shadowmap_depth_stencil_view.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
         dc->OMSetRenderTargets(0, nullptr, shadowmap_depth_stencil_view.Get());
-        //ƒrƒ…[ƒ|[ƒg‚Ìİ’è
+        //ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã®è¨­å®š
         D3D11_VIEWPORT viewport{};
         viewport.TopLeftX = 0;
         viewport.TopLeftY = 0;
@@ -811,20 +885,20 @@ void scene_game::renderShadowMap(float elapsedTime)
         viewport.MaxDepth = 1.0f;
         dc->RSSetViewports(1, &viewport);
 		
-        //ƒuƒŒƒ“ƒhƒXƒe[ƒg‚Ìİ’è
+        //ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆã®è¨­å®š
         dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
-        //[“xƒXƒeƒ“ƒVƒ‹ƒXƒe[ƒg‚Ìİ’è
+        //æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã‚¹ãƒ†ãƒ¼ãƒˆã®è¨­å®š
         dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
-        //ƒ‰ƒXƒ^ƒ‰ƒCƒU[ƒXƒe[ƒg‚Ìİ’è
+        //ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆã®è¨­å®š
         dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
-        //ƒVƒF[ƒ_[‚Ìİ’è
+        //ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®è¨­å®š
         dc->IASetInputLayout(shadowmap_caster_input_layout.Get());
         dc->VSSetShader(shadowmap_caster_vertex_shader.Get(), nullptr, 0);
         dc->PSSetShader(nullptr, nullptr, 0);
         
         Camera& camera = Camera::Instance();
 
-		//ƒ‰ƒCƒg‚Ìƒrƒ…[Ë‰es—ñ‚ÌŒvZ
+		//ãƒ©ã‚¤ãƒˆã®ãƒ“ãƒ¥ãƒ¼å°„å½±è¡Œåˆ—ã®è¨ˆç®—
 		DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat4(&directional_light_direction);
 		LightPosition = DirectX::XMVectorScale(LightPosition, -50);
 
@@ -832,17 +906,17 @@ void scene_game::renderShadowMap(float elapsedTime)
             DirectX::XMVectorSet(camera.GetFocus().x, camera.GetFocus().y, camera.GetFocus().z, 1.0f),
             DirectX::XMVectorSet(camera.GetUp().x, camera.GetUp().y, camera.GetUp().z, 0.0f));
 
-        // ƒVƒƒƒhƒEƒ}ƒbƒv‚É•`‰æ‚µ‚½‚¢”ÍˆÍ‚ÌË‰es—ñ‚ğ¶¬
+        // ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã«æç”»ã—ãŸã„ç¯„å›²ã®å°„å½±è¡Œåˆ—ã‚’ç”Ÿæˆ
         DirectX::XMMATRIX P = DirectX::XMMatrixOrthographicLH(ShadowmapDrawRect, ShadowmapDrawRect,
             0.1f, 200.0f);
 
-        // ƒ‰ƒCƒgƒrƒ…[s—ñ‚ğ•Û‘¶
+        // ãƒ©ã‚¤ãƒˆãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã‚’ä¿å­˜
        
         DirectX::XMStoreFloat4x4(&light_view_projection, V * P);
 
-        //’è”ƒoƒbƒtƒ@‚ÌXV
+        //å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®æ›´æ–°
         {
-            //ƒ‰ƒCƒg‚©‚çŒ©‚½ƒV[ƒ“‚Ìƒrƒ…[Ë‰es—ñ‚ğŒvZ‚µ‚Ä’è”ƒoƒbƒtƒ@‚É“]‘—
+            //ãƒ©ã‚¤ãƒˆã‹ã‚‰è¦‹ãŸã‚·ãƒ¼ãƒ³ã®ãƒ“ãƒ¥ãƒ¼å°„å½±è¡Œåˆ—ã‚’è¨ˆç®—ã—ã¦å®šæ•°ãƒãƒƒãƒ•ã‚¡ã«è»¢é€
 			scene_constants scene{};
 			scene.camera_position.x = cameraPosition.x;
 			scene.camera_position.y = cameraPosition.y;
@@ -855,20 +929,20 @@ void scene_game::renderShadowMap(float elapsedTime)
 
         }
 
-        //ƒ‚ƒfƒ‹‚Ì•`‰æ
+        //ãƒ¢ãƒ‡ãƒ«ã®æç”»
 		stage::Instance().render(rc, modelRenderer);
 
-        // ƒvƒŒƒCƒ„[Eƒsƒbƒ`ƒƒ[‚Ì•`‰æ(ƒJƒŠƒ“ƒO‚È‚µ‚Å—¼–Ê•`‰æ)
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ»ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®æç”»(ã‚«ãƒªãƒ³ã‚°ãªã—ã§ä¸¡é¢æç”»)
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
-        // ƒsƒbƒ`ƒƒ[‚Ì•`‰æ
+        // ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®æç”»
         Pitcher::Instance().Render(rc, modelRenderer);
 
-        // ƒvƒŒƒCƒ„[‚Ì•`‰æ
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æç”»
         Player::Instance().Render(rc, modelRenderer);
 
 
-        // ƒvƒŒƒCƒ„[•`‰æŒãAŒ³‚ÌƒJƒŠƒ“ƒOó‘Ô‚É–ß‚µ‚Ä‚¨‚­
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æç”»å¾Œã€å…ƒã®ã‚«ãƒªãƒ³ã‚°çŠ¶æ…‹ã«æˆ»ã—ã¦ãŠã
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
     }
 }
@@ -905,22 +979,22 @@ void scene_game::render(float elapsedTime)
 
     Camera& camera = Camera::Instance();
 
-    // ‘OƒtƒŒ[ƒ€‚ÌŒ‹‰Ê‚ğæ“¾iƒmƒ“ƒuƒƒbƒLƒ“ƒOj
+    // å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã®çµæœã‚’å–å¾—ï¼ˆãƒãƒ³ãƒ–ãƒ­ãƒƒã‚­ãƒ³ã‚°ï¼‰
     /*dc->GetData(pipeline_stats_query.Get(), &pipeline_stats,
         sizeof(pipeline_stats), D3D11_ASYNC_GETDATA_DONOTFLUSH);*/
 
-    // ¡ƒtƒŒ[ƒ€‚ÌŒv‘ªŠJn
+    // ä»Šãƒ•ãƒ¬ãƒ¼ãƒ ã®è¨ˆæ¸¬é–‹å§‹
     //dc->Begin(pipeline_stats_query.Get());
 
 
-	//ƒ|ƒCƒ“ƒgƒ‰ƒCƒg‚Ì•`‰æ
+	//ãƒã‚¤ãƒ³ãƒˆãƒ©ã‚¤ãƒˆã®æç”»
     for (int i = 0; i < pointLights.size(); ++i)
     {
-        //‘å‚«‚³‚Í•Ï‚í‚ç‚È‚¢
+        //å¤§ãã•ã¯å¤‰ã‚ã‚‰ãªã„
         shapeRenderer->DrawPointLight(DirectX::XMFLOAT3(pointLights[i].position.x, pointLights[i].position.y, pointLights[i].position.z), 0.1, pointLights[i].color);
     }
 
-	//ƒXƒ|ƒbƒgƒ‰ƒCƒg‚Ì•`‰æ
+	//ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆã®æç”»
     
         for (int i = 0; i < spotLights.size(); ++i)
         {
@@ -934,14 +1008,14 @@ void scene_game::render(float elapsedTime)
             );
 		}
 
-    // ƒoƒbƒNƒoƒbƒtƒ@‚É’¼Ú•`‰æ
+    // ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã«ç›´æ¥æç”»
    
     float clear_color[4] = { 0.2f, 0.4f, 0.6f, 1.0f };
     dc->ClearRenderTargetView(scene_render_target_view.Get(), clear_color);
     dc->ClearDepthStencilView(Graphics::Instance().GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
     dc->OMSetRenderTargets(1, scene_render_target_view.GetAddressOf(), Graphics::Instance().GetDepthStencilView());
 
-    // ƒrƒ…[ƒ|[ƒg‚Ìİ’è
+    // ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã®è¨­å®š
     D3D11_VIEWPORT viewport{};
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
@@ -951,14 +1025,14 @@ void scene_game::render(float elapsedTime)
     viewport.MaxDepth = 1.0f;
     dc->RSSetViewports(1, &viewport);
 
-    //ƒuƒŒƒ“ƒhƒXƒe[ƒg‚Ìİ’è
+    //ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆã®è¨­å®š
     dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
-    //[“xƒXƒeƒ“ƒVƒ‹ƒXƒe[ƒg‚Ìİ’è
+    //æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã‚¹ãƒ†ãƒ¼ãƒˆã®è¨­å®š
     dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
-    //ƒ‰ƒXƒ^ƒ‰ƒCƒU[ƒXƒe[ƒg‚Ìİ’è
+    //ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆã®è¨­å®š
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
-    // ’è”ƒoƒbƒtƒ@‚ÌXV
+    // å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®æ›´æ–°
     {
         XMMATRIX V = XMLoadFloat4x4(&camera.GetView());
         XMMATRIX P = XMLoadFloat4x4(&camera.GetProjection());
@@ -981,6 +1055,7 @@ void scene_game::render(float elapsedTime)
         lightConstants.ambient_color = ambient_color;
         lightConstants.directional_light_direction = directional_light_direction;
         lightConstants.directional_light_color = directional_light_color;
+		lightConstants.directional_light_intensity = directional_light_intensity;
         for (auto& point_light : pointLights)
         {
 			lightConstants.point_light[lightConstants.light_count.y] = point_light;
@@ -1024,15 +1099,15 @@ void scene_game::render(float elapsedTime)
         dc->VSSetConstantBuffers(6, 1, shadowmap_constant_buffer.GetAddressOf());
         dc->PSSetConstantBuffers(6, 1, shadowmap_constant_buffer.GetAddressOf());
 
-        // ƒXƒ|ƒbƒgƒVƒƒƒhƒEƒ}ƒbƒv’è”ƒoƒbƒtƒ@XV (b7)
-        spot_shadow_constant.shadow_attenuation = shadow_attenuation; // Šù‘¶‚Ì’l‚ğ—¬—p
+        // ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–° (b7)
+        spot_shadow_constant.shadow_attenuation = shadow_attenuation; // æ—¢å­˜ã®å€¤ã‚’æµç”¨
         spot_shadow_constant.shadow_bias = 0.005f;
         dc->UpdateSubresource(spot_shadowmap_constant_buffer.Get(), 0, 0, &spot_shadow_constant, 0, 0);
         dc->VSSetConstantBuffers(7, 1, spot_shadowmap_constant_buffer.GetAddressOf());
         dc->PSSetConstantBuffers(7, 1, spot_shadowmap_constant_buffer.GetAddressOf());
     }
 
-    // ƒTƒ“ƒvƒ‰[ƒXƒe[ƒg
+    // ã‚µãƒ³ãƒ—ãƒ©ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆ
     ID3D11SamplerState* sampler_states[] =
     {
         Graphics::Instance().GetRenderState()->GetSamplerState(SamplerState::PointClamp),        // s0: POINT
@@ -1059,7 +1134,7 @@ void scene_game::render(float elapsedTime)
         dc->PSSetShaderResources(10, 1, shadowmap_shader_resource_view.GetAddressOf());
     }
 
-    // ƒXƒ|ƒbƒgƒVƒƒƒhƒEƒ}ƒbƒvSRV‚ğt30`t35‚ÉƒoƒCƒ“ƒh
+    // ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—SRVã‚’t30ï½t35ã«ãƒã‚¤ãƒ³ãƒ‰
     for (int i = 0; i < SpotShadowCount; ++i)
     {
         dc->PSSetShaderResources(30 + i, 1, spot_shadowmap_shader_resource_views[i].GetAddressOf());
@@ -1075,7 +1150,7 @@ void scene_game::render(float elapsedTime)
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
 
-    //‘¾—z•`‰æ
+    //å¤ªé™½æç”»
     {
 
         XMVECTOR sunDirection = -XMLoadFloat4(&directional_light_direction);
@@ -1085,41 +1160,41 @@ void scene_game::render(float elapsedTime)
         XMVECTOR posOffset = XMLoadFloat3(&sun_world_pos);
         XMVECTOR sunWorldPos = cameraPos + sunDirection * sun_distance + posOffset;
 
-            //’è”ƒoƒbƒtƒ@‚ÌXV
+            //å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®æ›´æ–°
 			SunConstants sunConst{};
 			sunConst.sun_color = sun_color;
 			sunConst.sun_size = sun_size;
 			sunConst.sun_glow_scale = sun_glow_scale;
-            XMStoreFloat3(&sunConst.sun_world_pos, sunWorldPos); // © ŒvZ‚µ‚½ˆÊ’u‚ğg‚¤
+            XMStoreFloat3(&sunConst.sun_world_pos, sunWorldPos); // â† è¨ˆç®—ã—ãŸä½ç½®ã‚’ä½¿ã†
 
 			dc->UpdateSubresource(sun_billboard_cb.Get(), 0, 0, &sunConst, 0, 0);
 			dc->VSSetConstantBuffers(10, 1, sun_billboard_cb.GetAddressOf());
 			dc->PSSetConstantBuffers(10, 1, sun_billboard_cb.GetAddressOf());
 
-            //ƒXƒe[ƒgİ’è
+            //ã‚¹ãƒ†ãƒ¼ãƒˆè¨­å®š
             dc->OMSetBlendState(
                 renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
             dc->OMSetDepthStencilState(
-                renderState->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+                renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
             dc->RSSetState(
                 renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
-			//ƒVƒF[ƒ_[İ’è
+			//ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼è¨­å®š
             dc->VSSetShader(sun_vertex_shader.Get(), nullptr, 0);
             dc->PSSetShader(sun_pixel_shader.Get(), nullptr, 0);
             dc->IASetInputLayout(sun_input_layout.Get());
             
-            //VBEIB
-			UINT stride = sizeof(DirectX::XMFLOAT2);//’¸“_ƒtƒH[ƒ}ƒbƒg‚ÍXMFLOAT2
+            //VBãƒ»IB
+			UINT stride = sizeof(DirectX::XMFLOAT2);//é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã¯XMFLOAT2
             UINT offset = 0;
             dc->IASetVertexBuffers(0, 1, sun_billboard_vb.GetAddressOf(), &stride, &offset);
             dc->IASetIndexBuffer(sun_billboard_ib.Get(), DXGI_FORMAT_R32_UINT, 0);
             dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            //•`‰æ
+            //æç”»
 			dc->DrawIndexed(6, 0, 0);
         
 
-        // ƒVƒF[ƒ_[ƒŠƒZƒbƒg
+        // ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚»ãƒƒãƒˆ
         dc->VSSetShader(nullptr, nullptr, 0);
         dc->PSSetShader(nullptr, nullptr, 0);
         dc->IASetInputLayout(nullptr);
@@ -1127,7 +1202,7 @@ void scene_game::render(float elapsedTime)
         dc->PSSetShaderResources(0, 1, nullSRV);
     }
 
-    // ShapeRenderer ‚Ì•`‰æÀs
+    // ShapeRenderer ã®æç”»å®Ÿè¡Œ
 
     if (showPhysxDebug)
 
@@ -1142,27 +1217,27 @@ void scene_game::render(float elapsedTime)
         Physics::Instance().Render(camera.GetView(), camera.GetProjection(), rc.lightDirection);
     }
 
-    // ‚±‚±‚Å‚‹P“x’Šo‚Æ‚Ú‚©‚µ‚ğÀs‚µ‚ÄƒpƒX‚ÌSRV‚ğXV‚·‚é
+    // ã“ã“ã§é«˜è¼åº¦æŠ½å‡ºã¨ã¼ã‹ã—ã‚’å®Ÿè¡Œã—ã¦ãƒ‘ã‚¹ã®SRVã‚’æ›´æ–°ã™ã‚‹
     luminance_extract_pass(elapsedTime);
     bokeh_luminance_extract_pass(elapsedTime);
 
 
-    // g‚¢I‚í‚Á‚½‚çƒVƒƒƒhƒEƒ}ƒbƒv‚ğƒAƒ“ƒoƒCƒ“ƒh
+    // ä½¿ã„çµ‚ã‚ã£ãŸã‚‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã‚’ã‚¢ãƒ³ãƒã‚¤ãƒ³ãƒ‰
     ID3D11ShaderResourceView* null_srv[] = { nullptr };
     dc->PSSetShaderResources(10, 1, null_srv);
 
-	//ƒJƒXƒP[ƒhƒVƒƒƒhƒEƒ}ƒbƒv‚ğƒAƒ“ƒoƒCƒ“ƒh
+	//ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã‚’ã‚¢ãƒ³ãƒã‚¤ãƒ³ãƒ‰
     if (use_cascade_shadow_map)
     {
         ID3D11ShaderResourceView* nullSRVs[ShadowBufferSize] = {};
         dc->PSSetShaderResources(20, ShadowBufferSize, nullSRVs);
 	}
 
-    // Šù‘¶‚Ì1ƒXƒƒbƒgƒAƒ“ƒoƒCƒ“ƒh‚ğ6ƒXƒƒbƒg‚ÉŠg’£
+    // æ—¢å­˜ã®1ã‚¹ãƒ­ãƒƒãƒˆã‚¢ãƒ³ãƒã‚¤ãƒ³ãƒ‰ã‚’6ã‚¹ãƒ­ãƒƒãƒˆã«æ‹¡å¼µ
     ID3D11ShaderResourceView* nullSpotSRVs[SpotShadowCount] = {};
     dc->PSSetShaderResources(30, SpotShadowCount, nullSpotSRVs);
 
-    // ƒoƒbƒNƒoƒbƒtƒ@‚É–ß‚µ‚ÄƒRƒs[
+    // ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã«æˆ»ã—ã¦ã‚³ãƒ”ãƒ¼
     ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
     dc->OMSetRenderTargets(1, &backBufferRTV, nullptr);
 
@@ -1176,13 +1251,13 @@ void scene_game::render(float elapsedTime)
 
     textureManager.Render(dc);
 
-    //	‚Ú‚©‚µ‚½Œ‹‰Ê‚ğ‰ÁZ‡¬
+    //	ã¼ã‹ã—ãŸçµæœã‚’åŠ ç®—åˆæˆ
     {
         dc->OMSetBlendState(renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
         dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
         dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
-        //	ƒVƒF[ƒ_[İ’è
+        //	ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼è¨­å®š
         dc->VSSetShader(sprite_vertex_shader.Get(), nullptr, 0);
         dc->PSSetShader(sprite_pixel_shader.Get(), nullptr, 0);
         dc->IASetInputLayout(sprite_input_layout.Get());
@@ -1190,11 +1265,11 @@ void scene_game::render(float elapsedTime)
         add_luminance_extract_pass_sprite->render(dc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
 
-    //Œv‘ªI—¹
+    //è¨ˆæ¸¬çµ‚äº†
 	//dc->End(pipeline_stats_query.Get());
 }
 
-//ƒJƒXƒP[ƒhƒVƒƒƒhƒEƒ}ƒbƒv¶¬ŠÖ”
+//ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”Ÿæˆé–¢æ•°
 void scene_game::renderCascadeShadowMap(float elapsedTime)
 {
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
@@ -1207,7 +1282,7 @@ void scene_game::renderCascadeShadowMap(float elapsedTime)
 
     Camera& camera = Camera::Instance();
 
-	//ƒrƒ…[ƒ|[ƒg‚Ìİ’è
+	//ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã®è¨­å®š
     {
         D3D11_VIEWPORT scene_viewport{};
         scene_viewport.TopLeftX = 0;
@@ -1223,14 +1298,14 @@ void scene_game::renderCascadeShadowMap(float elapsedTime)
     dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
-    // ƒJƒƒ‰‚Ì‰EEãE‘OƒxƒNƒgƒ‹‚ğæ“¾icamera.h ‚É GetRight/GetUp/GetFront ‚ª‚ ‚éj
+    // ã‚«ãƒ¡ãƒ©ã®å³ãƒ»ä¸Šãƒ»å‰ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—ï¼ˆcamera.h ã« GetRight/GetUp/GetFront ãŒã‚ã‚‹ï¼‰
     DirectX::XMVECTOR CameraRight = DirectX::XMLoadFloat3(&camera.GetRight());
     DirectX::XMVECTOR CameraUp = DirectX::XMLoadFloat3(&camera.GetUp());
     DirectX::XMVECTOR CameraFront = DirectX::XMLoadFloat3(&camera.GetFront());
     DirectX::XMVECTOR CameraPosition = DirectX::XMLoadFloat3(&camera.GetEye());
 
 
-    //ƒ‰ƒCƒg‚©‚ç‚ÌˆÊ’u‚©‚çŒ©‚½ƒrƒ…[EƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ
+    //ãƒ©ã‚¤ãƒˆã‹ã‚‰ã®ä½ç½®ã‹ã‚‰è¦‹ãŸãƒ“ãƒ¥ãƒ¼ãƒ»ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—
 	DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat4(&directional_light_direction);
 	LightPosition = DirectX::XMVectorScale(LightPosition, -50.0f);
     DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(LightPosition,
@@ -1238,96 +1313,96 @@ void scene_game::renderCascadeShadowMap(float elapsedTime)
 		DirectX::XMVectorSet(camera.GetUp().x, camera.GetUp().y, camera.GetUp().z, 0.0f));
     
 
-    // ƒJƒXƒP[ƒh•ªŠ„‹——£ƒe[ƒuƒ‹
+    // ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰åˆ†å‰²è·é›¢ãƒ†ãƒ¼ãƒ–ãƒ«
     static constexpr float SplitAreaTable[] = {
         0.1f,
-        10.0f,   // ‹ßŒiFƒJƒƒ‰‹É‹ß‹——£
-        30.0f,   // ’†Œi1
-        80.0f,   // ’†Œi2
-        200.0f,  // ‰“Œi
+        10.0f,   // è¿‘æ™¯ï¼šã‚«ãƒ¡ãƒ©æ¥µè¿‘è·é›¢
+        30.0f,   // ä¸­æ™¯1
+        80.0f,   // ä¸­æ™¯2
+        200.0f,  // é æ™¯
     };
 
 	static constexpr float fov_y = DirectX::XMConvertToRadians(45);
     float aspect_ratio = static_cast<float>(Graphics::Instance().GetScreenWidth()) / Graphics::Instance().GetScreenHeight();
 
-    // SRV‚ÌƒoƒCƒ“ƒh‚ğ–‘O‚É‰ğœ
+    // SRVã®ãƒã‚¤ãƒ³ãƒ‰ã‚’äº‹å‰ã«è§£é™¤
     ID3D11ShaderResourceView* nullSRVs[ShadowBufferSize] = {};
-    dc->PSSetShaderResources(21, ShadowBufferSize, nullSRVs);  // slot”Ô†‚ÍÀÛ‚Ég‚Á‚Ä‚¢‚é‚à‚Ì‚É‡‚í‚¹‚é
+    dc->PSSetShaderResources(21, ShadowBufferSize, nullSRVs);  // slotç•ªå·ã¯å®Ÿéš›ã«ä½¿ã£ã¦ã„ã‚‹ã‚‚ã®ã«åˆã‚ã›ã‚‹
 
     for (int index = 0; index < ShadowBufferSize; ++index)
     {
-        //ƒVƒƒƒhƒEƒ}ƒbƒv—p‚Ì[“xƒoƒbƒtƒ@‚Éİ’è
+        //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”¨ã®æ·±åº¦ãƒãƒƒãƒ•ã‚¡ã«è¨­å®š
 		dc->ClearDepthStencilView(cascade_shadowmap_depth_stencil_views[index].Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		dc->OMSetRenderTargets(0, nullptr, cascade_shadowmap_depth_stencil_views[index].Get());
 
         float near_depth = SplitAreaTable[index];
         float far_depth = SplitAreaTable[index + 1];
 
-        //ƒGƒŠƒA‚ğ“à•ï‚·‚é‹„‘ä‚Ì8’¸“_‚ğZo‚·‚é
+        //ã‚¨ãƒªã‚¢ã‚’å†…åŒ…ã™ã‚‹è¦–æ¨å°ã®8é ‚ç‚¹ã‚’ç®—å‡ºã™ã‚‹
 		DirectX::XMVECTOR vertex[8];
         {
-            //	ƒGƒŠƒA‚Ì‹ß•½–Ê‚Ì’†S‚©‚ç‚Ìã–Ê‚Ü‚Å‚Ì‹——£‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®è¿‘å¹³é¢ã®ä¸­å¿ƒã‹ã‚‰ã®ä¸Šé¢ã¾ã§ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
             float	nearY = tanf(fov_y * 0.5f) * near_depth;
 
-            //	ƒGƒŠƒA‚Ì‹ß•½–Ê‚Ì’†S‚©‚ç‚Ì‰E–Ê‚Ü‚Å‚Ì‹——£‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®è¿‘å¹³é¢ã®ä¸­å¿ƒã‹ã‚‰ã®å³é¢ã¾ã§ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
             float	nearX = nearY * aspect_ratio;
 
-            //	ƒGƒŠƒA‚Ì‰“•½–Ê‚Ì’†S‚©‚ç‚Ìã–Ê‚Ü‚Å‚Ì‹——£‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®é å¹³é¢ã®ä¸­å¿ƒã‹ã‚‰ã®ä¸Šé¢ã¾ã§ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
             float	farY = tanf(fov_y * 0.5f) * far_depth;
 
-            //	ƒGƒŠƒA‚Ì‰“•½–Ê‚Ì’†S‚©‚ç‚Ì‰E–Ê‚Ü‚Å‚Ì‹——£‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®é å¹³é¢ã®ä¸­å¿ƒã‹ã‚‰ã®å³é¢ã¾ã§ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
             float	farX = farY * aspect_ratio;
 
-            //	ƒGƒŠƒA‚Ì‹ß•½–Ê‚Ì’†SÀ•W‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®è¿‘å¹³é¢ã®ä¸­å¿ƒåº§æ¨™ã‚’æ±‚ã‚ã‚‹
             DirectX::XMVECTOR	NearPosition = DirectX::XMVectorAdd(CameraPosition,
                 DirectX::XMVectorScale(CameraFront, near_depth));
 
-            //	ƒGƒŠƒA‚Ì‰“•½–Ê‚Ì’†SÀ•W‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®é å¹³é¢ã®ä¸­å¿ƒåº§æ¨™ã‚’æ±‚ã‚ã‚‹
             DirectX::XMVECTOR	FarPosition = DirectX::XMVectorAdd(CameraPosition,
                 DirectX::XMVectorScale(CameraFront, far_depth));
 
-            //8’¸“_‚ğ‹‚ß‚é
+            //8é ‚ç‚¹ã‚’æ±‚ã‚ã‚‹
             {
-				//	‹ß•½–Ê‚Ì‰Eã
+				//	è¿‘å¹³é¢ã®å³ä¸Š
                 vertex[0] = DirectX::XMVectorAdd(NearPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, nearY),
                         DirectX::XMVectorScale(CameraRight, nearX)));
 
-				//	‹ß•½–Ê‚Ì¶ã
+				//	è¿‘å¹³é¢ã®å·¦ä¸Š
                 vertex[1] = DirectX::XMVectorAdd(NearPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, nearY),
 						DirectX::XMVectorScale(CameraRight, -nearX)));
 
-                //	‹ß•½–Ê‚Ì‰E‰º
+                //	è¿‘å¹³é¢ã®å³ä¸‹
                 vertex[2] = DirectX::XMVectorAdd(NearPosition,
                     DirectX::XMVectorAdd(
 						DirectX::XMVectorScale(CameraUp, -nearY),
 						DirectX::XMVectorScale(CameraRight, nearX)));
 
-                //	‹ß•½–Ê‚Ì¶‰º
+                //	è¿‘å¹³é¢ã®å·¦ä¸‹
                 vertex[3] = DirectX::XMVectorAdd(NearPosition,
                     DirectX::XMVectorAdd(
 						DirectX::XMVectorScale(CameraUp, -nearY),
 						DirectX::XMVectorScale(CameraRight, -nearX)));
 
-                //	‰“•½–Ê‚Ì‰Eã
+                //	é å¹³é¢ã®å³ä¸Š
                 vertex[4] = DirectX::XMVectorAdd(FarPosition,
 					DirectX::XMVectorAdd(
 						DirectX::XMVectorScale(CameraUp, farY),
                         DirectX::XMVectorScale(CameraRight, farX)));
-                //	‰“•½–Ê‚Ì¶ã
+                //	é å¹³é¢ã®å·¦ä¸Š
                 vertex[5] = DirectX::XMVectorAdd(FarPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, farY),
                         DirectX::XMVectorScale(CameraRight, -farX)));
-                //	‰“•½–Ê‚Ì‰E‰º
+                //	é å¹³é¢ã®å³ä¸‹
                 vertex[6] = DirectX::XMVectorAdd(FarPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, -farY),
                         DirectX::XMVectorScale(CameraRight, farX)));
-                //	‰“•½–Ê‚Ì¶‰º
+                //	é å¹³é¢ã®å·¦ä¸‹
                 vertex[7] = DirectX::XMVectorAdd(FarPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, -farY),
@@ -1335,7 +1410,7 @@ void scene_game::renderCascadeShadowMap(float elapsedTime)
             }
         }
 
-		//8’¸“_‚ğƒ‰ƒCƒgƒrƒ…[‹óŠÔ‚É•ÏŠ·‚µ‚ÄAÅ‘å’lEÅ¬’l‚ğ‹‚ß‚é
+		//8é ‚ç‚¹ã‚’ãƒ©ã‚¤ãƒˆãƒ“ãƒ¥ãƒ¼ç©ºé–“ã«å¤‰æ›ã—ã¦ã€æœ€å¤§å€¤ãƒ»æœ€å°å€¤ã‚’æ±‚ã‚ã‚‹
         float lsMinZ = FLT_MAX, lsMaxZ = -FLT_MAX;
         for (auto& it : vertex)
         {
@@ -1344,7 +1419,7 @@ void scene_game::renderCascadeShadowMap(float elapsedTime)
             lsMinZ = min(p.z, lsMinZ);
             lsMaxZ = max(p.z, lsMaxZ);
         }
-        lsMinZ = max(0.1f, lsMinZ - 50.0f); // ‰eƒLƒƒƒXƒ^[‚ª”ÍˆÍŠO‚É‚¢‚Ä‚àE‚¦‚é‚æ‚¤è‘O‚É‰„’·
+        lsMinZ = max(0.1f, lsMinZ - 50.0f); // å½±ã‚­ãƒ£ã‚¹ã‚¿ãƒ¼ãŒç¯„å›²å¤–ã«ã„ã¦ã‚‚æ‹¾ãˆã‚‹ã‚ˆã†æ‰‹å‰ã«å»¶é•·
         lsMaxZ += 50.0f;
 
         DirectX::XMMATRIX P = DirectX::XMMatrixOrthographicLH(10000.0f, 10000.0f, lsMinZ, lsMaxZ);
@@ -1364,7 +1439,7 @@ void scene_game::renderCascadeShadowMap(float elapsedTime)
 
         }
 
-        //ƒNƒƒbƒvs—ñ‚ğ‹‚ß‚é
+        //ã‚¯ãƒ­ãƒƒãƒ—è¡Œåˆ—ã‚’æ±‚ã‚ã‚‹
 		DirectX::XMMATRIX ClopMatrix = DirectX::XMMatrixIdentity();
         {
             float	xScale = 2.0f / (vertex_max.x - vertex_min.x);
@@ -1381,15 +1456,15 @@ void scene_game::renderCascadeShadowMap(float elapsedTime)
 
         }
 
-        //ƒ‰ƒCƒgƒrƒ…[ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚ÉƒNƒƒbƒvs—ñ‚ğæZ
+        //ãƒ©ã‚¤ãƒˆãƒ“ãƒ¥ãƒ¼ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã«ã‚¯ãƒ­ãƒƒãƒ—è¡Œåˆ—ã‚’ä¹—ç®—
         DirectX::XMFLOAT4X4 light_view_projection;
 		DirectX::XMStoreFloat4x4(&light_view_projection, LVP* ClopMatrix);
 
-        //ƒJƒXƒP[ƒh—p’è”ƒoƒbƒtƒ@‚É”[“ü
+        //ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡ã«ç´å…¥
 		
 		cascade_shadow_constant.light_view_projection[index] = light_view_projection;
 
-        //’è”ƒoƒbƒtƒ@‚ÌXV
+        //å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®æ›´æ–°
         {
 			static constexpr int SceneCBVIndex = 1;
 			scene_constants scene{};
@@ -1404,13 +1479,13 @@ void scene_game::renderCascadeShadowMap(float elapsedTime)
 			dc->PSSetConstantBuffers(SceneCBVIndex, 1, cascade_shadowmap_constant_buffer.GetAddressOf());
         }
 
-		//ƒ‚ƒfƒ‹‚Ì•`‰æ
+		//ãƒ¢ãƒ‡ãƒ«ã®æç”»
         stage::Instance().render(rc, modelRenderer);
-        // ƒvƒŒƒCƒ„[Eƒsƒbƒ`ƒƒ[‚Ì•`‰æ(ƒJƒŠƒ“ƒO‚È‚µ‚Å—¼–Ê•`‰æ)
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ»ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®æç”»(ã‚«ãƒªãƒ³ã‚°ãªã—ã§ä¸¡é¢æç”»)
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
-        // ƒsƒbƒ`ƒƒ[‚Ì•`‰æ
+        // ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®æç”»
         Pitcher::Instance().Render(rc, modelRenderer);
-        // ƒvƒŒƒCƒ„[‚Ì•`‰æ
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æç”»
 		Player::Instance().Render(rc, modelRenderer);
     }
 }
@@ -1419,17 +1494,17 @@ void scene_game::luminance_extract_pass(float elapsedTime)
 {
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 
-    //ƒoƒbƒNƒoƒbƒtƒ@w’è
+    //ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡æŒ‡å®š
     {
 
-        // ‚‹P“x’Šo—p‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ğƒNƒŠƒA‚µ‚ÄƒZƒbƒg
+        // é«˜è¼åº¦æŠ½å‡ºç”¨ã®ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚’ã‚¯ãƒªã‚¢ã—ã¦ã‚»ãƒƒãƒˆ
         float clear_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
         dc->ClearRenderTargetView(luminance_extract_render_target_view.Get(), clear_color);
         dc->OMSetRenderTargets(1, luminance_extract_render_target_view.GetAddressOf(), nullptr);
 
     }
 
-    //ƒrƒ…[ƒ|[ƒg‚Ìİ’è
+    //ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã®è¨­å®š
     {
         D3D11_VIEWPORT scene_viewport{};
         scene_viewport.TopLeftX = 0;
@@ -1441,9 +1516,9 @@ void scene_game::luminance_extract_pass(float elapsedTime)
         dc->RSSetViewports(1, &scene_viewport);
     }
 
-    //ƒŠƒ\[ƒXİ’è
+    //ãƒªã‚½ãƒ¼ã‚¹è¨­å®š
     {
-        //	’è”ƒoƒbƒtƒ@İ’è
+        //	å®šæ•°ãƒãƒƒãƒ•ã‚¡è¨­å®š
         static constexpr int SceneCBVIndex = 1;
 		scene_constants scene{};
 		scene.camera_position.x = cameraPosition.x;
@@ -1456,7 +1531,7 @@ void scene_game::luminance_extract_pass(float elapsedTime)
         dc->UpdateSubresource(constant_buffer.Get(), 0, 0, &scene, 0, 0);
         dc->PSSetConstantBuffers(SceneCBVIndex, 1, constant_buffer.GetAddressOf());
 
-        //	ƒTƒ“ƒvƒ‰ƒXƒe[ƒgİ’è
+        //	ã‚µãƒ³ãƒ—ãƒ©ã‚¹ãƒ†ãƒ¼ãƒˆè¨­å®š
         static constexpr int SamplerStateIndex = 0;
         ID3D11SamplerState* sampler_states[] =
         {
@@ -1467,14 +1542,14 @@ void scene_game::luminance_extract_pass(float elapsedTime)
 		dc->PSSetSamplers(SamplerStateIndex, ARRAYSIZE(sampler_states), sampler_states);
 		dc->VSSetSamplers(SamplerStateIndex, ARRAYSIZE(sampler_states), sampler_states);
 
-        //	‚‹P“x’Šo—pî•ñİ’è
+        //	é«˜è¼åº¦æŠ½å‡ºç”¨æƒ…å ±è¨­å®š
         static constexpr int LuminanceExtractCBVIndex = 2;
         dc->UpdateSubresource(luminance_extract_constant_buffer.Get(), 0, 0, &luminance_extract_constant, 0, 0);
 		dc->PSSetConstantBuffers(LuminanceExtractCBVIndex, 1, luminance_extract_constant_buffer.GetAddressOf());
 		
     }
 
-    //•`‰æ
+    //æç”»
     {
         dc->OMSetBlendState(Graphics::Instance().GetRenderState()->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
         dc->OMSetDepthStencilState(Graphics::Instance().GetRenderState()->GetDepthStencilState(DepthState::TestAndWrite), 0);
@@ -1488,7 +1563,7 @@ void scene_game::luminance_extract_pass(float elapsedTime)
 
     }
 
-    //ƒVƒF[ƒ_[“o˜^‰ğœ
+    //ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ç™»éŒ²è§£é™¤
     {
 
         dc->VSSetShader(nullptr, nullptr, 0);
@@ -1499,7 +1574,7 @@ void scene_game::luminance_extract_pass(float elapsedTime)
 
 void scene_game::calculate_gaussian_filter_constant(gaussian_filter_constants& constant, const gaussian_filter_datas& data)
 {
-    //‹ô”‚Ìê‡‚ÍŠï”‚É’¼‚·
+    //å¶æ•°ã®å ´åˆã¯å¥‡æ•°ã«ç›´ã™
 	int kernel_size = data.kernel_size;
     if (kernel_size % 2 == 0)
     {
@@ -1509,7 +1584,7 @@ void scene_game::calculate_gaussian_filter_constant(gaussian_filter_constants& c
     constant.texcel.x = 1.0f / data.texture_size.x;
     constant.texcel.y = 1.0f / data.texture_size.y;
 
-    //d‚İ‚ğZo
+    //é‡ã¿ã‚’ç®—å‡º
 	float sum = 0.0f;
 	int id = 0;
     for(int y = -kernel_size / 2; y <= kernel_size / 2; y++)
@@ -1524,7 +1599,7 @@ void scene_game::calculate_gaussian_filter_constant(gaussian_filter_constants& c
 
         }
 	}
-    //•½‹Ï‰»
+    //å¹³å‡åŒ–
     for(int i = 0; i < KernelMax * KernelMax; i++)
     {
         constant.weights[i].z /= sum;
@@ -1534,15 +1609,15 @@ void scene_game::calculate_gaussian_filter_constant(gaussian_filter_constants& c
 void scene_game::bokeh_luminance_extract_pass(float elapsedTime)
 {
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
-    //ƒoƒbƒNƒoƒbƒtƒ@w’è
+    //ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡æŒ‡å®š
     {
 
-        float color[4] = { 0, 0, 0, 1 }; // •
+        float color[4] = { 0, 0, 0, 1 }; // é»’
         dc->ClearRenderTargetView(bokeh_luminance_extract_render_target_view.Get(),color);
         dc->OMSetRenderTargets(1, bokeh_luminance_extract_render_target_view.GetAddressOf(), nullptr);
 
     }
-    //ƒrƒ…[ƒ|[ƒg‚Ìİ’è
+    //ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã®è¨­å®š
     {
         D3D11_VIEWPORT scene_viewport{};
         scene_viewport.TopLeftX = 0;
@@ -1553,9 +1628,9 @@ void scene_game::bokeh_luminance_extract_pass(float elapsedTime)
         scene_viewport.MaxDepth = 1.0f;
         dc->RSSetViewports(1, &scene_viewport);
     }
-    //ƒŠƒ\[ƒXİ’è
+    //ãƒªã‚½ãƒ¼ã‚¹è¨­å®š
     {
-        //	’è”ƒoƒbƒtƒ@İ’è
+        //	å®šæ•°ãƒãƒƒãƒ•ã‚¡è¨­å®š
         static constexpr int SceneCBVIndex = 1;
         scene_constants scene{};
         scene.camera_position.x = cameraPosition.x;
@@ -1567,7 +1642,7 @@ void scene_game::bokeh_luminance_extract_pass(float elapsedTime)
         DirectX::XMStoreFloat4x4(&scene.view_projection, V * P);
         dc->UpdateSubresource(constant_buffer.Get(), 0, 0, &scene, 0, 0);
         dc->PSSetConstantBuffers(SceneCBVIndex, 1, constant_buffer.GetAddressOf());
-        //	ƒTƒ“ƒvƒ‰ƒXƒe[ƒgİ’è
+        //	ã‚µãƒ³ãƒ—ãƒ©ã‚¹ãƒ†ãƒ¼ãƒˆè¨­å®š
         static constexpr int SamplerStateIndex = 0;
         ID3D11SamplerState* sampler_states[] =
         {
@@ -1575,19 +1650,19 @@ void scene_game::bokeh_luminance_extract_pass(float elapsedTime)
         };
         dc->PSSetSamplers(SamplerStateIndex, ARRAYSIZE(sampler_states), sampler_states);
         
-        //	ƒKƒEƒVƒAƒ“ƒtƒBƒ‹ƒ^[î•ñİ’è
+        //	ã‚¬ã‚¦ã‚·ã‚¢ãƒ³ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼æƒ…å ±è¨­å®š
         {
             gaussian_filter_constants gaussian_filter_constant;
             calculate_gaussian_filter_constant(gaussian_filter_constant, gaussian_filter_data);
 
-            //	’è”ƒoƒbƒtƒ@‚ğİ’è
+            //	å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚’è¨­å®š
             static constexpr int GaussianFilterCBVIndex = 2;
             dc->UpdateSubresource(gaussian_filter_constant_buffer.Get(), 0, 0, &gaussian_filter_constant, 0, 0);
             dc->PSSetConstantBuffers(GaussianFilterCBVIndex, 1, gaussian_filter_constant_buffer.GetAddressOf());
         }
 
     }
-    //•`‰æ
+    //æç”»
     {
         dc->OMSetBlendState(Graphics::Instance().GetRenderState()->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
         dc->OMSetDepthStencilState(Graphics::Instance().GetRenderState()->GetDepthStencilState(DepthState::TestAndWrite), 0);
@@ -1597,7 +1672,7 @@ void scene_game::bokeh_luminance_extract_pass(float elapsedTime)
         dc->IASetInputLayout(sprite_input_layout.Get());
         bokeh_luminance_extract_pass_sprite->render(dc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
-    //ƒVƒF[ƒ_[“o˜^‰ğœ
+    //ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ç™»éŒ²è§£é™¤
     {
 
         dc->VSSetShader(nullptr, nullptr, 0);
@@ -1609,7 +1684,7 @@ void scene_game::bokeh_luminance_extract_pass(float elapsedTime)
 
 void scene_game::uninitialize()
 {
-    // I—¹ˆ—
+    // çµ‚äº†å‡¦ç†
     Player::Instance().Uninitialize();
     stage::Instance().uninitialize();
     Pitcher::Instance().Uninitialize();
@@ -1619,10 +1694,10 @@ void scene_game::uninitialize()
 
 void scene_game::DrawGUI()
 {
-    // ƒvƒŒƒCƒ„[‚ÌGUI•`‰æ
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®GUIæç”»
     Player::Instance().DrawGUI();
 
-	// ƒsƒbƒ`ƒƒ[‚ÌGUI•`‰æ
+	// ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®GUIæç”»
 	Pitcher::Instance().DrawGUI();
 
     textureManager.DrawGUI();

@@ -16,11 +16,13 @@ void stage::initialize()
 	ground2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\ground.glb");
 	pole = std::make_unique<Model>(".\\resources\\field\\pole.mdl");
 	pole2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\pole.glb");
+	lightTower = std::make_unique<Model>(".\\resources\\field\\lightTower.mdl");
+	lightTower2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\lightTower.glb");
 
 	stand2->build_static_batches(device);
 	ground2->build_static_batches(device);
 	pole2->build_static_batches(device);
-
+	lightTower2->build_static_batches(device);
 
 	// 位置、スケール、回転の初期化
 	position = { 0.0f, 0.0f, 0.0f };
@@ -201,6 +203,59 @@ void stage::initialize()
 			triangle_meshes.emplace_back(pxTriangleMesh);
 		}
 
+		//// LightTower モデルのメッシュを処理
+		//const ModelResource* lightTowerResources = lightTower->GetResource();
+		//for (const ModelResource::Mesh& mesh : lightTowerResources->GetMeshes())
+		//{
+		//	physx::PxTriangleMeshDesc meshDesc;
+		//	meshDesc.points.count = static_cast<physx::PxU32>(mesh.vertices.size());
+		//	meshDesc.points.data = mesh.vertices.data();
+		//	meshDesc.points.stride = sizeof(ModelResource::Vertex);
+		//	meshDesc.triangles.count = static_cast<physx::PxU32>(mesh.indices.size() / 3);
+		//	meshDesc.triangles.data = mesh.indices.data();
+		//	meshDesc.triangles.stride = sizeof(UINT) * 3;
+		//	physx::PxTolerancesScale pxTolerances;
+		//	const physx::PxCookingParams cookingParams(pxTolerances);
+		//	physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
+		//	triangle_meshes.emplace_back(pxTriangleMesh);
+
+		//	const Model::Node& node = lightTower->GetNodes().at(mesh.nodeIndex);
+		//	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+		//	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
+		//	DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * Transform;
+		//	physx::PxVec3 pxScale(
+		//		DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
+		//		DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),
+		//		DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[2]))
+		//	);
+
+		//	NodeTransform.r[0] = DirectX::XMVector3Normalize(NodeTransform.r[0]);
+		//	NodeTransform.r[1] = DirectX::XMVector3Normalize(NodeTransform.r[1]);
+		//	NodeTransform.r[2] = DirectX::XMVector3Normalize(NodeTransform.r[2]);
+
+		//	DirectX::XMFLOAT4X4 nodeTransform;
+		//	DirectX::XMStoreFloat4x4(&nodeTransform, NodeTransform);
+		//	physx::PxTransform pxTransform(physx::PxMat44(
+		//		physx::PxVec3(nodeTransform._11, nodeTransform._12, nodeTransform._13),
+		//		physx::PxVec3(nodeTransform._21, nodeTransform._22, nodeTransform._23),
+		//		physx::PxVec3(nodeTransform._31, nodeTransform._32, nodeTransform._33),
+		//		physx::PxVec3(nodeTransform._41, nodeTransform._42, nodeTransform._43)
+		//	));
+
+		//	physx::PxRigidStatic* pxRigidBody = pxPhysics->createRigidStatic(pxTransform);
+		//	_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create light tower rigid body");
+
+		//	physx::PxMeshScale pxMeshScale(pxScale);
+		//	physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
+		//	physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *standMaterial);
+
+		//	pxRigidBody->setName("LightTower");
+
+		//	pxScene->addActor(*pxRigidBody);
+
+		//	actors.emplace_back(pxRigidBody);
+		//	triangle_meshes.emplace_back(pxTriangleMesh);
+		//}
 
 
 		// ホームラン判定用トリガーの作成
@@ -255,6 +310,16 @@ void stage::update(float elapsedTime)
 		}
 	}
 
+	if (ImGui::CollapsingHeader("LightTower"))
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			std::string label = "Tower[" + std::to_string(i) + "]";
+			ImGui::DragFloat3(label.c_str(), &towerPositions[i].x, 0.5f);
+			ImGui::DragFloat3((label + " Angle").c_str(), &towerAngle[i].x, 0.01f);
+			ImGui::DragFloat3((label + " Scale").c_str(), &lightScale[i].x, 0.01f);
+		}
+	}
 
 #endif //  USE_IMGUI
 
@@ -276,6 +341,18 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 	stand2->render_batched(rc.deviceContext, transform, {});
 	ground2->render_batched(rc.deviceContext, transform, {});
 	pole2->render_batched(rc.deviceContext, transform, {});
+	// ライトタワーをスポットライトの位置に6箇所配置
+	for (int i = 0; i < 6; i++)
+	{
+		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(lightScale[i].x, lightScale[i].y, lightScale[i].z);
+		DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(towerAngle[i].x, towerAngle[i].y, towerAngle[i].z);
+		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(
+			towerPositions[i].x, towerPositions[i].y, towerPositions[i].z);
+		DirectX::XMFLOAT4X4 towerTransform;
+		DirectX::XMStoreFloat4x4(&towerTransform, S * R * T);
+
+		lightTower2->render_batched(rc.deviceContext, towerTransform, {});
+	}
 }
 
 // 終了
@@ -303,5 +380,6 @@ void stage::uninitialize()
 	stand2.reset();
 	ground2.reset();
 	pole2.reset();
+	lightTower2.reset();
 }
 
