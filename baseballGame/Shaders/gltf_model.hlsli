@@ -40,6 +40,8 @@ cbuffer SCENE_CONSTANT_BUFFER : register(b1)
 {
     row_major float4x4 view_projection;
     float4 camera_position;
+    float4 camera_right;
+    float4 camera_up;
 };
 
 // ライト定数バッファ（b3）

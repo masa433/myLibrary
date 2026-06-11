@@ -20,6 +20,8 @@
 //
 //   row_major float4x4 view_projection;// Offset:    0 Size:    64
 //   float4 camera_position;            // Offset:   64 Size:    16 [unused]
+//   float4 camera_right;               // Offset:   80 Size:    16 [unused]
+//   float4 camera_up;                  // Offset:   96 Size:    16 [unused]
 //
 // }
 //

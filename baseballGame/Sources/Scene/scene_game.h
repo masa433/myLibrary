@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "scene.h"
 #include "camera_controller.h"
 #include <DirectXMath.h>
@@ -23,39 +23,40 @@ private:
     CameraController	cameraController;
 
 
-    //ƒJƒƒ‰‚ÌZÀ•W‚Ì•`‰æ”ÍˆÍ
+    //ã‚«ãƒ¡ãƒ©ã®Zåº§æ¨™ã®æç”»ç¯„å›²
     float camera_near_z = 1.0f;
     float camera_far_z = 1000000.0f;
 
 private:
-    //	ƒJƒXƒP[ƒhƒVƒƒƒhƒEƒ}ƒbƒv”
+    //	ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—æ•°
     static constexpr int ShadowBufferSize = 4;
 
-    //	ƒKƒEƒXƒtƒBƒ‹ƒ^[
+    //	ã‚¬ã‚¦ã‚¹ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼
     static constexpr int KernelMax = 25;
 
-    // ƒXƒ|ƒbƒgƒ‰ƒCƒgƒVƒƒƒhƒEƒ}ƒbƒvŠÖ˜A
-    static constexpr int SpotShadowCount = 4; // light_max ‚Æˆê’v‚³‚¹‚é
+    // ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—é–¢é€£
+    static constexpr int SpotShadowCount = 4; // light_max ã¨ä¸€è‡´ã•ã›ã‚‹
 
-     // ’è”ƒoƒbƒtƒ@\‘¢‘Ì
+     // å®šæ•°ãƒãƒƒãƒ•ã‚¡æ§‹é€ ä½“
     struct scene_constants
     {
         DirectX::XMFLOAT4X4 view_projection;
-
         DirectX::XMFLOAT4 camera_position;
+        DirectX::XMFLOAT4    camera_right;
+        DirectX::XMFLOAT4    camera_up;   
     };
 
-    //ƒ|ƒCƒ“ƒgƒ‰ƒCƒg‚Ì\‘¢‘Ì
+    //ãƒã‚¤ãƒ³ãƒˆãƒ©ã‚¤ãƒˆã®æ§‹é€ ä½“
     struct point_lights
     {
         DirectX::XMFLOAT4 position;
         DirectX::XMFLOAT4 color;
         float intensity;
         float range;
-        DirectX::XMFLOAT2 dummy; // 4‚Ì”{”‚É‚·‚é‚½‚ß‚Ìƒ_ƒ~[
+        DirectX::XMFLOAT2 dummy; // 4ã®å€æ•°ã«ã™ã‚‹ãŸã‚ã®ãƒ€ãƒŸãƒ¼
     };
 
-    //ƒXƒ|ƒbƒgƒ‰ƒCƒg‚Ì\‘¢‘Ì
+    //ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆã®æ§‹é€ ä½“
     struct spot_lights
     {
         DirectX::XMFLOAT4 position;
@@ -74,16 +75,16 @@ private:
         DirectX::XMFLOAT4 ambient_color;
         DirectX::XMFLOAT4 directional_light_direction;
         DirectX::XMFLOAT4 directional_light_color;
-        DirectX::XMUINT4	light_count{ 0, 0, 0, 0 };	//	x : ‹ó‚«, y : ƒ|ƒCƒ“ƒgƒ‰ƒCƒg”, z : ƒXƒ|ƒbƒgƒ‰ƒCƒg”, w : ‹ó‚«B
-        point_lights point_light[light_max]; // Å‘å6‚Â‚Ìƒ|ƒCƒ“ƒgƒ‰ƒCƒg
-        spot_lights spot_light[light_max]; // Å‘å6‚Â‚ÌƒXƒ|ƒbƒgƒ‰ƒCƒg
+        DirectX::XMUINT4	light_count{ 0, 0, 0, 0 };	//	x : ç©ºã, y : ãƒã‚¤ãƒ³ãƒˆãƒ©ã‚¤ãƒˆæ•°, z : ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆæ•°, w : ç©ºãã€‚
+        point_lights point_light[light_max]; // æœ€å¤§6ã¤ã®ãƒã‚¤ãƒ³ãƒˆãƒ©ã‚¤ãƒˆ
+        spot_lights spot_light[light_max]; // æœ€å¤§6ã¤ã®ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆ
 
     };
 
-    //ƒVƒƒƒhƒEƒ}ƒbƒv
+    //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—
     struct shadowmap_constants
     {
-        DirectX::XMFLOAT4X4 light_view_projection; // ƒ‰ƒCƒg‚Ìƒrƒ…[Ë‰es—ñ
+        DirectX::XMFLOAT4X4 light_view_projection; // ãƒ©ã‚¤ãƒˆã®ãƒ“ãƒ¥ãƒ¼å°„å½±è¡Œåˆ—
         float				shadow_attenuation{ 0.5f };
         float				shadow_bias{ 0.0001f };
         bool 				use_cascade;
@@ -91,17 +92,17 @@ private:
     };
 
 
-    //	ƒJƒXƒP[ƒhƒVƒƒƒhƒEƒ}ƒbƒv—p’è”ƒoƒbƒtƒ@
+    //	ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
     struct cascade_shadowmap_constants
     {
-        DirectX::XMFLOAT4X4 light_view_projection[ShadowBufferSize];		//	ƒ‰ƒCƒg‚ÌˆÊ’u‚©‚çŒ©‚½Ë‰es—ñ
-        DirectX::XMFLOAT4	shadow_bias{ 0.001f, 0.002f, 0.003f, 0.004f };	//	[“x”äŠr—p‚ÌƒIƒtƒZƒbƒg’l
-        float				shadow_attenuation{ 0.5f };	//	‰eF
+        DirectX::XMFLOAT4X4 light_view_projection[ShadowBufferSize];		//	ãƒ©ã‚¤ãƒˆã®ä½ç½®ã‹ã‚‰è¦‹ãŸå°„å½±è¡Œåˆ—
+        DirectX::XMFLOAT4	shadow_bias{ 0.001f, 0.002f, 0.003f, 0.004f };	//	æ·±åº¦æ¯”è¼ƒç”¨ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆå€¤
+        float				shadow_attenuation{ 0.5f };	//	å½±è‰²
         bool				display_cascade_area;
         DirectX::XMFLOAT2	shadow_dummy;
     };
 
-	//ƒXƒ|ƒbƒgƒVƒƒƒhƒEƒ}ƒbƒv—p’è”ƒoƒbƒtƒ@
+	//ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
     struct spot_shadowmap_constants
     {
         DirectX::XMFLOAT4X4 light_view_projection[SpotShadowCount];
@@ -110,31 +111,31 @@ private:
         DirectX::XMFLOAT2 dummy;
     };
 
-    //”¼‹…ƒ‰ƒCƒeƒBƒ“ƒO
+    //åŠçƒãƒ©ã‚¤ãƒ†ã‚£ãƒ³ã‚°
     struct hemisphere_light_constants
     {
         DirectX::XMFLOAT4 sky_color;
         DirectX::XMFLOAT4 ground_color;
-        DirectX::XMFLOAT4 hemisphere_weight; // x:sky‚Ìd‚İAy,z,w‚Í–¢g—p
+        DirectX::XMFLOAT4 hemisphere_weight; // x:skyã®é‡ã¿ã€y,z,wã¯æœªä½¿ç”¨
     };
 
-    //ƒtƒHƒO
+    //ãƒ•ã‚©ã‚°
     struct fog_constants
     {
         DirectX::XMFLOAT4 fog_color;
-        DirectX::XMFLOAT4 fog_range; // x:ŠJn‹——£Ay:I—¹‹——£Az,w‚Í–¢g—p
+        DirectX::XMFLOAT4 fog_range; // x:é–‹å§‹è·é›¢ã€y:çµ‚äº†è·é›¢ã€z,wã¯æœªä½¿ç”¨
     };
 
-    //ƒuƒ‹[ƒ€
+    //ãƒ–ãƒ«ãƒ¼ãƒ 
     struct luminance_extract_constants
     {
-        float				threshold{ 0.7f };	//	‚‹P“x’Šo‚Ì‚½‚ß‚Ìè‡’l
-        float				intensity{ 2.0f };	//	ƒuƒ‹[ƒ€‚Ì‹­“x
+        float				threshold{ 0.7f };	//	é«˜è¼åº¦æŠ½å‡ºã®ãŸã‚ã®é–¾å€¤
+        float				intensity{ 2.0f };	//	ãƒ–ãƒ«ãƒ¼ãƒ ã®å¼·åº¦
         DirectX::XMFLOAT2	dummy;
 
     };
 
-    //	ƒVƒF[ƒ_[‘¤‚Ö‚Ì“]‘——p’è”ƒoƒbƒtƒ@
+    //	ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼å´ã¸ã®è»¢é€ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
     struct gaussian_filter_constants
     {
         DirectX::XMFLOAT4	weights[KernelMax * KernelMax];
@@ -143,12 +144,22 @@ private:
         float				dummy;
     };
 
-    //	ƒKƒEƒXƒtƒBƒ‹ƒ^[ˆ——pî•ñ
+    //	ã‚¬ã‚¦ã‚¹ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼å‡¦ç†ç”¨æƒ…å ±
     struct gaussian_filter_datas
     {
         int					kernel_size{ 9 };
         float				sigma{ 10.0f };
         DirectX::XMFLOAT2	texture_size{ SCREEN_WIDTH, SCREEN_HEIGHT };
+    };
+
+    //å¤ªé™½ãƒ“ãƒ«ãƒœãƒ¼ãƒ‰
+    struct SunConstants
+    {
+        DirectX::XMFLOAT4 sun_color;      // RGB + å¼·åº¦
+        DirectX::XMFLOAT3 sun_world_pos; // UVåº§æ¨™ (0ã€œ1)
+        float sun_size;
+        float sun_glow_scale;
+        DirectX::XMFLOAT3 pad;
     };
 
 public:
@@ -160,17 +171,17 @@ public:
     void update(float elapsed_time) override;
     void render(float elapsedTime) override;
     void uninitialize() override;
-	// GUI•`‰æˆ—
+	// GUIæç”»å‡¦ç†
 	void DrawGUI() override;
 
     void renderShadowMap(float elapsedTime);
 
    
 private:
-	// ƒV[ƒ“•`‰æ—p’è”ƒoƒbƒtƒ@
+	// ã‚·ãƒ¼ãƒ³æç”»ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
     Microsoft::WRL::ComPtr<ID3D11Buffer> constant_buffer;
 
-	// ƒV[ƒ“•`‰æ—p‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ÆƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[
+	// ã‚·ãƒ¼ãƒ³æç”»ç”¨ã®ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã¨ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> scene_render_target_view;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> scene_shader_resource_view;
 
@@ -180,7 +191,7 @@ private:
     cascade_shadowmap_constants cascade_shadow_constant;
     Microsoft::WRL::ComPtr<ID3D11Buffer> cascade_shadowmap_constant_buffer;
 
-	// ƒ‰ƒCƒgŠÖ˜A
+	// ãƒ©ã‚¤ãƒˆé–¢é€£
     DirectX::XMFLOAT4 ambient_color{ 1.0f, 1.0f, 1.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_direction{ 0.0f, -1.0f, 0.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_color{ 1.0f, 1.0f, 1.0f, 1.0f };
@@ -190,13 +201,13 @@ private:
 
    
 
-	// ”¼‹…ƒ‰ƒCƒeƒBƒ“ƒO—p’è”ƒoƒbƒtƒ@
+	// åŠçƒãƒ©ã‚¤ãƒ†ã‚£ãƒ³ã‚°ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	Microsoft::WRL::ComPtr<ID3D11Buffer> hemisphere_light_constant_buffer;
 	DirectX::XMFLOAT4 sky_color{ 0.0f, 0.0f, 0.0f, 1.0f };
 	DirectX::XMFLOAT4 ground_color{ 1.0f, 1.0f, 1.0f, 1.0f };
-	float hemisphere_weight = 0.5f; // 0.0f‚ÅŠ®‘S‚É’n–Ê‚ÌFA1.0f‚ÅŠ®‘S‚É‹ó‚ÌF
+	float hemisphere_weight = 0.5f; // 0.0fã§å®Œå…¨ã«åœ°é¢ã®è‰²ã€1.0fã§å®Œå…¨ã«ç©ºã®è‰²
 
-	// ƒtƒHƒO—p’è”ƒoƒbƒtƒ@
+	// ãƒ•ã‚©ã‚°ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	Microsoft::WRL::ComPtr<ID3D11Buffer> fog_constant_buffer;
 	DirectX::XMFLOAT4 fog_color{ 0.5f, 0.5f, 0.5f, 1.0f };
 	DirectX::XMFLOAT4 fog_range{ 0.1f, 1000.0f, 0.0f, 0.0f };
@@ -207,7 +218,7 @@ private:
 
 	bool showPhysxDebug = true;
 
-	// ƒVƒƒƒhƒEƒ}ƒbƒvŠÖ˜A
+	// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—é–¢é€£
     Microsoft::WRL::ComPtr<ID3D11Buffer> shadowmap_constant_buffer;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowmap_depth_stencil_view;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowmap_shader_resource_view;
@@ -219,14 +230,30 @@ private:
     float				shadow_bias{ 0.008f };
 	float shadow_attenuation{ 0.5f };
 
+
+	// å¤ªé™½ãƒ“ãƒ«ãƒœãƒ¼ãƒ‰é–¢é€£
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> sun_pixel_shader;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> sun_vertex_shader;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> sun_input_layout;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> sun_billboard_cb;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> sun_billboard_vb;// å¤ªé™½ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£
+	Microsoft::WRL::ComPtr<ID3D11Buffer> sun_billboard_ib; // å¤ªé™½ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡
+
+    //å¤ªé™½ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+    DirectX::XMFLOAT4 sun_color = { 1.0f, 0.95f, 0.8f, 4.0f };
+	DirectX::XMFLOAT3 sun_world_pos = { 0.0f, 5000.0f, 0.0f }; // UVåº§æ¨™ (0ï½1)
+    float             sun_size = 800.0f;   // ãƒ¯ãƒ¼ãƒ«ãƒ‰å˜ä½
+    float             sun_glow_scale = 1.0f;
+    float             sun_distance = 9000.0f;  // ã‚«ãƒ¡ãƒ©ã‹ã‚‰ã®è·é›¢
+
 private:	
-    //	2D•`‰æŠÖŒW
+    //	2Dæç”»é–¢ä¿‚
     Microsoft::WRL::ComPtr<ID3D11VertexShader> sprite_vertex_shader;
     Microsoft::WRL::ComPtr<ID3D11InputLayout> sprite_input_layout;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> sprite_pixel_shader;
 
     
-	//	‚‹P“x’ŠoŠÖŒW
+	//	é«˜è¼åº¦æŠ½å‡ºé–¢ä¿‚
 	luminance_extract_constants luminance_extract_constant;
 
     Microsoft::WRL::ComPtr<ID3D11Buffer> luminance_extract_constant_buffer;
@@ -235,12 +262,12 @@ private:
     Microsoft::WRL::ComPtr<ID3D11PixelShader> luminance_extract_pixel_shader;
     std::unique_ptr<sprite>	luminance_extract_pass_sprite;
 
-    //	‚‹P“x’Šo‚ğs‚¤ƒpƒX
+    //	é«˜è¼åº¦æŠ½å‡ºã‚’è¡Œã†ãƒ‘ã‚¹
     void luminance_extract_pass(float elapsed_time);
 
 
    
-	//	ƒKƒEƒXƒtƒBƒ‹ƒ^[ŠÖŒW
+	//	ã‚¬ã‚¦ã‚¹ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼é–¢ä¿‚
     gaussian_filter_datas gaussian_filter_data;
     Microsoft::WRL::ComPtr<ID3D11Buffer> gaussian_filter_constant_buffer;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> gaussian_filter_pixel_shader;
@@ -249,18 +276,18 @@ private:
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bokeh_luminance_extract_shader_resource_view;
     std::unique_ptr<sprite>	bokeh_luminance_extract_pass_sprite;
 
-    //	ƒKƒEƒXƒtƒBƒ‹ƒ^[
+    //	ã‚¬ã‚¦ã‚¹ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼
     void calculate_gaussian_filter_constant(gaussian_filter_constants& constant, const gaussian_filter_datas& data);
 
-    //	‚‹P“x’Šoƒoƒbƒtƒ@‚ğ‚Ú‚©‚·
+    //	é«˜è¼åº¦æŠ½å‡ºãƒãƒƒãƒ•ã‚¡ã‚’ã¼ã‹ã™
     void bokeh_luminance_extract_pass(float elapsed_time);
 
-    //	‚Ú‚©‚µ‚½Œ‹‰Ê‚ğ‘‚«‚Ş
+    //	ã¼ã‹ã—ãŸçµæœã‚’æ›¸ãè¾¼ã‚€
     std::unique_ptr<sprite>	add_luminance_extract_pass_sprite;
 
 
 private:
-	//ƒJƒXƒP[ƒhƒVƒƒƒhƒEƒ}ƒbƒv
+	//ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—
    
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> cascade_shadowmap_depth_stencil_views[ShadowBufferSize];
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cascade_shadowmap_shader_resource_views[ShadowBufferSize];
@@ -270,7 +297,7 @@ private:
     bool	use_cascade_shadow_map = true;
 
 private:
-	//ƒXƒ|ƒbƒgƒVƒƒƒhƒEƒ}ƒbƒv
+	//ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—
     Microsoft::WRL::ComPtr<ID3D11Buffer>             spot_shadowmap_constant_buffer;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView>   spot_shadowmap_depth_stencil_views[SpotShadowCount];
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spot_shadowmap_shader_resource_views[SpotShadowCount];
@@ -278,12 +305,12 @@ private:
 
 	void renderSpotShadowMap(float elapsedTime);
 
-    // ‰e‚ÌXV•p“x‚ğ‰º‚°‚é
-	int spot_shadow_update_interval = 3; // ‰e‚ÌXVŠÔŠui•bj
-	int spot_shadow_frame_count = 0; // ƒtƒŒ[ƒ€ƒJƒEƒ“ƒ^
+    // å½±ã®æ›´æ–°é »åº¦ã‚’ä¸‹ã’ã‚‹
+	int spot_shadow_update_interval = 3; // å½±ã®æ›´æ–°é–“éš”ï¼ˆç§’ï¼‰
+	int spot_shadow_frame_count = 0; // ãƒ•ãƒ¬ãƒ¼ãƒ ã‚«ã‚¦ãƒ³ã‚¿
 
 private:
-    //ƒhƒ[ƒR[ƒ‹•\¦—p
+    //ãƒ‰ãƒ­ãƒ¼ã‚³ãƒ¼ãƒ«è¡¨ç¤ºç”¨
     Microsoft::WRL::ComPtr<ID3D11Query> pipeline_stats_query;
     D3D11_QUERY_DATA_PIPELINE_STATISTICS pipeline_stats = {};
 };

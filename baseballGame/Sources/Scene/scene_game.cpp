@@ -456,6 +456,51 @@ void scene_game::initialize()
     query_desc.MiscFlags = 0;
     hr = device->CreateQuery(&query_desc, pipeline_stats_query.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+    //太陽ビルボードの初期化
+    {
+		D3D11_INPUT_ELEMENT_DESC input_element_desc[]
+        {
+            
+            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0,D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+        create_vs_from_cso(device, "sun_billboard_vs.cso", sun_vertex_shader.GetAddressOf(), sun_input_layout.GetAddressOf(), input_element_desc, _countof(input_element_desc));
+        create_ps_from_cso(device, "sun_billboard_ps.cso", sun_pixel_shader.GetAddressOf());
+
+
+		//頂点バッファの作成
+        DirectX::XMFLOAT2 corners[4] =
+        {
+            { -1, -1 }, { +1, -1 }, { +1, +1 }, { -1, +1 }
+        };
+
+		//頂点バッファの作成
+        D3D11_BUFFER_DESC vbd{};
+        vbd.Usage = D3D11_USAGE_IMMUTABLE;
+        vbd.ByteWidth = sizeof(corners);
+        vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        D3D11_SUBRESOURCE_DATA vd{ corners };
+        hr = device->CreateBuffer(&vbd, &vd, sun_billboard_vb.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		//インデックスバッファの作成
+		UINT indices[6] = { 0, 1, 2, 0, 2, 3 };  
+		D3D11_BUFFER_DESC ibd{};
+        ibd.Usage = D3D11_USAGE_IMMUTABLE;
+        ibd.ByteWidth = sizeof(indices);
+        ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+        D3D11_SUBRESOURCE_DATA id{ indices };
+        hr = device->CreateBuffer(&ibd, &id, sun_billboard_ib.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		//定数バッファの作成
+        D3D11_BUFFER_DESC cbd{};
+        cbd.Usage = D3D11_USAGE_DEFAULT;
+        cbd.ByteWidth = sizeof(SunConstants);
+        cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		hr = device->CreateBuffer(&cbd, nullptr, sun_billboard_cb.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    }
 }
 
 void scene_game::update(float elapsed_time)
@@ -645,6 +690,15 @@ void scene_game::update(float elapsed_time)
         ImGui::Text("Draw Calls (VS invokes) : %llu", pipeline_stats.VSInvocations);
         ImGui::Text("Primitives rendered     : %llu", pipeline_stats.IAPrimitives);
         ImGui::Text("FPS                     : %.1f", ImGui::GetIO().Framerate);
+    }
+
+    if (ImGui::CollapsingHeader("Sun"))
+    {
+        ImGui::ColorEdit4("sun_color", &sun_color.x);
+        ImGui::SliderFloat("sun_intensity", &sun_color.w, 0.0f, 15.0f);
+        ImGui::SliderFloat("sun_size", &sun_size, 100.0f, 3000.0f);
+        ImGui::SliderFloat("sun_glow", &sun_glow_scale, 0.1f, 5.0f);
+        ImGui::DragFloat3("sun_offset", &sun_world_pos.x, 0.1f, -10000.0f, 10000.0f);
     }
 
     // タイムスケール制御
@@ -914,6 +968,10 @@ void scene_game::render(float elapsedTime)
         scene.camera_position.y = cameraPosition.y;
         scene.camera_position.z = cameraPosition.z;
         DirectX::XMStoreFloat4x4(&scene.view_projection, V * P);
+		XMFLOAT3 right = camera.GetRight();
+		XMFLOAT3 up = camera.GetUp();
+		scene.camera_right = { right.x, right.y, right.z, 0.0f };
+		scene.camera_up = { up.x, up.y, up.z, 0.0f };
         dc->UpdateSubresource(constant_buffer.Get(), 0, 0, &scene, 0, 0);
         dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
         dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
@@ -1015,6 +1073,59 @@ void scene_game::render(float elapsedTime)
     Pitcher::Instance().Render(rc, modelRenderer);
     Player::Instance().Render(rc, modelRenderer);
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
+
+
+    //太陽描画
+    {
+
+        XMVECTOR sunDirection = -XMLoadFloat4(&directional_light_direction);
+        sunDirection = XMVector3Normalize(sunDirection);
+
+        XMVECTOR cameraPos = XMLoadFloat3(&camera.GetEye());
+        XMVECTOR posOffset = XMLoadFloat3(&sun_world_pos);
+        XMVECTOR sunWorldPos = cameraPos + sunDirection * sun_distance + posOffset;
+
+            //定数バッファの更新
+			SunConstants sunConst{};
+			sunConst.sun_color = sun_color;
+			sunConst.sun_size = sun_size;
+			sunConst.sun_glow_scale = sun_glow_scale;
+            XMStoreFloat3(&sunConst.sun_world_pos, sunWorldPos); // ← 計算した位置を使う
+
+			dc->UpdateSubresource(sun_billboard_cb.Get(), 0, 0, &sunConst, 0, 0);
+			dc->VSSetConstantBuffers(10, 1, sun_billboard_cb.GetAddressOf());
+			dc->PSSetConstantBuffers(10, 1, sun_billboard_cb.GetAddressOf());
+
+            //ステート設定
+            dc->OMSetBlendState(
+                renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
+            dc->OMSetDepthStencilState(
+                renderState->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+            dc->RSSetState(
+                renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+
+			//シェーダー設定
+            dc->VSSetShader(sun_vertex_shader.Get(), nullptr, 0);
+            dc->PSSetShader(sun_pixel_shader.Get(), nullptr, 0);
+            dc->IASetInputLayout(sun_input_layout.Get());
+            
+            //VB・IB
+			UINT stride = sizeof(DirectX::XMFLOAT2);//頂点フォーマットはXMFLOAT2
+            UINT offset = 0;
+            dc->IASetVertexBuffers(0, 1, sun_billboard_vb.GetAddressOf(), &stride, &offset);
+            dc->IASetIndexBuffer(sun_billboard_ib.Get(), DXGI_FORMAT_R32_UINT, 0);
+            dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            //描画
+			dc->DrawIndexed(6, 0, 0);
+        
+
+        // シェーダーリセット
+        dc->VSSetShader(nullptr, nullptr, 0);
+        dc->PSSetShader(nullptr, nullptr, 0);
+        dc->IASetInputLayout(nullptr);
+        ID3D11ShaderResourceView* nullSRV[] = { nullptr };
+        dc->PSSetShaderResources(0, 1, nullSRV);
+    }
 
     // ShapeRenderer の描画実行
 
