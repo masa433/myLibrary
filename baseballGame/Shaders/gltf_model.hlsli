@@ -102,11 +102,18 @@ cbuffer SPOT_SHADOWMAP_CONSTANT_BUFFER : register(b7)
 
 Texture2D spot_shadow_map[SPOT_SHADOW_COUNT] : register(t30);
 
-// UNIT.37
 static const uint PRIMITIVE_MAX_JOINTS = 512;
 cbuffer PRIMITIVE_JOINT_CONSTANTS : register(b2)
 {
     row_major float4x4 joint_matrices[PRIMITIVE_MAX_JOINTS];
 };
+
+cbuffer ADJUST_MATERIAL_CONSTANT_BUFFER : register(b9)
+{
+    float adjust_metalness; //  ã‡ëÆéøí≤êÆ
+    float adjust_roughness; //  ëeÇ≥í≤êÆ
+    float2 adjust_material_dummy;
+};
+
 
 #include "shading_function.hlsli"

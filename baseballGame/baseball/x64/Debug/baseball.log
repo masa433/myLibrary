@@ -1,3 +1,19 @@
-﻿  scene_game.cpp
+﻿C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(194,25-41): warning X3203: signed/unsigned mismatch, unsigned assumed
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(196,16-32): warning X3203: signed/unsigned mismatch, unsigned assumed
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(217,16-33): warning X3203: signed/unsigned mismatch, unsigned assumed
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(150,39-63): warning X3550: sampler array index must be a literal expression, forcing loop to unroll
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(166,50-74): warning X3556: integer divides may be much slower, try using uints if possible.
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(167,35-59): warning X3556: integer modulus may be much slower, try using uints if possible.
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(168,35-59): warning X3556: integer modulus may be much slower, try using uints if possible.
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(169,35-59): warning X3556: integer modulus may be much slower, try using uints if possible.
+  
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cso
+  Pitcher.cpp
+  scene_game.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(984,139): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+  framework.cpp
+  main.cpp
+  コードを生成中...
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe
