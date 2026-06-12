@@ -154,16 +154,6 @@ private:
         DirectX::XMFLOAT2	texture_size{ SCREEN_WIDTH, SCREEN_HEIGHT };
     };
 
-    //太陽ビルボード
-    struct SunConstants
-    {
-        DirectX::XMFLOAT4 sun_color;      // RGB + 強度
-        DirectX::XMFLOAT3 sun_world_pos; // UV座標 (0〜1)
-        float sun_size;
-        float sun_glow_scale;
-        DirectX::XMFLOAT3 pad;
-    };
-
 public:
     scene_game() {};
     ~scene_game() override = default;
@@ -234,21 +224,6 @@ private:
 	float shadow_attenuation{ 0.5f };
 
 
-	// 太陽ビルボード関連
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> sun_pixel_shader;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> sun_vertex_shader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> sun_input_layout;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> sun_billboard_cb;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> sun_billboard_vb;// 太陽のテクスチャ
-	Microsoft::WRL::ComPtr<ID3D11Buffer> sun_billboard_ib; // 太陽のインデックスバッファ
-
-    //太陽パラメータ
-    DirectX::XMFLOAT4 sun_color = { 1.0f, 0.95f, 0.8f, 4.0f };
-	DirectX::XMFLOAT3 sun_world_pos = { 0.0f, 5000.0f, 0.0f }; // UV座標 (0～1)
-    float             sun_size = 800.0f;   // ワールド単位
-    float             sun_glow_scale = 1.0f;
-    float             sun_distance = 1000.0f;  // カメラからの距離
-
 private:	
     //	2D描画関係
     Microsoft::WRL::ComPtr<ID3D11VertexShader> sprite_vertex_shader;
@@ -316,4 +291,6 @@ private:
     //ドローコール表示用
     Microsoft::WRL::ComPtr<ID3D11Query> pipeline_stats_query;
     D3D11_QUERY_DATA_PIPELINE_STATISTICS pipeline_stats = {};
+
+
 };

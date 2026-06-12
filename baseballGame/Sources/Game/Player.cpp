@@ -579,6 +579,23 @@ void Player::UpdateAnimation(float elapsedTime)
 {
     if (animation_playing && animated_model && !animated_model->animations.empty())
     {
+        //アニメーションの開始位置をどれくらい進めるか（秒単位で指定）
+        // 例：最初の0.1秒をカットして、0.1秒の時点から再生を始める場合
+        const float START_OFFSET = 0.05f;
+
+        // スイングを始めたときに、アニメーションを早くする
+        if (current_state == State::Swinging)
+        {
+            // 【追加】スイングが始まったまさにその瞬間（最初のフレーム）であれば
+            if (swingStartTime == 0.0f && animation_time < START_OFFSET)
+            {
+                animation_time = START_OFFSET; // 開始位置を少し進める
+            }
+
+           
+            swingStartTime += elapsedTime;
+        }
+
         animation_time += elapsedTime;
 
         // 現在のアニメーションを再生
@@ -634,7 +651,7 @@ void Player::UpdateAnimation(float elapsedTime)
             swingHeight = std::clamp(swingHeight, 0.0f, 1.0f);
 
 			// マウスX座標を正規化（-1.0～1.0）
-            swingWidth = mouseX / screenWidth;
+            swingWidth = (mouseX / screenWidth) * 2.0f - 1.0f;
 			swingWidth = std::clamp(swingWidth, -1.0f, 1.0f);
 
             // 腕の角度オフセットを計算（-45°～ +45°の範囲）

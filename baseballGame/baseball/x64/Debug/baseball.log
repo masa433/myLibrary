@@ -1,3 +1,7 @@
-﻿  scene_game.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(994,139): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+﻿  Pitcher.cpp
+  scene_game.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(942,139): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+  framework.cpp
+  main.cpp
+  コードを生成中...
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe
