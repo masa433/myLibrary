@@ -194,7 +194,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11Buffer> cascade_shadowmap_constant_buffer;
 
 	// ライト関連
-    DirectX::XMFLOAT4 ambient_color{ 1.0f, 1.0f, 1.0f, 1.0f };
+    DirectX::XMFLOAT4 ambient_color{ 0.5f, 0.5f, 0.5f, 1.0f };
     DirectX::XMFLOAT4 directional_light_direction{ 0.0f, -1.0f, 0.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_color{ 1.0f, 1.0f, 1.0f, 1.0f };
 	float directional_light_intensity = 0.5f;

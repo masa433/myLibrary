@@ -304,12 +304,25 @@ void Player::UpdateLookAt(const DirectX::XMFLOAT3& targetPosition)
 // プレイヤー固有のレンダリング処理
 void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
 {
-    animated_model->render_batched(rc.deviceContext, transform, animated_nodes);
-    
+    //animated_model->render_batched(rc.deviceContext, transform, animated_nodes);
+    //
 
-    //renderer->Render(rc, batTransform, bat.get(), ShaderId::Phong);
-    batModel->render_batched(rc.deviceContext, batTransform, {});
+    ////renderer->Render(rc, batTransform, bat.get(), ShaderId::Phong);
+    //batModel->render_batched(rc.deviceContext, batTransform, {});
   
+	RenderPlayer(rc, renderer);
+	RenderBat(rc, renderer);
+
+}
+
+void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
+{
+    animated_model->render_batched(rc.deviceContext, transform, animated_nodes);
+}
+
+void Player::RenderBat(const RenderContext& rc, ModelRenderer* renderer)
+{
+    batModel->render_batched(rc.deviceContext, batTransform, {});
 }
 
 void Player::DrawGUI()

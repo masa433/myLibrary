@@ -25,6 +25,8 @@ public:
     void Uninitialize() ;
     void Update(float elapsedTime);
     void Render(const RenderContext& rc, ModelRenderer* renderer);
+	void RenderPlayer(const RenderContext& rc, ModelRenderer* renderer);
+	void RenderBat(const RenderContext& rc, ModelRenderer* renderer);
     void DrawGUI();
 
     bool IsRightBatter() const { return isRightBatter; } // 右打者かどうかを判定するメソッド
@@ -48,14 +50,6 @@ private:
     void UpdateChildrenRecursive(int nodeIndex);
 
     void UpdatePhysXMeshTransform(const DirectX::XMFLOAT3& scale);
-
-	void SetBattingIdleState();
-
-	void UpdateBattingIdleState(float elapsedTime);
-
-	void SetSwingState();
-
-	void UpdateSwingState(float elapsedTime);
 
 public:
     physx::PxRigidDynamic* GetBatCollider() const { return pxBatRigidBody; }

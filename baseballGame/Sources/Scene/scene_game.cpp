@@ -192,7 +192,7 @@ void scene_game::initialize()
                 pl.position.w = 1.f;
                 pl.range = 50.f;
                 pl.color = { 1.f, 0.98f, 0.9f, 1.f };
-                pl.intensity = 1.0f;
+                pl.intensity = 2.0f;
                 pointLights.push_back(pl);
             }
         }
@@ -239,8 +239,8 @@ void scene_game::initialize()
         spotLights[i].color = { 1,1,1,1 };
         spotLights[i].range = 250.0f;
         spotLights[i].intensity = 3.0f;
-        spotLights[i].innerCorn = DirectX::XMConvertToRadians(30.0f);
-        spotLights[i].outerCorn = DirectX::XMConvertToRadians(60.0f);
+        spotLights[i].innerCorn = DirectX::XMConvertToRadians(50.0f);
+        spotLights[i].outerCorn = DirectX::XMConvertToRadians(90.0f);
     }
 
     // ライトから見たシーンの深度描画用バッファ
@@ -1033,7 +1033,7 @@ void scene_game::render(float elapsedTime)
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
     // 定数バッファの更新
-    {
+    
         XMMATRIX V = XMLoadFloat4x4(&camera.GetView());
         XMMATRIX P = XMLoadFloat4x4(&camera.GetProjection());
 
@@ -1105,7 +1105,7 @@ void scene_game::render(float elapsedTime)
         dc->UpdateSubresource(spot_shadowmap_constant_buffer.Get(), 0, 0, &spot_shadow_constant, 0, 0);
         dc->VSSetConstantBuffers(7, 1, spot_shadowmap_constant_buffer.GetAddressOf());
         dc->PSSetConstantBuffers(7, 1, spot_shadowmap_constant_buffer.GetAddressOf());
-    }
+    
 
     // サンプラーステート
     ID3D11SamplerState* sampler_states[] =
@@ -1145,8 +1145,68 @@ void scene_game::render(float elapsedTime)
     stage::Instance().render(rc, modelRenderer);
 
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+
+    // --- ambient を一時的に無効化 ---
+    light_constants noAmbientConstants{};
+    noAmbientConstants = lightConstants; // 直前に作った lightConstants をコピー
+    // ※ lightConstants がスコープ外なら再構築が必要
+
+    light_constants noAmbientLight = lightConstants;
+    noAmbientLight.ambient_color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &noAmbientLight, 0, 0);
+    dc->PSSetConstantBuffers(3, 1, light_constant_buffer.GetAddressOf());
+
+    // 半球ライトも無効化
+    hemisphere_light_constants noHemi{};
+    noHemi.sky_color = { 0, 0, 0, 0 };
+    noHemi.ground_color = { 0, 0, 0, 0 };
+    noHemi.hemisphere_weight.x = 0.0f;
+    dc->UpdateSubresource(hemisphere_light_constant_buffer.Get(), 0, 0, &noHemi, 0, 0);
+    dc->PSSetConstantBuffers(4, 1, hemisphere_light_constant_buffer.GetAddressOf());
+
     Pitcher::Instance().Render(rc, modelRenderer);
-    Player::Instance().Render(rc, modelRenderer);
+	Player::Instance().RenderPlayer(rc, modelRenderer);
+
+    // --- ambient を元に戻す ---
+    dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &lightConstants, 0, 0);
+    dc->PSSetConstantBuffers(3, 1, light_constant_buffer.GetAddressOf());
+
+    hemisphere_light_constants hemi{};
+    hemi.sky_color = sky_color;
+    hemi.ground_color = ground_color;
+    hemi.hemisphere_weight.x = hemisphere_weight;
+    dc->UpdateSubresource(hemisphere_light_constant_buffer.Get(), 0, 0, &hemi, 0, 0);
+    dc->PSSetConstantBuffers(4, 1, hemisphere_light_constant_buffer.GetAddressOf());
+
+    // バットだけ ambient を 0 にして描画
+    {
+        light_constants noAmbientLight = lightConstants;  // ← lightConstantsをメンバ変数に昇格する必要あり
+        noAmbientLight.ambient_color = { 0.5f, 0.5f, 0.5f, 1.0f };
+        dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &noAmbientLight, 0, 0);
+        dc->PSSetConstantBuffers(3, 1, light_constant_buffer.GetAddressOf());
+
+        hemisphere_light_constants noHemi{};
+        noHemi.sky_color = { 0, 0, 0, 0 };
+        noHemi.ground_color = { 0, 0, 0, 0 };
+        noHemi.hemisphere_weight.x = 0.0f;
+        dc->UpdateSubresource(hemisphere_light_constant_buffer.Get(), 0, 0, &noHemi, 0, 0);
+        dc->PSSetConstantBuffers(4, 1, hemisphere_light_constant_buffer.GetAddressOf());
+
+        Player::Instance().RenderBat(rc, modelRenderer);
+
+        // 元に戻す
+        dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &lightConstants, 0, 0);
+        dc->PSSetConstantBuffers(3, 1, light_constant_buffer.GetAddressOf());
+
+        hemisphere_light_constants hemi{};
+        hemi.sky_color = sky_color;
+        hemi.ground_color = ground_color;
+        hemi.hemisphere_weight.x = hemisphere_weight;
+        dc->UpdateSubresource(hemisphere_light_constant_buffer.Get(), 0, 0, &hemi, 0, 0);
+        dc->PSSetConstantBuffers(4, 1, hemisphere_light_constant_buffer.GetAddressOf());
+    }
+
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
 
