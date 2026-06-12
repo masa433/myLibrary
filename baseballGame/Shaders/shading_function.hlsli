@@ -321,7 +321,7 @@ float3 DiffuseIBL(float3 normal, float3 eye_vector, float roughness, float3 diff
     float NdotV = max(0.0001f, dot(N, V));
     float3 kD = 1.0f - CalcFresnelRoughness(f0, NdotV, roughness);
 
-    float3 irradiance = diffuse_iem_cube_map.Sample(state, normal).rgb;
+    float3 irradiance = diffuse_iem_cube_map.Sample(state, normal) .rgb;
     return diffuse_reflectance * irradiance * kD;
 }
 
@@ -347,10 +347,10 @@ float3 SpecularIBL(float3 normal, float3 eye_vector, float roughness, float3 f0,
     uint width, height, mip_maps;
     specular_pmrem_cube_map.GetDimensions(0, width, height, mip_maps);
     float lod = roughness * float(mip_maps - 1);
-    float3 specular_light = specular_pmrem_cube_map.SampleLevel(state, R, lod).rgb;
+    float3 specular_light = specular_pmrem_cube_map.SampleLevel(state, R, lod) .rgb;
 
     float2 brdf_sample_point = saturate(float2(NdotV, roughness));
-    float2 env_brdf = lut_ggx_map.Sample(state, brdf_sample_point).rg;
+    float2 env_brdf = lut_ggx_map.Sample(state, brdf_sample_point) .rg;
 
     return specular_light * (f0 * env_brdf.x + env_brdf.y);
 }

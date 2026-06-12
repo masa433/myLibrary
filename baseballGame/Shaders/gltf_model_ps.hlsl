@@ -129,6 +129,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
 		{
             float3 L = normalize(directional_light_direction.xyz);
             float3 LC = directional_light_color.rgb * directional_light_color.a * directional_light_intensity;
+            //directional_diffuse = CalcHalfLambert(N, L, LC, 1);
             directional_diffuse = CalcLambert(N, L, LC, 1);
             //directional_specular = CalcPhongSpecular(N, L, V, LC, 1);
 
@@ -204,6 +205,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
             float attenuation = attenuateLength * attenuateLength;
             L /= len;
             float3 LC = pointLights[i].color.rgb * pointLights[i].intensity;
+            //point_diffuse += CalcHalfLambert(N, L, LC, 1) * attenuation;
             point_diffuse += CalcLambert(N, L, LC, 1) * attenuation;
             //point_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation;
         }
@@ -275,6 +277,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
                 }
             }
             
+            //spot_diffuse += CalcHalfLambert(N, L, LC, 1) * attenuation * spot_shadow;
             spot_diffuse += CalcLambert(N, L, LC, 1) * attenuation * spot_shadow;
             //spot_specular += CalcPhongSpecular(N, L, V, LC, 1) * attenuation * spot_shadow;
         }
