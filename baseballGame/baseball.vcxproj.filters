@@ -118,19 +118,10 @@
     <ClCompile Include="imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_ja_gryph_ranges.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_widgets.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="imgui\imgui_demo.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_tables.cpp">
+    <ClCompile Include="imgui\imgui_draw.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui_impl_dx11.cpp">
@@ -138,6 +129,18 @@
     </ClCompile>
     <ClCompile Include="imgui\imgui_impl_win32.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_ja_gryph_ranges.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Renderer\SkyRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -276,6 +279,12 @@
     <ClInclude Include="imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_dx11.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_win32.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
     <ClInclude Include="imgui\imgui_internal.h">
       <Filter>imgui</Filter>
     </ClInclude>
@@ -288,11 +297,8 @@
     <ClInclude Include="imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_dx11.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_win32.h">
-      <Filter>imgui</Filter>
+    <ClInclude Include="Sources\Renderer\SkyRenderer.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -303,6 +309,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\fullscreen_quad.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\gaussian_filtering.hlsli">
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\gltf_model.hlsli">
@@ -350,9 +359,6 @@
     <None Include="Shaders\WiredShapeRenderer.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Shaders\gaussian_filtering.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\BasicPS.hlsl">
@@ -364,10 +370,16 @@
     <FxCompile Include="Shaders\blur_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\cascade_shadowmap_ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
     <FxCompile Include="Shaders\fullscreen_quad_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\fullscreen_quad_vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\gaussian_filtering_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\gltf_model_ps.hlsl">
@@ -383,6 +395,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\luminance_extraction_ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\luminance_extract_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\PhongShaderPS.hlsl">
@@ -436,67 +451,58 @@
     <FxCompile Include="Shaders\WiredShapeRendererVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\luminance_extract_ps.hlsl">
+    <FxCompile Include="Shaders\sky_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\gaussian_filtering_ps.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\cascade_shadowmap_ps.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\sun_billboard_ps.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\sun_billboard_vs.hlsl">
+    <FxCompile Include="Shaders\sky_vs.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
-      <UniqueIdentifier>{27dc4e56-777a-4329-83e7-c80db7ebf67d}</UniqueIdentifier>
+      <UniqueIdentifier>{494d4a33-6da1-4d0c-9c4a-ec920d8e2edf}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources">
-      <UniqueIdentifier>{964412b9-b910-408e-a8df-7247c19c58c3}</UniqueIdentifier>
+      <UniqueIdentifier>{b2b685b0-b90c-4ad6-b4b4-094a1595781d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Game">
-      <UniqueIdentifier>{aa6ff14f-91a4-418a-99d6-4d51ec0941cb}</UniqueIdentifier>
+      <UniqueIdentifier>{04788b4d-6f9e-45ea-8191-5fa2ad194895}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Graphics">
-      <UniqueIdentifier>{db310b51-10fc-491d-b247-87f58ed8af59}</UniqueIdentifier>
+      <UniqueIdentifier>{dd0dad3b-4da2-4dba-8c20-6894f0edb335}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Camera">
-      <UniqueIdentifier>{3f013e4e-080c-418d-9c30-489b1a696f6e}</UniqueIdentifier>
+      <UniqueIdentifier>{ff412376-5748-4b3b-9bdf-a4c8c7dc0fae}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Input">
-      <UniqueIdentifier>{2dcaa47c-a73f-4d28-9da0-a9ada918a9c9}</UniqueIdentifier>
+      <UniqueIdentifier>{57359179-92b6-4170-99bf-5aef13ac36f1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\System">
-      <UniqueIdentifier>{49b28c3d-b48a-49f2-af8d-add66499f182}</UniqueIdentifier>
+      <UniqueIdentifier>{45a230a9-2045-488e-8f36-6ec4617f3cec}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Scene">
-      <UniqueIdentifier>{9a6ee45f-5cd7-42cd-be8f-2867f6f555c6}</UniqueIdentifier>
+      <UniqueIdentifier>{37da5fc5-aed5-48b9-8e3e-30f43ee85867}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Renderer">
-      <UniqueIdentifier>{7d97e13b-0edd-4105-89d6-074375d5ea9b}</UniqueIdentifier>
+      <UniqueIdentifier>{226768c4-6420-4e75-baf3-52fead8aca61}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Physics">
-      <UniqueIdentifier>{9e43bb78-3ff4-4bbc-9ad4-b18258e80e44}</UniqueIdentifier>
+      <UniqueIdentifier>{17c91ea1-509a-4051-a549-93f832eb02a2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Model">
-      <UniqueIdentifier>{d93e75d0-29b5-48a4-8522-d3789f72b2d8}</UniqueIdentifier>
+      <UniqueIdentifier>{1b78184c-5cc2-4d76-8a70-170f76450b14}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Shader">
-      <UniqueIdentifier>{30770ae6-4335-4ac2-a926-da990853d91c}</UniqueIdentifier>
+      <UniqueIdentifier>{d8eed747-570a-42fe-b6ad-603c7c9c9d63}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Collision">
-      <UniqueIdentifier>{0cc9509b-09fb-4383-a533-cd1b6ac625e1}</UniqueIdentifier>
+      <UniqueIdentifier>{9fee84d0-ae30-4b26-82e8-6e2e75fe01da}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Light">
-      <UniqueIdentifier>{a03efc0f-b9d3-4263-a270-e002f7238406}</UniqueIdentifier>
+      <UniqueIdentifier>{eacc021f-f0d6-48e9-aea5-1b6f501388f3}</UniqueIdentifier>
     </Filter>
     <Filter Include="imgui">
-      <UniqueIdentifier>{fb19dac7-484f-4c85-9ad2-d4101527830d}</UniqueIdentifier>
+      <UniqueIdentifier>{9cd9027c-6af9-4aff-b409-0824fabee4ea}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

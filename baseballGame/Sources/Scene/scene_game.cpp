@@ -101,6 +101,15 @@ void scene_game::initialize()
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
     
+	// スカイレンダラーの初期化
+    {
+        skyRenderer.Initialize(device);
+
+        // 初期の昼間設定（正午）
+        skyRenderer.time_of_day = 0.5f;
+        skyRenderer.auto_advance_time = false;
+        skyRenderer.time_speed = 0.02f;
+    }
 
     //物理システムの初期化
 	Physics::Instance().Initialize();
@@ -555,6 +564,39 @@ void scene_game::update(float elapsed_time)
     // 物理システムの更新
     Physics::Instance().Update(elapsed_time);
 
+    // スカイレンダラーの更新
+    skyRenderer.Update(elapsed_time * timeScale);
+
+    //太陽方向をライト方向と同期
+	directional_light_direction = skyRenderer.GetSunDirectionToLight();
+
+    //時刻が0.2以上0.7以下の時はポイントライトとスポットライトを消す
+    if (skyRenderer.time_of_day >= 0.2f && skyRenderer.time_of_day <= 0.7f)
+    {
+        directional_light_intensity = 0.7f;
+        ambient_color = {1.0f, 1.0f, 1.0f, 1.0f};
+        for (auto& pl : pointLights)
+        {
+            pl.intensity = 0.0f;
+        }
+        for (auto& sl : spotLights)
+        {
+            sl.intensity = 0.0f;
+        }
+    }
+    else
+    {
+		directional_light_intensity = 0.0f;
+        ambient_color = { 0.7f, 0.7f, 0.7f, 1.0f };
+        for (auto& pl : pointLights)
+        {
+            pl.intensity = 2.0f;
+        }
+        for (auto& sl : spotLights)
+        {
+            sl.intensity = 2.0f;
+        }
+	}
 
 #ifdef USE_IMGUI
     RenderContext rc;
@@ -1004,6 +1046,7 @@ void scene_game::render(float elapsedTime)
         lightConstants.directional_light_direction = directional_light_direction;
         lightConstants.directional_light_color = directional_light_color;
 		lightConstants.directional_light_intensity = directional_light_intensity;
+        
         for (auto& point_light : pointLights)
         {
 			lightConstants.point_light[lightConstants.light_count.y] = point_light;
@@ -1090,7 +1133,16 @@ void scene_game::render(float elapsedTime)
 
     dc->PSSetSamplers(10, 1, shadowmap_sampler_state.GetAddressOf());
 
-    
+    skyRenderer.Render(
+        dc,
+        constant_buffer.Get(),
+        renderState->GetDepthStencilState(DepthState::TestOnly),   //深度テストのみ・書き込みなし
+        renderState->GetRasterizerState(RasterizerState::SolidCullNone)
+    );
+
+    // 深度・ラスタライザーを元に戻す
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
     stage::Instance().render(rc, modelRenderer);
 
@@ -1102,7 +1154,13 @@ void scene_game::render(float elapsedTime)
     // ※ lightConstants がスコープ外なら再構築が必要
 
     light_constants noAmbientLight = lightConstants;
-    noAmbientLight.ambient_color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    //時刻が0.2以上0.7以下の時に強くする
+    if(skyRenderer.time_of_day >= 0.2f && skyRenderer.time_of_day <= 0.7f)
+    {
+        noAmbientLight.ambient_color = { 1.5f, 1.5f, 1.5f, 1.0f };
+    }
+	else
+    noAmbientLight.ambient_color = { 1.2f, 1.2f, 1.2f, 1.0f };
 
     dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &noAmbientLight, 0, 0);
     dc->PSSetConstantBuffers(3, 1, light_constant_buffer.GetAddressOf());
@@ -1131,8 +1189,14 @@ void scene_game::render(float elapsedTime)
 
     // バットだけ ambient を 0 にして描画
     {
-        light_constants noAmbientLight = lightConstants;  // ← lightConstantsをメンバ変数に昇格する必要あり
-        noAmbientLight.ambient_color = { 0.5f, 0.5f, 0.5f, 1.0f };
+        light_constants noAmbientLight = lightConstants;  //  lightConstantsをメンバ変数に昇格する必要あり
+		//バットも時刻が0.2以上0.7以下の時に強くする
+        if (skyRenderer.time_of_day >= 0.2f && skyRenderer.time_of_day <= 0.7f)
+        {
+            noAmbientLight.ambient_color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		}
+        else
+        noAmbientLight.ambient_color = { 0.7f, 0.7f, 0.7f, 1.0f };
         dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &noAmbientLight, 0, 0);
         dc->PSSetConstantBuffers(3, 1, light_constant_buffer.GetAddressOf());
 
@@ -1661,5 +1725,7 @@ void scene_game::DrawGUI()
 	Pitcher::Instance().DrawGUI();
 
     textureManager.DrawGUI();
+
+	skyRenderer.DrawGUI();
 
 }

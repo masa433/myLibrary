@@ -11,6 +11,7 @@
 #include "sprite.h"
 #include "ModelRenderer.h"
 #include "TextureManager.h"
+#include "SkyRenderer.h"
 
 CONST LONG SCREEN_WIDTH{ 1280 };
 CONST LONG SCREEN_HEIGHT{ 720 };
@@ -26,6 +27,10 @@ private:
     //カメラのZ座標の描画範囲
     float camera_near_z = 1.0f;
     float camera_far_z = 1000000.0f;
+
+private:
+    //空と太陽のレンダラー
+	SkyRenderer skyRenderer;
 
 private:
     //	カスケードシャドウマップ数
@@ -184,10 +189,10 @@ private:
     Microsoft::WRL::ComPtr<ID3D11Buffer> cascade_shadowmap_constant_buffer;
 
 	// ライト関連
-    DirectX::XMFLOAT4 ambient_color{ 0.5f, 0.5f, 0.5f, 1.0f };
+    DirectX::XMFLOAT4 ambient_color{ 1.0f, 1.0f, 1.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_direction{ 0.0f, -1.0f, 0.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_color{ 1.0f, 1.0f, 1.0f, 1.0f };
-	float directional_light_intensity = 0.5f;
+	float directional_light_intensity = 0.7f;
     std::vector<point_lights> pointLights;
     std::vector<spot_lights> spotLights;
     Microsoft::WRL::ComPtr<ID3D11Buffer> light_constant_buffer;

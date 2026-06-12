@@ -30,6 +30,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\ModelRenderer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ModelRenderer.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\PrimitiveRenderer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\PrimitiveRenderer.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\shapeRenderer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\shapeRenderer.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\SkyRenderer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\SkyRenderer.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\sprite.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\sprite.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\sprite_batch.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\sprite_batch.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\UIEasing.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\UIEasing.obj
