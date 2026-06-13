@@ -64,7 +64,7 @@
 // TANGENT                  0   xyz         4     NONE   float   xyz 
 //
 vs_5_0
-dcl_globalFlags refactoringAllowed | skipOptimization
+dcl_globalFlags refactoringAllowed
 dcl_constantbuffer CB0[4], immediateIndexed
 dcl_constantbuffer CB1[1024], dynamicIndexed
 dcl_input v0.xyzw
@@ -77,155 +77,50 @@ dcl_output o1.xy
 dcl_output o2.xyz
 dcl_output o3.xyz
 dcl_output o4.xyz
-dcl_temps 8
-//
-// Initial variable locations:
-//   v0.x <- position.x; v0.y <- position.y; v0.z <- position.z; v0.w <- position.w; 
-//   v1.x <- boneWeights.x; v1.y <- boneWeights.y; v1.z <- boneWeights.z; v1.w <- boneWeights.w; 
-//   v2.x <- boneIndices.x; v2.y <- boneIndices.y; v2.z <- boneIndices.z; v2.w <- boneIndices.w; 
-//   v3.x <- texcoord.x; v3.y <- texcoord.y; 
-//   v4.x <- normal.x; v4.y <- normal.y; v4.z <- normal.z; 
-//   o4.x <- <main return value>.tangent.x; o4.y <- <main return value>.tangent.y; o4.z <- <main return value>.tangent.z; 
-//   o3.x <- <main return value>.position.x; o3.y <- <main return value>.position.y; o3.z <- <main return value>.position.z; 
-//   o2.x <- <main return value>.normal.x; o2.y <- <main return value>.normal.y; o2.z <- <main return value>.normal.z; 
-//   o1.x <- <main return value>.texcoord.x; o1.y <- <main return value>.texcoord.y; 
-//   o0.x <- <main return value>.vertex.x; o0.y <- <main return value>.vertex.y; o0.z <- <main return value>.vertex.z; o0.w <- <main return value>.vertex.w
-//
-#line 11 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\ToonShaderVS.hlsl"
-itof r0.xyz, l(0, 0, 0, 0)  // r0.x <- vout.position.x; r0.y <- vout.position.y; r0.z <- vout.position.z
-itof r1.xyz, l(0, 0, 0, 0)  // r1.x <- vout.tangent.x; r1.y <- vout.tangent.y; r1.z <- vout.tangent.z
-
-#line 13
-nop 
-mov r2.xyzw, v0.xyzw
-
-#line 8 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\Skinning.hlsli"
-itof r3.xyzw, l(0, 0, 0, 0)  // r3.x <- p.x; r3.y <- p.y; r3.z <- p.z; r3.w <- p.w
-
-#line 13
-imul null, r0.w, v2.x, l(4)
-mul r4.xyzw, r2.xxxx, cb1[r0.w + 0].xyzw
-mul r5.xyzw, r2.yyyy, cb1[r0.w + 1].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r5.xyzw, r2.zzzz, cb1[r0.w + 2].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r5.xyzw, r2.wwww, cb1[r0.w + 3].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r4.xyzw, r4.xyzw, v1.xxxx
-add r3.xyzw, r3.xyzw, r4.xyzw
-imul null, r0.w, v2.y, l(4)
-mul r4.xyzw, r2.xxxx, cb1[r0.w + 0].xyzw
-mul r5.xyzw, r2.yyyy, cb1[r0.w + 1].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r5.xyzw, r2.zzzz, cb1[r0.w + 2].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r5.xyzw, r2.wwww, cb1[r0.w + 3].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r4.xyzw, r4.xyzw, v1.yyyy
-add r3.xyzw, r3.xyzw, r4.xyzw
-imul null, r0.w, v2.z, l(4)
-mul r4.xyzw, r2.xxxx, cb1[r0.w + 0].xyzw
-mul r5.xyzw, r2.yyyy, cb1[r0.w + 1].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r5.xyzw, r2.zzzz, cb1[r0.w + 2].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r5.xyzw, r2.wwww, cb1[r0.w + 3].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r4.xyzw, r4.xyzw, v1.zzzz
-add r3.xyzw, r3.xyzw, r4.xyzw
-imul null, r0.w, v2.w, l(4)
-mul r4.xyzw, r2.xxxx, cb1[r0.w + 0].xyzw
-mul r5.xyzw, r2.yyyy, cb1[r0.w + 1].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r5.xyzw, r2.zzzz, cb1[r0.w + 2].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r2.xyzw, r2.wwww, cb1[r0.w + 3].xyzw
-add r2.xyzw, r2.xyzw, r4.xyzw
-mul r2.xyzw, r2.xyzw, v1.wwww
-add r2.xyzw, r2.xyzw, r3.xyzw  // r2.x <- p.x; r2.y <- p.y; r2.z <- p.z; r2.w <- p.w
-
-#line 15
-mov r2.xyzw, r2.xyzw  // r2.x <- <SkinningPosition return value>.x; r2.y <- <SkinningPosition return value>.y; r2.z <- <SkinningPosition return value>.z; r2.w <- <SkinningPosition return value>.w
-
-#line 13 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\ToonShaderVS.hlsl"
-mov r2.xyzw, r2.xyzw  // r2.x <- position.x; r2.y <- position.y; r2.z <- position.z; r2.w <- position.w
-
-#line 14
-mul r3.xyzw, r2.xxxx, cb0[0].xyzw
-mul r4.xyzw, r2.yyyy, cb0[1].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r4.xyzw, r2.zzzz, cb0[2].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r2.xyzw, r2.wwww, cb0[3].xyzw
-add r2.xyzw, r2.xyzw, r3.xyzw  // r2.x <- vout.vertex.x; r2.y <- vout.vertex.y; r2.z <- vout.vertex.z; r2.w <- vout.vertex.w
-
-#line 15
-mov r3.xy, v3.xyxx  // r3.x <- vout.texcoord.x; r3.y <- vout.texcoord.y
-
-#line 16
-nop 
-mov r4.xyz, v4.xyzx
-
-#line 20 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\Skinning.hlsli"
-itof r5.xyz, l(0, 0, 0, 0)  // r5.x <- v.x; r5.y <- v.y; r5.z <- v.z
-
-#line 25
-itof r0.w, l(0)
-imul null, r1.w, v2.x, l(4)
-mul r6.xyz, r4.xxxx, cb1[r1.w + 0].xyzx
-mul r7.xyz, r4.yyyy, cb1[r1.w + 1].xyzx
-add r6.xyz, r6.xyzx, r7.xyzx
-mul r7.xyz, r4.zzzz, cb1[r1.w + 2].xyzx
-add r6.xyz, r6.xyzx, r7.xyzx
-mul r7.xyz, r0.wwww, cb1[r1.w + 3].xyzx
-add r6.xyz, r6.xyzx, r7.xyzx
-mul r6.xyz, r6.xyzx, v1.xxxx
-add r5.xyz, r5.xyzx, r6.xyzx
-itof r0.w, l(0)
-imul null, r1.w, v2.y, l(4)
-mul r6.xyz, r4.xxxx, cb1[r1.w + 0].xyzx
-mul r7.xyz, r4.yyyy, cb1[r1.w + 1].xyzx
-add r6.xyz, r6.xyzx, r7.xyzx
-mul r7.xyz, r4.zzzz, cb1[r1.w + 2].xyzx
-add r6.xyz, r6.xyzx, r7.xyzx
-mul r7.xyz, r0.wwww, cb1[r1.w + 3].xyzx
-add r6.xyz, r6.xyzx, r7.xyzx
-mul r6.xyz, r6.xyzx, v1.yyyy
-add r5.xyz, r5.xyzx, r6.xyzx
-itof r0.w, l(0)
-imul null, r1.w, v2.z, l(4)
-mul r6.xyz, r4.xxxx, cb1[r1.w + 0].xyzx
-mul r7.xyz, r4.yyyy, cb1[r1.w + 1].xyzx
-add r6.xyz, r6.xyzx, r7.xyzx
-mul r7.xyz, r4.zzzz, cb1[r1.w + 2].xyzx
-add r6.xyz, r6.xyzx, r7.xyzx
-mul r7.xyz, r0.wwww, cb1[r1.w + 3].xyzx
-add r6.xyz, r6.xyzx, r7.xyzx
-mul r6.xyz, r6.xyzx, v1.zzzz
-add r5.xyz, r5.xyzx, r6.xyzx
-itof r0.w, l(0)
-imul null, r1.w, v2.w, l(4)
-mul r6.xyz, r4.xxxx, cb1[r1.w + 0].xyzx
-mul r4.xyw, r4.yyyy, cb1[r1.w + 1].xyxz
-add r4.xyw, r4.xyxw, r6.xyxz
-mul r6.xyz, r4.zzzz, cb1[r1.w + 2].xyzx
-add r4.xyz, r4.xywx, r6.xyzx
-mul r6.xyz, r0.wwww, cb1[r1.w + 3].xyzx
-add r4.xyz, r4.xyzx, r6.xyzx
-mul r4.xyz, r4.xyzx, v1.wwww
-add r4.xyz, r4.xyzx, r5.xyzx  // r4.x <- v.x; r4.y <- v.y; r4.z <- v.z
-
-#line 27
-mov r4.xyz, r4.xyzx  // r4.x <- <SkinningVector return value>.x; r4.y <- <SkinningVector return value>.y; r4.z <- <SkinningVector return value>.z
-
-#line 16 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\ToonShaderVS.hlsl"
-mov r4.xyz, r4.xyzx  // r4.x <- vout.normal.x; r4.y <- vout.normal.y; r4.z <- vout.normal.z
-
-#line 18
-mov o0.xyzw, r2.xyzw
-mov o2.xyz, r4.xyzx
-mov o3.xyz, r0.xyzx
-mov o4.xyz, r1.xyzx
-mov o1.xy, r3.xyxx
+dcl_temps 3
+ishl r0.xyzw, v2.xyzw, l(2, 2, 2, 2)
+mul r1.xyzw, v0.yyyy, cb1[r0.y + 1].xyzw
+mad r1.xyzw, v0.xxxx, cb1[r0.y + 0].xyzw, r1.xyzw
+mad r1.xyzw, v0.zzzz, cb1[r0.y + 2].xyzw, r1.xyzw
+mad r1.xyzw, v0.wwww, cb1[r0.y + 3].xyzw, r1.xyzw
+mul r1.xyzw, r1.xyzw, v1.yyyy
+mul r2.xyzw, v0.yyyy, cb1[r0.x + 1].xyzw
+mad r2.xyzw, v0.xxxx, cb1[r0.x + 0].xyzw, r2.xyzw
+mad r2.xyzw, v0.zzzz, cb1[r0.x + 2].xyzw, r2.xyzw
+mad r2.xyzw, v0.wwww, cb1[r0.x + 3].xyzw, r2.xyzw
+mad r1.xyzw, v1.xxxx, r2.xyzw, r1.xyzw
+mul r2.xyzw, v0.yyyy, cb1[r0.z + 1].xyzw
+mad r2.xyzw, v0.xxxx, cb1[r0.z + 0].xyzw, r2.xyzw
+mad r2.xyzw, v0.zzzz, cb1[r0.z + 2].xyzw, r2.xyzw
+mad r2.xyzw, v0.wwww, cb1[r0.z + 3].xyzw, r2.xyzw
+mad r1.xyzw, v1.zzzz, r2.xyzw, r1.xyzw
+mul r2.xyzw, v0.yyyy, cb1[r0.w + 1].xyzw
+mad r2.xyzw, v0.xxxx, cb1[r0.w + 0].xyzw, r2.xyzw
+mad r2.xyzw, v0.zzzz, cb1[r0.w + 2].xyzw, r2.xyzw
+mad r2.xyzw, v0.wwww, cb1[r0.w + 3].xyzw, r2.xyzw
+mad r1.xyzw, v1.wwww, r2.xyzw, r1.xyzw
+mul r2.xyzw, r1.yyyy, cb0[1].xyzw
+mad r2.xyzw, r1.xxxx, cb0[0].xyzw, r2.xyzw
+mad r2.xyzw, r1.zzzz, cb0[2].xyzw, r2.xyzw
+mad o0.xyzw, r1.wwww, cb0[3].xyzw, r2.xyzw
+mov o1.xy, v3.xyxx
+mul r1.xyz, v4.yyyy, cb1[r0.y + 1].xyzx
+mad r1.xyz, v4.xxxx, cb1[r0.y + 0].xyzx, r1.xyzx
+mad r1.xyz, v4.zzzz, cb1[r0.y + 2].xyzx, r1.xyzx
+mul r1.xyz, r1.xyzx, v1.yyyy
+mul r2.xyz, v4.yyyy, cb1[r0.x + 1].xyzx
+mad r2.xyz, v4.xxxx, cb1[r0.x + 0].xyzx, r2.xyzx
+mad r2.xyz, v4.zzzz, cb1[r0.x + 2].xyzx, r2.xyzx
+mad r1.xyz, v1.xxxx, r2.xyzx, r1.xyzx
+mul r2.xyz, v4.yyyy, cb1[r0.z + 1].xyzx
+mad r2.xyz, v4.xxxx, cb1[r0.z + 0].xyzx, r2.xyzx
+mad r0.xyz, v4.zzzz, cb1[r0.z + 2].xyzx, r2.xyzx
+mad r0.xyz, v1.zzzz, r0.xyzx, r1.xyzx
+mul r1.xyz, v4.yyyy, cb1[r0.w + 1].xyzx
+mad r1.xyz, v4.xxxx, cb1[r0.w + 0].xyzx, r1.xyzx
+mad r1.xyz, v4.zzzz, cb1[r0.w + 2].xyzx, r1.xyzx
+mad o2.xyz, v1.wwww, r1.xyzx, r0.xyzx
+mov o3.xyz, l(0,0,0,0)
+mov o4.xyz, l(0,0,0,0)
 ret 
-// Approximately 110 instruction slots used
+// Approximately 45 instruction slots used

@@ -457,8 +457,8 @@ void scene_game::initialize()
     //高輝度抽出バッファ生成
     {
         D3D11_TEXTURE2D_DESC texture2d_desc{};
-        texture2d_desc.Width = SCREEN_WIDTH;
-        texture2d_desc.Height = SCREEN_HEIGHT;
+        texture2d_desc.Width = Graphics::Instance().GetScreenWidth();
+        texture2d_desc.Height = Graphics::Instance().GetScreenHeight();
         texture2d_desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
         texture2d_desc.MipLevels = 1;
         texture2d_desc.ArraySize = 1;
@@ -484,8 +484,8 @@ void scene_game::initialize()
     //	高輝度抽出暈しバッファ生成
     {
         D3D11_TEXTURE2D_DESC texture2d_desc{};
-        texture2d_desc.Width = SCREEN_WIDTH;
-        texture2d_desc.Height = SCREEN_HEIGHT;
+        texture2d_desc.Width = Graphics::Instance().GetScreenWidth();
+        texture2d_desc.Height = Graphics::Instance().GetScreenHeight();
         texture2d_desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
         texture2d_desc.MipLevels = 1;
         texture2d_desc.ArraySize = 1;
@@ -1286,7 +1286,7 @@ void scene_game::render(float elapsedTime)
         dc->PSSetShader(sprite_pixel_shader.Get(), nullptr, 0);
         dc->IASetInputLayout(sprite_input_layout.Get());
 
-        add_luminance_extract_pass_sprite->render(dc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        add_luminance_extract_pass_sprite->render(dc, 0, 0, Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight());
     }
 
     //計測終了
@@ -1533,8 +1533,8 @@ void scene_game::luminance_extract_pass(float elapsedTime)
         D3D11_VIEWPORT scene_viewport{};
         scene_viewport.TopLeftX = 0;
         scene_viewport.TopLeftY = 0;
-        scene_viewport.Width = static_cast<float>(SCREEN_WIDTH);
-        scene_viewport.Height = static_cast<float>(SCREEN_HEIGHT);
+        scene_viewport.Width = static_cast<float>(Graphics::Instance().GetScreenWidth());
+        scene_viewport.Height = static_cast<float>(Graphics::Instance().GetScreenHeight());
         scene_viewport.MinDepth = 0.0f;
         scene_viewport.MaxDepth = 1.0f;
         dc->RSSetViewports(1, &scene_viewport);
@@ -1583,7 +1583,7 @@ void scene_game::luminance_extract_pass(float elapsedTime)
         dc->PSSetShader(luminance_extract_pixel_shader.Get(), nullptr, 0);
         dc->IASetInputLayout(sprite_input_layout.Get());
 
-        luminance_extract_pass_sprite->render(dc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        luminance_extract_pass_sprite->render(dc, 0, 0, Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight());
 
     }
 
@@ -1646,8 +1646,8 @@ void scene_game::bokeh_luminance_extract_pass(float elapsedTime)
         D3D11_VIEWPORT scene_viewport{};
         scene_viewport.TopLeftX = 0;
         scene_viewport.TopLeftY = 0;
-        scene_viewport.Width = static_cast<float>(SCREEN_WIDTH);
-        scene_viewport.Height = static_cast<float>(SCREEN_HEIGHT);
+        scene_viewport.Width = static_cast<float>(Graphics::Instance().GetScreenWidth());
+        scene_viewport.Height = static_cast<float>(Graphics::Instance().GetScreenHeight());
         scene_viewport.MinDepth = 0.0f;
         scene_viewport.MaxDepth = 1.0f;
         dc->RSSetViewports(1, &scene_viewport);
@@ -1694,7 +1694,7 @@ void scene_game::bokeh_luminance_extract_pass(float elapsedTime)
         dc->VSSetShader(sprite_vertex_shader.Get(), nullptr, 0);
         dc->PSSetShader(gaussian_filter_pixel_shader.Get(), nullptr, 0);
         dc->IASetInputLayout(sprite_input_layout.Get());
-        bokeh_luminance_extract_pass_sprite->render(dc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        bokeh_luminance_extract_pass_sprite->render(dc, 0, 0, Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight());
     }
     //シェーダー登録解除
     {
