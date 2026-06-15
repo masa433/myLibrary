@@ -16,30 +16,36 @@ void Player::Initialize()
 {
     ID3D11Device* device = Graphics::Instance().GetDevice();
     // モデルの読み込み
-    animated_model = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batter.glb");
+    if(IsRightBatter())
+        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batterRight.glb");
+    else
+		batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batter.glb");
+    
 
     if (IsRightBatter()) 
     {
         position = { -1.0f, 0.01f, -0.4f };
-        scale = { 1.0f,1.0f,1.0f };
+		batPosition = { -0.08f, 0.0f, 0.05f };
+		batAngle = { 0.0f, 0.0f, -1.6f, 0.0f };
     }
     else 
     {
         position = { 1.0f, 0.01f, -0.4f };
-		scale = { -1.0f,1.0f,1.0f };
+		batPosition = { 0.08f, 0.0f, 0.05f };
+		batAngle = { 0.0f, 0.0f, 1.6f, 0.0f };
     }
     angle = { 0.0f, 0.0f, 0.0f};
 	radius = 0.5f;
 	height = 3.5f;
 
     // アニメーション用のノードをコピー
-    animated_nodes = animated_model->nodes;
+    animated_nodes = batter->nodes;
 
 	//ステートごとのアニメーションインデックス設定
 	animation_indices[static_cast<int>(State::BattingIdle)] = 0;      // Idleアニメーション
 	animation_indices[static_cast<int>(State::BeforeSwing)] = 1; // BattingIdleアニメーション
 	animation_indices[static_cast<int>(State::Swinging)] = 2;   // Swingingアニメーション
-	animation_indices[static_cast<int>(State::Idle)] = 3;    // HomeRunアニメーション
+	
 
     // 初期ステート設定
     current_state = State::BattingIdle;
@@ -49,17 +55,13 @@ void Player::Initialize()
     bat = std::make_unique<Model>(".\\resources\\object\\bat.mdl");
 	batModel = std::make_unique<gltf_model>(device, ".\\resources\\object\\bat.glb");
     batScale = { 1.2f,1.1f,1.2f };
-    batPosition = { 0.08f, 0.0f, 0.05f };
-    batAngle = { 0.0f, 0.0f, 1.6f, 0.0f };
-	batRadius = 0.2f;
-	batHeight = 1.0f;
 
     meshScale = { 0.03f,0.012f,0.03f };
 
 	sweetSpotOffset = { 0.0f, 0.75f, 0.0f };
 	sweetSpotScale = { 0.2f, 0.2f, 0.2f };
 
-	animated_model->build_static_batches(device);
+	batter->build_static_batches(device);
 	batModel->build_static_batches(device);
    
     //バット型の凸形状のメッシュ作成
@@ -231,7 +233,7 @@ void Player::UpdateLookAt(const DirectX::XMFLOAT3& targetPosition)
     DirectX::XMStoreFloat4x4(&world, S * R * T);
 
     // 首ノードのインデックスを取得
-    int neck_joint_index = animated_model->GetNodeIndex("mixamorig:Head");
+    int neck_joint_index = batter->GetNodeIndex("mixamorig:Head");
     if (neck_joint_index < 0) return; // 首ノードが存在しない場合は処理しない
 
     gltf_model::node& node = animated_nodes.at(neck_joint_index);
@@ -317,7 +319,7 @@ void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
 
 void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
 {
-    animated_model->render_batched(rc.deviceContext, transform, animated_nodes);
+    batter->render_batched(rc.deviceContext, transform, animated_nodes);
 }
 
 void Player::RenderBat(const RenderContext& rc, ModelRenderer* renderer)
@@ -340,6 +342,35 @@ void Player::DrawGUI()
             // カプセルのサイズ変更用スライダー
             ImGui::DragFloat("Radius", &radius, 0.1f, 1.0f, 100.0f); // 半径
             ImGui::DragFloat("Height", &height, 0.1f, 1.0f, 200.0f); // 高さ
+
+            // 変更後
+            bool prev = isRightBatter;
+            if (ImGui::Checkbox("Right Handed", &isRightBatter))
+            {
+                if (prev != isRightBatter)
+                {
+                    // モデル・位置を再初期化
+                    ID3D11Device* device = Graphics::Instance().GetDevice();
+                    if (IsRightBatter())
+                    {
+                        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batterRight.glb");
+                        position = { -1.0f, 0.01f, -0.4f };
+                        batPosition = { -0.08f, 0.0f, 0.05f };
+                        batAngle = { 0.0f, 0.0f, -1.6f, 0.0f };
+                    }
+                    else
+                    {
+                        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batter.glb");
+                        position = { 1.0f, 0.01f, -0.4f };
+                        batPosition = { 0.08f, 0.0f, 0.05f };
+                        batAngle = { 0.0f, 0.0f, 1.6f, 0.0f };
+                    }
+                    batter->build_static_batches(device);
+                    animated_nodes = batter->nodes;
+                    animation_time = 0.0f;
+                    current_animation_index = animation_indices[static_cast<int>(current_state)];
+                }
+            }
         }
         if (ImGui::CollapsingHeader("Bat"))
         {
@@ -347,9 +378,6 @@ void Player::DrawGUI()
             ImGui::DragFloat3("Bat Scale", &batScale.x);
             ImGui::DragFloat3("Bat Angle", &batAngle.x);
 
-            // バットの質量を計算して表示
-            float originalMass = 0.9f; // 実際のバットの質量 (kg)
-            ImGui::Text("Bat Mass (scaled): %.6f kg", originalMass);
         }
 
         // PhysXメッシュ単体操作用
@@ -397,13 +425,13 @@ void Player::DrawGUI()
         // アニメーションデバッグ用
         if (ImGui::CollapsingHeader("Animation"))
         {
-            if (animated_model && !animated_model->animations.empty())
+            if (batter && !batter->animations.empty())
             {
-                const gltf_model::animation& animation = animated_model->animations.at(current_animation_index);
+                const gltf_model::animation& animation = batter->animations.at(current_animation_index);
 
                 // アニメーション選択
                 int prev_animation_index = current_animation_index;
-                if (ImGui::SliderInt("Animation Index", &current_animation_index, 0, static_cast<int>(animated_model->animations.size()) - 1))
+                if (ImGui::SliderInt("Animation Index", &current_animation_index, 0, static_cast<int>(batter->animations.size()) - 1))
                 {
                     // アニメーションが変更されたら時間をリセット
                     if (prev_animation_index != current_animation_index)
@@ -433,9 +461,9 @@ void Player::DrawGUI()
                 // すべてのアニメーションをリスト表示
                 if (ImGui::TreeNode("All Animations"))
                 {
-                    for (size_t i = 0; i < animated_model->animations.size(); ++i)
+                    for (size_t i = 0; i < batter->animations.size(); ++i)
                     {
-                        const gltf_model::animation& anim = animated_model->animations.at(i);
+                        const gltf_model::animation& anim = batter->animations.at(i);
                         bool is_selected = (i == current_animation_index);
 
                         if (ImGui::Selectable(anim.name.c_str(), is_selected))
@@ -474,9 +502,10 @@ void Player::UpdatePhysXMeshTransform(const DirectX::XMFLOAT3& scale)
     batShape->setGeometry(pxConvexGeometry);
 }
 
+
 void Player::AttachBatToHand()
 {
-    const char* handName = "mixamorig:LeftHandMiddle1";
+    const char* handName = IsRightBatter() ? "mixamorig:RightHandMiddle1" :  "mixamorig:LeftHandMiddle1";
 
     // バットのローカル行列を計算（バット専用の変数を使用）
     DirectX::XMMATRIX S = DirectX::XMMatrixScaling(batScale.x, batScale.y, batScale.z);
@@ -573,11 +602,10 @@ void Player::AttachBatToHand()
         }
     }
 }
-
 // ステートマシン更新
 void Player::UpdateAnimation(float elapsedTime)
 {
-    if (animation_playing && animated_model && !animated_model->animations.empty())
+    if (animation_playing && batter && !batter->animations.empty())
     {
         //アニメーションの開始位置をどれくらい進めるか（秒単位で指定）
         // 例：最初の0.1秒をカットして、0.1秒の時点から再生を始める場合
@@ -599,11 +627,10 @@ void Player::UpdateAnimation(float elapsedTime)
         animation_time += elapsedTime;
 
         // 現在のアニメーションを再生
-        animated_model->animate(current_animation_index, animation_time, animated_nodes);
+        batter->animate(current_animation_index, animation_time, animated_nodes);
 
         // アニメーションの長さを取得
-        float animation_duration = animated_model->animations[current_animation_index].duration;
-
+        float animation_duration = batter->animations[current_animation_index].duration;
 		
 
         if (Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)
@@ -620,7 +647,7 @@ void Player::UpdateAnimation(float elapsedTime)
         else if (current_state == State::BeforeSwing)
         {
             // BeforeSwingアニメーションが終了したらBattingIdleに戻す
-            if (animation_time >= animated_model->animations[current_animation_index].duration)
+            if (animation_time >= batter->animations[current_animation_index].duration)
             {
                 ChangeState(State::BattingIdle);
                 ThrowingStateTime = 0.0f;  // ThrowingStateTimeをリセット
@@ -694,7 +721,7 @@ void Player::ChangeState(State newState)
     int new_index = animation_indices[static_cast<int>(newState)];
 
     // インデックスが有効範囲内かチェック
-    if (animated_model && new_index >= 0 && new_index < animated_model->animations.size())
+    if (batter && new_index >= 0 && new_index < batter->animations.size())
     {
         current_animation_index = new_index;
         animation_time = 0.0f;  // アニメーション時間をリセット
@@ -719,27 +746,36 @@ void Player::ChangeState(State newState)
 // マウスの位置によってスイングの高さを変える
 void Player::ModifyArmBones()
 {
-    // 左腕のボーンを探す
-    int leftArmIndex = animated_model->GetNodeIndex("mixamorig:LeftArm");
-    
-    if (leftArmIndex < 0) return;
+    if (IsRightBatter())
+    {
+        // 右打者：右腕がメイン
+        int rightArmIndex = batter->GetNodeIndex("mixamorig:RightArm");
+        if (rightArmIndex < 0) return;
+        DirectX::XMMATRIX additionalRotation = DirectX::XMMatrixRotationX(-armAngleOffset);
+        UpdateNodeTransform(rightArmIndex, additionalRotation);
+        UpdateChildrenRecursive(rightArmIndex);
 
-    // 左腕の回転を変更
-    DirectX::XMMATRIX additionalRotation = DirectX::XMMatrixRotationX(armAngleOffset);
-    UpdateNodeTransform(leftArmIndex, additionalRotation);
+        int leftShoulderIndex = batter->GetNodeIndex("mixamorig:LeftShoulder");
+        if (leftShoulderIndex < 0) return;
+        additionalRotation = DirectX::XMMatrixRotationY(armAngleOffset);
+        UpdateNodeTransform(leftShoulderIndex, additionalRotation);
+        UpdateChildrenRecursive(leftShoulderIndex);
+    }
+    else
+    {
+        // 左打者：左腕がメイン
+        int leftArmIndex = batter->GetNodeIndex("mixamorig:LeftArm");
+        if (leftArmIndex < 0) return;
+        DirectX::XMMATRIX additionalRotation = DirectX::XMMatrixRotationX(armAngleOffset);
+        UpdateNodeTransform(leftArmIndex, additionalRotation);
+        UpdateChildrenRecursive(leftArmIndex);
 
-    // 子ノード（前腕以降）のグローバル変換を再計算
-    UpdateChildrenRecursive(leftArmIndex);
-
-	// 右腕のボーンを探す
-    int rightArmIndex = animated_model->GetNodeIndex("mixamorig:RightShoulder");
-    
-    if (rightArmIndex < 0) return;
-    // 右腕の回転を変更
-    additionalRotation = DirectX::XMMatrixRotationY(-armAngleOffset);
-    UpdateNodeTransform(rightArmIndex, additionalRotation);
-    // 子ノード（前腕以降）のグローバル変換を再計算
-    UpdateChildrenRecursive(rightArmIndex);
+        int rightShoulderIndex = batter->GetNodeIndex("mixamorig:RightShoulder");
+        if (rightShoulderIndex < 0) return;
+        additionalRotation = DirectX::XMMatrixRotationY(-armAngleOffset);
+        UpdateNodeTransform(rightShoulderIndex, additionalRotation);
+        UpdateChildrenRecursive(rightShoulderIndex);
+    }
 }
 
 void Player::UpdateNodeTransform(int nodeIndex, const DirectX::XMMATRIX& additionalRotation)

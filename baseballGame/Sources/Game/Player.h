@@ -82,12 +82,8 @@ private:
     DirectX::XMFLOAT3   batScale = { 1,1,1 };
     DirectX::XMFLOAT4   batAngle = { 0,0,0,1 };
 
-    float batRadius = 0.0f;
-	float batHeight = 0.0f;
-
-    std::unique_ptr<gltf_model> animated_model;
+    std::unique_ptr<gltf_model> batter;
     std::vector<gltf_model::node> animated_nodes;
-    std::unique_ptr<Model> batter;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_context;
 
     // アニメーション関連
@@ -132,7 +128,7 @@ private:
 
     float ThrowingStateTime = 0.0f;
 	bool hasPlayHomeRun = false;
-	bool isRightBatter = true; // 右打者かどうかのフラグ
+	bool isRightBatter = false; // 右打者かどうかのフラグ
 
 private:
 	physx::PxRigidDynamic* batSweetSpot = nullptr; // バットのスイートスポット用の剛体

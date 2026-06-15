@@ -592,19 +592,25 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				}
 
 				// ===== 3. 衝突計算 =====
-				physx::PxVec3 relativeVelocity = batVelocity - ballVelocity;
-				float relativeVelocityAlongNormal = relativeVelocity.dot(collisionNormal);
+				/*physx::PxVec3 relativeVelocity = batVelocity - ballVelocity;
+				float relativeVelocityAlongNormal = relativeVelocity.dot(collisionNormal);*/
+				float ballSpeedAlongNormal = ballVelocity.dot(collisionNormal);
+				float batSpeedAlongNormal = batVelocity.dot(collisionNormal);
 
 				//ボールの質量とバットの有効質量を設定
 				const float BALL_MASS = 0.145f;
 				const float EFFECTIVE_BAT_MASS = 0.3f;
 
-				float impulseScalar = 0.0f;
+				//絶対値を取り出す
+				float v_ball = std::fabs(ballSpeedAlongNormal);
+				float v_bat = std::fabs(batSpeedAlongNormal);
+
+				/*float impulseScalar = 0.0f;
 				if (std::fabs(relativeVelocityAlongNormal) > 1e-4f)
 				{
 					impulseScalar = -(1.0f + combinedRestitution) * relativeVelocityAlongNormal;
 					impulseScalar /= (1.0f / BALL_MASS + 1.0f / EFFECTIVE_BAT_MASS);
-				}
+				}*/
 
 				// ===== 打撃係数・打球速度 =====
 				const float TARGET_Q = 0.2f;
@@ -613,7 +619,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				adjustedRestitution = std::clamp(adjustedRestitution, 0.5f, 0.95f);
 				float q = (adjustedRestitution - massRatio) / (1.0f + massRatio);
 
-				float estimatedExitVelocity = (q * ballSpeed + (1.0f + q) * batSpeed);
+				float estimatedExitVelocity = (q * v_ball) + ((1.0f + q) * v_bat);
 
 				// ===== 打球角度による速度調整 =====
 				float launchAngle = std::atan2(
@@ -635,6 +641,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				estimatedExitVelocity *= angleScale;
 
 				// ===== 4. 回転計算 =====
+				physx::PxVec3 relativeVelocity = batVelocity - ballVelocity;
+				float relativeVelocityAlongNormal = relativeVelocity.dot(collisionNormal);
 				physx::PxVec3 tangentialVelocity = relativeVelocity - collisionNormal * relativeVelocityAlongNormal;
 				float tangentialSpeed = tangentialVelocity.magnitude();
 
@@ -657,7 +665,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				spinAxis.y = -spinAxis.y;
 
 				// ===== 5. 最終速度計算 =====
-				physx::PxVec3 newBallVelocity = ballVelocity + collisionNormal * impulseScalar / BALL_MASS;
+				physx::PxVec3 newBallVelocity = collisionNormal * estimatedExitVelocity;
 				float physSpeed = newBallVelocity.magnitude();
 
 				if (physSpeed > 1e-3f)
@@ -671,11 +679,11 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				}
 				if(Player::Instance().GetIsInSweetSpot())
 				{
-					newBallVelocity *= 1.05f;// スイートスポットなら5%速度アップ
+					newBallVelocity *= 1.15f;// スイートスポットなら15%速度アップ
 				}
 				else if (!Player::Instance().GetIsInSweetSpot())
 				{
-					newBallVelocity *= 0.8f;// デッドスポットなら20%速度ダウン
+					newBallVelocity *= 0.9f;// デッドスポットなら10%速度ダウン
 				}
 
 				//// ===== 打球速度の上限設定（190 km/h） =====

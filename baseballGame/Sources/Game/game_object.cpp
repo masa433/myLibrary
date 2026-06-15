@@ -2,14 +2,20 @@
 
 void GameObject::UpdateTransform()
 {
-	// ç∂éËån Y-UP ÇÃç¿ïWånïœä∑çsóÒ
-	const DirectX::XMFLOAT4X4 lhs_coordinate_transform{
-		-1, 0, 0, 0,  // Xé≤ÇîΩì]
-		 0, 1, 0, 0,  // Yé≤ÇÕÇªÇÃÇ‹Ç‹
-		 0, 0, 1, 0,  // Zé≤ÇÕÇªÇÃÇ‹Ç‹
-		 0, 0, 0, 1
+	//âEéËånÇ∆Ç©ç∂éËånÇëIëÇ≈Ç´ÇÈÇÊÇ§Ç…Ç∑ÇÈ
+	
+	const DirectX::XMFLOAT4X4 coordinate_system_transforms[]{
+		{ -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 },	// 0:RHS Y-UP
+		{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 },		// 1:LHS Y-UP
+		{ -1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1 },	// 2:RHS Z-UP
+		{ 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 },		// 3:LHS Z-UP
 	};
-	DirectX::XMMATRIX C = DirectX::XMLoadFloat4x4(&lhs_coordinate_transform);
+#if 1
+	const float scale_factor = 1.0f; // To change the units from centimeters to meters, set 'scale_factor' to 0.01.
+#else
+	const float scale_factor = 0.01f; // To change the units from centimeters to meters, set 'scale_factor' to 0.01.
+#endif
+	DirectX::XMMATRIX C{ DirectX::XMLoadFloat4x4(&coordinate_system_transforms[1]) * DirectX::XMMatrixScaling(scale_factor, scale_factor, scale_factor) };
 
 	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);

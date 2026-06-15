@@ -479,7 +479,7 @@ void Pitcher::SelectPitchType()
 		ballSpeedKmh = 150.0f; // 速い
 		Ball::Instance().GetBallAngle() = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // バックスピン
-		throwDirection.x = 0.03f;
+		throwDirection.x = -0.02f;
 		launchAngleDegrees = -1.5f;
 		OutputDebugStringA("Pitch Type: Fastball\n");
 		break;
