@@ -326,16 +326,15 @@ void Pitcher::DrawGUI()
 				if (IsRightPitcher())
 				{
 					pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\rightPitcher.glb");
-					position = { 0.1f,0.22f,18.15f };
-					//Ball::Instance().SetPosition(-0.08f, 0.0f, 0.05f );
-					Ball::Instance().SetBallPosition({ -0.08f, 0.0f, 0.05f });
+					position = { -0.1f,0.22f,18.15f };
+					Ball::Instance().SetBallPosition({ 0.0f, 0.0f, 0.05f });
 					Ball::Instance().SetBallAngle({ 0.0f, 0.0f, -1.6f });
 				}
 				else
 				{
 					pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
-					position = { -0.1f,0.22f,18.15f };
-					Ball::Instance().SetBallPosition({ 0.08f, 0.0f, 0.05f });
+					position = { 0.1f,0.22f,18.15f };
+					Ball::Instance().SetBallPosition({ 0.0f, 0.0f, 0.05f });
 					Ball::Instance().SetBallAngle({ 0.0f, 0.0f, 1.6f });
 				}
 				pitcher->build_static_batches(device);
@@ -453,46 +452,47 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 {
 	const float RPM_TO_RAD_PER_SEC = 2.0f * 3.14159265f / 60.0f;
+	const float side = IsRightPitcher() ? 1.0f : -1.0f; // 左投手はY軸反転
 
 	switch (selectedPitchType)
 	{
-	case PitchType::Fastball:  // バックスピン
+	case PitchType::Fastball:
 		return physx::PxVec3(2500.0f * RPM_TO_RAD_PER_SEC, 0.0f, 0.0f);
 
-	case PitchType::Slider:  // サイドスピン＋少しバック
-		return physx::PxVec3(0.0f, -2400.0f * RPM_TO_RAD_PER_SEC, 0.0f);
+	case PitchType::Slider:
+		return physx::PxVec3(0.0f, -2400.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
 
-	case PitchType::Curveball:  // サイドスピン＋トップスピン
-		return physx::PxVec3(-2500.0f * RPM_TO_RAD_PER_SEC, -1500.0f * RPM_TO_RAD_PER_SEC, 0.0f);
+	case PitchType::Curveball:
+		return physx::PxVec3(-2500.0f * RPM_TO_RAD_PER_SEC, -1500.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
 
-	case PitchType::Changeup:  // ミックススピン（弱い）
+	case PitchType::Changeup:
 		return physx::PxVec3(1000.0f * RPM_TO_RAD_PER_SEC, 0.0f, 0.0f);
 
-	case PitchType::Forkball:  // ほぼ回転なし
+	case PitchType::Forkball:
 		return physx::PxVec3(100.0f * RPM_TO_RAD_PER_SEC, -100.0f * RPM_TO_RAD_PER_SEC, -100.0f * RPM_TO_RAD_PER_SEC);
 
-	case PitchType::TwoSeam:  // バックスピン＋弱いサイド
-		return physx::PxVec3(1500.0f * RPM_TO_RAD_PER_SEC, 1500.0f * RPM_TO_RAD_PER_SEC, 2000.0f * RPM_TO_RAD_PER_SEC);
+	case PitchType::TwoSeam:
+		return physx::PxVec3(1500.0f * RPM_TO_RAD_PER_SEC, 1500.0f * RPM_TO_RAD_PER_SEC * side, 2000.0f * RPM_TO_RAD_PER_SEC);
 
-	case PitchType::Cutter:  // サイドスピン強め
-		return physx::PxVec3(500.0f * RPM_TO_RAD_PER_SEC, -2000.0f * RPM_TO_RAD_PER_SEC, 0.0f);
+	case PitchType::Cutter:
+		return physx::PxVec3(500.0f * RPM_TO_RAD_PER_SEC, -2000.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
 
-	case PitchType::Sinker:  // サイドスピン＋トップスピン
-		return physx::PxVec3(100.0f * RPM_TO_RAD_PER_SEC, 2000.0f * RPM_TO_RAD_PER_SEC, -2000.0f * RPM_TO_RAD_PER_SEC);
+	case PitchType::Sinker:
+		return physx::PxVec3(100.0f * RPM_TO_RAD_PER_SEC, 2000.0f * RPM_TO_RAD_PER_SEC * side, -2000.0f * RPM_TO_RAD_PER_SEC);
 
-	case PitchType::VerticalSlider:  // 純粋なサイドスピン
-		return physx::PxVec3(0.0f, -1000.0f * RPM_TO_RAD_PER_SEC, -2000.0f * RPM_TO_RAD_PER_SEC);
+	case PitchType::VerticalSlider:
+		return physx::PxVec3(0.0f, -1000.0f * RPM_TO_RAD_PER_SEC * side, -2000.0f * RPM_TO_RAD_PER_SEC);
 
-	case PitchType::Splitter:  // 回転が少ない
+	case PitchType::Splitter:
 		return physx::PxVec3(200.0f * RPM_TO_RAD_PER_SEC, -200.0f * RPM_TO_RAD_PER_SEC, -200.0f * RPM_TO_RAD_PER_SEC);
 
-	case PitchType::SlowCurve:  // トップスピン強め
-		return physx::PxVec3(0.0f, -1200.0f * RPM_TO_RAD_PER_SEC, 2000.0f * RPM_TO_RAD_PER_SEC);
+	case PitchType::SlowCurve:
+		return physx::PxVec3(0.0f, -1200.0f * RPM_TO_RAD_PER_SEC * side, 2000.0f * RPM_TO_RAD_PER_SEC);
 
-	case PitchType::Shooter:  // サイドスピン最強
-		return physx::PxVec3(500.0f * RPM_TO_RAD_PER_SEC, 1000.0f * RPM_TO_RAD_PER_SEC, -100.0f * RPM_TO_RAD_PER_SEC);
+	case PitchType::Shooter:
+		return physx::PxVec3(500.0f * RPM_TO_RAD_PER_SEC, 1000.0f * RPM_TO_RAD_PER_SEC * side, -100.0f * RPM_TO_RAD_PER_SEC);
 
-	case PitchType::Knuckleball:  // ほぼ回転なし
+	case PitchType::Knuckleball:
 		return physx::PxVec3(50.0f * RPM_TO_RAD_PER_SEC, 50.0f * RPM_TO_RAD_PER_SEC, 50.0f * RPM_TO_RAD_PER_SEC);
 
 	default:
@@ -514,7 +514,7 @@ void Pitcher::SelectPitchType()
 {
 	// 乱数生成
 	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
-	selectedPitchType = PitchType::Fastball; // デフォルトはストレート
+	selectedPitchType = PitchType::Cutter; // デフォルトはストレート
 
 	// 球種ごとの挙動を設定
 	switch (selectedPitchType)

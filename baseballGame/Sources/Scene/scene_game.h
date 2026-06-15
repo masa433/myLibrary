@@ -13,8 +13,8 @@
 #include "TextureManager.h"
 #include "SkyRenderer.h"
 
-CONST LONG SCREEN_WIDTH{ 1280 };
-CONST LONG SCREEN_HEIGHT{ 720 };
+CONST LONG SCREEN_WIDTH{ 1920 };
+CONST LONG SCREEN_HEIGHT{ 1080 };
 CONST BOOL FULLSCREEN{ FALSE };
 
 class scene_game : public scene2

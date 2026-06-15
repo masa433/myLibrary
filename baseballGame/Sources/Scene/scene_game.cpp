@@ -598,189 +598,7 @@ void scene_game::update(float elapsed_time)
         }
 	}
 
-#ifdef USE_IMGUI
-    RenderContext rc;
-    //Camera& camera = Camera::Instance();
 
-    ImGui::Separator();
-  
-    if (ImGui::CollapsingHeader("Camera"))
-    {
-        DirectX::XMFLOAT3 eye = camera.GetEye();
-        DirectX::XMFLOAT3 focus = camera.GetFocus();
-
-        if (ImGui::DragFloat3("Camera Position", &eye.x, -50.0f, 100.0f))
-        {
-            camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
-            cameraController.SyncCameraToController(camera);
-        }
-
-        if (ImGui::DragFloat3("Camera Focus", &focus.x, -50.0f, 100.0f))
-        {
-            camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
-            cameraController.SyncCameraToController(camera);
-        }
-
-        ImGui::SliderFloat("Near Z", &camera_near_z, 0.1f, 100.0f);
-        ImGui::SliderFloat("Far Z", &camera_far_z, 100.0f, 10000.0f);
-
-        camera.SetPerspectiveFov(
-            DirectX::XMConvertToRadians(45),
-            Graphics::Instance().GetScreenWidth() / Graphics::Instance().GetScreenHeight(),
-            camera_near_z,
-            camera_far_z
-		);
-        
-    }
-
-    if (ImGui::CollapsingHeader("Light"))
-    {
-        ImGui::ColorEdit3("ambient_color", &ambient_color.x);
-        ImGui::SliderFloat3("directional_light_direction", &directional_light_direction.x, -1.0f, +1.0f);
-        ImGui::ColorEdit3("directional_light_color", &directional_light_color.x);
-		ImGui::SliderFloat("directional_light_intensity", &directional_light_intensity, 0.0f, +100.0f);
-    
-        if (ImGui::TreeNode("points"))
-        {
-            for (int i = 0; i < pointLights.size(); ++i)
-            {
-                if (ImGui::TreeNode((std::string("point ") + std::to_string(i)).data()))
-                {
-                    ImGui::SliderFloat3("position", &pointLights[i].position.x, -100.0f, +100.0f);
-                    ImGui::ColorEdit3("color", &pointLights[i].color.x);
-                    ImGui::SliderFloat("intensity", &pointLights[i].intensity, 0.0f, +100.0f);
-                    ImGui::SliderFloat("range", &pointLights[i].range, 0.1f, +100.0f);
-                    ImGui::Separator();
-                    ImGui::TreePop();
-                }
-            }
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("spots"))
-        {
-            for (int i = 0; i < spotLights.size(); ++i)
-            {
-                if (ImGui::TreeNode((std::string("spot ") + std::to_string(i)).data()))
-                {
-                    ImGui::SliderFloat3("position", &spotLights[i].position.x, -100.0f, +100.0f);
-                    if (ImGui::SliderFloat3("direction", &spotLights[i].direction.x, -1.0f, +1.0f))
-                    {
-                        float x = spotLights[i].direction.x * spotLights[i].direction.x
-                            + spotLights[i].direction.y * spotLights[i].direction.y
-                            + spotLights[i].direction.z * spotLights[i].direction.z;
-                        x = sqrtf(x);
-                        spotLights[i].direction.x /= x;
-                        spotLights[i].direction.y /= x;
-                        spotLights[i].direction.z /= x;
-                    }
-                    ImGui::ColorEdit3("color", &spotLights[i].color.x);
-                    ImGui::SliderFloat("intensity", &spotLights[i].intensity, 0.0f, +100.0f);
-                    ImGui::SliderFloat("range", &spotLights[i].range, 0.1f, +1000.0f);
-                    float inner_corn = DirectX::XMConvertToDegrees(spotLights[i].innerCorn);
-                    if (ImGui::SliderFloat("inner", &inner_corn, 0.0f, +89.0f))
-                    {
-                        spotLights[i].innerCorn = DirectX::XMConvertToRadians(inner_corn);
-                    }
-
-                    float outer_corn = DirectX::XMConvertToDegrees(spotLights[i].outerCorn);
-                    if (ImGui::SliderFloat("outer", &outer_corn, 0.0f, +89.0f))
-                    {
-                        spotLights[i].outerCorn = DirectX::XMConvertToRadians(outer_corn);
-                    }
-                    ImGui::Separator();
-                    ImGui::TreePop();
-                }
-            }
-            ImGui::TreePop();
- 
-        }
-        
-    }
-
-    if(ImGui::CollapsingHeader("Hemisphere Light & Fog"))
-    {
-        ImGui::ColorEdit3("Sky Color", &sky_color.x);
-        ImGui::ColorEdit3("Ground Color", &ground_color.x);
-        ImGui::SliderFloat("Hemisphere Weight", &hemisphere_weight, 0.0f, 1.0f);
-        ImGui::Separator();
-        ImGui::ColorEdit3("Fog Color", &fog_color.x);
-        ImGui::SliderFloat("fog_near", &fog_range.x, 0.1f, +100.0f);
-        ImGui::SliderFloat("fog_far", &fog_range.y, 0.1f, +100.0f);
-
-    }
-
-    if (ImGui::CollapsingHeader("Shadowmap"))
-    {
-        ImGui::Checkbox("use_cascade_shadow_map", &use_cascade_shadow_map);
-
-        //	テクスチャ表示
-        if (use_cascade_shadow_map)
-        {
-			
-            ImGui::Checkbox("display_cascade_area", &cascade_shadow_constant.display_cascade_area);
-            ImGui::SliderFloat("shadow attenuation", &cascade_shadow_constant.shadow_attenuation, 0.0f, 1.0f);
-			ImGui::SliderFloat4("shadow bias", &cascade_shadow_constant.shadow_bias.x, 0.0f, +0.01f);
-
-
-            for (int index = 0; index < ShadowBufferSize; ++index)
-            {
-                ImGui::Text((std::string("shadow_map") + std::to_string(index)).data());
-                ImGui::Image(ImTextureRef(cascade_shadowmap_shader_resource_views[index].Get()), ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1));
-            }
-        }
-
-        else
-        {
-            ImGui::SliderFloat("shadow_attenuation", &shadow_attenuation, 0.0f, 1.0f);
-            ImGui::SliderFloat("shadow_bias", &shadow_bias, 0.0f, +0.01f);
-            ImGui::Separator();
-
-            ImGui::Text("scene_texture");
-            ImGui::Image(ImTextureRef(scene_shader_resource_view.Get()), ImVec2(256, 144), ImVec2(0, 0), ImVec2(1, 1));
-            ImGui::Text("shadow_map");
-            ImGui::Image(ImTextureRef(shadowmap_shader_resource_view.Get()), ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1));
-        }
-        
-    }
-
-	ImGui::Checkbox("Show PhysX Debug", &showPhysxDebug);
-
-    if (ImGui::CollapsingHeader("bloom"))
-    {
-        ImGui::Text("luminance_extract");
-        ImGui::SliderFloat("threshold", &luminance_extract_constant.threshold, 0.0f, 2.0f);
-        ImGui::SliderFloat("intensity", &luminance_extract_constant.intensity, 0.0f, 10.0f);
-        ImGui::Image(ImTextureRef(luminance_extract_shader_resource_view.Get()), ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1));
-
-        ImGui::Text("bokeh_luminance_extract");
-        ImGui::SliderInt("kernel", &gaussian_filter_data.kernel_size, 1, KernelMax);
-        ImGui::SliderFloat("sigma", &gaussian_filter_data.sigma, 1.0f, 50.0f);
-        ImGui::Image(ImTextureRef(bokeh_luminance_extract_shader_resource_view.Get()), ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1));
-    }
-
-    if (ImGui::CollapsingHeader("Performance"))
-    {
-        ImGui::Text("Draw Calls (VS invokes) : %llu", pipeline_stats.VSInvocations);
-        ImGui::Text("Primitives rendered     : %llu", pipeline_stats.IAPrimitives);
-        ImGui::Text("FPS                     : %.1f", ImGui::GetIO().Framerate);
-    }
-
-    // タイムスケール制御
-    if (ImGui::Begin("Time Control", nullptr, ImGuiWindowFlags_None))
-    {
-        ImGui::SliderFloat("Time Scale", &timeScale, 0.0f, 2.0f);
-        if (ImGui::Button(u8"一時停止 (0.0)"))
-        {
-            timeScale = 0.0f;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button(u8"通常速度 (1.0)"))
-        {
-            timeScale = 1.0f;
-        }
-    }
-    ImGui::End();
-#endif
 }
 
 void scene_game::renderSpotShadowMap(float elapsedTime)
@@ -1289,6 +1107,17 @@ void scene_game::render(float elapsedTime)
         add_luminance_extract_pass_sprite->render(dc, 0, 0, Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight());
     }
 
+	//bloom合成済みの最終画面をscene_render_target_viewへコピー
+    {
+        ID3D11Resource* srcRes = nullptr;
+        ID3D11Resource* dstRes = nullptr;
+        backBufferRTV->GetResource(&srcRes);          // バックバッファ（Bloom済み）
+        scene_render_target_view->GetResource(&dstRes); // sceneテクスチャへ書き戻し
+        dc->CopyResource(dstRes, srcRes);
+        srcRes->Release();
+        dstRes->Release();
+    }
+
     //計測終了
 	//dc->End(pipeline_stats_query.Get());
 }
@@ -1718,14 +1547,308 @@ void scene_game::uninitialize()
 
 void scene_game::DrawGUI()
 {
-    // プレイヤーのGUI描画
-    Player::Instance().DrawGUI();
+#ifdef USE_IMGUI
+    ImGuiIO& io = ImGui::GetIO();
+    const float W = io.DisplaySize.x;
+    const float H = io.DisplaySize.y;
 
-	// ピッチャーのGUI描画
-	Pitcher::Instance().DrawGUI();
+    // ── パネル幅・高さ定数 ──────────────────────────────
+    const float LEFT_W = 300.0f;   // 左パネル（Player / Pitcher）
+    const float RIGHT_W = 320.0f;   // 右パネル（Debug）
+    const float BOTTOM_H = 180.0f;   // 下パネル（Console）
+    const float CENTER_W = W - LEFT_W - RIGHT_W;
+    const float CENTER_H = H - BOTTOM_H;
 
-    textureManager.DrawGUI();
+    // ウィンドウフラグ共通（移動・リサイズ・折りたたみ禁止）
+    const ImGuiWindowFlags FIXED =
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoCollapse;
+        
 
-	skyRenderer.DrawGUI();
+    // ════════════════════════════════════════════════════
+    //  左パネル ── Player / Pitcher
+    // ════════════════════════════════════════════════════
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(ImVec2(LEFT_W, H));
+    ImGui::Begin("## Left", nullptr, FIXED | ImGuiWindowFlags_NoTitleBar);
 
+    // ── Player ──
+    if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::PushID("Player");
+        Player::Instance().DrawGUI();   // 既存の DrawGUI をそのまま流用
+        ImGui::PopID();
+    }
+
+    ImGui::Separator();
+
+    // ── Pitcher ──
+    if (ImGui::CollapsingHeader("Pitcher", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::PushID("Pitcher");
+        Pitcher::Instance().DrawGUI();
+        ImGui::PopID();
+    }
+
+    ImGui::Separator();
+
+    // ── Sky ──
+    if (ImGui::CollapsingHeader("Sky & Time"))
+    {
+        skyRenderer.DrawGUI();
+    }
+
+    ImGui::End();
+
+    // ════════════════════════════════════════════════════
+    //  中央上 ── Game View
+    // ════════════════════════════════════════════════════
+    ImGui::SetNextWindowPos(ImVec2(LEFT_W, 0.0f));
+    ImGui::SetNextWindowSize(ImVec2(CENTER_W, CENTER_H));
+    ImGui::Begin("Game View", nullptr,
+        FIXED |
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoScrollWithMouse);
+    {
+		// ImGui::IsWindowHovered() でマウスオーバーを検知して、カメラコントローラーに伝える
+        cameraController.SetIsGameViewHovered(ImGui::IsWindowHovered());
+
+        // タイトルバー分を除いたコンテンツ領域
+        ImVec2 avail = ImGui::GetContentRegionAvail();
+
+        // アスペクト比を保ってフィット（16:9 想定）
+        const float aspect = Graphics::Instance().GetScreenWidth()
+            / Graphics::Instance().GetScreenHeight();
+        float dispW = avail.x;
+        float dispH = avail.x / aspect;
+        if (dispH > avail.y) { dispH = avail.y; dispW = avail.y * aspect; }
+
+        // センタリング
+        float offX = (avail.x - dispW) * 0.5f;
+        float offY = (avail.y - dispH) * 0.5f;
+        ImGui::SetCursorPos(ImVec2(
+            ImGui::GetCursorPosX() + offX,
+            ImGui::GetCursorPosY() + offY));
+
+        // scene_shader_resource_view = シーンのカラーバッファ SRV
+        ImGui::Image(
+            ImTextureRef(scene_shader_resource_view.Get()),
+            ImVec2(dispW, dispH));
+    }
+    ImGui::End();
+
+    // ════════════════════════════════════════════════════
+    //  右パネル ── Debug
+    // ════════════════════════════════════════════════════
+    ImGui::SetNextWindowPos(ImVec2(LEFT_W + CENTER_W, 0.0f));
+    ImGui::SetNextWindowSize(ImVec2(RIGHT_W, H));
+    ImGui::Begin("Debug", nullptr, FIXED);
+
+    // ── Camera ──
+    if (ImGui::CollapsingHeader("Camera"))
+    {
+        Camera& camera = Camera::Instance();
+        DirectX::XMFLOAT3 eye = camera.GetEye();
+        DirectX::XMFLOAT3 focus = camera.GetFocus();
+
+        if (ImGui::DragFloat3("Eye", &eye.x, 0.1f))
+        {
+            camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
+            cameraController.SyncCameraToController(camera);
+        }
+        if (ImGui::DragFloat3("Focus", &focus.x, 0.1f))
+        {
+            camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
+            cameraController.SyncCameraToController(camera);
+        }
+        ImGui::SliderFloat("Near Z", &camera_near_z, 0.1f, 100.0f);
+        ImGui::SliderFloat("Far Z", &camera_far_z, 100.0f, 10000.0f);
+        camera.SetPerspectiveFov(
+            DirectX::XMConvertToRadians(45),
+            Graphics::Instance().GetScreenWidth() / Graphics::Instance().GetScreenHeight(),
+            camera_near_z, camera_far_z);
+    }
+
+    // ── Time Scale ──
+    if (ImGui::CollapsingHeader("Time Control", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::SliderFloat("Time Scale", &timeScale, 0.0f, 2.0f);
+        if (ImGui::Button(u8"一時停止"))  timeScale = 0.0f;
+        ImGui::SameLine();
+        if (ImGui::Button(u8"通常速度"))  timeScale = 1.0f;
+    }
+
+    // ── Light ──
+    if (ImGui::CollapsingHeader("Light"))
+    {
+        ImGui::ColorEdit3("Ambient", &ambient_color.x);
+        ImGui::SliderFloat3("Dir Light Dir", &directional_light_direction.x, -1.0f, 1.0f);
+        ImGui::ColorEdit3("Dir Light Color", &directional_light_color.x);
+        ImGui::SliderFloat("Dir Intensity", &directional_light_intensity, 0.0f, 100.0f);
+
+        if (ImGui::TreeNode("Point Lights"))
+        {
+            for (int i = 0; i < (int)pointLights.size(); ++i)
+            {
+                if (ImGui::TreeNode((std::string("point ") + std::to_string(i)).c_str()))
+                {
+                    ImGui::SliderFloat3("pos", &pointLights[i].position.x, -200.0f, 200.0f);
+                    ImGui::ColorEdit3("color", &pointLights[i].color.x);
+                    ImGui::SliderFloat("intensity", &pointLights[i].intensity, 0.0f, 100.0f);
+                    ImGui::SliderFloat("range", &pointLights[i].range, 0.1f, 200.0f);
+                    ImGui::TreePop();
+                }
+            }
+            ImGui::TreePop();
+        }
+        if (ImGui::TreeNode("Spot Lights"))
+        {
+            for (int i = 0; i < (int)spotLights.size(); ++i)
+            {
+                if (ImGui::TreeNode((std::string("spot ") + std::to_string(i)).c_str()))
+                {
+                    ImGui::SliderFloat3("pos", &spotLights[i].position.x, -200.0f, 200.0f);
+                    if (ImGui::SliderFloat3("dir", &spotLights[i].direction.x, -1.0f, 1.0f))
+                    {
+                        float len = sqrtf(
+                            spotLights[i].direction.x * spotLights[i].direction.x +
+                            spotLights[i].direction.y * spotLights[i].direction.y +
+                            spotLights[i].direction.z * spotLights[i].direction.z);
+                        if (len > 0) {
+                            spotLights[i].direction.x /= len;
+                            spotLights[i].direction.y /= len;
+                            spotLights[i].direction.z /= len;
+                        }
+                    }
+                    ImGui::ColorEdit3("color", &spotLights[i].color.x);
+                    ImGui::SliderFloat("intensity", &spotLights[i].intensity, 0.0f, 100.0f);
+                    ImGui::SliderFloat("range", &spotLights[i].range, 0.1f, 1000.0f);
+                    float inner_deg = DirectX::XMConvertToDegrees(spotLights[i].innerCorn);
+                    float outer_deg = DirectX::XMConvertToDegrees(spotLights[i].outerCorn);
+                    if (ImGui::SliderFloat("inner", &inner_deg, 0.0f, 89.0f))
+                        spotLights[i].innerCorn = DirectX::XMConvertToRadians(inner_deg);
+                    if (ImGui::SliderFloat("outer", &outer_deg, 0.0f, 89.0f))
+                        spotLights[i].outerCorn = DirectX::XMConvertToRadians(outer_deg);
+                    ImGui::TreePop();
+                }
+            }
+            ImGui::TreePop();
+        }
+    }
+
+    // ── Hemisphere Light & Fog ──
+    if (ImGui::CollapsingHeader("Hemisphere / Fog"))
+    {
+        ImGui::ColorEdit3("Sky Color", &sky_color.x);
+        ImGui::ColorEdit3("Ground Color", &ground_color.x);
+        ImGui::SliderFloat("Hemi Weight", &hemisphere_weight, 0.0f, 1.0f);
+        ImGui::Separator();
+        ImGui::ColorEdit3("Fog Color", &fog_color.x);
+        ImGui::SliderFloat("Fog Near", &fog_range.x, 0.1f, 100.0f);
+        ImGui::SliderFloat("Fog Far", &fog_range.y, 0.1f, 100.0f);
+    }
+
+    // ── Shadow ──
+    if (ImGui::CollapsingHeader("Shadow"))
+    {
+        ImGui::Checkbox("Cascade Shadow", &use_cascade_shadow_map);
+        if (use_cascade_shadow_map)
+        {
+            ImGui::Checkbox("Show Cascade Area", &cascade_shadow_constant.display_cascade_area);
+            ImGui::SliderFloat("Attenuation", &cascade_shadow_constant.shadow_attenuation, 0.0f, 1.0f);
+            ImGui::SliderFloat4("Bias", &cascade_shadow_constant.shadow_bias.x, 0.0f, 0.01f);
+            for (int i = 0; i < ShadowBufferSize; ++i)
+            {
+                ImGui::Text("Cascade Map %d", i);
+                ImGui::Image(ImTextureRef(cascade_shadowmap_shader_resource_views[i].Get()),
+                    ImVec2(200, 200));
+            }
+        }
+        else
+        {
+            ImGui::SliderFloat("Attenuation", &shadow_attenuation, 0.0f, 1.0f);
+            ImGui::SliderFloat("Bias", &shadow_bias, 0.0f, 0.01f);
+            ImGui::Text("Scene RT");
+            ImGui::Image(ImTextureRef(scene_shader_resource_view.Get()), ImVec2(200, 112));
+            ImGui::Text("Shadow Map");
+            ImGui::Image(ImTextureRef(shadowmap_shader_resource_view.Get()), ImVec2(200, 200));
+        }
+    }
+
+    // ── Bloom ──
+    if (ImGui::CollapsingHeader("Bloom"))
+    {
+        ImGui::SliderFloat("Threshold", &luminance_extract_constant.threshold, 0.0f, 2.0f);
+        ImGui::SliderFloat("Intensity", &luminance_extract_constant.intensity, 0.0f, 10.0f);
+        ImGui::Image(ImTextureRef(luminance_extract_shader_resource_view.Get()), ImVec2(200, 200));
+        ImGui::Text("Gaussian Blur");
+        ImGui::SliderInt("Kernel", &gaussian_filter_data.kernel_size, 1, KernelMax);
+        ImGui::SliderFloat("Sigma", &gaussian_filter_data.sigma, 1.0f, 50.0f);
+        ImGui::Image(ImTextureRef(bokeh_luminance_extract_shader_resource_view.Get()), ImVec2(200, 200));
+    }
+
+    // ── PhysX ──
+    if (ImGui::CollapsingHeader("Physics"))
+    {
+        ImGui::Checkbox("Show PhysX Debug", &showPhysxDebug);
+    }
+
+    // ── Texture Manager ──
+    if (ImGui::CollapsingHeader("Textures"))
+    {
+        textureManager.DrawGUI();
+    }
+
+    // ── Performance ──
+    if (ImGui::CollapsingHeader("Performance"))
+    {
+        ImGui::Text("FPS          : %.1f", ImGui::GetIO().Framerate);
+        ImGui::Text("VS Invokes   : %llu", pipeline_stats.VSInvocations);
+        ImGui::Text("Primitives   : %llu", pipeline_stats.IAPrimitives);
+    }
+
+    ImGui::End();
+
+    // ════════════════════════════════════════════════════
+    //  下パネル ── Console
+    // ════════════════════════════════════════════════════
+    ImGui::SetNextWindowPos(ImVec2(LEFT_W, CENTER_H));
+    ImGui::SetNextWindowSize(ImVec2(CENTER_W, BOTTOM_H));
+    ImGui::Begin("Console", nullptr, FIXED);
+    {
+        // ── ログ表示エリア ──────────────────────────────
+        // consoleLog は scene_game のメンバーとして追加推奨:
+        //   std::vector<std::string> consoleLog;
+        // ログ追加はゲームコード中で:
+        //   consoleLog.push_back("[Info] ...");
+        //
+        // ここでは現状のシンプル表示にとどめる
+        ImGui::BeginChild("##log", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), true);
+
+        // サンプルログ（実際は consoleLog を iterate する）
+        ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "[Info]  Scene running...");
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f), "[Info]  PhysX : %s",
+            showPhysxDebug ? "Visible" : "Hidden");
+        ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "[Info]  TimeScale : %.2f", timeScale);
+
+        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+            ImGui::SetScrollHereY(1.0f);   // 常に末尾へ自動スクロール
+
+        ImGui::EndChild();
+
+        // ── 入力フィールド（コマンド入力用・将来拡張） ──
+        static char inputBuf[256] = {};
+        ImGui::SetNextItemWidth(-1);
+        if (ImGui::InputText("##cmd", inputBuf, sizeof(inputBuf),
+            ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            // consoleLog.push_back(std::string("> ") + inputBuf);
+            inputBuf[0] = '\0';
+            ImGui::SetKeyboardFocusHere(-1);
+        }
+    }
+    ImGui::End();
+
+#endif // USE_IMGUI
 }

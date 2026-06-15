@@ -22,4 +22,8 @@ private:
 
 	float					angleX;
 	float					angleY;
+
+public:
+	bool isGameViewHovered = false;
+	void SetIsGameViewHovered(bool hovered) { isGameViewHovered = hovered; }
 };

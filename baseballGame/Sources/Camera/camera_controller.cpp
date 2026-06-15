@@ -47,8 +47,8 @@ void CameraController::SyncControllerToCamera(Camera& camera)
 // 更新処理
 void CameraController::Update()
 {
-	// デバッグウインドウ操作中は処理しない
-	if (ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
+	// Game View にマウスがない場合は処理しない
+	if (!isGameViewHovered)
 	{
 		return;
 	}
