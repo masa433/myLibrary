@@ -25,7 +25,14 @@ void Pitcher::Initialize()
 	ID3D11Device* device = Graphics::Instance().GetDevice();
 
 	//モデルの読み込み
-	pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\pitcher.glb");
+	if(IsRightPitcher())
+	{
+		pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\rightPitcher.glb");
+	}
+	else
+	{
+		pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
+	}
 
 	position = { -0.1f,0.22f,18.15f };
 	scale = { 1.0f,1.0f,1.0f };
@@ -307,6 +314,36 @@ void Pitcher::DrawGUI()
 			ImGui::Text("Speed: %.2f m/s (%.0f km/h)", speedMs, ballSpeedKmh);
 			
 		}
+
+		// 変更後
+		bool prev = isRightPitcher;
+		if (ImGui::Checkbox("Right Handed", &isRightPitcher))
+		{
+			if (prev != isRightPitcher)
+			{
+				// モデル・位置を再初期化
+				ID3D11Device* device = Graphics::Instance().GetDevice();
+				if (IsRightPitcher())
+				{
+					pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\rightPitcher.glb");
+					position = { 0.1f,0.22f,18.15f };
+					//Ball::Instance().SetPosition(-0.08f, 0.0f, 0.05f );
+					Ball::Instance().SetBallPosition({ -0.08f, 0.0f, 0.05f });
+					Ball::Instance().SetBallAngle({ 0.0f, 0.0f, -1.6f });
+				}
+				else
+				{
+					pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
+					position = { -0.1f,0.22f,18.15f };
+					Ball::Instance().SetBallPosition({ 0.08f, 0.0f, 0.05f });
+					Ball::Instance().SetBallAngle({ 0.0f, 0.0f, 1.6f });
+				}
+				pitcher->build_static_batches(device);
+				animated_nodes = pitcher->nodes;
+				animation_time = 0.0f;
+				
+			}
+		}
 	}
 	Wind::Instance().DrawGUI();
 
@@ -319,7 +356,15 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 {
 	if (!isBallThrown)
 	{
-		Ball::Instance().AttachToHand(animated_nodes, transform, "mixamorig:RightHandMiddle1");
+		// 変更前
+		// Ball::Instance().AttachToHand(animated_nodes, transform, "mixamorig:RightHandMiddle1");
+
+		// 変更後
+		const char* handName = IsRightPitcher()
+			? "mixamorig:LeftHandMiddle1"
+			: "mixamorig:RightHandMiddle1";
+		Ball::Instance().AttachToHand(animated_nodes, transform, handName);
+
 		ballStartPosition = Ball::Instance().GetStartPosition();
 	}
 	else
@@ -605,6 +650,11 @@ void Pitcher::SelectPitchType()
 	//throwDirection.x = 0.01f; // 左右方向のランダム値
 	throwDirection.y = 0.2f; // 上下方向のランダム値
 	throwDirection.z = -1.0f; // 前方向固定
+
+	if (IsRightPitcher())
+	{
+		throwDirection.x = -throwDirection.x;
+	}
 
 	// ランダムな発射角度を設定
 	//launchAngleDegrees = GenerateRandomFloat(-2.0f, 0.0f); // -4度から-2度の範囲でランダム

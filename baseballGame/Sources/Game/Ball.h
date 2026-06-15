@@ -40,6 +40,9 @@ public:
 	DirectX::XMFLOAT3& GetBallPosition() { return position; }
 	DirectX::XMFLOAT3& GetBallScale() { return scale; }
 	DirectX::XMFLOAT3& GetBallAngle() { return angle; }
+	void SetBallPosition(const DirectX::XMFLOAT3& newPosition) { position = newPosition; }
+	void SetBallScale(const DirectX::XMFLOAT3& newScale) { scale = newScale; }
+	void SetBallAngle(const DirectX::XMFLOAT3& newAngle) { angle = newAngle; }
 
 	const DirectX::XMFLOAT3& GetWorldPosition() const { return worldPosition; }
 	const DirectX::XMFLOAT3& GetWorldScale() const { return worldScale; }
@@ -49,6 +52,9 @@ public:
 	DirectX::XMFLOAT3& GetWorldAngle() { return worldAngle; }
 	const DirectX::XMFLOAT4X4& GetWorldTransform() const { return worldTransform; }
 	const DirectX::XMFLOAT4X4& GetHandTransform() const { return handTransform; }
+	void SetWorldPosition(const DirectX::XMFLOAT3& newPosition) { worldPosition = newPosition; }
+	void SetWorldScale(const DirectX::XMFLOAT3& newScale) { worldScale = newScale; }
+	void SetWorldAngle(const DirectX::XMFLOAT3& newAngle) { worldAngle = newAngle; }
 
 	const DirectX::XMFLOAT3& GetVelocity() const { return velocity; }
 	void SetVelocity(const DirectX::XMFLOAT3& newVelocity) { velocity = newVelocity; }

@@ -100,6 +100,9 @@ private:
 		float throwCounter = 0.0f; // 投球カウンター
 		bool hasReachedZero = false; // z = 0.0f に到達したかどうか
 
+		bool isRightPitcher = true; // 右投げかどうか
+		bool IsRightPitcher() const { return isRightPitcher; }
+
 private:
 
 	//ストライクゾーンのトリガーボックス

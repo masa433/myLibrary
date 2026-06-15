@@ -31,7 +31,7 @@
 //   float4 ambient_color;              // Offset:    0 Size:    16
 //   float4 directional_light_direction;// Offset:   16 Size:    16
 //   float4 directional_light_color;    // Offset:   32 Size:    16
-//   float directional_light_intensity; // Offset:   48 Size:     4 [unused]
+//   float directional_light_intensity; // Offset:   48 Size:     4
 //   float3 dummy;                      // Offset:   52 Size:    12 [unused]
 //   uint4 light_count;                 // Offset:   64 Size:    16
 //   
@@ -420,7 +420,8 @@ rsq r0.z, r0.z
 mul r5.xyz, r0.zzzz, cb3[1].xyzx  // r5.x <- L.x; r5.y <- L.y; r5.z <- L.z
 
 #line 131
-mul r6.xyz, cb3[2].wwww, cb3[2].xyzx  // r6.x <- LC.x; r6.y <- LC.y; r6.z <- LC.z
+mul r6.xyz, cb3[2].wwww, cb3[2].xyzx
+mul r6.xyz, r6.xyzx, cb3[3].xxxx  // r6.x <- LC.x; r6.y <- LC.y; r6.z <- LC.z
 
 #line 133
 nop 
@@ -498,6 +499,9 @@ if_nz r0.z
 #line 154
       mul r5.xyz, r5.xyzx, cb8[17].xxxx
 
+#line 155
+      mul r4.xyz, r4.xyzx, cb8[17].xxxx
+
 #line 156
     endif 
 
@@ -561,6 +565,9 @@ if_nz r0.z
 
 #line 154
           mul r5.xyz, r5.xyzx, cb8[17].xxxx
+
+#line 155
+          mul r4.xyz, r4.xyzx, cb8[17].xxxx
 
 #line 156
         endif 
@@ -639,6 +646,9 @@ if_nz r0.z
 #line 154
         mul r5.xyz, r5.xyzx, cb8[17].xxxx
 
+#line 155
+        mul r4.xyz, r4.xyzx, cb8[17].xxxx
+
 #line 156
       endif 
 
@@ -711,6 +721,9 @@ if_nz r0.z
 
 #line 154
         mul r5.xyz, r5.xyzx, cb8[17].xxxx
+
+#line 155
+        mul r4.xyz, r4.xyzx, cb8[17].xxxx
 
 #line 156
       endif 
@@ -815,6 +828,9 @@ else   // Prior locations: r6.x <- LC.x; r6.y <- LC.y; r6.z <- LC.z
 
 #line 186
     mul r5.xyz, r5.xyzx, cb6[4].xxxx
+
+#line 187
+    mul r4.xyz, r4.xyzx, cb6[4].xxxx
 
 #line 188
   endif 
@@ -2076,4 +2092,4 @@ mov r0.xyzw, r0.xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w
 #line 294
 mov o0.xyzw, r0.xyzw
 ret 
-// Approximately 1107 instruction slots used
+// Approximately 1113 instruction slots used

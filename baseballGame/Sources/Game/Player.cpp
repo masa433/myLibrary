@@ -17,9 +17,9 @@ void Player::Initialize()
     ID3D11Device* device = Graphics::Instance().GetDevice();
     // モデルの読み込み
     if(IsRightBatter())
-        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batterRight.glb");
+        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
     else
-		batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batter.glb");
+		batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
     
 
     if (IsRightBatter()) 
@@ -353,14 +353,14 @@ void Player::DrawGUI()
                     ID3D11Device* device = Graphics::Instance().GetDevice();
                     if (IsRightBatter())
                     {
-                        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batterRight.glb");
+                        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
                         position = { -1.0f, 0.01f, -0.4f };
                         batPosition = { -0.08f, 0.0f, 0.05f };
                         batAngle = { 0.0f, 0.0f, -1.6f, 0.0f };
                     }
                     else
                     {
-                        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\batter.glb");
+                        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
                         position = { 1.0f, 0.01f, -0.4f };
                         batPosition = { 0.08f, 0.0f, 0.05f };
                         batAngle = { 0.0f, 0.0f, 1.6f, 0.0f };
@@ -751,7 +751,7 @@ void Player::ModifyArmBones()
         // 右打者：右腕がメイン
         int rightArmIndex = batter->GetNodeIndex("mixamorig:RightArm");
         if (rightArmIndex < 0) return;
-        DirectX::XMMATRIX additionalRotation = DirectX::XMMatrixRotationX(-armAngleOffset);
+        DirectX::XMMATRIX additionalRotation = DirectX::XMMatrixRotationX(armAngleOffset);
         UpdateNodeTransform(rightArmIndex, additionalRotation);
         UpdateChildrenRecursive(rightArmIndex);
 
