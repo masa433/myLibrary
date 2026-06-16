@@ -3,6 +3,8 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <wrl.h>
+#include "json.hpp"
+using json = nlohmann::json;
 
 class SkyRenderer
 {
@@ -40,6 +42,9 @@ public:
 	DirectX::XMFLOAT4 GetSunDirectionToLight() const; // ライト空間での太陽光の方向を取得
 
 	void DrawGUI();
+
+	void SaveToJson(json& j);
+	void LoadFromJson(const json& j);
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constant_buffer; // 定数バッファ

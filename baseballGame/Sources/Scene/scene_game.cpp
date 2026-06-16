@@ -1963,6 +1963,7 @@ void scene_game::SaveSetting()
 	Player::Instance().SaveToJson(j["player"]);
 	Wind::Instance().SaveToJson(j["wind"]);
 	Ball::Instance().SaveToJson(j["ball"]);
+	skyRenderer.SaveToJson(j["sky"]);
 
     // ファイルに保存
     std::ofstream file("settings.json");
@@ -2079,5 +2080,6 @@ void scene_game::LoadSetting()
 	if (j.contains("player")) Player::Instance().LoadFromJson(j["player"]);
 	if (j.contains("wind")) Wind::Instance().LoadFromJson(j["wind"]);
     if (j.contains("ball")) Ball::Instance().LoadFromJson(j["ball"]);
+	if (j.contains("sky")) skyRenderer.LoadFromJson(j["sky"]);
 	consoleLog.push_back("[Info] Settings loaded.");
 }

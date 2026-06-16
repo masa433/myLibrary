@@ -200,3 +200,21 @@ void SkyRenderer::DrawGUI()
 	}
 #endif
 }
+
+void SkyRenderer::SaveToJson(json& j)
+{
+	j["time_of_day"] = time_of_day;
+	j["time_speed"] = time_speed;
+	j["auto_advance_time"] = auto_advance_time;
+	j["sun_size"] = sun_size;
+	j["sun_bloom_size"] = sun_bloom_size;
+}
+
+void SkyRenderer::LoadFromJson(const json& j)
+{
+	if (j.contains("time_of_day")) time_of_day = j["time_of_day"].get<float>();
+	if (j.contains("time_speed")) time_speed = j["time_speed"].get<float>();
+	if (j.contains("auto_advance_time")) auto_advance_time = j["auto_advance_time"].get<bool>();
+	if (j.contains("sun_size")) sun_size = j["sun_size"].get<float>();
+	if (j.contains("sun_bloom_size")) sun_bloom_size = j["sun_bloom_size"].get<float>();
+}
