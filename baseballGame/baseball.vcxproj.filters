@@ -100,16 +100,7 @@
     <ClCompile Include="Sources\Shader\LambertShader.cpp">
       <Filter>Sources\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\Shader\PhongShader.cpp">
-      <Filter>Sources\Shader</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\Shader\shader.cpp">
-      <Filter>Sources\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Shader\ShadowMapShader.cpp">
-      <Filter>Sources\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Shader\ToonShader.cpp">
       <Filter>Sources\Shader</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Collision\collision.cpp">
@@ -252,19 +243,10 @@
     <ClInclude Include="Sources\Shader\LambertShader.h">
       <Filter>Sources\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="Sources\Shader\PhongShader.h">
-      <Filter>Sources\Shader</Filter>
-    </ClInclude>
     <ClInclude Include="Sources\Shader\shader.h">
       <Filter>Sources\Shader</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Shader\ShaderId.h">
-      <Filter>Sources\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Shader\ShadowMapShader.h">
-      <Filter>Sources\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Shader\ToonShader.h">
       <Filter>Sources\Shader</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Collision\collision.h">

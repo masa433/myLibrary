@@ -17,9 +17,6 @@ enum class ShaderId
 {
 	Basic,
 	Lambert,
-	Phong,
-	Toon,
-	ShadowMap,
 	EnumCount
 };
 

@@ -37,10 +37,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\UIEasing.cpp;C:
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\scene_game.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Shader\BasicShader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\BasicShader.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Shader\LambertShader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\LambertShader.obj
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Shader\PhongShader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\PhongShader.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Shader\shader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\shader.obj
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Shader\ShadowMapShader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ShadowMapShader.obj
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Shader\ToonShader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ToonShader.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\System\framebuffer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\framebuffer.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\System\framework.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\framework.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\System\fullscreen_quad.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\fullscreen_quad.obj

@@ -4,9 +4,7 @@
 #include "ModelRenderer.h"
 #include "BasicShader.h"
 #include "LambertShader.h"
-#include "PhongShader.h"
-#include "ToonShader.h"
-#include "ShadowMapShader.h"
+
 
 // コンストラクタ
 ModelRenderer::ModelRenderer(ID3D11Device* device)
@@ -26,9 +24,6 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 	// シェーダー生成
 	shaders[static_cast<int>(ShaderId::Basic)] = std::make_unique<BasicShader>(device);
 	shaders[static_cast<int>(ShaderId::Lambert)] = std::make_unique<LambertShader>(device);
-	shaders[static_cast<int>(ShaderId::Phong)] = std::make_unique<PhongShader>(device);
-	shaders[static_cast<int>(ShaderId::Toon)] = std::make_unique<ToonShader>(device);
-	shaders[static_cast<int>(ShaderId::ShadowMap)] = std::make_unique<ShadowMapShader>(device);
 }
 
 // 描画実行

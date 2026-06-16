@@ -1896,14 +1896,14 @@ void scene_game::SaveSetting()
 {
     json j;
 
-	// カメラ設定の保存
-	Camera& camera = Camera::Instance();
-	DirectX::XMFLOAT3 eye = camera.GetEye();
-	DirectX::XMFLOAT3 focus = camera.GetFocus();
-	j["camera"]["eye"] = { eye.x, eye.y, eye.z };
-	j["camera"]["focus"] = { focus.x, focus.y, focus.z };
-	j["camera"]["near_z"] = camera_near_z;
-	j["camera"]["far_z"] = camera_far_z; 
+	//// カメラ設定の保存
+	//Camera& camera = Camera::Instance();
+	//DirectX::XMFLOAT3 eye = camera.GetEye();
+	//DirectX::XMFLOAT3 focus = camera.GetFocus();
+	//j["camera"]["eye"] = { eye.x, eye.y, eye.z };
+	//j["camera"]["focus"] = { focus.x, focus.y, focus.z };
+	//j["camera"]["near_z"] = camera_near_z;
+	//j["camera"]["far_z"] = camera_far_z; 
 
 	//タイムコントロールの保存
 	j["time"]["time_scale"] = timeScale;
@@ -1983,17 +1983,17 @@ void scene_game::LoadSetting()
     json j;
 	file >> j;
 
-	// カメラ設定の読み込み
-    if(j.contains("camera"))
-    {
-        DirectX::XMFLOAT3 eye = { j["camera"]["eye"][0], j["camera"]["eye"][1], j["camera"]["eye"][2] };
-        DirectX::XMFLOAT3 focus = { j["camera"]["focus"][0], j["camera"]["focus"][1], j["camera"]["focus"][2] };
-        Camera& camera = Camera::Instance();
-        camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
-        cameraController.SyncCameraToController(camera);
-        camera_near_z = j["camera"]["near_z"];
-        camera_far_z = j["camera"]["far_z"];
-	}
+	//// カメラ設定の読み込み
+ //   if(j.contains("camera"))
+ //   {
+ //       DirectX::XMFLOAT3 eye = { j["camera"]["eye"][0], j["camera"]["eye"][1], j["camera"]["eye"][2] };
+ //       DirectX::XMFLOAT3 focus = { j["camera"]["focus"][0], j["camera"]["focus"][1], j["camera"]["focus"][2] };
+ //       Camera& camera = Camera::Instance();
+ //       camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
+ //       cameraController.SyncCameraToController(camera);
+ //       camera_near_z = j["camera"]["near_z"];
+ //       camera_far_z = j["camera"]["far_z"];
+	//}
 
 	//タイムコントロールの読み込み
     if(j.contains("time"))

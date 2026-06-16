@@ -1,5 +1,13 @@
-﻿  Pitcher.cpp
-  SkyRenderer.cpp
+﻿  Ball.cpp
+  Pitcher.cpp
+  Player.cpp
+  Wind.cpp
+  stage.cpp
+  Graphics.cpp
+  TextureManager.cpp
+  Model.cpp
+  physxManager.cpp
+  ModelRenderer.cpp
   scene_game.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(469,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(470,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
