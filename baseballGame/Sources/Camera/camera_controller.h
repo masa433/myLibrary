@@ -85,7 +85,7 @@ private:
 	float zoomSpeed = 1.0f;
 
 	float minEyeY = 0.5f; // ƒJƒƒ‰‚ÌÅ’á‚‚³
-	float maxEyeY = 3.0f; // ƒJƒƒ‰‚ÌÅ‚‚‚³
+	float maxEyeY = 10.0f; // ƒJƒƒ‰‚ÌÅ‚‚‚³
 
 public:
 	bool isGameViewHovered = false;
