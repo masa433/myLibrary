@@ -838,6 +838,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 							ballCollider->setAngularVelocity(spinAxis * angularVelocityRadPerSec);
 							ballCollider->setLinearDamping(0.0f);
 							ballCollider->setAngularDamping(0.0f);
+							Physics::Instance().ballWasHit = true;
 
 							if (batCollider)
 							{

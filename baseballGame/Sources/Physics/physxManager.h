@@ -113,4 +113,9 @@ public:
 
 private:
 	std::vector<std::string>* consoleLog = nullptr;
+
+public:
+	bool ballWasHit = false;
+	bool GetBallWasHit() const { return ballWasHit; }
+	void ClearBallWasHit() { ballWasHit = false; }
 };

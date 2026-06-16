@@ -563,11 +563,29 @@ void scene_game::update(float elapsed_time)
 
 	elapsed_time *= timeScale;
 
+    // カメラ追跡の開始チェック
+    if (Physics::Instance().GetBallWasHit())
+    {
+        Physics::Instance().ClearBallWasHit();
+        cameraController.StartTrackingBall(&Ball::Instance(), 3.0f, 0.5f);
+    }
+
     // カメラコントローラーの更新
 	Camera& camera = Camera::Instance();
+    cameraController.Update(elapsed_time);
     cameraController.SyncControllerToCamera(camera);
-    cameraController.Update();
 	cameraPosition = camera.GetEye();
+
+    // 追跡終了条件（例：ボールが止まったら）
+    if (cameraController.IsTrackingBall())
+    {
+        const auto& vel = Ball::Instance().GetVelocity();
+        float speed = sqrtf(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
+        if (speed < 0.5f)
+        {
+            cameraController.StopTrackingBall();
+        }
+    }
 
     // ステージの更新
     stage::Instance().update(elapsed_time);
