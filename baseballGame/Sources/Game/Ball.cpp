@@ -306,3 +306,23 @@ void Ball::SyncColliderToWorldPosition()
 	collider->setGlobalPose(physx::PxTransform(physx::PxVec3(worldPosition.x, worldPosition.y, worldPosition.z)));
 	ResetMotion();
 }
+
+void Ball::SaveToJson(json& j)
+{
+	j["position"] = { position.x, position.y, position.z };
+	j["scale"] = { scale.x, scale.y, scale.z };
+	j["angle"] = { angle.x, angle.y, angle.z };
+	j["debug_radius"] = debugRadius;
+	j["trail_width"] = trailWidth;
+	j["max_trail_length"] = MaxTrailLength;
+}
+
+void Ball::LoadFromJson(const json& j)
+{
+	if (j.contains("position"))         position = { j["position"][0], j["position"][1], j["position"][2] };
+	if (j.contains("scale"))            scale = { j["scale"][0], j["scale"][1], j["scale"][2] };
+	if (j.contains("angle"))            angle = { j["angle"][0], j["angle"][1], j["angle"][2] };
+	if (j.contains("debug_radius"))     debugRadius = j["debug_radius"];
+	if (j.contains("trail_width"))      trailWidth = j["trail_width"];
+	if (j.contains("max_trail_length")) MaxTrailLength = j["max_trail_length"];
+}

@@ -6,6 +6,8 @@
 #include <vector>
 #include "sprite.h"
 #include "RenderContext.h"
+#include "json.hpp"
+using json = nlohmann::json;
 
 class Wind
 {
@@ -29,6 +31,9 @@ class Wind
 	bool IsBallInWindArea() const;
 
 	const DirectX::XMFLOAT3 GetWindVector() const { return DirectX::XMFLOAT3(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength); }
+
+	void SaveToJson(json& j);
+	void LoadFromJson(const json& j);
 
 private:
 	struct WindLine

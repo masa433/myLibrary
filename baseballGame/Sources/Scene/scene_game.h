@@ -12,6 +12,7 @@
 #include "ModelRenderer.h"
 #include "TextureManager.h"
 #include "SkyRenderer.h"
+#include "json.hpp"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
 CONST LONG SCREEN_HEIGHT{ 1080 };
@@ -173,6 +174,9 @@ public:
 
     void renderShadowMap(float elapsedTime);
 
+	//保存・読み込み用の関数
+    void SaveSetting();
+	void LoadSetting();
    
 private:
 	// シーン描画用定数バッファ

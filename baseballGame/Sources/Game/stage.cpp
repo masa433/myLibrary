@@ -281,47 +281,7 @@ void stage::initialize()
 // 更新
 void stage::update(float elapsedTime)
 {
-#ifdef  USE_IMGUI
-	if (ImGui::CollapsingHeader("Stage"))
-	{
-		ImGui::DragFloat3("Position", &position.x);
-		ImGui::DragFloat3("Scale", &scale.x);
-		ImGui::DragFloat3("Angle", &angle.x);
-	}
 
-	if (ImGui::CollapsingHeader("Home Run Trigger"))
-	{
-		ImGui::DragFloat3("Trigger Position", &hrTriggerPos.x, 0.5f);
-		ImGui::DragFloat3("Trigger Half Extents (Size)", &hrTriggerHalfExtents.x, 0.5f);
-
-		if (homeRunTrigger)
-		{
-			// 位置の更新
-			physx::PxTransform transform(physx::PxVec3(hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z));
-			homeRunTrigger->setGlobalPose(transform);
-
-			// サイズの更新
-			physx::PxShape* shape = nullptr;
-			homeRunTrigger->getShapes(&shape, 1);
-			if (shape)
-			{
-				shape->setGeometry(physx::PxBoxGeometry(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
-			}
-		}
-	}
-
-	if (ImGui::CollapsingHeader("LightTower"))
-	{
-		for (int i = 0; i < 6; i++)
-		{
-			std::string label = "Tower[" + std::to_string(i) + "]";
-			ImGui::DragFloat3(label.c_str(), &towerPositions[i].x, 0.5f);
-			ImGui::DragFloat3((label + " Angle").c_str(), &towerAngle[i].x, 0.01f);
-			ImGui::DragFloat3((label + " Scale").c_str(), &lightScale[i].x, 0.01f);
-		}
-	}
-
-#endif //  USE_IMGUI
 
 	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
 	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
@@ -383,3 +343,47 @@ void stage::uninitialize()
 	lightTower2.reset();
 }
 
+void stage::DrawGUI()
+{
+#ifdef  USE_IMGUI
+	if (ImGui::CollapsingHeader("Stage Info"))
+	{
+		ImGui::DragFloat3("Position", &position.x);
+		ImGui::DragFloat3("Scale", &scale.x);
+		ImGui::DragFloat3("Angle", &angle.x);
+	}
+
+	if (ImGui::CollapsingHeader("Home Run Trigger"))
+	{
+		ImGui::DragFloat3("Trigger Position", &hrTriggerPos.x, 0.5f);
+		ImGui::DragFloat3("Trigger Half Extents (Size)", &hrTriggerHalfExtents.x, 0.5f);
+
+		if (homeRunTrigger)
+		{
+			// 位置の更新
+			physx::PxTransform transform(physx::PxVec3(hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z));
+			homeRunTrigger->setGlobalPose(transform);
+
+			// サイズの更新
+			physx::PxShape* shape = nullptr;
+			homeRunTrigger->getShapes(&shape, 1);
+			if (shape)
+			{
+				shape->setGeometry(physx::PxBoxGeometry(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
+			}
+		}
+	}
+
+	if (ImGui::CollapsingHeader("LightTower"))
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			std::string label = "Tower[" + std::to_string(i) + "]";
+			ImGui::DragFloat3(label.c_str(), &towerPositions[i].x, 0.5f);
+			ImGui::DragFloat3((label + " Angle").c_str(), &towerAngle[i].x, 0.01f);
+			ImGui::DragFloat3((label + " Scale").c_str(), &lightScale[i].x, 0.01f);
+		}
+	}
+
+#endif //  USE_IMGUI
+}

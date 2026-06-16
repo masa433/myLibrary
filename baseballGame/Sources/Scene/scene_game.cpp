@@ -13,7 +13,12 @@
 #include "shader.h"
 #include "texture.h"
 #include "sprite.h"
+#include "json.hpp"
+#include "Wind.h"
+#include <fstream>
+#include <string>
 
+using json = nlohmann::json;
 
 //	シャドウマップサイズ
 static constexpr UINT ShadowmapSize = 4096;
@@ -543,11 +548,19 @@ void scene_game::initialize()
     hr = device->CreateQuery(&query_desc, pipeline_stats_query.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-    
+	// 設定のロード
+	LoadSetting();
 }
 
 void scene_game::update(float elapsed_time)
 {
+	// Ctrl + S で設定保存
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S))
+    {
+        SaveSetting();
+    }
+
 	elapsed_time *= timeScale;
 
     // カメラコントローラーの更新
@@ -1551,6 +1564,8 @@ void scene_game::uninitialize()
 
 void scene_game::DrawGUI()
 {
+#ifdef _DEBUG
+
 #ifdef USE_IMGUI
     ImGuiIO& io = ImGui::GetIO();
     const float W = io.DisplaySize.x;
@@ -1596,6 +1611,14 @@ void scene_game::DrawGUI()
     }
 
     ImGui::Separator();
+
+	// ―― Stage ――
+    if (ImGui::CollapsingHeader("Stage"))
+    {
+        stage::Instance().DrawGUI();
+	}
+
+	ImGui::Separator();
 
     // ── Sky ──
     if (ImGui::CollapsingHeader("Sky & Time"))
@@ -1686,7 +1709,7 @@ void scene_game::DrawGUI()
     // ── Light ──
     if (ImGui::CollapsingHeader("Light"))
     {
-        ImGui::ColorEdit3("Ambient", &ambient_color.x);
+        ImGui::ColorEdit4("Ambient", &ambient_color.x);
         ImGui::SliderFloat3("Dir Light Dir", &directional_light_direction.x, -1.0f, 1.0f);
         ImGui::ColorEdit3("Dir Light Color", &directional_light_color.x);
         ImGui::SliderFloat("Dir Intensity", &directional_light_intensity, 0.0f, 100.0f);
@@ -1865,4 +1888,196 @@ void scene_game::DrawGUI()
     ImGui::End();
 
 #endif // USE_IMGUI
+
+#endif // _DEBUG
+}
+
+void scene_game::SaveSetting() 
+{
+    json j;
+
+	// カメラ設定の保存
+	Camera& camera = Camera::Instance();
+	DirectX::XMFLOAT3 eye = camera.GetEye();
+	DirectX::XMFLOAT3 focus = camera.GetFocus();
+	j["camera"]["eye"] = { eye.x, eye.y, eye.z };
+	j["camera"]["focus"] = { focus.x, focus.y, focus.z };
+	j["camera"]["near_z"] = camera_near_z;
+	j["camera"]["far_z"] = camera_far_z; 
+
+	//タイムコントロールの保存
+	j["time"]["time_scale"] = timeScale;
+
+	// ライト設定の保存
+    j["light"]["ambient"] = { ambient_color.x, ambient_color.y, ambient_color.z, ambient_color.w };
+    j["light"]["dir_dir"] = { directional_light_direction.x, directional_light_direction.y, directional_light_direction.z };
+    j["light"]["dir_color"] = { directional_light_color.x, directional_light_color.y, directional_light_color.z };
+    j["light"]["dir_intensity"] = directional_light_intensity;
+
+    //ポイントライトの保存
+    for (int i = 0; i < (int)pointLights.size(); ++i)
+    {
+        j["point_lights"][i]["pos"] = { pointLights[i].position.x, pointLights[i].position.y, pointLights[i].position.z };
+        j["point_lights"][i]["color"] = { pointLights[i].color.x, pointLights[i].color.y, pointLights[i].color.z };
+        j["point_lights"][i]["intensity"] = pointLights[i].intensity;
+        j["point_lights"][i]["range"] = pointLights[i].range;
+    }
+
+	//スポットライトの保存
+    for (int i = 0; i < (int)spotLights.size(); ++i)
+    {
+        j["spot_lights"][i]["pos"] = { spotLights[i].position.x, spotLights[i].position.y, spotLights[i].position.z };
+        j["spot_lights"][i]["dir"] = { spotLights[i].direction.x, spotLights[i].direction.y, spotLights[i].direction.z };
+        j["spot_lights"][i]["color"] = { spotLights[i].color.x, spotLights[i].color.y, spotLights[i].color.z };
+        j["spot_lights"][i]["intensity"] = spotLights[i].intensity;
+        j["spot_lights"][i]["range"] = spotLights[i].range;
+        j["spot_lights"][i]["innerCorn"] = spotLights[i].innerCorn;
+        j["spot_lights"][i]["outerCorn"] = spotLights[i].outerCorn;
+	}
+
+	//ヘミスフィアライトとフォグの保存
+    j["hemisphere"]["sky_color"] = { sky_color.x, sky_color.y, sky_color.z };
+    j["hemisphere"]["ground_color"] = { ground_color.x, ground_color.y, ground_color.z };
+    j["hemisphere"]["weight"] = hemisphere_weight;
+    j["fog"]["color"] = { fog_color.x, fog_color.y, fog_color.z };
+    j["fog"]["near"] = fog_range.x;
+    j["fog"]["far"] = fog_range.y;
+
+	//シャドウの保存
+    j["shadow"]["use_cascade"] = use_cascade_shadow_map;
+    j["shadow"]["cascade_attenuation"] = cascade_shadow_constant.shadow_attenuation;
+    j["shadow"]["cascade_bias"] = { cascade_shadow_constant.shadow_bias.x, cascade_shadow_constant.shadow_bias.y, cascade_shadow_constant.shadow_bias.z, cascade_shadow_constant.shadow_bias.w };
+	j["shadow"]["bias"] = shadow_bias;
+
+    // ブルームの保存
+    j["bloom"]["luminance_threshold"] = luminance_extract_constant.threshold;
+    j["bloom"]["luminance_intensity"] = luminance_extract_constant.intensity;
+    j["bloom"]["gaussian_kernel_size"] = gaussian_filter_data.kernel_size;
+	j["bloom"]["gaussian_sigma"] = gaussian_filter_data.sigma;
+
+	//physxの保存
+	j["physx"]["show_debug"] = showPhysxDebug;
+
+	//各クラスの保存処理
+	Pitcher::Instance().SaveToJson(j["pitcher"]);
+	Player::Instance().SaveToJson(j["player"]);
+	Wind::Instance().SaveToJson(j["wind"]);
+	Ball::Instance().SaveToJson(j["ball"]);
+
+    // ファイルに保存
+    std::ofstream file("settings.json");
+    file << j.dump(4);
+    consoleLog.push_back("[Info] Settings saved.");
+}
+
+void scene_game::LoadSetting()
+{
+	std::ifstream file("settings.json");
+    if(!file.is_open())
+    {
+        consoleLog.push_back("[Warn] No settings file found. Using defaults.");
+        return;
+	}
+
+    json j;
+	file >> j;
+
+	// カメラ設定の読み込み
+    if(j.contains("camera"))
+    {
+        DirectX::XMFLOAT3 eye = { j["camera"]["eye"][0], j["camera"]["eye"][1], j["camera"]["eye"][2] };
+        DirectX::XMFLOAT3 focus = { j["camera"]["focus"][0], j["camera"]["focus"][1], j["camera"]["focus"][2] };
+        Camera& camera = Camera::Instance();
+        camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
+        cameraController.SyncCameraToController(camera);
+        camera_near_z = j["camera"]["near_z"];
+        camera_far_z = j["camera"]["far_z"];
+	}
+
+	//タイムコントロールの読み込み
+    if(j.contains("time"))
+    {
+        timeScale = j["time"]["time_scale"];
+	}
+
+	// ライト設定の読み込み
+    if (j.contains("light"))
+    {
+        ambient_color = { j["light"]["ambient"][0],   j["light"]["ambient"][1],   j["light"]["ambient"][2],   j["light"]["ambient"][3] };
+        directional_light_direction = { j["light"]["dir_dir"][0],   j["light"]["dir_dir"][1],   j["light"]["dir_dir"][2],   0.0f };
+        directional_light_color = { j["light"]["dir_color"][0], j["light"]["dir_color"][1], j["light"]["dir_color"][2], 1.0f };
+        directional_light_intensity = j["light"]["dir_intensity"];
+    }
+
+	//ポイントライトの読み込み
+    if (j.contains("point_lights"))
+    {
+        for (size_t i = 0; i < j["point_lights"].size() && i < pointLights.size(); ++i)
+        {
+            pointLights[i].position = { j["point_lights"][i]["pos"][0],   j["point_lights"][i]["pos"][1],   j["point_lights"][i]["pos"][2],   0.0f };
+            pointLights[i].color = { j["point_lights"][i]["color"][0], j["point_lights"][i]["color"][1], j["point_lights"][i]["color"][2], 1.0f };
+            pointLights[i].intensity = j["point_lights"][i]["intensity"];
+            pointLights[i].range = j["point_lights"][i]["range"];
+        }
+    }
+
+	//スポットライトの読み込み
+    if (j.contains("spot_lights"))
+    {
+        for (size_t i = 0; i < j["spot_lights"].size() && i < spotLights.size(); ++i)
+        {
+            spotLights[i].position = { j["spot_lights"][i]["pos"][0], j["spot_lights"][i]["pos"][1], j["spot_lights"][i]["pos"][2], 0.0f };
+            spotLights[i].direction = { j["spot_lights"][i]["dir"][0], j["spot_lights"][i]["dir"][1], j["spot_lights"][i]["dir"][2], 0.0f };
+            spotLights[i].color = { j["spot_lights"][i]["color"][0], j["spot_lights"][i]["color"][1], j["spot_lights"][i]["color"][2], 1.0f };
+            spotLights[i].intensity = j["spot_lights"][i]["intensity"];
+            spotLights[i].range = j["spot_lights"][i]["range"];
+            spotLights[i].innerCorn = j["spot_lights"][i]["innerCorn"];
+            spotLights[i].outerCorn = j["spot_lights"][i]["outerCorn"];
+        }
+	}
+
+	//ヘミスフィアライトとフォグの読み込み
+    if (j.contains("hemisphere"))
+    {
+        sky_color = { j["hemisphere"]["sky_color"][0], j["hemisphere"]["sky_color"][1], j["hemisphere"]["sky_color"][2],1.0f };
+        ground_color = { j["hemisphere"]["ground_color"][0], j["hemisphere"]["ground_color"][1], j["hemisphere"]["ground_color"][2], 1.0f };
+        hemisphere_weight = j["hemisphere"]["weight"];
+    }
+    if (j.contains("fog"))
+    {
+        fog_color = { j["fog"]["color"][0], j["fog"]["color"][1], j["fog"]["color"][2], 1.0f };
+        fog_range.x = j["fog"]["near"];
+        fog_range.y = j["fog"]["far"];
+	}
+
+	//シャドウの読み込み
+    if (j.contains("shadow"))
+    {
+        use_cascade_shadow_map = j["shadow"]["use_cascade"];
+        cascade_shadow_constant.shadow_attenuation = j["shadow"]["cascade_attenuation"];
+        cascade_shadow_constant.shadow_bias = { j["shadow"]["cascade_bias"][0], j["shadow"]["cascade_bias"][1], j["shadow"]["cascade_bias"][2], j["shadow"]["cascade_bias"][3] };
+        shadow_bias = j["shadow"]["bias"];
+	}
+
+	// ブルームの読み込み
+    if (j.contains("bloom"))
+    {
+        luminance_extract_constant.threshold = j["bloom"]["luminance_threshold"];
+        luminance_extract_constant.intensity = j["bloom"]["luminance_intensity"];
+        gaussian_filter_data.kernel_size = j["bloom"]["gaussian_kernel_size"];
+        gaussian_filter_data.sigma = j["bloom"]["gaussian_sigma"];
+	}
+
+	//physxの読み込み
+    if (j.contains("physx"))
+    {
+        showPhysxDebug = j["physx"]["show_debug"];
+	}
+
+	//各クラスの読み込み処理
+	if (j.contains("pitcher")) Pitcher::Instance().LoadFromJson(j["pitcher"]);
+	if (j.contains("player")) Player::Instance().LoadFromJson(j["player"]);
+	if (j.contains("wind")) Wind::Instance().LoadFromJson(j["wind"]);
+    if (j.contains("ball")) Ball::Instance().LoadFromJson(j["ball"]);
+	consoleLog.push_back("[Info] Settings loaded.");
 }

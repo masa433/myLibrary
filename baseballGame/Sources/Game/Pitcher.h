@@ -11,6 +11,9 @@
 #include <deque>
 #include "sprite.h"
 #include "Ball.h"
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 class Pitcher : public GameObject
 {
@@ -38,6 +41,9 @@ public:
 		void SelectPitchType();
 
 		void ResetBall();
+
+		void SaveToJson(json& j);
+		void LoadFromJson(const json& j);
 
 public:
 		/*const DirectX::XMFLOAT3& GetBallPosition() const { return Ball::Instance().GetWorldPosition(); }

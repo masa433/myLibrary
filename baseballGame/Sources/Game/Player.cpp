@@ -26,18 +26,16 @@ void Player::Initialize()
     {
         position = { -1.0f, 0.01f, -0.4f };
 		batPosition = { -0.08f, 0.0f, 0.05f };
-		batAngle = { 0.0f, 0.0f, -1.6f, 0.0f };
+		batAngle = { 0.0f, 0.0f, -1.6f };
     }
     else 
     {
         position = { 1.0f, 0.01f, -0.4f };
 		batPosition = { 0.08f, 0.0f, 0.05f };
-		batAngle = { 0.0f, 0.0f, 1.6f, 0.0f };
+		batAngle = { 0.0f, 0.0f, 1.6f };
     }
     angle = { 0.0f, 0.0f, 0.0f};
-	radius = 0.5f;
-	height = 3.5f;
-
+	
     // アニメーション用のノードをコピー
     animated_nodes = batter->nodes;
 
@@ -336,12 +334,7 @@ void Player::DrawGUI()
             ImGui::DragFloat3("Position", &position.x);
             ImGui::DragFloat3("Scale", &scale.x);
             ImGui::DragFloat3("Angle", &angle.x);
-            ImGui::DragFloat("Move Speed", &move_speed, 0.1f, 0.0f, 100.0f);
-
-            // カプセルのサイズ変更用スライダー
-            ImGui::DragFloat("Radius", &radius, 0.1f, 1.0f, 100.0f); // 半径
-            ImGui::DragFloat("Height", &height, 0.1f, 1.0f, 200.0f); // 高さ
-
+           
             // 変更後
             bool prev = isRightBatter;
             if (ImGui::Checkbox("Right Handed", &isRightBatter))
@@ -355,14 +348,14 @@ void Player::DrawGUI()
                         batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
                         position = { -1.0f, 0.01f, -0.4f };
                         batPosition = { -0.08f, 0.0f, 0.05f };
-                        batAngle = { 0.0f, 0.0f, -1.6f, 0.0f };
+                        batAngle = { 0.0f, 0.0f, -1.6f };
                     }
                     else
                     {
                         batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
                         position = { 1.0f, 0.01f, -0.4f };
                         batPosition = { 0.08f, 0.0f, 0.05f };
-                        batAngle = { 0.0f, 0.0f, 1.6f, 0.0f };
+                        batAngle = { 0.0f, 0.0f, 1.6f };
                     }
                     batter->build_static_batches(device);
                     animated_nodes = batter->nodes;
@@ -375,7 +368,7 @@ void Player::DrawGUI()
         {
             ImGui::DragFloat3("Bat Position", &batPosition.x);
             ImGui::DragFloat3("Bat Scale", &batScale.x);
-            ImGui::DragFloat3("Bat Angle", &batAngle.x);
+            ImGui::DragFloat4("Bat Angle", &batAngle.x);
 
         }
 
@@ -827,4 +820,52 @@ void Player::UpdateChildrenRecursive(int nodeIndex)
         // 再帰的に子の子も更新
         UpdateChildrenRecursive(childIndex);
     }
+}
+
+void Player::SaveToJson(json& j) 
+{
+	// 基本的なプロパティを保存
+    j["position"] = { position.x, position.y, position.z };
+    j["scale"] = { scale.x, scale.y, scale.z };
+    j["angle"] = { angle.x, angle.y, angle.z };
+	j["isRightBatter"] = isRightBatter;
+	j["batPosition"] = { batPosition.x, batPosition.y, batPosition.z };
+	j["batScale"] = { batScale.x, batScale.y, batScale.z };
+	j["batAngle"] = { batAngle.x, batAngle.y, batAngle.z };
+	j["meshScale"] = { meshScale.x, meshScale.y, meshScale.z };
+	j["sweetSpotOffset"] = { sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z };
+	j["sweetSpotScale"] = { sweetSpotScale.x, sweetSpotScale.y, sweetSpotScale.z };
+}
+
+void Player::LoadFromJson(const json& j)
+{
+    // 基本的なプロパティを読み込む
+    if (j.contains("position"))   position = { j["position"][0], j["position"][1], j["position"][2] };
+    if (j.contains("scale"))      scale = { j["scale"][0], j["scale"][1], j["scale"][2] };
+    if (j.contains("angle"))      angle = { j["angle"][0], j["angle"][1], j["angle"][2] };
+    if (j.contains("bat_position")) batPosition = { j["bat_position"][0], j["bat_position"][1], j["bat_position"][2] };
+    if (j.contains("bat_scale"))    batScale = { j["bat_scale"][0], j["bat_scale"][1], j["bat_scale"][2] };
+    if (j.contains("bat_angle"))    batAngle = { j["bat_angle"][0], j["bat_angle"][1], j["bat_angle"][2]};
+    if (j.contains("mesh_scale")) { meshScale = { j["mesh_scale"][0], j["mesh_scale"][1], j["mesh_scale"][2] }; UpdatePhysXMeshTransform(meshScale); }
+    if (j.contains("sweet_spot_offset")) sweetSpotOffset = { j["sweet_spot_offset"][0], j["sweet_spot_offset"][1], j["sweet_spot_offset"][2] };
+    if (j.contains("sweet_spot_scale"))  sweetSpotScale = { j["sweet_spot_scale"][0], j["sweet_spot_scale"][1], j["sweet_spot_scale"][2] };
+   
+    //利き手が変わっていれば再初期化
+    if(j.contains("isRightBatter") && (bool)j["isRightBatter"] != isRightBatter)
+    {
+        isRightBatter = j["isRightBatter"];
+        ID3D11Device* device = Graphics::Instance().GetDevice();
+        if (isRightBatter)
+        {
+            batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
+        }
+        else
+        {
+            batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
+        }
+        batter->build_static_batches(device);
+        animated_nodes = batter->nodes;
+        animation_time = 0.0f;
+        current_animation_index = animation_indices[static_cast<int>(current_state)];
+	}
 }

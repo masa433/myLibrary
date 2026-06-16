@@ -7,9 +7,9 @@
 #include "Model.h"
 #include "ModelRenderer.h"
 #include "../Model/gltf_model.h"
+#include "json.hpp"
 
-
-
+using json = nlohmann::json;
 
 class Player : public GameObject
 {
@@ -30,6 +30,9 @@ public:
     void DrawGUI();
 
     bool IsRightBatter() const { return isRightBatter; } // 右打者かどうかを判定するメソッド
+
+    void SaveToJson(json& j);
+    void LoadFromJson(const json& j);
 
 private:
     // キー入力処理
@@ -80,7 +83,7 @@ private:
     DirectX::XMFLOAT4X4 batTransform = { 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1 };
     DirectX::XMFLOAT3   batPosition = { 0,0,0 };
     DirectX::XMFLOAT3   batScale = { 1,1,1 };
-    DirectX::XMFLOAT4   batAngle = { 0,0,0,1 };
+    DirectX::XMFLOAT3   batAngle = { 0,0,0 };
 
     std::unique_ptr<gltf_model> batter;
     std::vector<gltf_model::node> animated_nodes;
@@ -97,9 +100,6 @@ private:
 
     // ステートごとのアニメーションインデックス（Initialize内で設定）
     int animation_indices[static_cast<int>(State::Count)] = { 0, 0, 0, 0 };
-
-    // 移動速度
-    float move_speed = 5.0f;
 
 	//ルックアット処理関連
     DirectX::XMFLOAT3			headLocalForward = { 0, 0, 1 };	// 頭のローカル前方向
@@ -139,4 +139,6 @@ public:
 	bool isInSweetSpot = false; // スイートスポットがヒットしたかどうかのフラグ
 	bool GetIsInSweetSpot() const { return isInSweetSpot; } // スイートスポットヒット判定のゲッターメソッド
 	void SetIsInSweetSpot(bool hit) { isInSweetSpot = hit; } // スイートスポットヒット判定のセッターメソッド
+
+
 };

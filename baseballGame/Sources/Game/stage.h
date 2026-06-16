@@ -29,7 +29,7 @@ public:
 	void update(float elapsedTime);
 	void render(const RenderContext& rc, ModelRenderer* renderer);
 	void uninitialize();
-
+	void DrawGUI();
 
 private:
 

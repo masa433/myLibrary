@@ -740,3 +740,62 @@ void Pitcher::SelectPitchType()
 	// ランダムな発射角度を設定
 	//launchAngleDegrees = GenerateRandomFloat(-2.0f, 0.0f); // -4度から-2度の範囲でランダム
 }
+
+
+void Pitcher::SaveToJson(json& j)
+{
+	j["position"] = { position.x, position.y, position.z };
+	j["scale"] = { scale.x, scale.y, scale.z };
+	j["angle"] = { angle.x, angle.y, angle.z };
+	j["box_position"] = { boxPosition.x, boxPosition.y, boxPosition.z };
+	j["box_size"] = { boxSize.x, boxSize.y, boxSize.z };
+	j["ball_speed_kmh"] = ballSpeedKmh;
+	j["launch_angle_deg"] = launchAngleDegrees;
+	j["throw_timing"] = throwTiming;
+	j["throw_direction"] = { throwDirection.x, throwDirection.y, throwDirection.z };
+	j["rotation_speed"] = { rotationSpeed.x, rotationSpeed.y, rotationSpeed.z };
+	j["is_right_pitcher"] = isRightPitcher;
+}
+
+void Pitcher::LoadFromJson(const json& j)
+{
+	if (j.contains("position")) position = { j["position"][0], j["position"][1], j["position"][2] };
+	if (j.contains("scale")) scale = { j["scale"][0], j["scale"][1], j["scale"][2] };
+	if (j.contains("angle")) angle = { j["angle"][0], j["angle"][1], j["angle"][2] };
+	if (j.contains("box_position")) boxPosition = { j["box_position"][0], j["box_position"][1], j["box_position"][2] };
+	if (j.contains("box_size")) boxSize = { j["box_size"][0], j["box_size"][1], j["box_size"][2] };
+	if (j.contains("ball_speed_kmh")) ballSpeedKmh = j["ball_speed_kmh"];
+	if (j.contains("launch_angle_deg")) launchAngleDegrees = j["launch_angle_deg"];
+	if (j.contains("throw_timing")) throwTiming = j["throw_timing"];
+	if (j.contains("throw_direction")) throwDirection = { j["throw_direction"][0], j["throw_direction"][1], j["throw_direction"][2] };
+	if (j.contains("rotation_speed")) rotationSpeed = { j["rotation_speed"][0], j["rotation_speed"][1], j["rotation_speed"][2] };
+
+	// 投手の左右設定を反映
+	if(j.contains("is_right_pitcher") && (bool)j["is_right_pitcher"] != isRightPitcher)
+	{
+		isRightPitcher = j["is_right_pitcher"];
+		ID3D11Device* device = Graphics::Instance().GetDevice();
+		if (isRightPitcher)
+		{
+			pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\rightPitcher.glb");
+			position = { -0.1f, 0.22f, 18.15f };
+		}
+		else
+		{
+			pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
+			position = { 0.1f, 0.22f, 18.15f };
+		}
+		pitcher->build_static_batches(device);
+		animated_nodes = pitcher->nodes;
+		animation_time = 0.0f;
+	}
+
+	// ストライクゾーンのPhysX更新
+	if (strikeZoneTrigger)
+	{
+		strikeZoneTrigger->setGlobalPose(physx::PxTransform(physx::PxVec3(boxPosition.x, boxPosition.y, boxPosition.z)));
+		physx::PxShape* shape = nullptr;
+		strikeZoneTrigger->getShapes(&shape, 1);
+		if (shape) shape->setGeometry(physx::PxBoxGeometry(boxSize.x / 2.0f, boxSize.y / 2.0f, boxSize.z / 2.0f));
+	}
+}

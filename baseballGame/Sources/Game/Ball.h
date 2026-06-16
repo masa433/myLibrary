@@ -11,6 +11,8 @@
 #include "physxManager.h"
 #include "ModelRenderer.h"
 #include <deque>
+#include "json.hpp"
+using json = nlohmann::json;
 
 class Ball : public GameObject
 {
@@ -63,6 +65,9 @@ public:
 	const DirectX::XMFLOAT3& GetStartPosition() const { return startPosition; }
 
 	physx::PxRigidDynamic* GetBallCollider() const { return collider; }
+
+	void SaveToJson(json& j);
+	void LoadFromJson(const json& j);
 
 private:
 	void UpdateWorldTransform();

@@ -241,3 +241,47 @@ bool Wind::IsBallInWindArea() const
 
 	return true;
 }
+
+void Wind::SaveToJson(json& j)
+{
+	j["direction"] = { windDirection.x, windDirection.y, windDirection.z };
+	j["strength"] = windStrength;
+	j["height"] = windHeight;
+	j["thickness"] = windThickness;
+
+	if (windDirectionSprite)
+	{
+		j["dir_sprite"]["position"] = { windDirectionSprite->position.x, windDirectionSprite->position.y };
+		j["dir_sprite"]["size"] = { windDirectionSprite->size.x, windDirectionSprite->size.y };
+		j["dir_sprite"]["rotation"] = windDirectionSprite->rotation;
+		j["dir_sprite"]["color"] = { windDirectionSprite->color.x, windDirectionSprite->color.y, windDirectionSprite->color.z, windDirectionSprite->color.w };
+	}
+	if (windGroundSprite)
+	{
+		j["ground_sprite"]["position"] = { windGroundSprite->position.x, windGroundSprite->position.y };
+		j["ground_sprite"]["size"] = { windGroundSprite->size.x, windGroundSprite->size.y };
+		j["ground_sprite"]["color"] = { windGroundSprite->color.x, windGroundSprite->color.y, windGroundSprite->color.z, windGroundSprite->color.w };
+	}
+}
+
+void Wind::LoadFromJson(const json& j)
+{
+	if (j.contains("direction"))  windDirection = { j["direction"][0], j["direction"][1], j["direction"][2] };
+	if (j.contains("strength"))   windStrength = j["strength"];
+	if (j.contains("height"))     windHeight = j["height"];
+	if (j.contains("thickness"))  windThickness = j["thickness"];
+
+	if (j.contains("dir_sprite") && windDirectionSprite)
+	{
+		windDirectionSprite->position = { j["dir_sprite"]["position"][0], j["dir_sprite"]["position"][1] };
+		windDirectionSprite->size = { j["dir_sprite"]["size"][0], j["dir_sprite"]["size"][1] };
+		windDirectionSprite->rotation = j["dir_sprite"]["rotation"];
+		windDirectionSprite->color = { j["dir_sprite"]["color"][0], j["dir_sprite"]["color"][1], j["dir_sprite"]["color"][2], j["dir_sprite"]["color"][3] };
+	}
+	if (j.contains("ground_sprite") && windGroundSprite)
+	{
+		windGroundSprite->position = { j["ground_sprite"]["position"][0], j["ground_sprite"]["position"][1] };
+		windGroundSprite->size = { j["ground_sprite"]["size"][0], j["ground_sprite"]["size"][1] };
+		windGroundSprite->color = { j["ground_sprite"]["color"][0], j["ground_sprite"]["color"][1], j["ground_sprite"]["color"][2], j["ground_sprite"]["color"][3] };
+	}
+}
