@@ -14,6 +14,7 @@
 #include "texture.h"
 #include "sprite.h"
 
+
 //	シャドウマップサイズ
 static constexpr UINT ShadowmapSize = 4096;
 static constexpr UINT SpotShadowmapSize = 4096;
@@ -27,7 +28,10 @@ void scene_game::initialize()
 
     ID3D11Device* device = Graphics::Instance().GetDevice();
 
-   
+	// コンソールログを物理システムに渡す
+    Physics::Instance().SetConsoleLog(&consoleLog);
+	Pitcher::Instance().SetConsoleLog(&consoleLog);
+
     // カメラ設定をここに移動
     float screenWidth = Graphics::Instance().GetScreenWidth();
     float screenHeight = Graphics::Instance().GetScreenHeight();
@@ -1555,7 +1559,7 @@ void scene_game::DrawGUI()
     // ── パネル幅・高さ定数 ──────────────────────────────
     const float LEFT_W = 300.0f;   // 左パネル（Player / Pitcher）
     const float RIGHT_W = 320.0f;   // 右パネル（Debug）
-    const float BOTTOM_H = 180.0f;   // 下パネル（Console）
+    const float BOTTOM_H = 250.0f;   // 下パネル（Console）
     const float CENTER_W = W - LEFT_W - RIGHT_W;
     const float CENTER_H = H - BOTTOM_H;
 
@@ -1574,21 +1578,21 @@ void scene_game::DrawGUI()
     ImGui::Begin("## Left", nullptr, FIXED | ImGuiWindowFlags_NoTitleBar);
 
     // ── Player ──
-    if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("Player"))
     {
-        ImGui::PushID("Player");
+        
         Player::Instance().DrawGUI();   // 既存の DrawGUI をそのまま流用
-        ImGui::PopID();
+        
     }
 
     ImGui::Separator();
 
     // ── Pitcher ──
-    if (ImGui::CollapsingHeader("Pitcher", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("Pitcher"))
     {
-        ImGui::PushID("Pitcher");
+        
         Pitcher::Instance().DrawGUI();
-        ImGui::PopID();
+       
     }
 
     ImGui::Separator();
@@ -1831,6 +1835,16 @@ void scene_game::DrawGUI()
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f), "[Info]  PhysX : %s",
             showPhysxDebug ? "Visible" : "Hidden");
         ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "[Info]  TimeScale : %.2f", timeScale);
+
+        for (const auto& line : consoleLog)
+        {
+            if(line.find("[Hit]") != std::string::npos)
+                ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "%s", line.c_str());
+            else if (line.find("[Warn]") != std::string::npos)
+                ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%s", line.c_str());
+            else
+                ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%s", line.c_str());
+        }
 
         if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
             ImGui::SetScrollHereY(1.0f);   // 常に末尾へ自動スクロール

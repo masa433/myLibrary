@@ -693,20 +693,20 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				float hitDirectionAngleDeg = std::fabs(originalAngleDeg);
 
 				// 打球方向の判定（絶対値を使って判定する）
-				const char* hitResult = "ファウル";
+				const char* hitResult = u8"ファウル";
 				if (hitDirectionAngleDeg <= 45.0f)
 				{
 					if (hitDirectionAngleDeg <= 15.0f)
 					{
-						hitResult = "センター方向";
+						hitResult = u8"センター方向";
 					}
 					else if (originalAngleDeg < 0.0f) // マイナスならレフト方向
 					{
-						hitResult = "レフト方向";
+						hitResult = u8"レフト方向";
 					}
 					else // プラスならライト方向
 					{
-						hitResult = "ライト方向";
+						hitResult = u8"ライト方向";
 					}
 				}
 
@@ -716,7 +716,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				bool isBarrelZone = (estimatedExitVelocity >= 43.89f) && (launchAngleDeg >= 26.0f && launchAngleDeg <= 30.0f);
 				if (isBarrelZone)
 				{
-					hitResult = "バレルゾーン！";
+					hitResult = u8"バレルゾーン！";
 				}
 
 				////空気抵抗・風・マグヌスを考慮した落下点予測
@@ -827,42 +827,49 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					float limitedBallSpeedKmh = ballVelocity.magnitude() * 3.6f;
 
 					std::lock_guard<std::mutex> lock(queueMutex);
+					std::vector<std::string>* logPtr = consoleLog;
+
 					// キャプチャリストに predictedLandingPoint を追加
 					velocityUpdateQueue.push([ballCollider, batCollider, newBallVelocity, spinAxis, angularVelocityRadPerSec,
-						limitedBallSpeedKmh, batSpeed, launchAngleDeg, hitDirectionAngleDeg, hitResult]() {
+						limitedBallSpeedKmh, batSpeed, launchAngleDeg, hitDirectionAngleDeg, hitResult,
+						logPtr  // consoleLog もキャプチャに追加
+					]() {
 							ballCollider->setLinearVelocity(newBallVelocity);
 							ballCollider->setAngularVelocity(spinAxis * angularVelocityRadPerSec);
 							ballCollider->setLinearDamping(0.0f);
 							ballCollider->setAngularDamping(0.0f);
 
-							// ===== バットの当たり判定自体を無効化 =====
 							if (batCollider)
 							{
 								physx::PxShape* shape = nullptr;
 								if (batCollider->getShapes(&shape, 1))
-								{
 									shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
-								}
 							}
 
-							// ===== デバッグ出力（速度設定直後） =====
-#ifdef _DEBUG
 							float exitVelocityKmh = newBallVelocity.magnitude() * 3.6f;
 							float spinRpm = (angularVelocityRadPerSec * 60.0f) / (2.0f * 3.14159265359f);
 
-							// 打球の飛距離（初期位置からの水平距離）を計算
-							DirectX::XMFLOAT3 hitPosPhysX = Ball::Instance().GetBallHitPosition();
-							/*float diffX = predictedLandingPoint.x - hitPosPhysX.x;
-							float diffZ = predictedLandingPoint.z - hitPosPhysX.z;
-							float predictedDistance = std::sqrt(diffX * diffX + diffZ * diffZ);*/
-
+#ifdef _DEBUG
 							char debugMessage[512];
 							snprintf(debugMessage, sizeof(debugMessage),
 								"=== バット衝突 ===\nボール初速: %.1f km/h\nバット速度: %.1f km/h\n打球速度: %.1f km/h\n打ち出し角度(上下): %.1f°\n打球方向(左右): %.1f° [%s]\n回転: %.0f rpm\n",
 								limitedBallSpeedKmh, batSpeed * 3.6f, exitVelocityKmh, launchAngleDeg, hitDirectionAngleDeg, hitResult, spinRpm);
 							OutputDebugStringA(debugMessage);
 #endif
+
+							//ラムダ内で全値が揃った状態でコンソールへ出力
+							if (logPtr)
+							{
+								char logBuf[512];
+								snprintf(logBuf, sizeof(logBuf),
+									u8"[Hit] 初速:%.1fkm/h スイング:%.1fkm/h 打球:%.1fkm/h 角度:%.1f° 方向:%.1f°[%s] 回転:%.0frpm",
+									limitedBallSpeedKmh, batSpeed * 3.6f, exitVelocityKmh,
+									launchAngleDeg, hitDirectionAngleDeg, hitResult, spinRpm);
+								logPtr->push_back(logBuf);
+							}
 						});
+
+					
 				}
 			}
 		}
@@ -950,6 +957,17 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						isFair ? "フェア" : "ファウル",
 						horizontalDistance);
 					OutputDebugStringA(debugMessage);
+
+					if(consoleLog)
+					{
+						
+						char logBuf[512];
+						snprintf(logBuf, sizeof(logBuf),
+							u8"[Hit] ボールが地面に着地！ 判定: %s 飛距離: %.1f m",
+							isFair ? u8"フェア" : u8"ファウル",
+							horizontalDistance);
+						consoleLog->push_back(logBuf);
+					}
 				}
 			}
 		}
@@ -978,6 +996,9 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 							"ファウル：x=%.2f y=%.2f z=%.2f\n",
 							ballPosition.x, ballPosition.y, ballPosition.z);
 						OutputDebugStringA(debugMessage);
+
+						if(consoleLog)
+							consoleLog->push_back(u8"[Hit] ファウル");
 					}
 					else
 					{
@@ -988,6 +1009,15 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 								"ホームラン！：ボールの高さ %.2f m\n",
 								ballPosition.y);
 							OutputDebugStringA(debugMessage);
+							if(consoleLog)
+							{
+								
+								char logBuf[512];
+								snprintf(logBuf, sizeof(logBuf),
+									u8"[Hit] ホームラン！：ボールの高さ: %.1f m",
+									ballPosition.y);
+								consoleLog->push_back(logBuf);
+							}
 						}
 						else
 						{
@@ -996,6 +1026,14 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 								"フェンスに当たったがホームランではない：ボールの高さ %.2f m\n",
 								ballPosition.y);
 							OutputDebugStringA(debugMessage);
+							if(consoleLog)
+							{
+								char logBuf[512];
+								snprintf(logBuf, sizeof(logBuf),
+									u8"[Hit] フェンスに当たったがホームランではない : ボールの高さ: %.1f m",
+									ballPosition.y);
+								consoleLog->push_back(logBuf);
+							}
 						}
 					}
 
@@ -1046,6 +1084,14 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						estimatedDistance,
 						totalDistance);
 					OutputDebugStringA(debugMessage);
+					if(consoleLog)
+					{
+						char logBuf[512];
+						snprintf(logBuf, sizeof(logBuf),
+							u8"[Hit] ボールがフェンスに入った！ 飛距離: %.1f m",
+							totalDistance);
+						consoleLog->push_back(logBuf);
+					}
 				}
 			}
 		}
@@ -1063,10 +1109,10 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			if (!Ball::Instance().GetHasCollidedWithFence())
 			{
 				Ball::Instance().SetHasCollidedWithFence(true);
-				char debugMessage[256];
-				snprintf(debugMessage, sizeof(debugMessage),
-					"ホームラン！：ポールに衝突");
-				OutputDebugStringA(debugMessage);
+				
+				OutputDebugStringA("ホームラン！：ポールに衝突");
+				if (consoleLog)
+					consoleLog->push_back(u8"[Hit] ホームラン！：ポールに衝突");
 			}
 		}
 	}
@@ -1102,11 +1148,9 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 						// トリガー通過でホームラン確定フラグをON
 						Ball::Instance().SetHasPassedHomeRunZone(true);
 
-						char debugMessage[256];
-						snprintf(debugMessage, sizeof(debugMessage),
-							"ホームランゾーン通過！",
-							ballPos.y);
-						OutputDebugStringA(debugMessage);
+						OutputDebugStringA("ホームランゾーン通過！\n");
+						if (consoleLog)
+							consoleLog->push_back(u8"[Hit] ホームランゾーン通過！");
 					}
 					
 				}
@@ -1138,12 +1182,11 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			{
 				Player::Instance().SetIsInSweetSpot(true);
 				// デバッグ出力
-#ifdef _DEBUG
-				char debugMessage[256];
-				snprintf(debugMessage, sizeof(debugMessage),
-					"スイートスポットに入った！");
-				OutputDebugStringA(debugMessage);
-#endif
+
+				OutputDebugStringA("スイートスポットに入った！\n");
+				if (consoleLog)
+					consoleLog->push_back(u8"[Info] スイートスポットに入った！");
+
 			}
 		}
 
@@ -1159,12 +1202,9 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				Player::Instance().SetIsInSweetSpot(false);
 
 				// デバッグ出力
-#ifdef _DEBUG
-				char debugMessage[256];
-				snprintf(debugMessage, sizeof(debugMessage),
-					"スイートスポットから出た！");
-				OutputDebugStringA(debugMessage);
-#endif
+				OutputDebugStringA("スイートスポットから出た！\n");
+				if (consoleLog)
+					consoleLog->push_back(u8"[Info] スイートスポットから出た！");
 			}
 		}
 	}

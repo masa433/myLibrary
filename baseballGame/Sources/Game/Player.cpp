@@ -330,9 +330,8 @@ void Player::RenderBat(const RenderContext& rc, ModelRenderer* renderer)
 void Player::DrawGUI()
 {
 #ifdef USE_IMGUI
-    if (ImGui::Begin(u8"プレイヤー"))
-    {
-        if (ImGui::CollapsingHeader("Player"))
+	
+        if (ImGui::CollapsingHeader("Player Info"))
         {
             ImGui::DragFloat3("Position", &position.x);
             ImGui::DragFloat3("Scale", &scale.x);
@@ -385,9 +384,9 @@ void Player::DrawGUI()
         {
             ImGui::Text("PhysX Mesh Transform (Independent)");
 
-            
 
-            
+
+
             // PhysXメッシュのスケール  
             if (ImGui::DragFloat3("Mesh Scale", &meshScale.x, 0.01f, 0.01f, 10.0f))
             {
@@ -400,11 +399,11 @@ void Player::DrawGUI()
                 meshScale = { 0.03f, 0.012f, 0.03f };
                 UpdatePhysXMeshTransform(meshScale);
             }
-           
 
-			//バットのスイートスポットの位置とサイズ
-			ImGui::DragFloat3("Sweet Spot Offset", &sweetSpotOffset.x, 0.01f, -1.0f, 1.0f);
-			ImGui::DragFloat3("Sweet Spot Scale", &sweetSpotScale.x, 0.01f, 0.01f, 1.0f);
+
+            //バットのスイートスポットの位置とサイズ
+            ImGui::DragFloat3("Sweet Spot Offset", &sweetSpotOffset.x, 0.01f, -1.0f, 1.0f);
+            ImGui::DragFloat3("Sweet Spot Scale", &sweetSpotScale.x, 0.01f, 0.01f, 1.0f);
 
             if (batSweetSpot)
             {
@@ -480,9 +479,7 @@ void Player::DrawGUI()
             {
                 ImGui::Text("No animations available");
             }
-        }
-    }
-    ImGui::End();
+        }   
 #endif
 }
 

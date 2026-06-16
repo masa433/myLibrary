@@ -3,6 +3,8 @@
 #include <vector>
 #include <DirectXMath.h>
 #include <PxPhysicsAPI.h>
+#include <string>
+
 
 // フィジクス
 class Physics 
@@ -104,4 +106,11 @@ private:
 	};
 	std::vector<Line>		lines;
 	std::vector<Capsule>	capsules;
+
+public:
+	// コンソールログへのポインタをセット
+	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
+
+private:
+	std::vector<std::string>* consoleLog = nullptr;
 };

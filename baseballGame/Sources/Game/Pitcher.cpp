@@ -103,6 +103,13 @@ void Pitcher::Update(float elapsedTime)
 			stateTime = 0.0f;
 			SelectPitchType(); // 球種選択
 			OutputDebugStringA("Forced Throw: Backspace pressed\n");
+
+			if(consoleLog)
+			{
+				char debugMessage[256];
+				snprintf(debugMessage, sizeof(debugMessage), "[Info] Forced Throw: Backspace pressed\n");
+				consoleLog->push_back(debugMessage);
+			}
 		}
 	}
 
@@ -127,6 +134,12 @@ void Pitcher::Update(float elapsedTime)
 			Ball::Instance().SetFoulLogged(false); // ファウルログフラグをリセット
 			Ball::Instance().SetThroughStrikeZone(false); // ストライクゾーン通過フラグをリセット
 			OutputDebugStringA("Judgment reset\n");
+			if(consoleLog)
+			{
+				 char debugMessage[256];
+				 snprintf(debugMessage, sizeof(debugMessage), "[Info] Judgment reset\n");
+				 consoleLog->push_back(debugMessage);
+			}
 		}
 		break;
 
@@ -165,18 +178,29 @@ void Pitcher::Update(float elapsedTime)
 				char debugMessage[256];
 				if (Ball::Instance().GetThroughStrikeZone())
 				{
-					snprintf(debugMessage, sizeof(debugMessage), "ストライク！\n");
+					snprintf(debugMessage, sizeof(debugMessage), u8"[Info] ストライク！\n");
 				}
 				else
 				{
-					snprintf(debugMessage, sizeof(debugMessage), "ボール！\n");
+					snprintf(debugMessage, sizeof(debugMessage), u8"[Info] ボール！\n");
 				}
-				OutputDebugStringA(debugMessage);
+				if (consoleLog)
+				{
+					consoleLog->push_back(debugMessage);
+				}
 
 				char timeMessage[128];
 				snprintf(timeMessage, sizeof(timeMessage),
 					"Time to reach z=0.0f: %.2f seconds\n", throwCounter);
 				OutputDebugStringA(timeMessage);
+
+				if (consoleLog)
+				{
+					char timeMessage[128];
+					snprintf(timeMessage, sizeof(timeMessage),
+						u8"[Info] Time to reach z=0.0f: %.2f seconds\n", throwCounter);
+					consoleLog->push_back(timeMessage);
+				}
 			}
 		}
 	}
@@ -222,9 +246,13 @@ void Pitcher::Update(float elapsedTime)
 
 					char debugMessage[256];
 					snprintf(debugMessage, sizeof(debugMessage),
-						"ファウル：転がってファウルラインを越えた x=%.2f z=%.2f\n",
+						u8"ファウル：転がってファウルラインを越えた x=%.2f z=%.2f\n",
 						ballPos.x, ballPos.z);
 					OutputDebugStringA(debugMessage);
+					if (consoleLog)
+					{
+						consoleLog->push_back(debugMessage);
+					}
 				}
 			}
 		}
@@ -256,8 +284,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 void Pitcher::DrawGUI()
 {
 #ifdef USE_IMGUI
-	if (ImGui::Begin(u8"ピッチャー"))
-	{
+	
 		ImGui::Text("Current State: %s",
 			currentState == State::SelectingPitch ? "Selecting Pitch" :
 			currentState == State::Throwing ? "Throwing" : "Idle");
@@ -343,10 +370,8 @@ void Pitcher::DrawGUI()
 				
 			}
 		}
-	}
 	Wind::Instance().DrawGUI();
 
-	ImGui::End();
 #endif
 }
 
@@ -440,7 +465,11 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			Ball::Instance().Throw(initialVelocity, GetSpinAxisFromPitchType());
 
 			char debugMessage[128];
-			snprintf(debugMessage, sizeof(debugMessage), "Throw Speed: %.2f km/h\n", initialVelocity.magnitude() * 3.6f);
+			snprintf(debugMessage, sizeof(debugMessage), u8"Throw Speed: %.2f km/h\n", initialVelocity.magnitude() * 3.6f);
+			if (consoleLog)
+			{
+				consoleLog->push_back(debugMessage);
+			}
 			OutputDebugStringA(debugMessage);
 		}
 
@@ -463,7 +492,7 @@ physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 		return physx::PxVec3(0.0f, -2400.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
 
 	case PitchType::Curveball:
-		return physx::PxVec3(-2500.0f * RPM_TO_RAD_PER_SEC, -1500.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
+		return physx::PxVec3(-500.0f * RPM_TO_RAD_PER_SEC, -1500.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
 
 	case PitchType::Changeup:
 		return physx::PxVec3(1000.0f * RPM_TO_RAD_PER_SEC, 0.0f, 0.0f);
@@ -475,7 +504,7 @@ physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 		return physx::PxVec3(1500.0f * RPM_TO_RAD_PER_SEC, 1500.0f * RPM_TO_RAD_PER_SEC * side, 2000.0f * RPM_TO_RAD_PER_SEC);
 
 	case PitchType::Cutter:
-		return physx::PxVec3(500.0f * RPM_TO_RAD_PER_SEC, -2000.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
+		return physx::PxVec3(500.0f * RPM_TO_RAD_PER_SEC, -1000.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
 
 	case PitchType::Sinker:
 		return physx::PxVec3(100.0f * RPM_TO_RAD_PER_SEC, 2000.0f * RPM_TO_RAD_PER_SEC * side, -2000.0f * RPM_TO_RAD_PER_SEC);
@@ -526,6 +555,10 @@ void Pitcher::SelectPitchType()
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // バックスピン
 		throwDirection.x = -0.02f;
 		launchAngleDegrees = -1.5f;
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: Fastball\n");
+		}
 		OutputDebugStringA("Pitch Type: Fastball\n");
 		break;
 
@@ -536,6 +569,10 @@ void Pitcher::SelectPitchType()
 		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // サイドスピン
 		throwDirection.x = 0.0f;
 		launchAngleDegrees = 0.5f;
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: Slider\n");
+		}
 		OutputDebugStringA("Pitch Type: Slider\n");
 		break;
 
@@ -546,6 +583,10 @@ void Pitcher::SelectPitchType()
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // トップスピン
 		throwDirection.x = 0.01f;
 		launchAngleDegrees = 4.0f; // カーブはやや下向きに投げる
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: Curveball\n");
+		}
 		OutputDebugStringA("Pitch Type: Curveball\n");
 		break;
 
@@ -555,6 +596,10 @@ void Pitcher::SelectPitchType()
 		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // ミックス回転
 		throwDirection.x = 0.03f;
 		launchAngleDegrees = 0.0f; // カーブはやや下向きに投げる
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: Changeup\n");
+		}
 		OutputDebugStringA("Pitch Type: Changeup\n");
 		break;
 
@@ -565,6 +610,10 @@ void Pitcher::SelectPitchType()
 		throwDirection.x = 0.03f;
 		launchAngleDegrees = -0.5f; // カーブはやや下向きに投げる
 		rotationSpeed = { 40.0f, 0.0f, -10.0f }; // 回転は少なめ
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: Forkball\n");
+		}
 		OutputDebugStringA("Pitch Type: Forkball\n");
 		break;
 
@@ -576,6 +625,10 @@ void Pitcher::SelectPitchType()
 		throwDirection.x = 0.03f;
 		launchAngleDegrees = -0.5f; // カーブはやや下向きに投げる
 		rotationSpeed = { 100.0f, 0.0f, 0.0f }; // 回転は少なめ
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: TwoSeam\n");
+		}
 		OutputDebugStringA("Pitch Type: TwoSeam\n");
 		break;
 
@@ -586,6 +639,10 @@ void Pitcher::SelectPitchType()
 		throwDirection.x = 0.0f;
 		launchAngleDegrees = -0.5f;
 		rotationSpeed = { 0.0f, 0.0f, 80.0f }; // 回転速度
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: Cutter\n");
+		}
 		OutputDebugStringA("Pitch Type: Cutter\n");
 		break;
 
@@ -595,6 +652,10 @@ void Pitcher::SelectPitchType()
 		throwDirection.x = 0.05f;
 		launchAngleDegrees = 1.0f;
 		rotationSpeed = { -120.0f, 0.0f, -120.0f }; // 回転速度
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: Sinker\n");
+		}
 		OutputDebugStringA("Pitch Type: Sinker\n");
 		break;
 
@@ -603,6 +664,10 @@ void Pitcher::SelectPitchType()
 		//ballSpeedKmh = 125.0f;    // 遅い
 		Ball::Instance().GetBallAngle() = { -0.2f, 0.0f, 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // 回転速度
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: VerticalSlider\n");
+		}
 		OutputDebugStringA("Pitch Type: VerticalSlider\n");
 		break;
 
@@ -613,6 +678,10 @@ void Pitcher::SelectPitchType()
 		throwDirection.x = 0.03f;
 		launchAngleDegrees = -0.5f; // カーブはやや下向きに投げる
 		rotationSpeed = { 40.0f, 0.0f, -10.0f }; // 回転速度
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: Splitter\n");
+		}
 		OutputDebugStringA("Pitch Type: Splitter\n");
 		break;
 
@@ -621,6 +690,10 @@ void Pitcher::SelectPitchType()
 		//ballSpeedKmh = 80.0f;     // 非常に遅い
 		Ball::Instance().GetBallAngle() = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // トップスピン
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: SlowCurve\n");
+		}
 		OutputDebugStringA("Pitch Type: SlowCurve\n");
 		break;
 
@@ -631,6 +704,10 @@ void Pitcher::SelectPitchType()
 		launchAngleDegrees = -1.0f;
 		Ball::Instance().GetBallAngle() = { -0.2f, 0.0f, 0.0f };
 		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // 強いサイドスピン
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: Shooter\n");
+		}
 		OutputDebugStringA("Pitch Type: Shooter\n");
 		break;
 
@@ -639,6 +716,10 @@ void Pitcher::SelectPitchType()
 		//ballSpeedKmh = 90.0f;     // 非常に遅い
 		Ball::Instance().GetBallAngle() = { 0.0f, 0.0f, 0.0f };
 		rotationSpeed = { -5.0f, 0.0f, -5.0f }; // 不規則な回転
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"Pitch Type: Knuckleball\n");
+		}
 		OutputDebugStringA("Pitch Type: Knuckleball\n");
 		break;
 

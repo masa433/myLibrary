@@ -131,6 +131,12 @@ private:
 	physx::PxVec3 GetSpinAxisFromPitchType() const;
 
 
+public:
+	// コンソールログへのポインタをセット
+	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
+
+private:
+	std::vector<std::string>* consoleLog = nullptr;
 
 };
 
