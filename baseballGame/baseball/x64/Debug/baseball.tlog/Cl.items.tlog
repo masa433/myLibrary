@@ -8,6 +8,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_tables.cpp;C:\Users\
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_widgets.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_widgets.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\camera.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\camera.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\camera_controller.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\camera_controller.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\FreeCameraController.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\FreeCameraController.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Collision\collision.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\collision.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Ball.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Ball.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\game_object.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\game_object.obj

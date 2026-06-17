@@ -50,22 +50,37 @@ void scene_game::initialize()
         camera_far_z
     );
 
+	freeCameraController.SyncCameraToController(camera);
+
     //カメラ位置設定
 	cameraPresets[0] = { { 0.0f, 1.2f, -3.5f }, { 0.0f, 0.0f, 14.0f } }; // デフォルトカメラ
 
-	cameraPresets[1] = { { 0.0f, 20.0f, -30.0f }, { 0.0f, 0.0f, 14.0f } }; // 高い位置からの俯瞰カメラ
+	cameraPresets[1] = { { 0.0f, 5.0f, -15.0f }, { 0.0f, 0.0f, 14.0f } }; // 高い位置からの俯瞰カメラ
 
-	cameraPresets[2] = { { 45.0f, 30.0f, -30.0f }, { 0.0f, 0.0f, 14.0f } }; // プレイヤー視点カメラ
+	cameraPresets[2] = { { 27.0f, 11.0f, -12.5f }, { 0.0f, 1.0f, 15.0f } }; // プレイヤー視点カメラ
+    cameraControllers[2].SetFov(DirectX::XMConvertToRadians(30.0f));
+    cameraControllers[2].SetTrackingZoomOut(
+        true,
+        DirectX::XMConvertToRadians(30.0f),  // 近距離FOV（ピッチャー付近）
+        DirectX::XMConvertToRadians(10.0f), // 遠距離FOV（外野方向）
+        10.0f,   // 近距離の閾値
+        130.0f   // 遠距離の閾値（カメラZ=-20 ～ フィールドZ=120 の差分程度）
+	);
 
-	cameraPresets[3] = { { -15.0f, 10.0f, 120.0f }, { 0.0f, 0.5f, 5.0f } }; // フィールド全体を見渡すカメラ
-    //カメラ3はfovを狭くする
-	cameraControllers[3].SetFov(DirectX::XMConvertToRadians(2.0f));
+    cameraPresets[3] = { { -5.0f, 10.0f, 120.0f }, { 0.0f, 0.5f, 5.0f } };
+    cameraControllers[3].SetFov(DirectX::XMConvertToRadians(2.0f));
+
+    cameraControllers[3].SetTrackingZoomOut(
+        true,
+        DirectX::XMConvertToRadians(45.0f),  // 近距離FOV（ピッチャー付近）
+        DirectX::XMConvertToRadians(10.0f), // 遠距離FOV（外野方向）
+        10.0f,   // 近距離の閾値
+        130.0f   // 遠距離の閾値（カメラZ=-15 ～ フィールドZ=120 の差分程度）
+    );
 
     for(int i = 0; i < CameraPresetCount; ++i)
     {
-        Camera tmp;
-		tmp.SetLookAt(cameraPresets[i].eye, cameraPresets[i].focus, { 0.0f, 1.0f, 0.0f });
-		cameraControllers[i].SyncCameraToController(tmp);
+		cameraControllers[i].SetEyeAndFocus(cameraPresets[i].eye, cameraPresets[i].focus);
 	}
 
     //定数バッファの作成
@@ -433,11 +448,48 @@ void scene_game::update(float elapsed_time)
     {
         const auto& vel = Ball::Instance().GetVelocity();
         float speed = sqrtf(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
-        if (speed < 0.5f)
+        if (speed < 1.0f)
+        {
+			trackingTime += elapsed_time;
+            if(trackingTime>1.0f)
+            {
+                for (auto& cc : cameraControllers)
+                    cc.StopTrackingBall();
+				trackingTime = 0.0f;
+            }
+        }
+
+        //左シフトキーで強制終了
+        if (ImGui::IsKeyPressed(ImGuiKey_LeftShift))
         {
             for (auto& cc : cameraControllers)
                 cc.StopTrackingBall();
+            trackingTime = 0.0f;
         }
+    }
+
+    if (useFreeCamera)
+    {
+        // フリーカメラモード
+        freeCameraController.Update(elapsed_time);
+        freeCameraController.SyncControllerToCamera(camera);
+        // FOVはフリーカメラ中は固定（追従カメラのFOV変化を無視）
+        camera.SetPerspectiveFov(
+            DirectX::XMConvertToRadians(45.0f),
+            screenWidth / screenHeight,
+            camera_near_z, camera_far_z
+        );
+    }
+    else
+    {
+        // 既存の追従カメラ処理（変更なし）
+        cameraControllers[activeCameraIndex].Update(elapsed_time);
+        cameraControllers[activeCameraIndex].SyncControllerToCamera(camera);
+        camera.SetPerspectiveFov(
+            cameraControllers[activeCameraIndex].GetCurrentFov(),
+            screenWidth / screenHeight,
+            camera_near_z, camera_far_z
+        );
     }
 
     // ステージの更新
@@ -1091,7 +1143,7 @@ void scene_game::DrawGUI()
         ImGuiWindowFlags_NoScrollWithMouse);
     {
 		// ImGui::IsWindowHovered() でマウスオーバーを検知して、カメラコントローラーに伝える
-        cameraControllers[activeCameraIndex].SetIsGameViewHovered(ImGui::IsWindowHovered());
+        freeCameraController.SetIsGameViewHovered(ImGui::IsWindowHovered());
 
         // タイトルバー分を除いたコンテンツ領域
         ImVec2 avail = ImGui::GetContentRegionAvail();
@@ -1134,12 +1186,12 @@ void scene_game::DrawGUI()
         if (ImGui::DragFloat3("Eye", &eye.x, 0.1f))
         {
             camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
-            cameraControllers[activeCameraIndex].SyncCameraToController(camera);
+            freeCameraController.SyncCameraToController(camera);
         }
         if (ImGui::DragFloat3("Focus", &focus.x, 0.1f))
         {
             camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
-            cameraControllers[activeCameraIndex].SyncCameraToController(camera);
+            freeCameraController.SyncCameraToController(camera);
         }
         ImGui::SliderFloat("Near Z", &camera_near_z, 0.1f, 100.0f);
         ImGui::SliderFloat("Far Z", &camera_far_z, 100.0f, 10000.0f);
@@ -1147,6 +1199,14 @@ void scene_game::DrawGUI()
             camera.GetFov(),
             Graphics::Instance().GetScreenWidth() / Graphics::Instance().GetScreenHeight(),
             camera_near_z, camera_far_z);
+
+        ImGui::Checkbox(u8"フリーカメラ", &useFreeCamera);
+        static bool prevFreeCamera = false;
+        if (useFreeCamera && !prevFreeCamera)
+        {
+            freeCameraController.SyncCameraToController(camera);
+        }
+        prevFreeCamera = useFreeCamera;
     }
 
     // ── Time Scale ──
@@ -1332,6 +1392,12 @@ void scene_game::DrawGUI()
             ImGuiInputTextFlags_EnterReturnsTrue))
         {
             // consoleLog.push_back(std::string("> ") + inputBuf);
+			//LogResetと書いたらログをクリアする例
+            if (std::string(inputBuf) == "LogReset")
+            {
+                consoleLog.clear();
+                consoleLog.push_back("[Info] Console log cleared.");
+			}
             inputBuf[0] = '\0';
             ImGui::SetKeyboardFocusHere(-1);
         }

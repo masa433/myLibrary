@@ -136,6 +136,9 @@
     <ClCompile Include="Sources\Renderer\ShadowRenderer.cpp">
       <Filter>Sources\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Camera\FreeCameraController.cpp">
+      <Filter>Sources\Camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -287,6 +290,9 @@
     </ClInclude>
     <ClInclude Include="Sources\Renderer\ShadowRenderer.h">
       <Filter>Sources\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Camera\FreeCameraController.h">
+      <Filter>Sources\Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

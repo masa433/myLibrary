@@ -6,8 +6,7 @@ class Ball;
 class CameraController
 {
 public:
-	// カメラからコントローラーへパラメータを同期する
-	void SyncCameraToController(const Camera& camera);
+	
 
 	// コントローラーからカメラへパラメータを同期する
 	void SyncControllerToCamera(Camera& camera);
@@ -31,6 +30,13 @@ public:
 	float GetCurrentFov() const { return currentFov; }
 	void SetFov(float fov) { currentFov = fov; }
 
+	void SetEyeAndFocus(const DirectX::XMFLOAT3& e, const DirectX::XMFLOAT3& f)
+	{
+		eye = e;
+		focus = f;
+		up = { 0.0f, 1.0f, 0.0f };
+	}
+
 private:
 	DirectX::XMFLOAT3		eye;
 	DirectX::XMFLOAT3		focus;
@@ -38,8 +44,6 @@ private:
 	DirectX::XMFLOAT3		right;
 	float					distance;
 
-	float					angleX;
-	float					angleY;
 
 	// ボール追跡カメラの状態
 	enum class TrackState
@@ -62,7 +66,7 @@ private:
 	DirectX::XMFLOAT3   smoothFocus = {};
 
 	float transitionTime = 0.0f;
-	static constexpr float transitionDuration = 0.5f; // 追跡開始位置への補間時間（秒）
+	static constexpr float transitionDuration = 1.0f; // 追跡開始位置への補間時間（秒）
 
 	//追跡中の追従速度
 	static constexpr float TrackEyeSpeed = 5.0f;
@@ -91,12 +95,33 @@ private:
 	float zoomedFov = DirectX::XMConvertToRadians(10.0f); // 追跡中のズーム画角
 
 	float zoomTime = 0.0f;
-	float zoomSpeed = 1.0f;
+	float zoomSpeed = 5.0f;
 
 	float minEyeY = 0.5f; // カメラの最低高さ
 	float maxEyeY = 10.0f; // カメラの最高高さ
 
 public:
-	bool isGameViewHovered = false;
-	void SetIsGameViewHovered(bool hovered) { isGameViewHovered = hovered; }
+	void SetTrackingZoomOut(bool enable,
+		float fovAtNear = DirectX::XMConvertToRadians(5.0f),
+		float fovAtFar = DirectX::XMConvertToRadians(15.0f),
+		float nearDist = 10.0f,
+		float farDist = 130.0f)
+	{
+		enableTrackingZoom = enable;
+		fovNear = fovAtNear;
+		fovFar = fovAtFar;
+		zoomNearDist = nearDist;
+		zoomFarDist = farDist;
+	}
+private:
+	bool  enableTrackingZoom = false;
+	float fovNear = DirectX::XMConvertToRadians(5.0f);  // ボールが近いときのFOV
+	float fovFar = DirectX::XMConvertToRadians(15.0f); // ボールが遠いときのFOV
+	float zoomNearDist = 10.0f;  // この距離以下でfovNear
+	float zoomFarDist = 130.0f; // この距離以上でfovFar
+	float fovSmoothSpeed = 3.0f; // FOV補間速度
+private:
+		float trackingBlendTime = 0.0f;                    // Tracking開始からの経過時間
+		static constexpr float trackingBlendDuration = 0.5f; // この秒数かけて本速度に移行
+
 };

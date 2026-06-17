@@ -13,6 +13,7 @@
 #include "TextureManager.h"
 #include "SkyRenderer.h"
 #include "ShadowRenderer.h"
+#include "FreeCameraController.h"
 #include "json.hpp"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
@@ -33,6 +34,9 @@ private:
 	SkyRenderer skyRenderer;
 
 	ShadowRenderer shadowRenderer;
+
+    FreeCameraController freeCameraController;
+	bool useFreeCamera = false;//	フリーカメラを使用するかどうか
 
 private:
     //	カスケードシャドウマップ数
@@ -222,4 +226,7 @@ private:
     D3D11_QUERY_DATA_PIPELINE_STATISTICS pipeline_stats = {};
 
     std::vector<std::string> consoleLog;
+
+private:
+    float trackingTime = 0.0f;
 };

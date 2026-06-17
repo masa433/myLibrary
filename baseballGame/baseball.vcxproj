@@ -215,6 +215,7 @@
     <ClCompile Include="Sources\Camera\camera_controller.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Camera\FreeCameraController.cpp" />
     <ClCompile Include="Sources\Collision\collision.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -336,6 +337,7 @@
     <ClInclude Include="Sources\Camera\camera_controller.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Camera\FreeCameraController.h" />
     <ClInclude Include="Sources\Collision\collision.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

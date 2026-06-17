@@ -40,46 +40,22 @@ float3 ReconstructRayDir(float2 uv)
     float2 ndc = uv * 2.0f - 1.0f;
     ndc.y = -ndc.y;
 
-    // ビュー・プロジェクション行列の逆行列を使用してワールド空間の方向を求める
-    //float4x4 inv_vp = view_projection;
-
-    // view_projectionの逆行列が必要。
-    // 近平面と遠平面のワールド位置を構築して、その差分を計算する。
-    float4 near_h = float4(ndc.x, ndc.y, 0.0f, 1.0f);
-    float4 far_h  = float4(ndc.x, ndc.y, 1.0f, 1.0f);
-
-    // 手動でVP行列を反転
-    float4x4 VP = view_projection;
-
-    // ヘルパー: scene_constantsに格納されているカメラの基底ベクトルを使用する
-    // よりシンプルなアプローチ: カメラの各ベクトルから復元する
-    // 転置のテクニックを用いてスクリーン空間からワールド空間への変換を導出する
-    // 実際には、逆VP行列を使ってゼロからレイを復元する方が綺麗。
-
-    // 標準的な余因子行列による逆行列計算はHLSLでは複雑なため、代わりに
-    // カメラ位置 ＋ スクリーン方向 からレイを再構築する。
-    // カメラのベクトル（右、上）は利用可能なので、前方向 = cross(右, 上) を計算する。
-    // ただしFOVも必要となる。直接保持していないため、VP行列から復元する。
-
-    // VP行列からカメラの前方向を抽出:
-    // プロジェクションによって平行移動が除去され、ビューによってカメラがエンコードされる。
-    // VPの第2行（行優先のHLSL）は、プロジェクション後のZ行となる。
-    // 代わりに、2つのクリップ座標点を逆投影する最も単純な方法を使用する。
-
-    // VPはHLSL内で行優先（行ベクトル）
-    // 逆投影するためには: VP * w_pos = h_pos  =>  w_pos = h_pos * VP^-1 を解く
-    // ここでは 4x4 の小行列展開による逆行列を使用する。
-
     // 実際には最もクリーンなアプローチ: camera_right, camera_up を使い、前方向を計算する
     float3 right   = normalize(camera_right.xyz);
     float3 up      = normalize(camera_up.xyz);
     float3 forward = cross(right, up);  // 左手系: 右 x 上 = 後ろ方向、そのため反転させる
     
+     // 手動でVP行列を反転
+    float4x4 VP = view_projection;
 
+    
     // プロジェクション行列（列優先レイアウト）から、半幅と半高を復元する
     // VP[0][0] = (1/tan(fovX/2)) * (H/W), VP[1][1] = 1/tan(fovY/2)
-    float inv_tan_fov_x = VP[0][0]; // X軸のスケール
-    float inv_tan_fov_y = VP[1][1]; // Y軸のスケール
+    float3 col0 = float3(VP[0][0], VP[0][1], VP[0][2]); // X軸のスケール
+    float3 col1 = float3(VP[1][0], VP[1][1], VP[1][2]); // Y軸のスケール
+    
+    float inv_tan_fov_x = dot(col0, right);//回転の影響を受けない
+    float inv_tan_fov_y = dot(col1, up); //回転の影響を受けない
 
     float3 ray = forward
                + right   * (ndc.x / inv_tan_fov_x)

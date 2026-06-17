@@ -543,7 +543,7 @@ void Pitcher::SelectPitchType()
 {
 	// 乱数生成
 	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
-	selectedPitchType = PitchType::Cutter; // デフォルトはストレート
+	selectedPitchType = PitchType::Fastball; // デフォルトはストレート
 
 	// 球種ごとの挙動を設定
 	switch (selectedPitchType)
