@@ -12,6 +12,7 @@
 #include "ModelRenderer.h"
 #include "TextureManager.h"
 #include "SkyRenderer.h"
+#include "ShadowRenderer.h"
 #include "json.hpp"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
@@ -31,6 +32,8 @@ private:
     //空と太陽のレンダラー
 	SkyRenderer skyRenderer;
 
+	ShadowRenderer shadowRenderer;
+
 private:
     //	カスケードシャドウマップ数
     static constexpr int ShadowBufferSize = 4;
@@ -41,36 +44,13 @@ private:
     // スポットライトシャドウマップ関連
     static constexpr int SpotShadowCount = 4; // light_max と一致させる
 
-     // 定数バッファ構造体
+    //定数バッファ構造体
     struct scene_constants
     {
         DirectX::XMFLOAT4X4 view_projection;
         DirectX::XMFLOAT4 camera_position;
         DirectX::XMFLOAT4    camera_right;
-        DirectX::XMFLOAT4    camera_up;   
-    };
-
-    //ポイントライトの構造体
-    struct point_lights
-    {
-        DirectX::XMFLOAT4 position;
-        DirectX::XMFLOAT4 color;
-        float intensity;
-        float range;
-        DirectX::XMFLOAT2 dummy; // 4の倍数にするためのダミー
-    };
-
-    //スポットライトの構造体
-    struct spot_lights
-    {
-        DirectX::XMFLOAT4 position;
-        DirectX::XMFLOAT4 direction;
-        DirectX::XMFLOAT4 color;
-        float range;
-        float innerCorn;
-        float outerCorn;
-        float intensity;
-
+        DirectX::XMFLOAT4    camera_up;
     };
 
     struct light_constants
@@ -82,40 +62,12 @@ private:
 		float directional_light_intensity;
 		DirectX::XMFLOAT3 dummy; // 4の倍数にするためのダミー
         DirectX::XMUINT4	light_count{ 0, 0, 0, 0 };	//	x : 空き, y : ポイントライト数, z : スポットライト数, w : 空き。
-        point_lights point_light[light_max]; // 最大36のポイントライト
-        spot_lights spot_light[6]; // 最大6つのスポットライト
+        ShadowRenderer::point_lights point_light[light_max]; // 最大36のポイントライト
+        ShadowRenderer::spot_lights spot_light[6]; // 最大6つのスポットライト
 
     };
 
-    //シャドウマップ
-    struct shadowmap_constants
-    {
-        DirectX::XMFLOAT4X4 light_view_projection; // ライトのビュー射影行列
-        float				shadow_attenuation{ 0.5f };
-        float				shadow_bias{ 0.0001f };
-        bool 				use_cascade;
-        float	            shadow_dummy;
-    };
-
-
-    //	カスケードシャドウマップ用定数バッファ
-    struct cascade_shadowmap_constants
-    {
-        DirectX::XMFLOAT4X4 light_view_projection[ShadowBufferSize];		//	ライトの位置から見た射影行列
-        DirectX::XMFLOAT4	shadow_bias{ 0.001f, 0.002f, 0.003f, 0.004f };	//	深度比較用のオフセット値
-        float				shadow_attenuation{ 0.5f };	//	影色
-        bool				display_cascade_area;
-        DirectX::XMFLOAT2	shadow_dummy;
-    };
-
-	//スポットシャドウマップ用定数バッファ
-    struct spot_shadowmap_constants
-    {
-        DirectX::XMFLOAT4X4 light_view_projection[SpotShadowCount];
-        float shadow_attenuation{ 0.5f };
-        float shadow_bias{ 0.005f };
-        DirectX::XMFLOAT2 dummy;
-    };
+    
 
     //半球ライティング
     struct hemisphere_light_constants
@@ -199,17 +151,12 @@ private:
 
     DirectX::XMFLOAT3   cameraPosition = {};
 
- 
-    cascade_shadowmap_constants cascade_shadow_constant;
-    Microsoft::WRL::ComPtr<ID3D11Buffer> cascade_shadowmap_constant_buffer;
-
 	// ライト関連
     DirectX::XMFLOAT4 ambient_color{ 1.0f, 1.0f, 1.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_direction{ 0.0f, -1.0f, 0.0f, 1.0f };
     DirectX::XMFLOAT4 directional_light_color{ 1.0f, 1.0f, 1.0f, 1.0f };
 	float directional_light_intensity = 0.7f;
-    std::vector<point_lights> pointLights;
-    std::vector<spot_lights> spotLights;
+
     Microsoft::WRL::ComPtr<ID3D11Buffer> light_constant_buffer;
 
    
@@ -231,26 +178,12 @@ private:
 
 	bool showPhysxDebug = true;
 
-	// シャドウマップ関連
-    Microsoft::WRL::ComPtr<ID3D11Buffer> shadowmap_constant_buffer;
-    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowmap_depth_stencil_view;
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowmap_shader_resource_view;
-    Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowmap_sampler_state;
-    Microsoft::WRL::ComPtr<ID3D11VertexShader> shadowmap_caster_vertex_shader;
-    Microsoft::WRL::ComPtr<ID3D11InputLayout> shadowmap_caster_input_layout;
-
-    DirectX::XMFLOAT4X4 light_view_projection;
-    float				shadow_bias{ 0.008f };
-	float shadow_attenuation{ 0.5f };
-
-
 private:	
     //	2D描画関係
     Microsoft::WRL::ComPtr<ID3D11VertexShader> sprite_vertex_shader;
     Microsoft::WRL::ComPtr<ID3D11InputLayout> sprite_input_layout;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> sprite_pixel_shader;
 
-    
 	//	高輝度抽出関係
 	luminance_extract_constants luminance_extract_constant;
 
@@ -282,30 +215,6 @@ private:
 
     //	ぼかした結果を書き込む
     std::unique_ptr<sprite>	add_luminance_extract_pass_sprite;
-
-
-private:
-	//カスケードシャドウマップ
-   
-    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> cascade_shadowmap_depth_stencil_views[ShadowBufferSize];
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cascade_shadowmap_shader_resource_views[ShadowBufferSize];
-
-    void renderCascadeShadowMap(float elapsed_time);
-
-    bool	use_cascade_shadow_map = true;
-
-private:
-	//スポットシャドウマップ
-    Microsoft::WRL::ComPtr<ID3D11Buffer>             spot_shadowmap_constant_buffer;
-    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>   spot_shadowmap_depth_stencil_views[SpotShadowCount];
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spot_shadowmap_shader_resource_views[SpotShadowCount];
-    spot_shadowmap_constants spot_shadow_constant;
-
-	void renderSpotShadowMap(float elapsedTime);
-
-    // 影の更新頻度を下げる
-	int spot_shadow_update_interval = 3; // 影の更新間隔（秒）
-	int spot_shadow_frame_count = 0; // フレームカウンタ
 
 private:
     //ドローコール表示用

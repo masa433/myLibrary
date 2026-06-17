@@ -278,6 +278,7 @@
     <ClCompile Include="Sources\Renderer\PrimitiveRenderer.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Renderer\ShadowRenderer.cpp" />
     <ClCompile Include="Sources\Renderer\shapeRenderer.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -404,6 +405,7 @@
     <ClInclude Include="Sources\Renderer\PrimitiveRenderer.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Renderer\ShadowRenderer.h" />
     <ClInclude Include="Sources\Renderer\shapeRenderer.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
