@@ -84,6 +84,7 @@ void CameraController::SyncCameraToController(const Camera& camera)
 void CameraController::SyncControllerToCamera(Camera& camera)
 {
 	camera.SetLookAt(eye, focus, up);
+	
 }
 
 
@@ -125,6 +126,7 @@ void CameraController::StopTrackingBall()
 	focus = savedFocus;
 
 	zoomTime = 0.0f;
+	currentFov = defaultFov;
 }
 
 // 更新処理
@@ -167,20 +169,27 @@ void CameraController::Update(float elapsedTime)
 			focus = smoothFocus;
 
 			
-			DirectX::XMFLOAT3 dir =
+			zoomTime += elapsedTime;
+			if (zoomTime > 1.0f) 
+			{
+				float fovLerp = 1.0f - expf(-zoomSpeed * elapsedTime);
+				currentFov += (zoomedFov - currentFov) * fovLerp;
+			}
+
+			/*DirectX::XMFLOAT3 dir =
 			{
 				focus.x - eye.x,
 				focus.y - eye.y,
 				focus.z - eye.z,
 			};
 			float len = sqrtf(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
-			if (len > 50.0f)
+			if (len > 30.0f)
 			{
 				float zoomLerp = 1.0f - expf(-zoomSpeed * elapsedTime);
 				eye.x += dir.x / len * len * zoomLerp;
 				eye.y += dir.y / len * len * zoomLerp;
 				eye.z += dir.z / len * len * zoomLerp;
-			}
+			}*/
 			
 		}
 
@@ -190,7 +199,11 @@ void CameraController::Update(float elapsedTime)
 		// カメラへ反映
 		// （呼び出し元が SyncControllerToCamera を毎フレーム呼ぶ前提）
 
-		eye.y = std::clamp(eye.y, minEyeY, maxEyeY);
+		//yのフォーカス点に高さ制限を設ける
+		if (focus.y < 0.5f)
+		{
+			focus.y = 0.5f;
+		}
 
 		return;
 	}

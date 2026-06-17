@@ -43,17 +43,29 @@ void scene_game::initialize()
 
     Camera& camera = Camera::Instance();
     camera.SetPerspectiveFov(
-        DirectX::XMConvertToRadians(45),
+        camera.GetFov(),
         screenWidth / screenHeight,
         camera_near_z,
         camera_far_z
     );
-    camera.SetLookAt(
-        { 0.0f, 1.2f, -3.5f },
-        { 0.0f, 0.0f, 14.0f },
-        { 0, 1, 0 }
-    );
-    cameraController.SyncCameraToController(camera);
+
+    //カメラ位置設定
+	cameraPresets[0] = { { 0.0f, 1.2f, -3.5f }, { 0.0f, 0.0f, 14.0f } }; // デフォルトカメラ
+
+	cameraPresets[1] = { { 0.0f, 20.0f, -30.0f }, { 0.0f, 0.0f, 14.0f } }; // 高い位置からの俯瞰カメラ
+
+	cameraPresets[2] = { { 45.0f, 30.0f, -30.0f }, { 0.0f, 0.0f, 14.0f } }; // プレイヤー視点カメラ
+
+	cameraPresets[3] = { { -15.0f, 10.0f, 120.0f }, { 0.0f, 0.5f, 5.0f } }; // フィールド全体を見渡すカメラ
+    //カメラ3はfovを狭くする
+	cameraControllers[3].SetFov(DirectX::XMConvertToRadians(2.0f));
+
+    for(int i = 0; i < CameraPresetCount; ++i)
+    {
+        Camera tmp;
+		tmp.SetLookAt(cameraPresets[i].eye, cameraPresets[i].focus, { 0.0f, 1.0f, 0.0f });
+		cameraControllers[i].SyncCameraToController(tmp);
+	}
 
     //定数バッファの作成
     {
@@ -563,27 +575,41 @@ void scene_game::update(float elapsed_time)
 
 	elapsed_time *= timeScale;
 
+    // 数字キーで切り替え
+    if (ImGui::IsKeyPressed(ImGuiKey_1)) activeCameraIndex = 0;
+    if (ImGui::IsKeyPressed(ImGuiKey_2)) activeCameraIndex = 1;
+    if (ImGui::IsKeyPressed(ImGuiKey_3)) activeCameraIndex = 2;
+	if (ImGui::IsKeyPressed(ImGuiKey_4)) activeCameraIndex = 3;
+
     // カメラ追跡の開始チェック
     if (Physics::Instance().GetBallWasHit())
     {
         Physics::Instance().ClearBallWasHit();
-        cameraController.StartTrackingBall(&Ball::Instance(), 3.0f, 0.5f);
+        for(auto& controller : cameraControllers)
+        {
+			controller.StartTrackingBall(&Ball::Instance(), 3.0f, -30.0f);
+		}
     }
+
+	float screenWidth = static_cast<float>(Graphics::Instance().GetScreenWidth());
+	float screenHeight = static_cast<float>(Graphics::Instance().GetScreenHeight());
 
     // カメラコントローラーの更新
 	Camera& camera = Camera::Instance();
-    cameraController.Update(elapsed_time);
-    cameraController.SyncControllerToCamera(camera);
+    cameraControllers[activeCameraIndex].Update(elapsed_time);
+    cameraControllers[activeCameraIndex].SyncControllerToCamera(camera);
+	camera.SetPerspectiveFov(cameraControllers[activeCameraIndex].GetCurrentFov(), screenWidth / screenHeight, camera_near_z, camera_far_z);
 	cameraPosition = camera.GetEye();
 
     // 追跡終了条件（例：ボールが止まったら）
-    if (cameraController.IsTrackingBall())
+    if (cameraControllers[activeCameraIndex].IsTrackingBall())
     {
         const auto& vel = Ball::Instance().GetVelocity();
         float speed = sqrtf(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
         if (speed < 0.5f)
         {
-            cameraController.StopTrackingBall();
+            for (auto& cc : cameraControllers)
+                cc.StopTrackingBall();
         }
     }
 
@@ -1657,7 +1683,7 @@ void scene_game::DrawGUI()
         ImGuiWindowFlags_NoScrollWithMouse);
     {
 		// ImGui::IsWindowHovered() でマウスオーバーを検知して、カメラコントローラーに伝える
-        cameraController.SetIsGameViewHovered(ImGui::IsWindowHovered());
+        cameraControllers[activeCameraIndex].SetIsGameViewHovered(ImGui::IsWindowHovered());
 
         // タイトルバー分を除いたコンテンツ領域
         ImVec2 avail = ImGui::GetContentRegionAvail();
@@ -1700,17 +1726,17 @@ void scene_game::DrawGUI()
         if (ImGui::DragFloat3("Eye", &eye.x, 0.1f))
         {
             camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
-            cameraController.SyncCameraToController(camera);
+            cameraControllers[activeCameraIndex].SyncCameraToController(camera);
         }
         if (ImGui::DragFloat3("Focus", &focus.x, 0.1f))
         {
             camera.SetLookAt(eye, focus, { 0.0f, 1.0f, 0.0f });
-            cameraController.SyncCameraToController(camera);
+            cameraControllers[activeCameraIndex].SyncCameraToController(camera);
         }
         ImGui::SliderFloat("Near Z", &camera_near_z, 0.1f, 100.0f);
         ImGui::SliderFloat("Far Z", &camera_far_z, 100.0f, 10000.0f);
         camera.SetPerspectiveFov(
-            DirectX::XMConvertToRadians(45),
+            camera.GetFov(),
             Graphics::Instance().GetScreenWidth() / Graphics::Instance().GetScreenHeight(),
             camera_near_z, camera_far_z);
     }

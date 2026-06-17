@@ -22,9 +22,7 @@ class scene_game : public scene2
 {
 private:
    
-    CameraController	cameraController;
-
-
+   
     //カメラのZ座標の描画範囲
     float camera_near_z = 1.0f;
     float camera_far_z = 1000000.0f;
@@ -159,6 +157,19 @@ private:
         float				sigma{ 10.0f };
         DirectX::XMFLOAT2	texture_size{ SCREEN_WIDTH, SCREEN_HEIGHT };
     };
+
+    //カメラの位置定義
+    struct CameraPresets
+    {
+        DirectX::XMFLOAT3 eye;
+        DirectX::XMFLOAT3 focus;
+	};
+
+    //カメラ配列
+	static constexpr int CameraPresetCount = 4;
+    std::array<CameraController, CameraPresetCount> cameraControllers;
+	std::array<CameraPresets, CameraPresetCount> cameraPresets;
+	int activeCameraIndex = 0;
 
 public:
     scene_game() {};

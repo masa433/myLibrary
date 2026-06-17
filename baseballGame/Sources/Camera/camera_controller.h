@@ -28,6 +28,9 @@ public:
 	//ボール追跡カメラが有効かどうか
 	bool IsTrackingBall() const { return trackingState != TrackState::None; }
 
+	float GetCurrentFov() const { return currentFov; }
+	void SetFov(float fov) { currentFov = fov; }
+
 private:
 	DirectX::XMFLOAT3		eye;
 	DirectX::XMFLOAT3		focus;
@@ -76,10 +79,16 @@ private:
 	// Smoothstep イージング（0→1 を滑らかに）
 	static float Smoothstep(float t);
 
+	
+
 private:
 	// 追跡開始前のカメラ位置を保存
 	DirectX::XMFLOAT3 savedEye = {};
 	DirectX::XMFLOAT3 savedFocus = {};
+
+	float currentFov = DirectX::XMConvertToRadians(45.0f);
+	float defaultFov = DirectX::XMConvertToRadians(45.0f);
+	float zoomedFov = DirectX::XMConvertToRadians(10.0f); // 追跡中のズーム画角
 
 	float zoomTime = 0.0f;
 	float zoomSpeed = 1.0f;

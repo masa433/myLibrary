@@ -43,6 +43,12 @@ public:
 	//‹“_æ“¾
 	const DirectX::XMFLOAT3& GetEye() const { return eye; }
 
+	//‰æŠpİ’è
+	void SetFov(float f) { fovY = f; }
+
+	//‰æŠpæ“¾
+	float GetFov() const { return fovY; }
+
 private:
 	DirectX::XMFLOAT4X4 view;
 	DirectX::XMFLOAT4X4 projection;
@@ -53,4 +59,7 @@ private:
 	DirectX::XMFLOAT3 up;
 	DirectX::XMFLOAT3 front;
 	DirectX::XMFLOAT3 right;
+
+public:
+	float fovY = DirectX::XMConvertToRadians(45.0f);
 };
