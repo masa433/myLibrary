@@ -99,6 +99,8 @@ private:
 		DirectX::XMFLOAT3 throwDirection; // 投球方向
 		DirectX::XMFLOAT3 spinAxis; // 回転軸
 		float rpm; // 回転数（回転/分）
+		DirectX::XMFLOAT3 visualRotationSpeed;// 見た目の回転速度（度/秒）
+		DirectX::XMFLOAT3 visualAngle; // 見た目の角度（度）
 
 	};
 	std::vector<PitchParameter> pitchParameters;

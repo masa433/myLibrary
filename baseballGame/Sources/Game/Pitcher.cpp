@@ -82,19 +82,20 @@ void Pitcher::InitializePitchSettings()
 {
 	pitchParameters.resize(PITCH_TYPE_COUNT); // 球種の数に合わせてリサイズ
 	// 各球種のパラメーターを設定
-	pitchParameters[static_cast<int>(PitchType::Fastball)] = { 150.0f, -2.5f, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.2f, -1.0f }, 2500.0f };
-	pitchParameters[static_cast<int>(PitchType::Slider)] = { 140.0f, -3.0f, { 0.0f, 200.0f, 0.0f }, { -0.02f, 0.2f, -1.0f }, 2200.0f };
-	pitchParameters[static_cast<int>(PitchType::Curveball)] = { 130.0f, -5.0f, { 300.0f, 0.0f, 0.0f }, { 0.02f, 0.1f, -1.0f }, 1800.0f };
-	pitchParameters[static_cast<int>(PitchType::Changeup)] = { 120.0f, -2.5f, { 100.0f, 100.0f, 100.0f }, { 0.02f, 0.2f, -1.0f }, 1500.0f };
-	pitchParameters[static_cast<int>(PitchType::Forkball)] = { 110.0f, -6.5f, { 400.0f, 100.0f, 100.0f }, { -0.02f, 0.1f, -1.0f }, 1200.0f };
-	pitchParameters[static_cast<int>(PitchType::TwoSeam)] = { 145.0f, -2.5f, { 200.0f, 50.0f, 50.0f }, { -0.02f, 0.2f, -1.02f }, 2300.0f };
-	pitchParameters[static_cast<int>(PitchType::Cutter)] = { 135.0f, -2.5f, { 0.0f, 300.0f, 0.0f }, { 0.02f, 0.2f, -1.02f }, 2000.0f };
-	pitchParameters[static_cast<int>(PitchType::Sinker)] = { 140.0f, -4.0f, { 300.0f, 100.0f, 100.0f }, { -0.02f, 0.1f, -1.02f }, 2200.0f };
-	pitchParameters[static_cast<int>(PitchType::VerticalSlider)] = { 130.0f, -3.5f, { 200.0f, 0.0f, 0.0f }, { 0.02f, 0.1f, -1.0f }, 1800.0f };
-	pitchParameters[static_cast<int>(PitchType::Splitter)] = { 120.0f, -6.0f, { 400.0f, 200.0f, 100.0f }, { -0.02f, 0.1f, -1.02f }, 1200.0f };
-	pitchParameters[static_cast<int>(PitchType::SlowCurve)] = { 100.0f, -8.0f, { 500.0f, 0.0f, 0.0f }, { 0.02f, 0.05f, -1.0f }, 800.0f };
-	pitchParameters[static_cast<int>(PitchType::Shooter)] = { 130.0f, -2.5f, { 0.0f, 0.0f, 300.0f }, { 0.02f, 0.2f, -1.02f }, 1800.0f };
-	pitchParameters[static_cast<int>(PitchType::Knuckleball)] = { 90.0f, -2.5f, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.2f, -1.0f }, 500.0f };
+	//左から投球速度(km/h), 発射角度(度), 投球方向, 回転軸, 回転数(rpm), 見た目の回転速度(度/秒), 見た目の角度(度)
+	pitchParameters[static_cast<int>(PitchType::Fastball)] = { 150.0f, -2.5f, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.2f, -1.0f }, 2500.0f, { 2500.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Slider)] = { 140.0f, -3.0f, { 0.0f, 200.0f, 0.0f }, { -0.02f, 0.2f, -1.0f }, 2200.0f, { 0.0f, -2200.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Curveball)] = { 130.0f, -5.0f, { 300.0f, 0.0f, 0.0f }, { 0.02f, 0.1f, -1.0f }, 1800.0f, { -1800.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Changeup)] = { 120.0f, -2.5f, { 100.0f, 100.0f, 100.0f }, { 0.02f, 0.2f, -1.0f }, 1500.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Forkball)] = { 110.0f, -6.5f, { 400.0f, 100.0f, 100.0f }, { -0.02f, 0.1f, -1.0f }, 1200.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::TwoSeam)] = { 145.0f, -2.5f, { 200.0f, 50.0f, 50.0f }, { -0.02f, 0.2f, -1.02f }, 2300.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Cutter)] = { 135.0f, -2.5f, { 0.0f, 300.0f, 0.0f }, { 0.02f, 0.2f, -1.02f }, 2000.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Sinker)] = { 140.0f, -4.0f, { 300.0f, 100.0f, 100.0f }, { -0.02f, 0.1f, -1.02f }, 2200.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::VerticalSlider)] = { 130.0f, -3.5f, { 200.0f, 0.0f, 0.0f }, { 0.02f, 0.1f, -1.0f }, 1800.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Splitter)] = { 120.0f, -6.0f, { 400.0f, 200.0f, 100.0f }, { -0.02f, 0.1f, -1.02f }, 1200.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::SlowCurve)] = { 100.0f, -8.0f, { 500.0f, 0.0f, 0.0f }, { 0.02f, 0.05f, -1.0f }, 800.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Shooter)] = { 130.0f, -2.5f, { 0.0f, 0.0f, 300.0f }, { 0.02f, 0.2f, -1.02f }, 1800.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Knuckleball)] = { 90.0f, -2.5f, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.2f, -1.0f }, 500.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 
 }
 
@@ -369,6 +370,11 @@ void Pitcher::DrawGUI()
 				ImGui::DragFloat(u8"リリース角度 (度)", &p.launchAngleDegrees, 0.1f, -10.0f, 10.0f, "%.1f deg");
 				ImGui::DragFloat3(u8"投球方向微調整", &p.throwDirection.x, 0.005f, -1.0f, 1.0f);
 				ImGui::DragFloat(u8"回転数 (RPM)", &p.rpm, 10.0f, 0.0f, 3500.0f, "%.0f RPM");
+				ImGui::Text(u8"【モデル回転速度（見た目専用、deg/s）】");
+				ImGui::DragFloat(u8"Visual Rot X (バックスピン)", &p.visualRotationSpeed.x, 10.0f, -3600.0f, 3600.0f, "%.0f");
+				ImGui::DragFloat(u8"Visual Rot Y (サイドスピン)", &p.visualRotationSpeed.y, 10.0f, -3600.0f, 3600.0f, "%.0f");
+				ImGui::DragFloat(u8"Visual Rot Z (ジャイロ)", &p.visualRotationSpeed.z, 10.0f, -3600.0f, 3600.0f, "%.0f");
+				ImGui::DragFloat3(u8"Visual Angle (deg)", &p.visualAngle.x, 1.0f, -360.0f, 360.0f);
 
 				ImGui::Spacing();
 				ImGui::Text(u8"【回転軸の設定】");
@@ -394,7 +400,7 @@ void Pitcher::DrawGUI()
 				//ImGuiのDrawListを使って3Dグラフィック表示
 				ImDrawList* drawList = ImGui::GetWindowDrawList();
 				ImVec2 center = ImGui::GetCursorScreenPos();
-				center.x = 70.0f, center.y += 70.0f;// 中心位置を調整
+				center.x += 70.0f, center.y += 70.0f;// 中心位置を調整
 				float radius = 55.0f; // 半径
 
 				//立体球体の背景
@@ -409,7 +415,7 @@ void Pitcher::DrawGUI()
 				{
 					//3D回転の簡易適用
 						const float cosP = 0.906f, sinP = 0.422f; // X軸回転（約25度）
-						const float cosY = 0.866f, sinY = 0.5f;   // Y軸回転（約30度）
+						const float cosY = -0.866f, sinY = 0.5f;   // Y軸回転（約30度）
 
 						//Y軸回転
 						float x1 = x * cosY + z * sinY;// Y軸回転
@@ -492,9 +498,9 @@ void Pitcher::DrawGUI()
 					//軌跡上の点を計算するヘルパーラムダ関数
 					auto OrbitPoint = [&](float angle) -> Proj3D
 					{
-							float px = (cosf(angle) * u.x + sinf(angle) * v.x) * orbitRadius;
-							float py = (cosf(angle) * u.y + sinf(angle) * v.y) * orbitRadius;
-							float pz = (cosf(angle) * u.z + sinf(angle) * v.z) * orbitRadius;
+							float px = (cosf(-angle) * u.x + sinf(-angle) * v.x) * orbitRadius;
+							float py = (cosf(-angle) * u.y + sinf(-angle) * v.y) * orbitRadius;
+							float pz = (cosf(-angle) * u.z + sinf(-angle) * v.z) * orbitRadius;
 							return Project3DTo2D(px, py, pz);
 					};
 
@@ -540,11 +546,11 @@ void Pitcher::DrawGUI()
 					ImVec2 right = ImVec2(headPt.pos.x - dir.x * 6.0f + dir.y * 6.0f, headPt.pos.y - dir.y * 6.0f - dir.x * 6.0f);
 					drawList->AddTriangleFilled(tip, left, right, arrowColor);
 
-					// 補助テキスト表示
+					/// 投手目線に合わせた補助ガイドテキスト表示
 					ImGui::SetCursorScreenPos(ImVec2(center.x + radius + 20.0f, center.y - 30.0f));
-					ImGui::Text(u8"←前 (打者方向)");
+					ImGui::Text(u8"→奥 (キャッチャー方向)");
 					ImGui::SetCursorScreenPos(ImVec2(center.x + radius + 20.0f, center.y - 10.0f));
-					ImGui::Text(u8"↑上 (ホップ)");
+					ImGui::Text(u8"↑上 (ホップ成分)");
 				}
 
 				//描画位置の下側にUを復帰させるためのダミー領域の確保
@@ -624,7 +630,7 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 	else
 	{
 		ApplyPhysicsToBall(elapsedTime);
-		Ball::Instance().UpdateFromPhysics(elapsedTime, rotationSpeed);
+		Ball::Instance().UpdateFromPhysics(elapsedTime);
 
 		if (Ball::Instance().GetWorldPosition().y < 0.0f)
 		{
@@ -692,7 +698,8 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			DirectX::XMStoreFloat3(&normalizedDir, dir);
 
 			physx::PxVec3 initialVelocity(normalizedDir.x * speedMs, normalizedDir.y * speedMs, normalizedDir.z * speedMs);
-			Ball::Instance().Throw(initialVelocity, GetSpinAxisFromPitchType());
+			const auto& param = pitchParameters[static_cast<int>(selectedPitchType)];
+			Ball::Instance().Throw(initialVelocity, GetSpinAxisFromPitchType(), param.visualRotationSpeed, param.visualAngle);
 
 			char debugMessage[128];
 			snprintf(debugMessage, sizeof(debugMessage), u8"Throw Speed: %.2f km/h\n", initialVelocity.magnitude() * 3.6f);
@@ -806,6 +813,18 @@ void Pitcher::SelectPitchType()
 	rotationSpeed.x = param.spinAxis.x * rpmToDegPerSec;
 	rotationSpeed.y = param.spinAxis.y * rpmToDegPerSec;
 	rotationSpeed.z = param.spinAxis.z * rpmToDegPerSec;
+
+	// 見た目専用の回転速度と見た目角度を Ball に適用
+	// visualRotationSpeed は deg/s をそのまま渡す（Ball 側で deg/s を deg->rad に変換して使っている実装なら合わせてください）
+	Ball::Instance().SetModelRotationSpeed(param.visualRotationSpeed);
+
+	// visualAngle は Pitcher 側で度 -> ラジアン変換して Ball に渡す（Ball::SetModelAngle はラジアン想定）
+	DirectX::XMFLOAT3 visualAngleRad = {
+		DirectX::XMConvertToRadians(param.visualAngle.x),
+		DirectX::XMConvertToRadians(param.visualAngle.y),
+		DirectX::XMConvertToRadians(param.visualAngle.z)
+	};
+	Ball::Instance().SetModelAngle(visualAngleRad);
 
 	if (consoleLog) {
 		char msg[64];

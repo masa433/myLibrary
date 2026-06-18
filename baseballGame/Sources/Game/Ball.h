@@ -30,10 +30,10 @@ public:
 	void DrawGUI();
 
 	void AttachToHand(const std::vector<gltf_model::node>& animatedNodes, const DirectX::XMFLOAT4X4& ownerTransform, const char* handName);
-	void UpdateFromPhysics(float elapsedTime, const DirectX::XMFLOAT3& rotationSpeed);
+	void UpdateFromPhysics(float elapsedTime);
 	void UpdateCollider();
 	void ApplyPitchPhysics(bool isKnuckleball, const physx::PxVec3& windVelocity);
-	void Throw(const physx::PxVec3& initialVelocity, const physx::PxVec3& angularVelocity);
+	void Throw(const physx::PxVec3& initialVelocity, const physx::PxVec3& angularVelocity, const DirectX::XMFLOAT3& visualRotationSpeed, const DirectX::XMFLOAT3& visualAngle);
 	void ResetMotion();
 
 	const DirectX::XMFLOAT3& GetBallPosition() const { return position; }
@@ -98,6 +98,12 @@ private:
 	physx::PxRigidDynamic* collider = nullptr;
 	physx::PxMaterial* material = nullptr;
 
+	// モデルの回転管理
+	DirectX::XMFLOAT3 modelAngle = { 0.0f, 0.0f, 0.0f };       // モデル独自の累積回転角
+	DirectX::XMFLOAT3 modelRotationSpeed = { 0.0f, 0.0f, 0.0f }; // deg/sec、Throw時に設定
+
+	
+
 private:
 	// ボールの軌跡保存用
 	std::deque<DirectX::XMFLOAT3> ballTrail;
@@ -145,4 +151,9 @@ public:
 	bool throughStrikeZone = false;
 	bool GetThroughStrikeZone() const { return throughStrikeZone; }
 	void SetThroughStrikeZone(bool value) { throughStrikeZone = value; }
+
+	void SetModelRotationSpeed(const DirectX::XMFLOAT3& speed) { modelRotationSpeed = speed; }
+	const DirectX::XMFLOAT3& GetModelAngle() const { return modelAngle; }
+
+	void SetModelAngle(const DirectX::XMFLOAT3& angle) { modelAngle = angle; }
 };

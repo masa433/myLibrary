@@ -24,11 +24,11 @@ void Ball::Initialize()
 	model = std::make_unique<gltf_model>(device, ".\\resources\\ball\\ball.glb");
 
 	position = { 0.0f, 0.0f, 0.05f };
-	scale = { 1.0f, 1.0f, 1.0f };
+	scale = { 1.2f, 1.2f, 1.2f };
 	angle = { 0.0f, 0.0f, 0.0f };
 	worldPosition = { 0.0f, 0.0f, 0.0f };
 	worldAngle = angle;
-	worldScale = { 1.0f, 1.0f, 1.0f };
+	worldScale = { 1.2f, 1.2f, 1.2f };
 	debugRadius = 0.037f;
 
 	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
@@ -58,7 +58,7 @@ void Ball::Uninitialize()
 
 void Ball::Update(float elapsedTime)
 {
-	UpdateFromPhysics(elapsedTime, { 0.0f, 0.0f, 0.0f });
+	
 }
 
 void Ball::Render(const RenderContext& rc, ModelRenderer* renderer, bool isThrown)
@@ -71,7 +71,7 @@ void Ball::Render(const RenderContext& rc, ModelRenderer* renderer, bool isThrow
 		return;
 	}
 
-	model->render(rc.deviceContext, isThrown ? worldTransform : handTransform, {});
+	model->render(rc.deviceContext, worldTransform, {});
 
 	// トレイルの描画
 	if (ballTrail.size() > 1)
@@ -125,6 +125,21 @@ void Ball::DrawGUI()
 		ImGui::DragFloat("Trail Width", &trailWidth, 0.01f, 0.01f, 1.0f, "%.2f");
 		ImGui::DragFloat("MaxTrailLength", &MaxTrailLength, 0.01f, 0.01f, 1.0f, "%.2f");
 	}
+
+	if (ImGui::CollapsingHeader("Ball Visual Rotation"))
+	{
+		ImGui::Text("Model Rotation Speed (deg/s) - 独立設定");
+		ImGui::DragFloat("Rot X (バックスピン/トップスピン)", &modelRotationSpeed.x, 10.0f, -3600.0f, 3600.0f, "%.0f");
+		ImGui::DragFloat("Rot Y (サイドスピン)", &modelRotationSpeed.y, 10.0f, -3600.0f, 3600.0f, "%.0f");
+		ImGui::DragFloat("Rot Z (ジャイロ)", &modelRotationSpeed.z, 10.0f, -3600.0f, 3600.0f, "%.0f");
+
+		ImGui::Separator();
+		ImGui::DragFloat3("Model Angle (rad)", &modelAngle.x, 0.01f);
+		if (ImGui::Button("Reset Model Angle"))
+			modelAngle = { 0.0f, 0.0f, 0.0f };
+		if (ImGui::Button("Reset Rotation Speed"))
+			modelRotationSpeed = { 0.0f, 0.0f, 0.0f };
+	}
 #endif
 }
 
@@ -165,20 +180,38 @@ void Ball::AttachToHand(const std::vector<gltf_model::node>& animatedNodes, cons
 	// トレイルをリセット
 	ballTrail.clear();
 	trailRecordTimer = 0.0f;
+	modelAngle = { 0.0f, 0.0f, 0.0f };
+	modelRotationSpeed = { 0.0f, 0.0f, 0.0f };
+
+	UpdateWorldTransform();
 }
 
-void Ball::UpdateFromPhysics(float elapsedTime, const DirectX::XMFLOAT3& rotationSpeed)
+void Ball::UpdateFromPhysics(float elapsedTime)
 {
 	if (!collider)
 	{
 		return;
 	}
 
-	physx::PxTransform pxTransform = collider->getGlobalPose();
-	worldPosition = { pxTransform.p.x, pxTransform.p.y, pxTransform.p.z };
-	worldAngle.x += rotationSpeed.x * elapsedTime;
-	worldAngle.y += rotationSpeed.y * elapsedTime;
-	worldAngle.z += rotationSpeed.z * elapsedTime;
+	// 1. PhysXコライダーからは「位置」だけを取得する
+	physx::PxTransform pose = collider->getGlobalPose();
+	worldPosition = DirectX::XMFLOAT3(pose.p.x, pose.p.y, pose.p.z);
+
+	// 2. 「回転」はコライダーを完全に無視し、純粋なパラメーター(rotationSpeed)のみで自前計算する
+	// rotationSpeed は「度/秒(deg/s)」で計算されているため、経過時間を掛けて今フレームの回転量を求める
+	modelAngle.x += DirectX::XMConvertToRadians(modelRotationSpeed.x) * elapsedTime;
+	modelAngle.y += DirectX::XMConvertToRadians(modelRotationSpeed.y) * elapsedTime;
+	modelAngle.z += DirectX::XMConvertToRadians(modelRotationSpeed.z) * elapsedTime;
+
+	// 3. 角度が無限に増え続けないように 0 ～ 2π の範囲に丸める
+	auto WrapAngle = [](float& angle) {
+		const float twoPi = 2.0f * 3.14159265f;
+		if (angle > twoPi) angle -= twoPi;
+		if (angle < 0.0f) angle += twoPi;
+		};
+	WrapAngle(modelAngle.x);
+	WrapAngle(modelAngle.y);
+	WrapAngle(modelAngle.z);
 	UpdateWorldTransform();
 
 	// 物理演算中（飛んでいる時）にトレイルを記録
@@ -260,7 +293,7 @@ void Ball::ApplyPitchPhysics(bool isKnuckleball, const physx::PxVec3& windVeloci
 	}
 }
 
-void Ball::Throw(const physx::PxVec3& initialVelocity, const physx::PxVec3& angularVelocity)
+void Ball::Throw(const physx::PxVec3& initialVelocity, const physx::PxVec3& angularVelocity, const DirectX::XMFLOAT3& visualRotationSpeed, const DirectX::XMFLOAT3& visualAngle)
 {
 	if (!collider)
 	{
@@ -268,7 +301,7 @@ void Ball::Throw(const physx::PxVec3& initialVelocity, const physx::PxVec3& angu
 	}
 
 	startPosition = worldPosition;
-	worldScale = { 1.0f, 1.0f, 1.0f };
+	worldScale = scale;
 	worldAngle = angle;
 	collider->setLinearVelocity(initialVelocity);
 	collider->setAngularVelocity(angularVelocity);
@@ -276,6 +309,12 @@ void Ball::Throw(const physx::PxVec3& initialVelocity, const physx::PxVec3& angu
 	UpdateWorldTransform();
 	ballTrail.clear();
 	trailRecordTimer = 0.0f;
+	modelRotationSpeed = visualRotationSpeed;
+	modelAngle = {                             // ← 追加
+		DirectX::XMConvertToRadians(visualAngle.x),
+		DirectX::XMConvertToRadians(visualAngle.y),
+		DirectX::XMConvertToRadians(visualAngle.z)
+	};
 }
 
 void Ball::ResetMotion()
@@ -291,7 +330,7 @@ void Ball::ResetMotion()
 void Ball::UpdateWorldTransform()
 {
 	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(worldScale.x, worldScale.y, worldScale.z);
-	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(worldAngle.x, worldAngle.y, worldAngle.z);
+	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(modelAngle.x, modelAngle.y, modelAngle.z);
 	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(worldPosition.x, worldPosition.y, worldPosition.z);
 	DirectX::XMStoreFloat4x4(&worldTransform, S * R * T);
 }
