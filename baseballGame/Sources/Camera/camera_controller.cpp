@@ -170,3 +170,13 @@ void CameraController::Update(float elapsedTime)
 
 	
 }
+
+void CameraController::DrawGUI()
+{
+	//FOV�̕ύX
+	if (ImGui::CollapsingHeader("camera"))
+	{
+		ImGui::DragFloat("fov", &currentFov, 0.1f, 1.0f, 180.0f);
+	}
+	
+}

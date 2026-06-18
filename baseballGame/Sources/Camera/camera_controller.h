@@ -37,6 +37,8 @@ public:
 		up = { 0.0f, 1.0f, 0.0f };
 	}
 
+	void DrawGUI();
+
 private:
 	DirectX::XMFLOAT3		eye;
 	DirectX::XMFLOAT3		focus;
