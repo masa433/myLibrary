@@ -72,7 +72,29 @@ void Pitcher::Initialize()
 		
 	}
 	
-	
+	InitializePitchSettings();
+	SelectPitchType();
+
+}
+
+//ピッチセッティングの初期化
+void Pitcher::InitializePitchSettings()
+{
+	pitchParameters.resize(PITCH_TYPE_COUNT); // 球種の数に合わせてリサイズ
+	// 各球種のパラメーターを設定
+	pitchParameters[static_cast<int>(PitchType::Fastball)] = { 150.0f, -2.5f, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.2f, -1.0f }, 2500.0f };
+	pitchParameters[static_cast<int>(PitchType::Slider)] = { 140.0f, -3.0f, { 0.0f, 200.0f, 0.0f }, { -0.02f, 0.2f, -1.0f }, 2200.0f };
+	pitchParameters[static_cast<int>(PitchType::Curveball)] = { 130.0f, -5.0f, { 300.0f, 0.0f, 0.0f }, { 0.02f, 0.1f, -1.0f }, 1800.0f };
+	pitchParameters[static_cast<int>(PitchType::Changeup)] = { 120.0f, -2.5f, { 100.0f, 100.0f, 100.0f }, { 0.02f, 0.2f, -1.0f }, 1500.0f };
+	pitchParameters[static_cast<int>(PitchType::Forkball)] = { 110.0f, -6.5f, { 400.0f, 100.0f, 100.0f }, { -0.02f, 0.1f, -1.0f }, 1200.0f };
+	pitchParameters[static_cast<int>(PitchType::TwoSeam)] = { 145.0f, -2.5f, { 200.0f, 50.0f, 50.0f }, { -0.02f, 0.2f, -1.02f }, 2300.0f };
+	pitchParameters[static_cast<int>(PitchType::Cutter)] = { 135.0f, -2.5f, { 0.0f, 300.0f, 0.0f }, { 0.02f, 0.2f, -1.02f }, 2000.0f };
+	pitchParameters[static_cast<int>(PitchType::Sinker)] = { 140.0f, -4.0f, { 300.0f, 100.0f, 100.0f }, { -0.02f, 0.1f, -1.02f }, 2200.0f };
+	pitchParameters[static_cast<int>(PitchType::VerticalSlider)] = { 130.0f, -3.5f, { 200.0f, 0.0f, 0.0f }, { 0.02f, 0.1f, -1.0f }, 1800.0f };
+	pitchParameters[static_cast<int>(PitchType::Splitter)] = { 120.0f, -6.0f, { 400.0f, 200.0f, 100.0f }, { -0.02f, 0.1f, -1.02f }, 1200.0f };
+	pitchParameters[static_cast<int>(PitchType::SlowCurve)] = { 100.0f, -8.0f, { 500.0f, 0.0f, 0.0f }, { 0.02f, 0.05f, -1.0f }, 800.0f };
+	pitchParameters[static_cast<int>(PitchType::Shooter)] = { 130.0f, -2.5f, { 0.0f, 0.0f, 300.0f }, { 0.02f, 0.2f, -1.02f }, 1800.0f };
+	pitchParameters[static_cast<int>(PitchType::Knuckleball)] = { 90.0f, -2.5f, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.2f, -1.0f }, 500.0f };
 
 }
 
@@ -318,28 +340,236 @@ void Pitcher::DrawGUI()
 		}
 		Ball::Instance().DrawGUI();
 
-		if (ImGui::CollapsingHeader("Pitch Settings"))
+		if (ImGui::CollapsingHeader(u8"球種エディター"))
 		{
-			ImGui::DragFloat("Throw Timing", &throwTiming, 0.01f, 0.0f, 1.0f);
-			ImGui::DragFloat("Ball Speed (km/h)", &ballSpeedKmh, 10.0f, 180.0f);
-			ImGui::DragFloat("Launch Angle (deg)", &launchAngleDegrees, -20.0f, 10.0f);
+			const char* pitchTypeNames[] = {
+				u8"ストレート", u8"スライダー", u8"カーブ", u8"チェンジアップ", u8"フォーク",
+				u8"ツーシーム", u8"カットボール", u8"シンカー", u8"縦スライダー", u8"スプリット",
+				u8"スローカーブ", u8"シュート", u8"ナックルボール"
+			};
 
+			//現在選択されている球種を基準に編集
+			int editingPitchIndex = static_cast<int>(selectedPitchType);
+			if (ImGui::Combo(u8"編集する球種", &editingPitchIndex, pitchTypeNames, IM_ARRAYSIZE(pitchTypeNames)))// 選択された球種を編集するためのコンボボックス
+			{
+				selectedPitchType = static_cast<PitchType>(editingPitchIndex);// 選択された球種を更新
+				SelectPitchType(); // 球種選択
+			}
 			ImGui::Separator();
-			ImGui::Text("Throw Direction");
-			ImGui::DragFloat3("Throw Direction", &throwDirection.x, -1.0f, 1.0f);
+			ImGui::Spacing();
 
-			ImGui::Separator();
-			ImGui::Text("Rotation Settings");
-			ImGui::SliderFloat(u8"X軸回転速度 (サイドスピン)", &rotationSpeed.x, -150.0f, 150.0f);
-			ImGui::SliderFloat(u8"Y軸回転速度", &rotationSpeed.y, -150.0f, 150.0f);
-			ImGui::SliderFloat(u8"Z軸回転速度 (バック/トップスピン)", &rotationSpeed.z, -150.0f, 150.0f);
+			if (editingPitchIndex >= 0 && editingPitchIndex < static_cast<int>(pitchParameters.size()))
 
-			ImGui::Separator();
-			ImGui::Checkbox("Is Ball Thrown", &isBallThrown);
+			{
 
-			float speedMs = ballSpeedKmh / 3.6f;
-			ImGui::Text("Speed: %.2f m/s (%.0f km/h)", speedMs, ballSpeedKmh);
-			
+				PitchParameter& p = pitchParameters[editingPitchIndex];
+
+				// 各種パラメータのスライダー
+				ImGui::DragFloat(u8"球速 (km/h)", &p.ballSpeedKmh, 0.5f, 60.0f, 180.0f, "%.1f km/h");
+				ImGui::DragFloat(u8"リリース角度 (度)", &p.launchAngleDegrees, 0.1f, -10.0f, 10.0f, "%.1f deg");
+				ImGui::DragFloat3(u8"投球方向微調整", &p.throwDirection.x, 0.005f, -1.0f, 1.0f);
+				ImGui::DragFloat(u8"回転数 (RPM)", &p.rpm, 10.0f, 0.0f, 3500.0f, "%.0f RPM");
+
+				ImGui::Spacing();
+				ImGui::Text(u8"【回転軸の設定】");
+
+				// 軸の各成分をスライダーで調整
+				bool axisChanged = false;
+				axisChanged |= ImGui::SliderFloat(u8"Axis X (ホップ/ドロップ)", &p.spinAxis.x, -1.0f, 1.0f, "%.2f");
+				axisChanged |= ImGui::SliderFloat(u8"Axis Y (シュート/スライダー)", &p.spinAxis.y, -1.0f, 1.0f, "%.2f");
+				axisChanged |= ImGui::SliderFloat(u8"Axis Z (ジャイロ成分)", &p.spinAxis.z, -1.0f, 1.0f, "%.2f");
+
+				// 軸が変更されたら常に正規化（長さを1にする）して方向を維持する
+				if (axisChanged) {
+					DirectX::XMVECTOR v = DirectX::XMLoadFloat3(&p.spinAxis);
+					if (DirectX::XMVector3Length(v).m128_f32[0] > 0.001f) {
+						v = DirectX::XMVector3Normalize(v);
+						DirectX::XMStoreFloat3(&p.spinAxis, v);
+					}
+				}
+
+				ImGui::Spacing();
+				ImGui::Text(u8"回転軸の3D立体視覚化");
+
+				//ImGuiのDrawListを使って3Dグラフィック表示
+				ImDrawList* drawList = ImGui::GetWindowDrawList();
+				ImVec2 center = ImGui::GetCursorScreenPos();
+				center.x = 70.0f, center.y += 70.0f;// 中心位置を調整
+				float radius = 55.0f; // 半径
+
+				//立体球体の背景
+				drawList->AddCircleFilled(center,radius,IM_COL32(50,50,50,255));
+
+				//投影結果をまとめて返すための構造体
+				struct Proj3D { ImVec2 pos; float depth; };
+
+				//3D空間から2D画面への簡易投影ラムダ関数
+				// 視角を少し斜め上（X軸を約25度、Y軸を約30度回転）に傾けて立体感を出す
+				auto Project3DTo2D = [&](float x, float y, float z) -> Proj3D
+				{
+					//3D回転の簡易適用
+						const float cosP = 0.906f, sinP = 0.422f; // X軸回転（約25度）
+						const float cosY = 0.866f, sinY = 0.5f;   // Y軸回転（約30度）
+
+						//Y軸回転
+						float x1 = x * cosY + z * sinY;// Y軸回転
+						float z1 = -x * sinY + z * cosY;// Y軸回転
+
+						//X軸回転
+						float y2 = y * cosP - z1 * sinP;
+						float z2 = y * sinP + z1 * cosP;
+
+						// 2D投影（簡易的にX軸とY軸をそのまま使用）
+						return Proj3D{ ImVec2(center.x + x1, center.y - y2), z2 /*深度情報としてZ軸回転後の値を使用*/ };
+				};
+
+				//立体感を出すワイヤーフレームの描画
+				const int segments = 32;
+				ImVec2 prevPtH, prevPtV;
+				for (int i = 0; i <= segments; ++i)
+				{
+					float theta = (i * 2.0f * 3.14159265f) / segments;// 0～2π
+
+					//横方向の輪郭
+					ImVec2 ptH = Project3DTo2D(cosf(theta) * radius, 0.0f, sinf(theta) * radius).pos;
+
+					//縦方向の輪郭
+					ImVec2 ptV = Project3DTo2D(0.0f, cosf(theta) * radius, sinf(theta) * radius).pos;
+
+					if (i > 0) {
+						drawList->AddLine(prevPtH, ptH, IM_COL32(110, 110, 120, 255), 1.0f);// 横方向の輪郭線
+						drawList->AddLine(prevPtV, ptV, IM_COL32(110, 110, 120, 255), 1.0f);// 縦方向の輪郭線
+					}
+					prevPtH = ptH;// 前の点を更新
+					prevPtV = ptV;// 前の点を更新
+				}
+
+				//外枠の輪郭
+				drawList->AddCircle(center, radius, IM_COL32(240, 240, 240, 255), 0, 2.0f);// 外枠の輪郭線
+
+				//3D回転軸ベクトルの計算と描画
+				float axisLen = sqrtf(p.spinAxis.x * p.spinAxis.x + p.spinAxis.y * p.spinAxis.y + p.spinAxis.z * p.spinAxis.z);
+
+				if (axisLen > 0.001f)
+				{
+					// 回転軸の方向を正規化
+					float axisX = p.spinAxis.x / axisLen;
+					float axisY = p.spinAxis.y / axisLen;
+					float axisZ = p.spinAxis.z / axisLen;
+					
+					//球体を突き抜けるように回転軸を描画
+					float arrowLength = radius * 1.4f; // 矢印の長さ
+					ImVec2 axisStart = Project3DTo2D(-axisX * arrowLength, -axisY * arrowLength, -axisZ * arrowLength).pos;
+					ImVec2 axisEnd = Project3DTo2D(axisX * arrowLength, axisY * arrowLength, axisZ * arrowLength).pos;
+
+					//回転軸を太線で描画
+					drawList->AddLine(axisStart, axisEnd, IM_COL32(255, 60, 60, 255), 3.0f);
+
+					//矢印の先端に黄色いピンヘッドを配置
+					drawList->AddCircleFilled(axisEnd, 5.0f, IM_COL32(255, 255, 0, 255));
+
+					//軸の後端に少し小さなピンを配置して前後をわかりやすく
+					drawList->AddCircleFilled(axisStart, 3.0f, IM_COL32(200, 50, 50, 255));
+
+					//ボールの周りを矢印が回る処理
+
+					//軸に垂直な平面の正規直交基底を計算
+					DirectX::XMVECTOR axisVec = DirectX::XMVectorSet(axisX, axisY, axisZ, 0.0f);
+
+					// 回転軸がほぼY軸に近い場合はX軸を、そうでない場合はY軸を補助ベクトルとして使用して垂直な平面を定義
+					DirectX::XMVECTOR helper = (fabsf(axisY) < 0.95f) ? DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f) : DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+					DirectX::XMVECTOR uVec = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(helper, axisVec)); // 軸に垂直なベクトルU
+					DirectX::XMVECTOR vVec = DirectX::XMVector3Cross(axisVec, uVec); // 軸に垂直なベクトルV
+
+					DirectX::XMFLOAT3 u, v;
+					DirectX::XMStoreFloat3(&u, uVec);
+					DirectX::XMStoreFloat3(&v, vVec);
+
+					const float orbitRadius = radius * 1.1f;// ボールの周りを回る矢印の半径
+					const float angularSpeed = 2.2f;// 回転速度（ラジアン/秒）
+					const float t = (float)ImGui::GetTime();// 経過時間を取得
+
+					//軌跡上の点を計算するヘルパーラムダ関数
+					auto OrbitPoint = [&](float angle) -> Proj3D
+					{
+							float px = (cosf(angle) * u.x + sinf(angle) * v.x) * orbitRadius;
+							float py = (cosf(angle) * u.y + sinf(angle) * v.y) * orbitRadius;
+							float pz = (cosf(angle) * u.z + sinf(angle) * v.z) * orbitRadius;
+							return Project3DTo2D(px, py, pz);
+					};
+
+					//軌跡の描画
+					const int trailCount = 10;// 軌跡の点の数
+					for (int i = trailCount; i >= 1; --i)
+					{
+						float trailAngle = t * angularSpeed - (i * 0.18f);// 過去の点を少しずつ遅らせる
+						Proj3D trailPt = OrbitPoint(trailAngle);// 軌跡の点の位置を計算
+
+						bool isFront = trailPt.depth >= 0.0f; // 視点から見て前か後ろかを判定
+						float fade = 1.0f - (float)i / trailCount; // 後ろの点ほど透明にする
+						int alpha = (int)(fade * (isFront ? 220.0f : 80.0f)); // 裏側はさらに薄く＝奥行き感
+
+						float dotSize = 2.0f + fade * 2.5f; // 後ろの点ほど小さくする
+
+						drawList->AddCircleFilled(trailPt.pos, dotSize, IM_COL32(80, 210, 255, alpha));
+					}
+
+					//矢印の先端を描画
+					float headAngle = t * angularSpeed;
+					Proj3D headPt = OrbitPoint(headAngle);
+
+					//進行方向を求める
+					Proj3D ahead = OrbitPoint(headAngle + 0.12f);// 少し先の点を計算
+					ImVec2 dir = ImVec2(ahead.pos.x - headPt.pos.x, ahead.pos.y - headPt.pos.y);
+
+					//矢印の向きを正規化
+					float dirLen = sqrtf(dir.x * dir.x + dir.y * dir.y);
+					if (dirLen > 0.0001f)
+					{
+						dir.x /= dirLen;
+						dir.y /= dirLen;
+					}
+
+					//矢印の先端を描画
+					bool headIsFront = headPt.depth >= 0.0f;
+					ImU32 arrowColor = IM_COL32(80, 220, 255, headIsFront ? 255 : 130);
+
+					// 進行方向を向いた三角形（矢印）を描く
+					ImVec2 tip = ImVec2(headPt.pos.x + dir.x * 8.0f, headPt.pos.y + dir.y * 8.0f);
+					ImVec2 left = ImVec2(headPt.pos.x - dir.x * 6.0f - dir.y * 6.0f, headPt.pos.y - dir.y * 6.0f + dir.x * 6.0f);
+					ImVec2 right = ImVec2(headPt.pos.x - dir.x * 6.0f + dir.y * 6.0f, headPt.pos.y - dir.y * 6.0f - dir.x * 6.0f);
+					drawList->AddTriangleFilled(tip, left, right, arrowColor);
+
+					// 補助テキスト表示
+					ImGui::SetCursorScreenPos(ImVec2(center.x + radius + 20.0f, center.y - 30.0f));
+					ImGui::Text(u8"←前 (打者方向)");
+					ImGui::SetCursorScreenPos(ImVec2(center.x + radius + 20.0f, center.y - 10.0f));
+					ImGui::Text(u8"↑上 (ホップ)");
+				}
+
+				//描画位置の下側にUを復帰させるためのダミー領域の確保
+				ImGui::SetCursorScreenPos(ImVec2(center.x - 70.0f, center.y + radius + 30.0f));
+				ImGui::Dummy(ImVec2(150.0f, 10.0f));
+
+				ImGui::Text(u8"赤線：回転軸（黄点が回転のベクトルの向き＝右ねじの法則）");
+				ImGui::Text(u8"水色の矢印：軸の周りを実際に回っているスピンの方向");
+				ImGui::Text(u8"・X軸(横): バックスピン / Y軸(縦): サイドスピン / Z軸(前後): ジャイロ");
+
+				ImGui::Spacing();
+				if (ImGui::Button(u8"このパラメータでテスト投球開始", ImVec2(240, 30))) {
+					SelectPitchType(); // 選択パラメータを現在の投球に適用
+					currentState = State::Throwing;
+					stateTime = 0.0f;
+				}
+				ImGui::Spacing();
+
+				ImGui::Separator();
+				ImGui::Checkbox("Is Ball Thrown", &isBallThrown);
+
+				float speedMs = ballSpeedKmh / 3.6f;
+				ImGui::Text("Speed: %.2f m/s (%.0f km/h)", speedMs, ballSpeedKmh);
+				
+			}
 		}
 
 		// 変更後
@@ -483,7 +713,7 @@ physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 	const float RPM_TO_RAD_PER_SEC = 2.0f * 3.14159265f / 60.0f;
 	const float side = IsRightPitcher() ? 1.0f : -1.0f; // 左投手はY軸反転
 
-	switch (selectedPitchType)
+	/*switch (selectedPitchType)
 	{
 	case PitchType::Fastball:
 		return physx::PxVec3(2500.0f * RPM_TO_RAD_PER_SEC, 0.0f, 0.0f);
@@ -526,7 +756,19 @@ physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 
 	default:
 		return physx::PxVec3(0.0f, 0.0f, 0.0f);
-	}
+	}*/
+	int index = static_cast<int>(selectedPitchType);
+	const auto& params = pitchParameters[index];
+
+	//回転数から角速度の大きさを計算
+	float angularSpeed = params.rpm * RPM_TO_RAD_PER_SEC;
+
+	//回転軸の反転処理(左右で反転させる)
+	physx::PxVec3 axis(params.spinAxis.x, params.spinAxis.y * side, params.spinAxis.z);
+
+	//回転軸を正規化してから角速度ベクトルを計算
+	axis.normalize();
+	return axis * angularSpeed;
 }
 
 void Pitcher::ApplyPhysicsToBall(float elapsedTime)
@@ -541,204 +783,35 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 }
 void Pitcher::SelectPitchType() 
 {
-	// 乱数生成
-	float randomValue = GenerateRandomFloat(0.0f, 1.0f); // 0.0～1.0の乱数を生成
-	selectedPitchType = PitchType::Fastball; // デフォルトはストレート
+	
 
-	// 球種ごとの挙動を設定
-	switch (selectedPitchType)
-	{
-	case PitchType::Fastball: // ストレート
-		
-		ballSpeedKmh = 150.0f; // 速い
-		Ball::Instance().GetBallAngle() = { 0.2f, DirectX::XMConvertToRadians(90.0f), 0.0f};
-		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // バックスピン
-		throwDirection.x = -0.02f;
-		launchAngleDegrees = -1.5f;
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: Fastball\n");
-		}
-		OutputDebugStringA("Pitch Type: Fastball\n");
-		break;
+	int index =  static_cast<int>(selectedPitchType);
 
-	case PitchType::Slider: // スライダー
-		
-		ballSpeedKmh = 130.0f;    // 少し遅い
-		Ball::Instance().GetBallAngle() = { -0.2f, 0.0f, 0.0f };
-		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // サイドスピン
-		throwDirection.x = 0.0f;
-		launchAngleDegrees = 0.5f;
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: Slider\n");
-		}
-		OutputDebugStringA("Pitch Type: Slider\n");
-		break;
-
-	case PitchType::Curveball: // カーブ
-		
-		ballSpeedKmh = 110.0f;    // 遅い
-		Ball::Instance().GetBallAngle() = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
-		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // トップスピン
-		throwDirection.x = 0.01f;
-		launchAngleDegrees = 4.0f; // カーブはやや下向きに投げる
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: Curveball\n");
-		}
-		OutputDebugStringA("Pitch Type: Curveball\n");
-		break;
-
-	case PitchType::Changeup: // チェンジアップ
-		
-		ballSpeedKmh = 120.0f;    // 遅い
-		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // ミックス回転
-		throwDirection.x = 0.03f;
-		launchAngleDegrees = 0.0f; // カーブはやや下向きに投げる
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: Changeup\n");
-		}
-		OutputDebugStringA("Pitch Type: Changeup\n");
-		break;
-
-	case PitchType::Forkball: // フォーク
-		
-		ballSpeedKmh = 130.0f;    // 少し遅い
-		Ball::Instance().GetBallAngle().y = 0.0f;
-		throwDirection.x = 0.03f;
-		launchAngleDegrees = -0.5f; // カーブはやや下向きに投げる
-		rotationSpeed = { 40.0f, 0.0f, -10.0f }; // 回転は少なめ
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: Forkball\n");
-		}
-		OutputDebugStringA("Pitch Type: Forkball\n");
-		break;
-
-	case PitchType::TwoSeam: // ツーシーム
-		
-		ballSpeedKmh = 145.0f;    // 少し速い
-		Ball::Instance().GetBallAngle().y = 0.0f;
-		Ball::Instance().GetBallAngle().x = 0.2f;
-		throwDirection.x = 0.03f;
-		launchAngleDegrees = -0.5f; // カーブはやや下向きに投げる
-		rotationSpeed = { 100.0f, 0.0f, 0.0f }; // 回転は少なめ
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: TwoSeam\n");
-		}
-		OutputDebugStringA("Pitch Type: TwoSeam\n");
-		break;
-
-	case PitchType::Cutter: // カットボール
-		
-		ballSpeedKmh = 140.0f;    // 速い
-		Ball::Instance().GetBallAngle() = { -0.2f, 0.0f, 0.0f };
-		throwDirection.x = 0.0f;
-		launchAngleDegrees = -0.5f;
-		rotationSpeed = { 0.0f, 0.0f, 80.0f }; // 回転速度
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: Cutter\n");
-		}
-		OutputDebugStringA("Pitch Type: Cutter\n");
-		break;
-
-	case PitchType::Sinker: // シンカー
-		
-		ballSpeedKmh = 130.0f;    // 少し遅い
-		throwDirection.x = 0.05f;
-		launchAngleDegrees = 1.0f;
-		rotationSpeed = { -120.0f, 0.0f, -120.0f }; // 回転速度
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: Sinker\n");
-		}
-		OutputDebugStringA("Pitch Type: Sinker\n");
-		break;
-
-	case PitchType::VerticalSlider: // 縦スライダー
-		
-		//ballSpeedKmh = 125.0f;    // 遅い
-		Ball::Instance().GetBallAngle() = { -0.2f, 0.0f, 0.0f };
-		rotationSpeed = { 0.0f, 0.0f, 100.0f }; // 回転速度
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: VerticalSlider\n");
-		}
-		OutputDebugStringA("Pitch Type: VerticalSlider\n");
-		break;
-
-	case PitchType::Splitter: // スプリット
-		
-		ballSpeedKmh = 140.0f;    // 少し遅い
-		Ball::Instance().GetBallAngle().y = 0.0f;
-		throwDirection.x = 0.03f;
-		launchAngleDegrees = -0.5f; // カーブはやや下向きに投げる
-		rotationSpeed = { 40.0f, 0.0f, -10.0f }; // 回転速度
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: Splitter\n");
-		}
-		OutputDebugStringA("Pitch Type: Splitter\n");
-		break;
-
-	case PitchType::SlowCurve: // スローカーブ
-		
-		//ballSpeedKmh = 80.0f;     // 非常に遅い
-		Ball::Instance().GetBallAngle() = { 0.5f, DirectX::XMConvertToRadians(90.0f), 0.0f };
-		rotationSpeed = { 0.0f, 0.0f, -150.0f }; // トップスピン
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: SlowCurve\n");
-		}
-		OutputDebugStringA("Pitch Type: SlowCurve\n");
-		break;
-
-	case PitchType::Shooter: // シュート
-		
-		ballSpeedKmh = 145.0f;    // 遅い
-		throwDirection.x = 0.05f;
-		launchAngleDegrees = -1.0f;
-		Ball::Instance().GetBallAngle() = { -0.2f, 0.0f, 0.0f };
-		rotationSpeed = { 0.0f, 0.0f, 150.0f }; // 強いサイドスピン
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: Shooter\n");
-		}
-		OutputDebugStringA("Pitch Type: Shooter\n");
-		break;
-
-	case PitchType::Knuckleball: // ナックルボール
-		
-		//ballSpeedKmh = 90.0f;     // 非常に遅い
-		Ball::Instance().GetBallAngle() = { 0.0f, 0.0f, 0.0f };
-		rotationSpeed = { -5.0f, 0.0f, -5.0f }; // 不規則な回転
-		if (consoleLog)
-		{
-			consoleLog->push_back(u8"Pitch Type: Knuckleball\n");
-		}
-		OutputDebugStringA("Pitch Type: Knuckleball\n");
-		break;
-
-	default:
-		break;
-	}
-	// ランダムな投球方向を設定
-	//throwDirection.x = GenerateRandomFloat(0.02f, 0.04f); // 左右方向のランダム値
-	//throwDirection.x = 0.01f; // 左右方向のランダム値
-	throwDirection.y = 0.2f; // 上下方向のランダム値
-	throwDirection.z = -1.0f; // 前方向固定
-
-	if (IsRightPitcher())
-	{
-		throwDirection.x = -throwDirection.x;
+	// 安全ガード：万が一範囲外を指していたら 0番目（Fastball）にする
+	if (index < 0 || index >= static_cast<int>(pitchParameters.size())) {
+		index = 0;
+		selectedPitchType = static_cast<PitchType>(PitchType::Fastball);
 	}
 
-	// ランダムな発射角度を設定
-	//launchAngleDegrees = GenerateRandomFloat(-2.0f, 0.0f); // -4度から-2度の範囲でランダム
+	// vector から現在の変数へパラメータを適用
+	const auto& param = pitchParameters[index];
+	ballSpeedKmh = param.ballSpeedKmh;
+	launchAngleDegrees = param.launchAngleDegrees;
+	throwDirection = param.throwDirection;
+
+	// rotationSpeedの計算 (物理エンジン側で使う場合)
+	// RPM（1分間の回転数）を度/秒に変換して rotationSpeed ベクトルを作る例
+	// spinAxis(方向) * rpm * 変換係数
+	float rpmToDegPerSec = (param.rpm * 360.0f) / 60.0f;
+	rotationSpeed.x = param.spinAxis.x * rpmToDegPerSec;
+	rotationSpeed.y = param.spinAxis.y * rpmToDegPerSec;
+	rotationSpeed.z = param.spinAxis.z * rpmToDegPerSec;
+
+	if (consoleLog) {
+		char msg[64];
+		snprintf(msg, sizeof(msg), "Selected Pitch Index: %d\n", index);
+		consoleLog->push_back(msg);
+	}
 }
 
 
@@ -755,6 +828,19 @@ void Pitcher::SaveToJson(json& j)
 	j["throw_direction"] = { throwDirection.x, throwDirection.y, throwDirection.z };
 	j["rotation_speed"] = { rotationSpeed.x, rotationSpeed.y, rotationSpeed.z };
 	j["is_right_pitcher"] = isRightPitcher;
+
+	// 球種設定を配列として保存
+	json pitchArray = json::array();
+	for (int i = 0; i < 13; ++i) {
+		json p;
+		p["speed"] = pitchParameters[i].ballSpeedKmh;
+		p["angle"] = pitchParameters[i].launchAngleDegrees;
+		p["dir"] = { pitchParameters[i].throwDirection.x, pitchParameters[i].throwDirection.y, pitchParameters[i].throwDirection.z };
+		p["axis"] = { pitchParameters[i].spinAxis.x, pitchParameters[i].spinAxis.y, pitchParameters[i].spinAxis.z };
+		p["rpm"] = pitchParameters[i].rpm;
+		pitchArray.push_back(p);
+	}
+	j["pitch_settings"] = pitchArray;
 }
 
 void Pitcher::LoadFromJson(const json& j)
@@ -798,4 +884,20 @@ void Pitcher::LoadFromJson(const json& j)
 		strikeZoneTrigger->getShapes(&shape, 1);
 		if (shape) shape->setGeometry(physx::PxBoxGeometry(boxSize.x / 2.0f, boxSize.y / 2.0f, boxSize.z / 2.0f));
 	}
+
+	// 球種設定の読み込み
+	if (j.contains("pitch_settings") && j["pitch_settings"].is_array()) {
+		const auto& pitchArray = j["pitch_settings"];
+		for (size_t i = 0; i < pitchArray.size() && i < 13; ++i) {
+			const auto& p = pitchArray[i];
+			if (p.contains("speed")) pitchParameters[i].ballSpeedKmh = p["speed"];
+			if (p.contains("angle")) pitchParameters[i].launchAngleDegrees = p["angle"];
+			if (p.contains("rpm")) pitchParameters[i].rpm = p["rpm"];
+			if (p.contains("dir")) pitchParameters[i].throwDirection = { p["dir"][0], p["dir"][1], p["dir"][2] };
+			if (p.contains("axis")) pitchParameters[i].spinAxis = { p["axis"][0], p["axis"][1], p["axis"][2] };
+		}
+	}
+
+	// 現在選択中のパラメータを再適用
+	SelectPitchType();
 }

@@ -25,7 +25,7 @@ void Ball::Initialize()
 
 	position = { 0.0f, 0.0f, 0.05f };
 	scale = { 1.0f, 1.0f, 1.0f };
-	angle = { 0.0f, DirectX::XMConvertToRadians(90.0f), 0.0f };
+	angle = { 0.0f, 0.0f, 0.0f };
 	worldPosition = { 0.0f, 0.0f, 0.0f };
 	worldAngle = angle;
 	worldScale = { 1.0f, 1.0f, 1.0f };

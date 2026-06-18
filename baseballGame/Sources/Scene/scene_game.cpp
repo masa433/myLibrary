@@ -478,7 +478,7 @@ void scene_game::update(float elapsed_time)
         if (ImGui::IsKeyPressed(static_cast<ImGuiKey>(ImGuiKey_1 + i)))
         {
             activeCameraIndex = i;
-            useFreeCamera = false; // 数字キーでプリセットに切り替えたらフリーカメラは解除
+            //useFreeCamera = false; // 数字キーでプリセットに切り替えたらフリーカメラは解除
         }
     }
 
@@ -1567,6 +1567,16 @@ void scene_game::DrawGUI()
                 consoleLog.clear();
                 consoleLog.push_back("[Info] Console log cleared.");
 			}
+
+            //不要なメモリを削除するコマンド
+            if(std::string(inputBuf) == "ClearMemory")
+            {
+                // メモリ解放処理をここに追加
+				consoleLog.clear();
+                consoleLog.push_back("[Info] Unused memory cleared.");
+            }
+
+			
             inputBuf[0] = '\0';
             ImGui::SetKeyboardFocusHere(-1);
         }

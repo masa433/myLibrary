@@ -152,9 +152,9 @@ void Player::Initialize()
 		physx::PxMaterial* sweetSpotMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
 
         physx::PxBoxGeometry sweetSpotGeometry(
-            sweetSpotScale.x * 0.5f, // バットの芯の幅の半分
-            sweetSpotScale.y * 0.5f, // バットの芯の高さの半分
-            sweetSpotScale.z * 0.5f  // バットの芯の奥行きの半分
+            sweetSpotScale.x * 0.4f, // バットの芯の幅の半分
+            sweetSpotScale.y * 0.4f, // バットの芯の高さの半分
+            sweetSpotScale.z * 0.4f  // バットの芯の奥行きの半分
 		);
 
 		//ローカルオフセットを指定してシェイプを作成
