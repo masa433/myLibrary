@@ -115,5 +115,28 @@ cbuffer ADJUST_MATERIAL_CONSTANT_BUFFER : register(b9)
     float2 adjust_material_dummy;
 };
 
+//ポストエフェクト定数バッファ
+cbuffer POST_EFFECT_CONSTANT_BUFFER : register(b10)
+{
+   // トーンマッピング
+    // mode: 0=なし / 1=Reinhard / 2=ReinhardEx / 3=Uncharted2 / 4=ACES / 5=Lottes
+    int tone_mapping_mode;
+    float tone_mapping_exposure;
+    float tone_mapping_white_point;
+    int pe_dummy0;
+
+    // トゥーンシェーディング
+    int toon_shading_enabled; // 0=通常, 1=トゥーン
+    int toon_diffuse_steps;
+    float toon_specular_threshold;
+    float toon_specular_smoothness;
+
+    float toon_rim_threshold;
+    float toon_rim_smoothness;
+    float2 pe_dummy1;
+
+    float4 toon_rim_color; // xyz=色, w=強度
+};
+
 
 #include "shading_function.hlsli"

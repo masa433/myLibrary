@@ -177,6 +177,11 @@ void scene_game::initialize()
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, gaussian_filter_constant_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
+		//ポストエフェクト用の定数バッファの作成
+		buffer_desc.ByteWidth = sizeof(post_effect_constants);
+		hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, post_effect_constant_buffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
     }
     
 	// スカイレンダラーの初期化
@@ -758,7 +763,11 @@ void scene_game::render(float elapsedTime)
         dc->VSSetConstantBuffers(5, 1, fog_constant_buffer.GetAddressOf());
         dc->PSSetConstantBuffers(5, 1, fog_constant_buffer.GetAddressOf());
 
-        
+        // ポストエフェクト用定数バッファの更新
+        dc->UpdateSubresource(post_effect_constant_buffer.Get(), 0, 0, &post_effect_constant, 0, 0);
+        dc->VSSetConstantBuffers(10, 1, post_effect_constant_buffer.GetAddressOf());
+        dc->PSSetConstantBuffers(10, 1, post_effect_constant_buffer.GetAddressOf());
+
     shadowRenderer.BindShadowResources(dc);
 
     // サンプラーステート
@@ -1495,6 +1504,44 @@ void scene_game::DrawGUI()
         ImGui::Image(ImTextureRef(bokeh_luminance_extract_shader_resource_view.Get()), ImVec2(200, 200));
     }
 
+    // ── Tone Mapping ──
+    if (ImGui::CollapsingHeader("Tone Mapping"))
+    {
+        static const char* tone_mode_names[] = {
+            "None (Pass-through)",
+            "Reinhard",
+            "Reinhard Extended",
+            "Uncharted2 / Filmic",
+            "ACES",
+            "Lottes",
+        };
+        ImGui::Combo("Mode", &post_effect_constant.tone_mapping_mode,
+            tone_mode_names, IM_ARRAYSIZE(tone_mode_names));
+        ImGui::SliderFloat("Exposure", &post_effect_constant.tone_mapping_exposure, 0.1f, 10.0f);
+        if (post_effect_constant.tone_mapping_mode == 2)
+            ImGui::SliderFloat("White Point", &post_effect_constant.tone_mapping_white_point, 1.0f, 20.0f);
+    }
+
+    // ── Toon Shading ──
+    if (ImGui::CollapsingHeader("Toon Shading"))
+    {
+        bool toon_enabled = (post_effect_constant.toon_shading_enabled != 0);
+        if (ImGui::Checkbox("Enable Toon Shading", &toon_enabled))
+            post_effect_constant.toon_shading_enabled = toon_enabled ? 1 : 0;
+
+        if (toon_enabled)
+        {
+            ImGui::SliderInt("Diffuse Steps", &post_effect_constant.toon_diffuse_steps, 2, 8);
+            ImGui::SliderFloat("Specular Threshold", &post_effect_constant.toon_specular_threshold, 0.0f, 1.0f);
+            ImGui::SliderFloat("Specular Smoothness", &post_effect_constant.toon_specular_smoothness, 0.0f, 0.2f);
+            ImGui::Separator();
+            ImGui::SliderFloat("Rim Threshold", &post_effect_constant.toon_rim_threshold, 0.0f, 1.0f);
+            ImGui::SliderFloat("Rim Smoothness", &post_effect_constant.toon_rim_smoothness, 0.0f, 0.2f);
+            ImGui::ColorEdit3("Rim Color", reinterpret_cast<float*>(&post_effect_constant.toon_rim_color));
+            ImGui::SliderFloat("Rim Intensity", &post_effect_constant.toon_rim_color.w, 0.0f, 2.0f);
+        }
+    }
+
     // ── PhysX ──
     if (ImGui::CollapsingHeader("Physics"))
     {
@@ -1667,6 +1714,23 @@ void scene_game::SaveSetting()
     j["bloom"]["gaussian_kernel_size"] = gaussian_filter_data.kernel_size;
 	j["bloom"]["gaussian_sigma"] = gaussian_filter_data.sigma;
 
+    // トーンマッピング設定の保存
+    j["tone_mapping"]["mode"] = post_effect_constant.tone_mapping_mode;
+    j["tone_mapping"]["exposure"] = post_effect_constant.tone_mapping_exposure;
+    j["tone_mapping"]["white_point"] = post_effect_constant.tone_mapping_white_point;
+
+    // トゥーンシェーディング設定の保存
+    j["toon"]["enabled"] = (post_effect_constant.toon_shading_enabled != 0);
+    j["toon"]["diffuse_steps"] = post_effect_constant.toon_diffuse_steps;
+    j["toon"]["spec_threshold"] = post_effect_constant.toon_specular_threshold;
+    j["toon"]["spec_smoothness"] = post_effect_constant.toon_specular_smoothness;
+    j["toon"]["rim_threshold"] = post_effect_constant.toon_rim_threshold;
+    j["toon"]["rim_smoothness"] = post_effect_constant.toon_rim_smoothness;
+    j["toon"]["rim_color"] = { post_effect_constant.toon_rim_color.x,
+                                     post_effect_constant.toon_rim_color.y,
+                                     post_effect_constant.toon_rim_color.z };
+    j["toon"]["rim_intensity"] = post_effect_constant.toon_rim_color.w;
+
 	//physxの保存
 	j["physx"]["show_debug"] = showPhysxDebug;
 
@@ -1805,6 +1869,32 @@ void scene_game::LoadSetting()
         gaussian_filter_data.kernel_size = j["bloom"]["gaussian_kernel_size"];
         gaussian_filter_data.sigma = j["bloom"]["gaussian_sigma"];
 	}
+
+    // トーンマッピング設定の読み込み
+    if (j.contains("tone_mapping"))
+    {
+        post_effect_constant.tone_mapping_mode = j["tone_mapping"].value("mode", 0);
+        post_effect_constant.tone_mapping_exposure = j["tone_mapping"].value("exposure", 1.0f);
+        post_effect_constant.tone_mapping_white_point = j["tone_mapping"].value("white_point", 4.0f);
+    }
+
+    // トゥーンシェーディング設定の読み込み
+    if (j.contains("toon"))
+    {
+        post_effect_constant.toon_shading_enabled = j["toon"].value("enabled", false) ? 1 : 0;
+        post_effect_constant.toon_diffuse_steps = j["toon"].value("diffuse_steps", 3);
+        post_effect_constant.toon_specular_threshold = j["toon"].value("spec_threshold", 0.6f);
+        post_effect_constant.toon_specular_smoothness = j["toon"].value("spec_smoothness", 0.02f);
+        post_effect_constant.toon_rim_threshold = j["toon"].value("rim_threshold", 0.7f);
+        post_effect_constant.toon_rim_smoothness = j["toon"].value("rim_smoothness", 0.05f);
+        if (j["toon"].contains("rim_color"))
+        {
+            post_effect_constant.toon_rim_color.x = j["toon"]["rim_color"][0];
+            post_effect_constant.toon_rim_color.y = j["toon"]["rim_color"][1];
+            post_effect_constant.toon_rim_color.z = j["toon"]["rim_color"][2];
+        }
+        post_effect_constant.toon_rim_color.w = j["toon"].value("rim_intensity", 0.5f);
+    }
 
 	//physxの読み込み
     if (j.contains("physx"))

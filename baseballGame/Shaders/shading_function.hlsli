@@ -354,3 +354,147 @@ float3 SpecularIBL(float3 normal, float3 eye_vector, float roughness, float3 f0,
 
     return specular_light * (f0 * env_brdf.x + env_brdf.y);
 }
+
+//トーンマッピング関数群
+//  ApplyToneMapping() の mode 引数で実行時切り替え
+//    0 = なし(パススルー)  1 = Reinhard
+//    2 = Reinhard Extended  3 = Uncharted2
+//    4 = ACES               5 = Lottes
+
+
+float3 LinearToSRGB(float3 color)
+{
+    // ガンマ補正を適用して線形空間からsRGB空間に変換
+    return pow(max(color, 0.0f), 1.0f / GammaFactor);
+}
+
+float3 ApplyExposure(float3 color, float exposure)
+{
+    // 露出補正を適用
+    return color * exposure;
+}
+
+float3 ToneMapReinhard(float3 color)
+{
+    // Reinhardトーンマッピング
+    return color / (color + 1.0f);
+}
+
+// white_point : 推奨 4～8
+float3 ToneMapReinhardExtended(float3 c, float white_point)
+{
+    // Reinhard Extendedトーンマッピング
+    return (c * (1.0f + c / (white_point * white_point))) / (1.0f + c);
+}
+
+float3 UC2(float3 x)
+{
+    // Uncharted2トーンマッピング
+    const float A = 0.15f, B = 0.50f, C = 0.10f;
+    const float D = 0.20f, E = 0.02f, F = 0.30f;
+    // Uncharted2トーンマッピングの計算式
+    return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F;
+}
+
+float3 ToneMapUncharted2(float3 c)
+{
+    const float W = 11.2f; // 白色点の輝度
+    return UC2(c) / UC2(float3(W, W, W)); // 白色点で正規化
+}
+
+float3 ToneMapACES(float3 c)
+{
+    // ACESトーンマッピング
+    return saturate((c * (2.43f * c + 0.03f)) / (c * (2.43f * c + 0.59f) + 0.14f));
+}
+
+// Lottesトーンマッピング
+float3 ToneMapLottes(float3 c)
+{
+    const float a = 1.6f, d_ = 0.977f, hdrMax = 8.0f;
+    const float midIn = 0.18f, midOut = 0.267f;
+    float3 b_ = (-pow(midIn, a) + pow(hdrMax, a) * midOut) /
+                ((pow(hdrMax, a * d_) - pow(midIn, a * d_)) * midOut);
+    float3 c_ = (pow(hdrMax, a * d_) * pow(midIn, a) -
+                 pow(hdrMax, a) * pow(midIn, a * d_) * midOut) /
+                ((pow(hdrMax, a * d_) - pow(midIn, a * d_)) * midOut);
+    return pow(c, a) / (pow(c, a * d_) * b_ + c_);
+}
+
+float3 ApplyToneMapping(float3 color, int mode, float exposure, float white_point)
+{
+    color = ApplyExposure(color, exposure);
+    [flatten]
+    switch (mode)
+    {
+        case 1:
+            return LinearToSRGB(ToneMapReinhard(color));
+        case 2:
+            return LinearToSRGB(ToneMapReinhardExtended(color, white_point));
+        case 3:
+            return LinearToSRGB(ToneMapUncharted2(color));
+        case 4:
+            return LinearToSRGB(ToneMapACES(color));
+        case 5:
+            return LinearToSRGB(ToneMapLottes(color));
+        default:
+            return color;
+    }
+}
+
+//--------------------------------------------
+//トゥーンシェーディング関数群
+//--------------------------------------------
+
+// 拡散輝度を steps 段に量子化
+float ToonQuantize(float NdotL, int steps)
+{
+    float s = 1.0f / (float) steps;
+    return floor(NdotL / s) * s + s * 0.5f;
+}
+
+// ハードエッジ鏡面反射
+float ToonSpecular(float spec_raw, float threshold, float smoothness)
+{
+    return smoothstep(threshold - smoothness, threshold + smoothness, spec_raw);
+}
+
+// ハードエッジリムライト
+float ToonRim(float rim_raw, float threshold, float smoothness)
+{
+    return smoothstep(threshold - smoothness, threshold + smoothness, rim_raw);
+}
+
+// N, L, V はすべて正規化済みを渡すこと
+// L  : 光源へ向かうベクトル
+// V  : カメラへ向かうベクトル（-eye_vector）
+// rim_color.w に強度を格納
+float3 CalcToonShading(
+    float3 base_color,
+    float3 N, float3 L, float3 V,
+    float3 light_color,
+    float3 ambient,
+    int diffuse_steps,
+    float spec_threshold,
+    float spec_smoothness,
+    float rim_threshold,
+    float rim_smoothness,
+    float4 rim_color)
+{
+    // 拡散
+    float NdotL = saturate(dot(N, -L));
+    float3 diffuse = base_color * light_color * ToonQuantize(NdotL, diffuse_steps);
+
+    // 鏡面
+    float3 H = normalize(-L + V);
+    float NdotH = saturate(dot(N, H));
+    float3 specular = light_color * ToonSpecular(pow(NdotH, 64.0f), spec_threshold, spec_smoothness);
+
+    // リム
+    float rim_raw = 1.0f - saturate(dot(N, V));
+    float3 rim = rim_color.rgb * rim_color.w
+                    * ToonRim(rim_raw, rim_threshold, rim_smoothness)
+                    * saturate(dot(-L, V));
+
+    return ambient * base_color + diffuse + specular + rim;
+}

@@ -133,6 +133,28 @@ private:
     std::vector<CameraController> cameraControllers;
 	int activeCameraIndex = 0;
 
+    //ポストエフェクト用定数バッファ構造体
+    struct post_effect_constants
+    {
+        // --- トーンマッピング ---
+        int   tone_mapping_mode = 0;     // 0:なし 1:Reinhard 2:ReinhardEx 3:Uncharted2 4:ACES 5:Lottes
+        float tone_mapping_exposure = 1.0f;  // 露出（1.0 = 変化なし）
+        float tone_mapping_white_point = 4.0f;  // ReinhardEx 用白点
+        int   pe_dummy0 = 0;     // パディング
+
+        // --- トゥーンシェーディング ---
+        int   toon_shading_enabled = 0;    // 0 = 通常, 1 = トゥーン
+        int   toon_diffuse_steps = 3;    // 拡散段数（2〜8）
+        float toon_specular_threshold = 0.6f; // ハイライト閾値
+        float toon_specular_smoothness = 0.02f;// ハイライト境界幅
+
+        float             toon_rim_threshold = 0.7f;  // リム閾値
+        float             toon_rim_smoothness = 0.05f; // リム境界幅
+        DirectX::XMFLOAT2 pe_dummy1 = {};    // パディング
+
+        DirectX::XMFLOAT4 toon_rim_color = { 1.0f, 1.0f, 1.0f, 0.5f }; // xyz=色, w=強度
+	};
+
 public:
     scene_game() {};
     ~scene_game() override = default;
@@ -186,6 +208,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> fog_constant_buffer;
 	DirectX::XMFLOAT4 fog_color{ 0.5f, 0.5f, 0.5f, 1.0f };
 	DirectX::XMFLOAT4 fog_range{ 0.1f, 1000.0f, 0.0f, 0.0f };
+
+	// ポストエフェクト用定数バッファ
+    post_effect_constants            post_effect_constant;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> post_effect_constant_buffer;
 
     float timeScale = 1.0f;
 
