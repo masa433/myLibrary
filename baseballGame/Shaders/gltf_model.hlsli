@@ -138,5 +138,15 @@ cbuffer POST_EFFECT_CONSTANT_BUFFER : register(b10)
     float4 toon_rim_color; // xyz=色, w=強度
 };
 
+//ソフトシャドウとコンタクトシャドウ
+cbuffer SHADOW_QUALITY_CONSTANT_BUFFER : register(b11)
+{
+    int soft_shadow_enabled;
+    int soft_shadow_samples;
+    float soft_shadow_radius;
+    float shadow_map_texel_size;
+
+};
+
 
 #include "shading_function.hlsli"

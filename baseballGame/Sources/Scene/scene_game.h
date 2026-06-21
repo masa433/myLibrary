@@ -155,6 +155,19 @@ private:
         DirectX::XMFLOAT4 toon_rim_color = { 1.0f, 1.0f, 1.0f, 0.5f }; // xyz=色, w=強度
 	};
 
+    struct shadow_quality_constants
+    {
+        // ソフトシャドウ
+        int   soft_shadow_enabled = 0;    // 0=ハード, 1=PCFソフト
+        int   soft_shadow_samples = 9;    // サンプル数(4/9/16/25)
+        float soft_shadow_radius = 1.5f; // PCFカーネル半径(テクセル単位)
+        float shadow_map_texel_size = 1.0f / 4096.0f; // シャドウマップテクセルサイズ
+
+	};
+
+    shadow_quality_constants shadow_quality_constant;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> shadow_quality_constant_buffer;
+
 public:
     scene_game() {};
     ~scene_game() override = default;

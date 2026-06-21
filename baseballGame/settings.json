@@ -75,7 +75,7 @@
             3.1415927410125732,
             0.0
         ],
-        "ball_speed_kmh": 134.0,
+        "ball_speed_kmh": 150.0,
         "box_position": [
             0.0,
             0.800000011920929,
@@ -291,9 +291,9 @@
             18.149999618530273
         ],
         "rotation_speed": [
-            2418.2509765625,
-            -777.6000366210938,
-            3494.25244140625
+            15000.0,
+            0.0,
+            0.0
         ],
         "scale": [
             1.0,
@@ -939,16 +939,19 @@
             "zoom_near_dist": 10.0
         }
     ],
-    "relay_cameras_active_index": 3,
+    "relay_cameras_active_index": 0,
     "shadow": {
         "bias": 0.00800000037997961,
-        "cascade_attenuation": 0.5,
+        "cascade_attenuation": 0.2809999883174896,
         "cascade_bias": [
             0.0010000000474974513,
             0.0020000000949949026,
             0.003000000026077032,
             0.004000000189989805
         ],
+        "soft_enabled": 1,
+        "soft_radius": 2.5,
+        "soft_samples": 9,
         "use_cascade": true
     },
     "sky": {
@@ -1088,6 +1091,25 @@
     ],
     "time": {
         "time_scale": 1.0
+    },
+    "tone_mapping": {
+        "exposure": 1.0,
+        "mode": 0,
+        "white_point": 4.0
+    },
+    "toon": {
+        "diffuse_steps": 3,
+        "enabled": false,
+        "rim_color": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "rim_intensity": 0.5,
+        "rim_smoothness": 0.05000000074505806,
+        "rim_threshold": 0.699999988079071,
+        "spec_smoothness": 0.019999999552965164,
+        "spec_threshold": 0.6000000238418579
     },
     "wind": {
         "dir_sprite": {

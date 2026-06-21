@@ -182,6 +182,10 @@ void scene_game::initialize()
 		hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, post_effect_constant_buffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
+		//シャドウクオリティの設定
+		buffer_desc.ByteWidth = sizeof(shadow_quality_constants);
+		hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, shadow_quality_constant_buffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
     
 	// スカイレンダラーの初期化
@@ -767,6 +771,10 @@ void scene_game::render(float elapsedTime)
         dc->UpdateSubresource(post_effect_constant_buffer.Get(), 0, 0, &post_effect_constant, 0, 0);
         dc->VSSetConstantBuffers(10, 1, post_effect_constant_buffer.GetAddressOf());
         dc->PSSetConstantBuffers(10, 1, post_effect_constant_buffer.GetAddressOf());
+
+        dc->UpdateSubresource(shadow_quality_constant_buffer.Get(), 0, 0,
+            &shadow_quality_constant, 0, 0);
+        dc->PSSetConstantBuffers(11, 1, shadow_quality_constant_buffer.GetAddressOf());
 
     shadowRenderer.BindShadowResources(dc);
 
@@ -1490,6 +1498,25 @@ void scene_game::DrawGUI()
             ImGui::Text("Shadow Map");
             ImGui::Image(ImTextureRef(shadowRenderer.GetShadowmapSRV()), ImVec2(200, 200));
         }
+
+        ImGui::Separator();
+        ImGui::Text("--- Soft Shadow ---");
+
+        bool soft_on = (shadow_quality_constant.soft_shadow_enabled != 0);
+        if (ImGui::Checkbox("Soft Shadow (PCF)", &soft_on))
+            shadow_quality_constant.soft_shadow_enabled = soft_on ? 1 : 0;
+
+        if (soft_on)
+        {
+            static const char* sample_items[] = { "4", "9", "16", "25" };
+            static const int   sample_vals[] = { 4,   9,  16,   25 };
+            static int sample_idx = 1; // デフォルト 9
+            if (ImGui::Combo("PCF Samples", &sample_idx, sample_items, 4))
+                shadow_quality_constant.soft_shadow_samples = sample_vals[sample_idx];
+            ImGui::SliderFloat("PCF Radius", &shadow_quality_constant.soft_shadow_radius,
+                0.5f, 5.0f);
+        }
+
     }
 
     // ── Bloom ──
@@ -1708,6 +1735,10 @@ void scene_game::SaveSetting()
     j["shadow"]["cascade_bias"] = { shadowRenderer.cascade_shadow_constant.shadow_bias.x, shadowRenderer.cascade_shadow_constant.shadow_bias.y, shadowRenderer.cascade_shadow_constant.shadow_bias.z, shadowRenderer.cascade_shadow_constant.shadow_bias.w };
 	j["shadow"]["bias"] = shadowRenderer.shadow_bias;
 
+    j["shadow"]["soft_enabled"] = shadow_quality_constant.soft_shadow_enabled;
+    j["shadow"]["soft_samples"] = shadow_quality_constant.soft_shadow_samples;
+    j["shadow"]["soft_radius"] = shadow_quality_constant.soft_shadow_radius;
+    
     // ブルームの保存
     j["bloom"]["luminance_threshold"] = luminance_extract_constant.threshold;
     j["bloom"]["luminance_intensity"] = luminance_extract_constant.intensity;
@@ -1859,6 +1890,11 @@ void scene_game::LoadSetting()
         shadowRenderer.cascade_shadow_constant.shadow_attenuation = j["shadow"]["cascade_attenuation"];
         shadowRenderer.cascade_shadow_constant.shadow_bias = { j["shadow"]["cascade_bias"][0], j["shadow"]["cascade_bias"][1], j["shadow"]["cascade_bias"][2], j["shadow"]["cascade_bias"][3] };
         shadowRenderer.shadow_bias = j["shadow"]["bias"];
+
+        shadow_quality_constant.soft_shadow_enabled = j["shadow"].value("soft_enabled", 0);
+        shadow_quality_constant.soft_shadow_samples = j["shadow"].value("soft_samples", 9);
+        shadow_quality_constant.soft_shadow_radius = j["shadow"].value("soft_radius", 1.5f);
+       
 	}
 
 	// ブルームの読み込み
