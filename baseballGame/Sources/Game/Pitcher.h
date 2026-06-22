@@ -91,7 +91,7 @@ private:
 		SlowBall,//スローボール
 	};
 
-	PitchType selectedPitchType;
+	PitchType selectedPitchType = PitchType::Fastball;
 
 	struct PitchParameter
 	{
@@ -111,7 +111,16 @@ private:
 	int editerPitchIndex = 0; // エディタで選択された球種のインデックス
 
 	void InitializePitchSettings(); // 球種のパラメーターを初期化する関数
+	void SelectPitchTypeByAI();
+	void ApplyAIGridTargetToPitch();
+	PitchType ChooseAIPitchType() const;
+	float GetSpeedVarianceKmh(PitchType pitchType) const;
+	const char* GetPitchTypeName(PitchType pitchType) const;
 
+	bool usePitchAI = true;
+	float aiStrikeRate = 0.92f;
+	float aiNearBallMargin = 0.06f;
+	
 
 	//bool hasBeenJudged = false; // 判定済みフラグ
 

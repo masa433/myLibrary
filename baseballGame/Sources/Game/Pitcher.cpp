@@ -13,8 +13,8 @@
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
 {
-	std::random_device rd; // ランダムデバイス
-	std::mt19937 gen(rd()); // メルセンヌ・ツイスタ
+	static std::random_device rd; // ランダムデバイス
+	static std::mt19937 gen(rd()); // メルセンヌ・ツイスタ
 	std::uniform_real_distribution<float> dis(min, max); // 一様分布
 	return dis(gen);
 }
@@ -124,7 +124,7 @@ void Pitcher::Update(float elapsedTime)
 		{
 			currentState = State::Throwing;
 			stateTime = 0.0f;
-			SelectPitchType(); // 球種選択
+			SelectPitchTypeByAI(); // 球種選択
 			OutputDebugStringA("Forced Throw: Backspace pressed\n");
 
 			if(consoleLog)
@@ -147,7 +147,7 @@ void Pitcher::Update(float elapsedTime)
 			stateTime = 0.0f;
 			hasReachedZero = false;
 			throwCounter = 0.0f;
-			SelectPitchType(); // 球種選択
+			SelectPitchTypeByAI(); // 球種選択
 			Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
 			Ball::Instance().SetHasCollided(false); // 衝突フラグをリセット
 			Ball::Instance().SetHasCollidedWithFence(false); // フェンス衝突フラグをリセット
@@ -340,6 +340,14 @@ void Pitcher::DrawGUI()
 			ImGui::Checkbox("Play Animation", &animation_playing);
 		}
 		Ball::Instance().DrawGUI();
+
+		if (ImGui::CollapsingHeader(u8"配球AI"))
+		{
+			ImGui::Checkbox(u8"AI配球を使う", &usePitchAI);
+			ImGui::SliderFloat(u8"ストライク率", &aiStrikeRate, 0.0f, 1.0f, "%.2f");
+			ImGui::DragFloat(u8"少し外す幅", &aiNearBallMargin, 0.005f, 0.0f, 0.20f, "%.3f");
+			ImGui::Text(u8"現在: %s %.1f km/h", GetPitchTypeName(selectedPitchType), ballSpeedKmh);
+		}
 
 		if (ImGui::CollapsingHeader(u8"球種エディター"))
 		{
@@ -744,6 +752,186 @@ void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 
 	Ball::Instance().ApplyPitchPhysics(selectedPitchType == PitchType::Knuckleball, windVec);
 }
+
+void Pitcher::SelectPitchTypeByAI()
+{
+	if (!usePitchAI)
+	{
+		SelectPitchType();
+		return;
+	}
+
+	selectedPitchType = ChooseAIPitchType();
+	SelectPitchType();
+
+	const float speedVariance = GetSpeedVarianceKmh(selectedPitchType);
+	ballSpeedKmh += GenerateRandomFloat(-speedVariance, speedVariance);
+	ballSpeedKmh = (std::max)(60.0f, (std::min)(ballSpeedKmh, 180.0f));
+
+	//ApplyAIGridTargetToPitch();
+
+	const float side = IsRightPitcher() ? 1.0f : -1.0f;
+	throwDirection.x = GenerateRandomFloat(0.01f, 0.03f) * side;
+
+	//launchAngleDegrees = GenerateRandomFloat(-1.00f, 0.2f);
+
+	if (consoleLog)
+	{
+		char msg[192];
+		snprintf(msg, sizeof(msg), u8"[Info] AI Pitch: %s %.1f km/h angle %.2f dirX %.3f\n",
+			GetPitchTypeName(selectedPitchType), ballSpeedKmh, launchAngleDegrees, throwDirection.x);
+		consoleLog->push_back(msg);
+	}
+}
+
+Pitcher::PitchType Pitcher::ChooseAIPitchType() const
+{
+	struct WeightedPitch
+	{
+		PitchType type;
+		float weight;
+	};
+
+	const WeightedPitch weights[] =
+	{
+		{ PitchType::Fastball, 34.0f },
+		{ PitchType::TwoSeam, 12.0f },
+		{ PitchType::Cutter, 10.0f },
+		{ PitchType::Slider, 10.0f },
+		{ PitchType::Changeup, 8.0f },
+		{ PitchType::Sinker, 7.0f },
+		{ PitchType::Curveball, 5.0f },
+		{ PitchType::Forkball, 4.0f },
+		{ PitchType::VerticalSlider, 3.0f },
+		{ PitchType::Splitter, 3.0f },
+		{ PitchType::Shooter, 2.0f },
+		{ PitchType::SlowCurve, 1.0f },
+		{ PitchType::Knuckleball, 0.7f },
+		{ PitchType::SlowBall, 99.0f },
+	};
+
+	float totalWeight = 0.0f;
+	for (const WeightedPitch& pitch : weights)
+	{
+		totalWeight += pitch.weight;
+	}
+
+	float roll = GenerateRandomFloat(0.0f, totalWeight);
+	for (const WeightedPitch& pitch : weights)
+	{
+		roll -= pitch.weight;
+		if (roll <= 0.0f)
+		{
+			return pitch.type;
+		}
+	}
+
+	return PitchType::Fastball;
+}
+
+void Pitcher::ApplyAIGridTargetToPitch()
+{
+	
+	/*const int column = aiTargetZoneIndex % 3;
+	const int row = aiTargetZoneIndex / 3;
+	const float cellWidth = boxSize.x / 3.0f;
+	const float cellHeight = boxSize.y / 3.0f;
+	const float left = boxPosition.x - boxSize.x * 0.5f;
+	const float top = boxPosition.y + boxSize.y * 0.5f;
+
+	float targetX = left + cellWidth * (static_cast<float>(column) + 0.5f);
+	float targetY = top - cellHeight * (static_cast<float>(row) + 0.5f);
+
+	targetX += GenerateRandomFloat(-cellWidth * 0.35f, cellWidth * 0.35f);
+	targetY += GenerateRandomFloat(-cellHeight * 0.35f, cellHeight * 0.35f);
+
+	if (GenerateRandomFloat(0.0f, 1.0f) > aiStrikeRate)
+	{
+		const float miss = GenerateRandomFloat(0.02f, (std::max)(0.02f, aiNearBallMargin));
+		if (column == 0)
+		{
+			targetX = left - miss;
+		}
+		else if (column == 2)
+		{
+			targetX = left + boxSize.x + miss;
+		}
+		else if (row == 0)
+		{
+			targetY = top + miss;
+		}
+		else if (row == 2)
+		{
+			targetY = top - boxSize.y - miss;
+		}
+		else if (GenerateRandomFloat(0.0f, 1.0f) < 0.5f)
+		{
+			targetX = (GenerateRandomFloat(0.0f, 1.0f) < 0.5f) ? left - miss : left + boxSize.x + miss;
+		}
+		else
+		{
+			targetY = (GenerateRandomFloat(0.0f, 1.0f) < 0.5f) ? top + miss : top - boxSize.y - miss;
+		}
+	}
+
+	const float targetZ = boxPosition.z;
+	float distanceZ = ballStartPosition.z - targetZ;
+	if (distanceZ < 1.0f)
+	{
+		distanceZ = 18.0f;
+	}
+
+	throwDirection.x = (targetX - ballStartPosition.x) / distanceZ;
+	throwDirection.x += GenerateRandomFloat(-0.004f, 0.004f);
+
+	launchAngleDegrees = DirectX::XMConvertToDegrees(atan2f(targetY - ballStartPosition.y, distanceZ));
+	launchAngleDegrees += GenerateRandomFloat(-0.20f, 2.0f);*/
+}
+
+float Pitcher::GetSpeedVarianceKmh(PitchType pitchType) const
+{
+	switch (pitchType)
+	{
+	case PitchType::Fastball: return 4.0f;
+	case PitchType::TwoSeam: return 3.5f;
+	case PitchType::Cutter: return 3.0f;
+	case PitchType::Slider: return 4.0f;
+	case PitchType::Curveball: return 5.0f;
+	case PitchType::Changeup: return 5.0f;
+	case PitchType::Forkball: return 4.0f;
+	case PitchType::Sinker: return 3.5f;
+	case PitchType::VerticalSlider: return 4.0f;
+	case PitchType::Splitter: return 4.0f;
+	case PitchType::SlowCurve: return 6.0f;
+	case PitchType::Shooter: return 3.5f;
+	case PitchType::Knuckleball: return 7.0f;
+	case PitchType::SlowBall: return 8.0f;
+	default: return 3.0f;
+	}
+}
+
+const char* Pitcher::GetPitchTypeName(PitchType pitchType) const
+{
+	switch (pitchType)
+	{
+	case PitchType::Fastball: return u8"ストレート";
+	case PitchType::Slider: return u8"スライダー";
+	case PitchType::Curveball: return u8"カーブ";
+	case PitchType::Changeup: return u8"チェンジアップ";
+	case PitchType::Forkball: return u8"フォーク";
+	case PitchType::TwoSeam: return u8"ツーシーム";
+	case PitchType::Cutter: return u8"カットボール";
+	case PitchType::Sinker: return IsRightPitcher() ? u8"シンカー" : u8"スクリュー";
+	case PitchType::VerticalSlider: return u8"縦スライダー";
+	case PitchType::Splitter: return u8"スプリット";
+	case PitchType::SlowCurve: return u8"スローカーブ";
+	case PitchType::Shooter: return u8"シュート";
+	case PitchType::Knuckleball: return u8"ナックルボール";
+	case PitchType::SlowBall: return u8"スローボール";
+	default: return u8"不明";
+	}
+}
+
 void Pitcher::SelectPitchType() 
 {
 	
@@ -806,6 +994,9 @@ void Pitcher::SaveToJson(json& j)
 	j["throw_direction"] = { throwDirection.x, throwDirection.y, throwDirection.z };
 	j["rotation_speed"] = { rotationSpeed.x, rotationSpeed.y, rotationSpeed.z };
 	j["is_right_pitcher"] = isRightPitcher;
+	j["use_pitch_ai"] = usePitchAI;
+	j["ai_strike_rate"] = aiStrikeRate;
+	j["ai_near_ball_margin"] = aiNearBallMargin;
 
 	// 球種設定を配列として保存
 	json pitchArray = json::array();
@@ -833,6 +1024,9 @@ void Pitcher::LoadFromJson(const json& j)
 	if (j.contains("throw_timing")) throwTiming = j["throw_timing"];
 	if (j.contains("throw_direction")) throwDirection = { j["throw_direction"][0], j["throw_direction"][1], j["throw_direction"][2] };
 	if (j.contains("rotation_speed")) rotationSpeed = { j["rotation_speed"][0], j["rotation_speed"][1], j["rotation_speed"][2] };
+	if (j.contains("use_pitch_ai")) usePitchAI = j["use_pitch_ai"];
+	if (j.contains("ai_strike_rate")) aiStrikeRate = (std::max)(0.0f, (std::min)(1.0f, static_cast<float>(j["ai_strike_rate"])));
+	if (j.contains("ai_near_ball_margin")) aiNearBallMargin = (std::max)(0.0f, static_cast<float>(j["ai_near_ball_margin"]));
 
 	// 投手の左右設定を反映
 	if(j.contains("is_right_pitcher") && (bool)j["is_right_pitcher"] != isRightPitcher)

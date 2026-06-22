@@ -76,7 +76,7 @@
 // SV_TARGET                0   xyzw        0   TARGET   float   xyzw
 //
 ps_5_0
-dcl_globalFlags refactoringAllowed
+dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_constantbuffer CB0[5], immediateIndexed
 dcl_constantbuffer CB8[5], immediateIndexed
 dcl_constantbuffer CB1[1], immediateIndexed
@@ -88,24 +88,63 @@ dcl_input_ps linear v1.xy
 dcl_input_ps linear v2.xyz
 dcl_input_ps linear v6.xyz
 dcl_output o0.xyzw
-dcl_temps 2
-dp3 r0.x, v2.xyzx, v2.xyzx
-rsq r0.x, r0.x
-mul r0.xyz, r0.xxxx, v2.xyzx
-dp3 r0.w, -cb0[4].xyzx, -cb0[4].xyzx
-rsq r0.w, r0.w
-mul r1.xyz, r0.wwww, -cb0[4].xyzx
-dp3 r0.x, r1.xyzx, r0.xyzx
-max r0.x, r0.x, l(0.000000)
-mad r0.x, r0.x, l(0.500000), l(1.000000)
-sample_indexable(texture2d)(float,float,float,float) r1.xyzw, v1.xyxx, t0.xyzw, s0
-mul r1.xyzw, r1.xyzw, cb1[0].xyzw
-mul r0.xyz, r0.xxxx, r1.xyzx
-mov o0.w, r1.w
-mul r1.xyz, r0.xyzx, cb8[4].xyzx
-sample_indexable(texture2d)(float,float,float,float) r0.w, v6.xyxx, t8.yzwx, s8
-add r0.w, -r0.w, v6.z
-lt r0.w, cb8[4].w, r0.w
-movc o0.xyz, r0.wwww, r1.xyzx, r0.xyzx
+dcl_temps 3
+//
+// Initial variable locations:
+//   v0.x <- pin.vertex.x; v0.y <- pin.vertex.y; v0.z <- pin.vertex.z; v0.w <- pin.vertex.w; 
+//   v1.x <- pin.texcoord.x; v1.y <- pin.texcoord.y; 
+//   v2.x <- pin.normal.x; v2.y <- pin.normal.y; v2.z <- pin.normal.z; 
+//   v3.x <- pin.position.x; v3.y <- pin.position.y; v3.z <- pin.position.z; 
+//   v4.x <- pin.tangent.x; v4.y <- pin.tangent.y; v4.z <- pin.tangent.z; 
+//   v5.x <- pin.color.x; v5.y <- pin.color.y; v5.z <- pin.color.z; v5.w <- pin.color.w; 
+//   v6.x <- pin.shadowTexcoord.x; v6.y <- pin.shadowTexcoord.y; v6.z <- pin.shadowTexcoord.z; 
+//   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
+//
+#line 21 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\ShadowMapCasterPS.hlsl"
+sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v1.xyxx, t0.xyzw, s0
+mul r0.xyzw, r0.xyzw, cb1[0].xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w <- color.w
+
+#line 23
+dp3 r1.x, v2.xyzx, v2.xyzx
+rsq r1.x, r1.x
+mul r1.xyz, r1.xxxx, v2.xyzx  // r1.x <- N.x; r1.y <- N.y; r1.z <- N.z
+
+#line 24
+mov r2.xyz, -cb0[4].xyzx
+dp3 r1.w, r2.xyzx, r2.xyzx
+rsq r1.w, r1.w
+mul r2.xyz, r1.wwww, r2.xyzx  // r2.x <- L.x; r2.y <- L.y; r2.z <- L.z
+
+#line 25
+itof r1.w, l(0)
+dp3 r1.x, r2.xyzx, r1.xyzx
+max r1.x, r1.x, r1.w  // r1.x <- power
+
+#line 27
+mul r1.x, r1.x, l(0.500000)
+add r1.x, r1.x, l(1.000000)  // r1.x <- power
+
+#line 29
+mul r0.xyz, r0.xyzx, r1.xxxx
+
+#line 50
+sample_indexable(texture2d)(float,float,float,float) r1.x, v6.xyxx, t8.xyzw, s8
+mov r1.x, r1.x  // r1.x <- depth
+
+#line 54
+mov r1.x, -r1.x
+add r1.x, r1.x, v6.z
+lt r1.x, cb8[4].w, r1.x
+if_nz r1.x
+
+#line 56
+  mul r0.xyz, r0.xyzx, cb8[4].xyzx
+
+#line 57
+endif 
+
+#line 59
+mov o0.xyz, r0.xyzx
+mov o0.w, r0.w
 ret 
-// Approximately 19 instruction slots used
+// Approximately 26 instruction slots used

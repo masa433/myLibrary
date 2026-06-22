@@ -40,7 +40,7 @@
 // SV_TARGET                0   xyzw        0   TARGET   float   xyzw
 //
 ps_5_0
-dcl_globalFlags refactoringAllowed
+dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_constantbuffer CB2[1], immediateIndexed
 dcl_sampler s0, mode_default
 dcl_resource_texture2d (float,float,float,float) t0
@@ -48,14 +48,45 @@ dcl_input_ps linear v1.xyzw
 dcl_input_ps linear v2.xy
 dcl_output o0.xyzw
 dcl_temps 2
-sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v2.xyxx, t0.xyzw, s0
-mul r0.xyzw, r0.xyzw, v1.xyzw
-dp3 r1.x, l(0.299000, 0.587000, 0.114000, 0.000000), r0.xyzx
-add r1.y, r1.x, -cb2[0].x
-max r1.y, r1.y, l(0.000000)
-div r1.x, r1.y, r1.x
-mul r0.xyz, r0.xyzx, r1.xxxx
-mov o0.w, r0.w
-mul o0.xyz, r0.xyzx, cb2[0].yyyy
+//
+// Initial variable locations:
+//   v0.x <- pin.position.x; v0.y <- pin.position.y; v0.z <- pin.position.z; v0.w <- pin.position.w; 
+//   v1.x <- pin.color.x; v1.y <- pin.color.y; v1.z <- pin.color.z; v1.w <- pin.color.w; 
+//   v2.x <- pin.texcoord.x; v2.y <- pin.texcoord.y; 
+//   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
+//
+#line 17 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\luminance_extract_ps.hlsl"
+mov r0.xyz, l(0.299000,0.587000,0.114000,0)
+
+#line 23
+sample_indexable(texture2d)(float,float,float,float) r1.xyzw, v2.xyxx, t0.xyzw, s0
+mul r1.xyzw, r1.xyzw, v1.xyzw  // r1.x <- color.x; r1.y <- color.y; r1.z <- color.z; r1.w <- color.w
+
+#line 26
+nop 
+mov r1.xyz, r1.xyzx
+
+#line 18
+dp3 r0.x, r0.xyzx, r1.xyzx  // r0.x <- <RGB2Luminance return value>
+
+#line 26
+mov r0.x, r0.x  // r0.x <- luminance
+
+#line 29
+itof r0.y, l(0)
+mov r0.z, -cb2[0].x
+add r0.z, r0.z, r0.x
+max r0.y, r0.z, r0.y  // r0.y <- contribution
+
+#line 32
+div r0.x, r0.y, r0.x
+mul r0.xyz, r0.xxxx, r1.xyzx  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
+
+#line 33
+mul r0.xyz, r0.xyzx, cb2[0].yyyy
+
+#line 34
+mov o0.xyz, r0.xyzx
+mov o0.w, r1.w
 ret 
-// Approximately 10 instruction slots used
+// Approximately 17 instruction slots used
