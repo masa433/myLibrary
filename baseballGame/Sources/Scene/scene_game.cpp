@@ -1278,7 +1278,7 @@ void scene_game::DrawGUI()
             freeCameraController.SyncCameraToController(camera);
         }
         ImGui::SliderFloat("Near Z", &camera_near_z, 0.1f, 100.0f);
-        ImGui::SliderFloat("Far Z", &camera_far_z, 100.0f, 10000.0f);
+        ImGui::SliderFloat("Far Z", &camera_far_z, 100.0f, 1000.0f);
         camera.SetPerspectiveFov(
             camera.GetFov(),
             Graphics::Instance().GetScreenWidth() / Graphics::Instance().GetScreenHeight(),

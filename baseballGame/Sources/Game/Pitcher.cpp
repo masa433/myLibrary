@@ -96,7 +96,7 @@ void Pitcher::InitializePitchSettings()
 	pitchParameters[static_cast<int>(PitchType::SlowCurve)] = { 100.0f, -8.0f, { 500.0f, 0.0f, 0.0f }, { 0.02f, 0.05f, -1.0f }, 800.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 	pitchParameters[static_cast<int>(PitchType::Shooter)] = { 130.0f, -2.5f, { 0.0f, 0.0f, 300.0f }, { 0.02f, 0.2f, -1.02f }, 1800.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 	pitchParameters[static_cast<int>(PitchType::Knuckleball)] = { 90.0f, -2.5f, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.2f, -1.0f }, 500.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-
+	pitchParameters[static_cast<int>(PitchType::SlowBall)] = { 70.0f, 4.0f, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.2f, -1.0f }, 300.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 }
 
 void Pitcher::Uninitialize() 
@@ -346,7 +346,7 @@ void Pitcher::DrawGUI()
 			const char* pitchTypeNames[] = {
 				u8"ストレート", u8"スライダー", u8"カーブ", u8"チェンジアップ", u8"フォーク",
 				u8"ツーシーム", u8"カットボール", u8"シンカー", u8"縦スライダー", u8"スプリット",
-				u8"スローカーブ", u8"シュート", u8"ナックルボール"
+				u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール"
 			};
 
 			//現在選択されている球種を基準に編集
@@ -720,50 +720,6 @@ physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 	const float RPM_TO_RAD_PER_SEC = 2.0f * 3.14159265f / 60.0f;
 	const float side = IsRightPitcher() ? 1.0f : -1.0f; // 左投手はY軸反転
 
-	/*switch (selectedPitchType)
-	{
-	case PitchType::Fastball:
-		return physx::PxVec3(2500.0f * RPM_TO_RAD_PER_SEC, 0.0f, 0.0f);
-
-	case PitchType::Slider:
-		return physx::PxVec3(0.0f, -2400.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
-
-	case PitchType::Curveball:
-		return physx::PxVec3(-500.0f * RPM_TO_RAD_PER_SEC, -1500.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
-
-	case PitchType::Changeup:
-		return physx::PxVec3(1000.0f * RPM_TO_RAD_PER_SEC, 0.0f, 0.0f);
-
-	case PitchType::Forkball:
-		return physx::PxVec3(100.0f * RPM_TO_RAD_PER_SEC, -100.0f * RPM_TO_RAD_PER_SEC, -100.0f * RPM_TO_RAD_PER_SEC);
-
-	case PitchType::TwoSeam:
-		return physx::PxVec3(1500.0f * RPM_TO_RAD_PER_SEC, 1500.0f * RPM_TO_RAD_PER_SEC * side, 2000.0f * RPM_TO_RAD_PER_SEC);
-
-	case PitchType::Cutter:
-		return physx::PxVec3(500.0f * RPM_TO_RAD_PER_SEC, -1000.0f * RPM_TO_RAD_PER_SEC * side, 0.0f);
-
-	case PitchType::Sinker:
-		return physx::PxVec3(100.0f * RPM_TO_RAD_PER_SEC, 2000.0f * RPM_TO_RAD_PER_SEC * side, -2000.0f * RPM_TO_RAD_PER_SEC);
-
-	case PitchType::VerticalSlider:
-		return physx::PxVec3(0.0f, -1000.0f * RPM_TO_RAD_PER_SEC * side, -2000.0f * RPM_TO_RAD_PER_SEC);
-
-	case PitchType::Splitter:
-		return physx::PxVec3(200.0f * RPM_TO_RAD_PER_SEC, -200.0f * RPM_TO_RAD_PER_SEC, -200.0f * RPM_TO_RAD_PER_SEC);
-
-	case PitchType::SlowCurve:
-		return physx::PxVec3(0.0f, -1200.0f * RPM_TO_RAD_PER_SEC * side, 2000.0f * RPM_TO_RAD_PER_SEC);
-
-	case PitchType::Shooter:
-		return physx::PxVec3(500.0f * RPM_TO_RAD_PER_SEC, 1000.0f * RPM_TO_RAD_PER_SEC * side, -100.0f * RPM_TO_RAD_PER_SEC);
-
-	case PitchType::Knuckleball:
-		return physx::PxVec3(50.0f * RPM_TO_RAD_PER_SEC, 50.0f * RPM_TO_RAD_PER_SEC, 50.0f * RPM_TO_RAD_PER_SEC);
-
-	default:
-		return physx::PxVec3(0.0f, 0.0f, 0.0f);
-	}*/
 	int index = static_cast<int>(selectedPitchType);
 	const auto& params = pitchParameters[index];
 
@@ -804,7 +760,10 @@ void Pitcher::SelectPitchType()
 	const auto& param = pitchParameters[index];
 	ballSpeedKmh = param.ballSpeedKmh;
 	launchAngleDegrees = param.launchAngleDegrees;
+
+	const float side = IsRightPitcher() ? 1.0f : -1.0f;
 	throwDirection = param.throwDirection;
+	throwDirection.x *= side; // 横方向（X軸）のベクトルを反転ection;
 
 	// rotationSpeedの計算 (物理エンジン側で使う場合)
 	// RPM（1分間の回転数）を度/秒に変換して rotationSpeed ベクトルを作る例
@@ -850,7 +809,7 @@ void Pitcher::SaveToJson(json& j)
 
 	// 球種設定を配列として保存
 	json pitchArray = json::array();
-	for (int i = 0; i < 13; ++i) {
+	for (int i = 0; i < PITCH_TYPE_COUNT; ++i) {
 		json p;
 		p["speed"] = pitchParameters[i].ballSpeedKmh;
 		p["angle"] = pitchParameters[i].launchAngleDegrees;
@@ -907,7 +866,7 @@ void Pitcher::LoadFromJson(const json& j)
 	// 球種設定の読み込み
 	if (j.contains("pitch_settings") && j["pitch_settings"].is_array()) {
 		const auto& pitchArray = j["pitch_settings"];
-		for (size_t i = 0; i < pitchArray.size() && i < 13; ++i) {
+		for (size_t i = 0; i < pitchArray.size() && i < PITCH_TYPE_COUNT; ++i) {
 			const auto& p = pitchArray[i];
 			if (p.contains("speed")) pitchParameters[i].ballSpeedKmh = p["speed"];
 			if (p.contains("angle")) pitchParameters[i].launchAngleDegrees = p["angle"];

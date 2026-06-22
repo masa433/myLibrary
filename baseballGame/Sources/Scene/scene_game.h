@@ -27,7 +27,7 @@ private:
    
     //カメラのZ座標の描画範囲
     float camera_near_z = 1.0f;
-    float camera_far_z = 1000000.0f;
+    float camera_far_z = 1000.0f;
 
 private:
     //空と太陽のレンダラー

@@ -88,6 +88,7 @@ private:
 		SlowCurve,//スローカーブ
 		Shooter,//シュート
 		Knuckleball,//ナックル
+		SlowBall,//スローボール
 	};
 
 	PitchType selectedPitchType;
@@ -105,7 +106,7 @@ private:
 	};
 	std::vector<PitchParameter> pitchParameters;
 
-	static constexpr int PITCH_TYPE_COUNT = 13; // 球種の数
+	static constexpr int PITCH_TYPE_COUNT = 14; // 球種の数
 
 	int editerPitchIndex = 0; // エディタで選択された球種のインデックス
 
