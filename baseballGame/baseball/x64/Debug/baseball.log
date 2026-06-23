@@ -1,2 +1,4 @@
 ﻿  Pitcher.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.cpp(681,45): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.cpp(681,29): warning C4244: '初期化中': 'double' から 'const float' への変換です。データが失われる可能性があります。
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

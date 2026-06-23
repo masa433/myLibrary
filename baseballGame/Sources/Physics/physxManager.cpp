@@ -535,6 +535,14 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 			if (ballCollider && batCollider)
 			{
+				Ball::Instance().CancelBezier();  // ベジェ飛行をキャンセル
+
+				if (ballCollider)
+				{
+					ballCollider->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, false);
+				}
+
+
 				// バット衝突時のボール位置を保存
 				physx::PxVec3 hitPos = ballCollider->getGlobalPose().p;
 				Ball::Instance().SetBallHitPosition({ hitPos.x, hitPos.y, hitPos.z });

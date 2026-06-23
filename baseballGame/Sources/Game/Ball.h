@@ -14,6 +14,14 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+enum class BallMode
+{
+	Attached,// 手に持たれている状態
+	BezierPitch,// 投球中（ベジェ曲線での投球）
+	PhysicsHit,// 物理演算での衝突後の挙動
+};
+
+
 class Ball : public GameObject
 {
 public:
@@ -102,7 +110,7 @@ private:
 	DirectX::XMFLOAT3 modelAngle = { 0.0f, 0.0f, 0.0f };       // モデル独自の累積回転角
 	DirectX::XMFLOAT3 modelRotationSpeed = { 0.0f, 0.0f, 0.0f }; // deg/sec、Throw時に設定
 
-	
+
 
 private:
 	// ボールの軌跡保存用
@@ -156,4 +164,55 @@ public:
 	const DirectX::XMFLOAT3& GetModelAngle() const { return modelAngle; }
 
 	void SetModelAngle(const DirectX::XMFLOAT3& angle) { modelAngle = angle; }
+
+public:
+	// 物理コライダーから現在の正確な速度ベクトル(m/s)を取得する関数
+	physx::PxVec3 GetLinearVelocity() const {
+		return collider ? collider->getLinearVelocity() : physx::PxVec3(0.0f, 0.0f, 0.0f);
+	}
+
+private:
+
+	BallMode ballMode = BallMode::Attached;
+	float pitchTimer = 0.0f;// 投球中のタイマー
+	float pitchDuration = 1.0f;// 投球中の時間
+
+	DirectX::XMFLOAT3 bezierP0;// ベジェ曲線の始点
+	DirectX::XMFLOAT3 bezierP1;// ベジェ曲線の制御点1
+	DirectX::XMFLOAT3 bezierP2;// ベジェ曲線の制御点2
+	DirectX::XMFLOAT3 bezierP3;// ベジェ曲線の終点
+
+	DirectX::XMFLOAT3 previousBezierPos;// 前回のベジェ曲線上の位置
+
+
+public:
+
+	// ===== ベジェ曲線投球 =====
+	struct BezierPitchData
+	{
+		DirectX::XMFLOAT3 p0;   // スタート（手）
+		DirectX::XMFLOAT3 p1;   // 制御点1（変化球の"曲がり"を作る）
+		DirectX::XMFLOAT3 p2;   // 制御点2
+		DirectX::XMFLOAT3 p3;   // エンド（ホームプレート付近）
+		float durationSec;       // 到達時間（球速から計算）
+	};
+
+	void ThrowBezier(const BezierPitchData& data,
+		const DirectX::XMFLOAT3& visualRotationSpeed,
+		const DirectX::XMFLOAT3& visualAngle);
+	void UpdateBezierFlight(float elapsedTime);  // 毎フレーム呼ぶ
+
+	bool  IsBezierFlying()  const { return bezierFlying; }
+	void  CancelBezier();   // バット衝突時に呼ぶ
+
+private:
+	BezierPitchData bezierData = {};
+	float           bezierT = 0.0f;   // 0→1の進行度
+	bool            bezierFlying = false;
+
+	// ヘルパー
+	DirectX::XMFLOAT3 EvalCubicBezier(float t) const;
+
+	void _ReleaseToDynamic(const physx::PxVec3& inheritVelocity);
+
 };

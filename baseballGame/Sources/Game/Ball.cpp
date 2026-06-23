@@ -18,6 +18,99 @@ namespace
 	}
 }
 
+// ---- ベジェ曲線投球開始 ----
+void Ball::ThrowBezier(const BezierPitchData& data,
+	const DirectX::XMFLOAT3& visualRotationSpeed,
+	const DirectX::XMFLOAT3& visualAngle)
+{
+	if(!collider)
+	{
+		return;
+	}
+
+	bezierData = data;
+	bezierT = 0.0f;
+	bezierFlying = true;
+
+	//キネマティックモードに切り替え
+	collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+
+	//見た目の回転をリセット
+	modelRotationSpeed = visualRotationSpeed;
+	modelAngle =
+	{
+		DirectX::XMConvertToRadians(visualAngle.x),
+		DirectX::XMConvertToRadians(visualAngle.y),
+		DirectX::XMConvertToRadians(visualAngle.z)
+	};
+
+	startPosition = worldPosition;
+	ballTrail.clear();
+	trailRecordTimer = 0.0f;
+}
+
+void Ball::UpdateBezierFlight(float elapsedTime)
+{
+	if(!bezierFlying || !collider)
+	{
+		return;
+	}
+
+	bezierT += elapsedTime / bezierData.durationSec;// bezierTを0から1の範囲に制限
+
+	if(bezierT >= 1.0f)
+	{
+		bezierT = 1.0f;
+		bezierFlying = false;
+		//キネマティックモードを解除して物理シミュレーションに戻す
+		_ReleaseToDynamic(physx::PxVec3(0, 0, 0));
+	}
+
+	DirectX::XMFLOAT3 pos = EvalCubicBezier(bezierT);
+
+	//キネマティックターゲットとして位置をセット
+	collider->setKinematicTarget(physx::PxTransform(physx::PxVec3(pos.x, pos.y, pos.z)));
+
+	worldPosition = pos;
+}
+
+// ---- バット衝突時に onContact() から呼ぶ ----
+void Ball::CancelBezier()
+{
+	if (!bezierFlying) return;
+	bezierFlying = false;
+	// DynamicへはonContact()側でSetLinearVelocity前に切り替える
+}
+
+// ---- 内部関数: キネマティックからダイナミックへ切り替え ----
+void Ball::_ReleaseToDynamic(const physx::PxVec3& inheritVelocity)
+{
+	if (!collider) return;
+	collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, false);
+	collider->setLinearVelocity(inheritVelocity);
+	collider->setAngularVelocity(physx::PxVec3(0, 0, 0));
+}
+
+//3次ベジェ曲線の評価
+DirectX::XMFLOAT3 Ball::EvalCubicBezier(float t) const
+{
+	float u = 1.0f - t;
+	float u2 = u * u;
+	float u3 = u2 * u;
+	float t2 = t * t;
+	float t3 = t2 * t;
+
+	// B(t) = u³P0 + 3u²tP1 + 3ut²P2 + t³P3
+	return {
+		u3 * bezierData.p0.x + 3 * u2 * t * bezierData.p1.x
+			+ 3 * u * t2 * bezierData.p2.x + t3 * bezierData.p3.x,
+		u3 * bezierData.p0.y + 3 * u2 * t * bezierData.p1.y
+			+ 3 * u * t2 * bezierData.p2.y + t3 * bezierData.p3.y,
+		u3 * bezierData.p0.z + 3 * u2 * t * bezierData.p1.z
+			+ 3 * u * t2 * bezierData.p2.z + t3 * bezierData.p3.z
+	};
+}
+
 void Ball::Initialize()
 {
 	ID3D11Device* device = Graphics::Instance().GetDevice();
@@ -60,6 +153,8 @@ void Ball::Update(float elapsedTime)
 {
 	
 }
+
+
 
 void Ball::Render(const RenderContext& rc, ModelRenderer* renderer, bool isThrown)
 {

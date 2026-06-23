@@ -46,9 +46,32 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
+	void ThrowBallBezier();
+
 public:
 
+	enum class PitchType
+	{
+		Fastball,//ストレート
+		Slider,//スライダー
+		Curveball,//カーブ
+		Changeup,//チェンジアップ
+		Forkball,//フォーク
+		TwoSeam,//ツーシーム
+		Cutter,//カットボール
+		Sinker,//シンカー
+		VerticalSlider,//縦スライダー	
+		Splitter,//スプリット
+		SlowCurve,//スローカーブ
+		Shooter,//シュート
+		Knuckleball,//ナックル
+		SlowBall,//スローボール
+	};
+
 	bool IsBallInStrikeZone() const;
+
+	PitchType GetSelectedPitchType() const { return selectedPitchType; }
+	bool GetIsBallThrown() const { return isBallThrown; }
 
 private:
 	// モデル関連
@@ -73,24 +96,37 @@ private:
 	float ballDebugRadius = 0.15f; // デフォルトのスケール倍率
 	float reducedRadius = 0.0f;
 
-	enum class PitchType
-	{
-		Fastball,//ストレート
-		Slider,//スライダー
-		Curveball,//カーブ
-		Changeup,//チェンジアップ
-		Forkball,//フォーク
-		TwoSeam,//ツーシーム
-		Cutter,//カットボール
-		Sinker,//シンカー
-		VerticalSlider,//縦スライダー	
-		Splitter,//スプリット
-		SlowCurve,//スローカーブ
-		Shooter,//シュート
-		Knuckleball,//ナックル
-		SlowBall,//スローボール
-	};
+public:
 
+
+	// ballSprite::pitchBreaks[14] のインデックス（GUIコンボボックス順）と
+	// PitchType enum の値を対応させる変換関数。
+	// pitchBreaks の並び順: Fastball,TwoSeam,Cutter,Slider,Curveball,Changeup,
+	//                        Forkball,Sinker,VerticalSlider,Splitter,SlowCurve,
+	//                        Shooter,Knuckleball,SlowBall
+	static int PitchTypeToBreakIndex(PitchType type)
+	{
+		switch (type)
+		{
+		case PitchType::Fastball:       return 0;
+		case PitchType::TwoSeam:        return 1;
+		case PitchType::Cutter:         return 2;
+		case PitchType::Slider:         return 3;
+		case PitchType::Curveball:      return 4;
+		case PitchType::Changeup:       return 5;
+		case PitchType::Forkball:       return 6;
+		case PitchType::Sinker:         return 7;
+		case PitchType::VerticalSlider: return 8;
+		case PitchType::Splitter:       return 9;
+		case PitchType::SlowCurve:      return 10;
+		case PitchType::Shooter:        return 11;
+		case PitchType::Knuckleball:    return 12;
+		case PitchType::SlowBall:       return 13;
+		default:                        return 0;
+		}
+	}
+
+private:
 	PitchType selectedPitchType = PitchType::Fastball;
 
 	struct PitchParameter
@@ -117,11 +153,31 @@ private:
 	float GetSpeedVarianceKmh(PitchType pitchType) const;
 	const char* GetPitchTypeName(PitchType pitchType) const;
 
+	// ===== 2Dスプライトの変化量(breakX/breakY)から3Dの回転(角速度ベクトル)を逆算する =====
+	// useBallBreakがオンの場合、ballSprite側のbreakX/breakY(cm)から
+	// 目標の横変化・縦変化を再現するための回転軸とrpmを逆算して返す。
+	// useBallBreakがオフの場合は従来のGetSpinAxisFromPitchType()と同じ結果を返す。
+	physx::PxVec3 GetSpinFromBreakOrDefault(float speedMs) const;
+
 	bool usePitchAI = true;
 	float aiStrikeRate = 0.92f;
 	float aiNearBallMargin = 0.06f;
-	
 
+
+public:
+	// 5x5グリッド内でAIが狙う内側3x3のセルインデックス (0〜8、row-major)
+	
+	int aiTargetZoneIndex = 4;//ストライクゾーン内のインデックス
+	int aiTargetZoneRow = 2; //5x5グリッドの行番号(0〜4)
+	int aiTargetZoneCol = 2; //5x5グリッドの列番号(0〜4)
+
+	DirectX::XMFLOAT2 aiTarget2D = { 0.0f, 0.0f }; // AIが狙うターゲット位置（2D平面上のX,Z座標）
+
+	const DirectX::XMFLOAT2& GetAITarget2D() const { return aiTarget2D; }// AIが狙うターゲット位置（2D平面上のX,Z座標）を取得
+	int GetAITargetRow() const { return aiTargetZoneRow; } // AIが狙うターゲット位置の行番号を取得
+	int GetAITargetCol() const { return aiTargetZoneCol; } // AIが狙うターゲット位置の列番号を取得
+
+private:
 	//bool hasBeenJudged = false; // 判定済みフラグ
 
 
@@ -129,6 +185,8 @@ private:
 	bool hasReachedZero = false; // z = 0.0f に到達したかどうか
 
 	bool isRightPitcher = true; // 右投げかどうか
+
+public:
 	bool IsRightPitcher() const { return isRightPitcher; }
 
 private:
@@ -166,4 +224,6 @@ public:
 private:
 	std::vector<std::string>* consoleLog = nullptr;
 
+	DirectX::XMFLOAT2 targetPosition3D = { 0.0f, 0.0f }; // AIが狙うターゲット位置（3D空間上のX,Z座標）
+	bool hasTargetSet = false; // AIがターゲット位置の接線を設定したかどうか
 };
