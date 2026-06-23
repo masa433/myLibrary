@@ -197,14 +197,7 @@ void Pitcher::Update(float elapsedTime)
 	}
 	else if (isBallThrown && !Ball::Instance().IsBezierFlying())
 	{
-		//Ball::Instance().ApplyPitchPhysics(isKnuckleball, windVelocity);
-		/*physx::PxVec3 windVec(0.0f, 0.0f, 0.0f);
-		if (Wind::Instance().IsBallInWindArea())
-		{
-			windVec = physx::PxVec3(Wind::Instance().GetWindVector().x, Wind::Instance().GetWindVector().y, Wind::Instance().GetWindVector().z);
-		}
-
-		Ball::Instance().ApplyPitchPhysics(selectedPitchType == PitchType::Knuckleball, windVec);*/
+		//ApplyPhysicsToBall(elapsedTime);
 		Ball::Instance().UpdateFromPhysics(elapsedTime);
 	}
 
