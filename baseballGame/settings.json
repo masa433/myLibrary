@@ -836,7 +836,7 @@
             -0.9996573328971863
         ],
         "throw_timing": 0.4000000059604645,
-        "use_pitch_ai": false
+        "use_pitch_ai": true
     },
     "player": {
         "angle": [

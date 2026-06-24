@@ -1122,7 +1122,8 @@ void Pitcher::ThrowBallBezier()
 	DirectX::XMFLOAT3 p3 = {
 	boxPosition.x + params.bezierTarget.x * side,
 	boxPosition.y + params.bezierTarget.y,
-	boxPosition.z + params.bezierTarget.z
+	/*boxPosition.z + params.bezierTarget.z*/
+		-5.0f //ホームプレート手前で終わるように調整
 	};
 
 	//到達時間を球速から計算
@@ -1206,7 +1207,7 @@ void Pitcher::SelectPitchTypeByAI()
 	ballSpeedKmh += GenerateRandomFloat(-speedVariance, speedVariance);
 	ballSpeedKmh = (std::max)(60.0f, (std::min)(ballSpeedKmh, 180.0f));
 
-	//ApplyAIGridTargetToPitch();
+	ApplyAIBezierTarget();
 
 	const float side = IsRightPitcher() ? 1.0f : -1.0f;
 	throwDirection.x = GenerateRandomFloat(0.01f, 0.03f) * side;
@@ -1267,63 +1268,40 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 	return PitchType::Fastball;
 }
 
-void Pitcher::ApplyAIGridTargetToPitch()
+void Pitcher::ApplyAIBezierTarget()
 {
-	
-	/*const int column = aiTargetZoneIndex % 3;
-	const int row = aiTargetZoneIndex / 3;
-	const float cellWidth = boxSize.x / 3.0f;
-	const float cellHeight = boxSize.y / 3.0f;
-	const float left = boxPosition.x - boxSize.x * 0.5f;
-	const float top = boxPosition.y + boxSize.y * 0.5f;
+	bool throwStrike = (GenerateRandomFloat(0.0f, 1.0f) < aiStrikeRate);
 
-	float targetX = left + cellWidth * (static_cast<float>(column) + 0.5f);
-	float targetY = top - cellHeight * (static_cast<float>(row) + 0.5f);
+	float targetX = 0.0f;
+	float targetY = 0.0f;
 
-	targetX += GenerateRandomFloat(-cellWidth * 0.35f, cellWidth * 0.35f);
-	targetY += GenerateRandomFloat(-cellHeight * 0.35f, cellHeight * 0.35f);
-
-	if (GenerateRandomFloat(0.0f, 1.0f) > aiStrikeRate)
+	//ストライクゾーン内で目標地点を設定
+	if (throwStrike)
 	{
-		const float miss = GenerateRandomFloat(0.02f, (std::max)(0.02f, aiNearBallMargin));
-		if (column == 0)
+		targetX = GenerateRandomFloat(-boxSize.x * 0.5f, boxSize.x * 0.5f);
+		targetY = GenerateRandomFloat(-boxSize.y * 0.5f, boxSize.y * 0.5f);
+	}
+	else
+	{
+		// ゾーン外4方向のどれかへ外す
+		const float missAmount = GenerateRandomFloat(
+			(std::max)(0.02f, aiNearBallMargin * 0.5f),
+			(std::max)(0.04f, aiNearBallMargin));
+
+		int dir = static_cast<int>(GenerateRandomFloat(0.0f, 3.9999f));
+		switch (dir)
 		{
-			targetX = left - miss;
-		}
-		else if (column == 2)
-		{
-			targetX = left + boxSize.x + miss;
-		}
-		else if (row == 0)
-		{
-			targetY = top + miss;
-		}
-		else if (row == 2)
-		{
-			targetY = top - boxSize.y - miss;
-		}
-		else if (GenerateRandomFloat(0.0f, 1.0f) < 0.5f)
-		{
-			targetX = (GenerateRandomFloat(0.0f, 1.0f) < 0.5f) ? left - miss : left + boxSize.x + miss;
-		}
-		else
-		{
-			targetY = (GenerateRandomFloat(0.0f, 1.0f) < 0.5f) ? top + miss : top - boxSize.y - miss;
+		case 0: targetX = -boxSize.x * 0.5f - missAmount; break; // インコース外
+		case 1: targetX = boxSize.x * 0.5f + missAmount; break; // アウトコース外
+		case 2: targetY = boxSize.y * 0.5f + missAmount; break; // 高め外
+		case 3: targetY = -boxSize.y * 0.5f - missAmount; break; // 低め外
 		}
 	}
 
-	const float targetZ = boxPosition.z;
-	float distanceZ = ballStartPosition.z - targetZ;
-	if (distanceZ < 1.0f)
-	{
-		distanceZ = 18.0f;
-	}
-
-	throwDirection.x = (targetX - ballStartPosition.x) / distanceZ;
-	throwDirection.x += GenerateRandomFloat(-0.004f, 0.004f);
-
-	launchAngleDegrees = DirectX::XMConvertToDegrees(atan2f(targetY - ballStartPosition.y, distanceZ));
-	launchAngleDegrees += GenerateRandomFloat(-0.20f, 2.0f);*/
+	auto& target = pitchParameters[static_cast<int>(selectedPitchType)].bezierTarget;
+	target.x = targetX;
+	target.y = targetY;
+	target.z = 0.0f;
 }
 
 float Pitcher::GetSpeedVarianceKmh(PitchType pitchType) const

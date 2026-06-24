@@ -153,7 +153,7 @@ private:
 
 	void InitializePitchSettings(); // 球種のパラメーターを初期化する関数
 	void SelectPitchTypeByAI();
-	void ApplyAIGridTargetToPitch();
+	void ApplyAIBezierTarget();
 	PitchType ChooseAIPitchType() const;
 	float GetSpeedVarianceKmh(PitchType pitchType) const;
 	const char* GetPitchTypeName(PitchType pitchType) const;

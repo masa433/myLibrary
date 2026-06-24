@@ -194,64 +194,64 @@ void ballSprite::Render()
 			ballDebugSpriteData->rotation);
 	}
 
-	for (int y = 0; y < 3; y++)
-	{
-		for (int x = 0; x < 3; x++)
-		{
-			const auto& p = strikeZoneGrid[y][x];
+	//for (int y = 0; y < 3; y++)
+	//{
+	//	for (int x = 0; x < 3; x++)
+	//	{
+	//		const auto& p = strikeZoneGrid[y][x];
 
-			float nx = (p.x + 0.43f * 0.5f) / 0.43f;
-			float ny = 1.0f - ((p.y - 0.5f) / 0.6f);
+	//		float nx = (p.x + 0.43f * 0.5f) / 0.43f;
+	//		float ny = 1.0f - ((p.y - 0.5f) / 0.6f);
 
-			float screenX =
-				strikeZoneSpriteData->position.x +
-				nx * strikeZoneSpriteData->size.x;
+	//		float screenX =
+	//			strikeZoneSpriteData->position.x +
+	//			nx * strikeZoneSpriteData->size.x;
 
-			float screenY =
-				strikeZoneSpriteData->position.y +
-				ny * strikeZoneSpriteData->size.y;
+	//		float screenY =
+	//			strikeZoneSpriteData->position.y +
+	//			ny * strikeZoneSpriteData->size.y;
 
-			ballDebugSprite->render(
-				dc,
-				screenX - 5,
-				screenY - 5,
-				10,
-				10,
-				1, 0, 0, 1,
-				0);
-		}
-	}
+	//		ballDebugSprite->render(
+	//			dc,
+	//			screenX - 5,
+	//			screenY - 5,
+	//			10,
+	//			10,
+	//			1, 0, 0, 1,
+	//			0);
+	//	}
+	//}
 
-	// ボールゾーンのグリッド描画
-	for(int y = 0; y < 5; y++)
-	{
-		for(int x = 0; x < 5; x++)
-		{
+	//// ボールゾーンのグリッド描画
+	//for(int y = 0; y < 5; y++)
+	//{
+	//	for(int x = 0; x < 5; x++)
+	//	{
 
-			const auto& p = ballZoneGrid[y][x];
-			float nx = (p.x + 0.43f * 0.5f) / 0.43f;
-			float ny = 1.0f - ((p.y - 0.5f) / 0.6f);
-			float screenX =
-				strikeZoneSpriteData->position.x +
-				nx * strikeZoneSpriteData->size.x;
-			float screenY =
-				strikeZoneSpriteData->position.y +
-				ny * strikeZoneSpriteData->size.y;
+	//		const auto& p = ballZoneGrid[y][x];
+	//		float nx = (p.x + 0.43f * 0.5f) / 0.43f;
+	//		float ny = 1.0f - ((p.y - 0.5f) / 0.6f);
+	//		float screenX =
+	//			strikeZoneSpriteData->position.x +
+	//			nx * strikeZoneSpriteData->size.x;
+	//		float screenY =
+	//			strikeZoneSpriteData->position.y +
+	//			ny * strikeZoneSpriteData->size.y;
 
-			// ストライクゾーン内のグリッドは描画しない
-			if (x >= 1 && x <= 3 && y >= 1 && y <= 3)
-				continue;
+	//		// ストライクゾーン内のグリッドは描画しない
+	//		if (x >= 1 && x <= 3 && y >= 1 && y <= 3)
+	//			continue;
 
-			ballDebugSprite->render(
-				dc,
-				screenX - 5,
-				screenY - 5,
-				10,
-				10,
-				0, 0, 1, 1,
-				0);
-		}
-	}
+	//		ballDebugSprite->render(
+	//			dc,
+	//			screenX - 5,
+	//			screenY - 5,
+	//			10,
+	//			10,
+	//			0, 0, 1, 1,
+	//			0);
+	//	}
+	//}
 
 	// 後始末（Wind と同じ）
 	dc->VSSetShader(nullptr, nullptr, 0);
