@@ -33,7 +33,12 @@ void Ball::ThrowBezier(const BezierPitchData& data,
 	bezierFlying = true;
 
 	//キネマティックモードに切り替え
-	collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+	//collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+
+	// 重力・空気抵抗で動かないよう速度だけゼロにしておく
+	/*collider->setLinearVelocity(physx::PxVec3(0, 0, 0));
+	collider->setAngularVelocity(physx::PxVec3(0, 0, 0));*/
+
 
 	//見た目の回転をリセット
 	modelRotationSpeed = visualRotationSpeed;
@@ -63,13 +68,14 @@ void Ball::UpdateBezierFlight(float elapsedTime)
 		bezierT = 1.0f;
 		bezierFlying = false;
 		//キネマティックモードを解除して物理シミュレーションに戻す
-		_ReleaseToDynamic(physx::PxVec3(0, 0, 0));
+		//_ReleaseToDynamic(physx::PxVec3(0, 0, 0));
 	}
 
 	DirectX::XMFLOAT3 pos = EvalCubicBezier(bezierT);
 
-	//キネマティックターゲットとして位置をセット
-	collider->setKinematicTarget(physx::PxTransform(physx::PxVec3(pos.x, pos.y, pos.z)));
+	
+	collider->setGlobalPose(
+		physx::PxTransform(physx::PxVec3(pos.x, pos.y, pos.z)));
 
 	worldPosition = pos;
 }
@@ -289,8 +295,11 @@ void Ball::UpdateFromPhysics(float elapsedTime)
 	}
 
 	// 1. PhysXコライダーからは「位置」だけを取得する
-	physx::PxTransform pose = collider->getGlobalPose();
-	worldPosition = DirectX::XMFLOAT3(pose.p.x, pose.p.y, pose.p.z);
+	if (!bezierFlying)
+	{
+		physx::PxTransform pose = collider->getGlobalPose();
+		worldPosition = DirectX::XMFLOAT3(pose.p.x, pose.p.y, pose.p.z);
+	}
 
 	// 2. 「回転」はコライダーを完全に無視し、純粋なパラメーター(rotationSpeed)のみで自前計算する
 	// rotationSpeed は「度/秒(deg/s)」で計算されているため、経過時間を掛けて今フレームの回転量を求める

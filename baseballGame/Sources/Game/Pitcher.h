@@ -139,6 +139,11 @@ private:
 		DirectX::XMFLOAT3 visualRotationSpeed;// 見た目の回転速度（度/秒）
 		DirectX::XMFLOAT3 visualAngle; // 見た目の角度（度）
 
+		//ベジェ曲線制御用オフセット
+		DirectX::XMFLOAT3 bezierCtrl1 = { 0.0f, 0.0f, 0.0f }; //第1制御点
+		DirectX::XMFLOAT3 bezierCtrl2 = { 0.0f, 0.0f, 0.0f }; //第2制御点
+		DirectX::XMFLOAT3 bezierTarget = { 0.0f, 0.0f, 0.0f }; //ターゲット点
+
 	};
 	std::vector<PitchParameter> pitchParameters;
 
