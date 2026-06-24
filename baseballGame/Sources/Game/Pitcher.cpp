@@ -35,7 +35,7 @@ void Pitcher::Initialize()
 		pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
 	}
 
-	position = { -0.1f,0.22f,18.15f };
+	position = { 0.0f,0.22f,18.15f };
 	scale = { 1.0f,1.0f,1.0f };
 	angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
 
@@ -780,14 +780,14 @@ void Pitcher::DrawGUI()
 				if (IsRightPitcher())
 				{
 					pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\rightPitcher.glb");
-					position = { -0.1f,0.22f,18.15f };
+					position = { 0.0f,0.22f,18.15f };
 					Ball::Instance().SetBallPosition({ 0.0f, 0.0f, 0.05f });
 					Ball::Instance().SetBallAngle({ 0.0f, 0.0f, -1.6f });
 				}
 				else
 				{
 					pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
-					position = { 0.1f,0.22f,18.15f };
+					position = { 0.0f,0.22f,18.15f };
 					Ball::Instance().SetBallPosition({ 0.0f, 0.0f, 0.05f });
 					Ball::Instance().SetBallAngle({ 0.0f, 0.0f, 1.6f });
 				}
