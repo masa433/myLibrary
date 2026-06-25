@@ -77,6 +77,20 @@ void Ball::UpdateBezierFlight(float elapsedTime)
 	collider->setGlobalPose(
 		physx::PxTransform(physx::PxVec3(pos.x, pos.y, pos.z)));
 
+	//ベジェ曲線の終着点についたら、しばらく同じ方向にベジェ曲線と同じ強さの力を加える
+	if(bezierData.p3.z - pos.z < 0.01f)
+	{
+		//addforceを使って、ベジェ曲線の終着点方向に力を加える
+		physx::PxVec3 forceDirection = physx::PxVec3(bezierData.p3.x - pos.x, bezierData.p3.y - pos.y, bezierData.p3.z - pos.z);
+
+		forceDirection.normalize();
+
+		//yだけ下に落ちるの対策で、y方向の力を少し上にする
+		forceDirection.y += 0.13f;
+
+		collider->addForce(forceDirection * 10.0f, physx::PxForceMode::eFORCE);
+	}
+
 	worldPosition = pos;
 }
 
@@ -88,14 +102,6 @@ void Ball::CancelBezier()
 	// DynamicへはonContact()側でSetLinearVelocity前に切り替える
 }
 
-// ---- 内部関数: キネマティックからダイナミックへ切り替え ----
-void Ball::_ReleaseToDynamic(const physx::PxVec3& inheritVelocity)
-{
-	if (!collider) return;
-	collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, false);
-	collider->setLinearVelocity(inheritVelocity);
-	collider->setAngularVelocity(physx::PxVec3(0, 0, 0));
-}
 
 //3次ベジェ曲線の評価
 DirectX::XMFLOAT3 Ball::EvalCubicBezier(float t) const

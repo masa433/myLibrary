@@ -213,6 +213,5 @@ private:
 	// ヘルパー
 	DirectX::XMFLOAT3 EvalCubicBezier(float t) const;
 
-	void _ReleaseToDynamic(const physx::PxVec3& inheritVelocity);
 
 };

@@ -1122,8 +1122,7 @@ void Pitcher::ThrowBallBezier()
 	DirectX::XMFLOAT3 p3 = {
 	boxPosition.x + params.bezierTarget.x * side,
 	boxPosition.y + params.bezierTarget.y,
-	/*boxPosition.z + params.bezierTarget.z*/
-		-5.0f //ホームプレート手前で終わるように調整
+	boxPosition.z + params.bezierTarget.z
 	};
 
 	//到達時間を球速から計算
@@ -1210,17 +1209,16 @@ void Pitcher::SelectPitchTypeByAI()
 	ApplyAIBezierTarget();
 
 	const float side = IsRightPitcher() ? 1.0f : -1.0f;
-	throwDirection.x = GenerateRandomFloat(0.01f, 0.03f) * side;
 
-	//launchAngleDegrees = GenerateRandomFloat(-1.00f, 0.2f);
-
+	//球種と球速をログ表示
 	if (consoleLog)
 	{
-		char msg[192];
-		snprintf(msg, sizeof(msg), u8"[Info] AI Pitch: %s %.1f km/h angle %.2f dirX %.3f\n",
-			GetPitchTypeName(selectedPitchType), ballSpeedKmh, launchAngleDegrees, throwDirection.x);
+		char msg[128];
+		snprintf(msg, sizeof(msg), u8"[Info] 球種: %s 球速: %.1f km/h\n", GetPitchTypeName(selectedPitchType), ballSpeedKmh);
 		consoleLog->push_back(msg);
 	}
+
+	
 }
 
 Pitcher::PitchType Pitcher::ChooseAIPitchType() const
@@ -1265,6 +1263,7 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 		}
 	}
 
+	
 	return PitchType::Fastball;
 }
 
@@ -1298,10 +1297,25 @@ void Pitcher::ApplyAIBezierTarget()
 		}
 	}
 
+	// 2D経由で確定させる（3D→2D→3D で座標系を統一）
+	ballSprite::Instance().SetAITargetFromWorld(
+		boxPosition.x + targetX,
+		boxPosition.y + targetY);
+
+	// ballSpriteの2D座標から3Dに変換して bezierTarget に書き戻す
+	DirectX::XMFLOAT2 world = ballSprite::Instance().GetAITarget3D();
 	auto& target = pitchParameters[static_cast<int>(selectedPitchType)].bezierTarget;
-	target.x = targetX;
-	target.y = targetY;
+	target.x = world.x - boxPosition.x;
+	target.y = world.y - boxPosition.y;
 	target.z = 0.0f;
+
+	//目標地点をログ表示
+	if (consoleLog)
+	{
+		char msg[128];
+		snprintf(msg, sizeof(msg), u8"[Info] AIベジェターゲット: X: %.3f Y: %.3f\n", target.x, target.y);
+		consoleLog->push_back(msg);
+	}
 }
 
 float Pitcher::GetSpeedVarianceKmh(PitchType pitchType) const

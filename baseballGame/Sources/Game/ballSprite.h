@@ -28,11 +28,6 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
-	//3D座標から2Dスクリーン座標への変換
-	DirectX::XMFLOAT2 CalculateBallTarget(const DirectX::XMFLOAT3& ballPosition, const DirectX::XMFLOAT3& ballVelocity);
-
-	DirectX::XMFLOAT3 Convert2DTargetTo3D(const DirectX::XMFLOAT2& screenPos);
-
 private:
 	//スプライトデータ
 	struct Sprite
@@ -113,4 +108,12 @@ public:
 	};
 
 	bool useBallBreak = false;
+
+public:
+	DirectX::XMFLOAT2 aiTargetScreen = { 0.0f, 0.0f }; // AIが狙うターゲット位置（スクリーン座標）
+	bool hasAITarget = false; // AIがターゲット位置を設定したかどうか
+
+	//外部から3D座標に変換して取得する
+	DirectX::XMFLOAT2 GetAITarget3D() const;
+	void SetAITargetFromWorld(float worldX, float worldY);
 };

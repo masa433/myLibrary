@@ -26,6 +26,46 @@ static DirectX::XMFLOAT2 WorldToZoneScreen(
 	return { screenX, screenY };
 }
 
+// 3D座標から2Dスクリーン座標への変換
+static DirectX::XMFLOAT2 ZoneScreenToWorld(
+	float screenX, float screenY,
+	const DirectX::XMFLOAT2& zoneScreenPos,  // ゾーンスプライト左上
+	const DirectX::XMFLOAT2& zoneScreenSize, // ゾーンスプライトサイズ(px)
+	const DirectX::XMFLOAT2& zone3DCenter,   // 3Dゾーン中心(x,y)
+	const DirectX::XMFLOAT2& zone3DSize)     // 3Dゾーンサイズ(m)
+{
+	// スクリーン座標を正規化座標(0~1)に変換
+	float normalX = (screenX - zoneScreenPos.x) / zoneScreenSize.x;
+	float normalY = (screenY - zoneScreenPos.y) / zoneScreenSize.y;
+	// Y軸反転（3DはY上が正、2DはY下が正）
+	normalY = 1.0f - normalY;
+	// 正規化座標を3D座標に変換
+	float worldX = (zone3DCenter.x - zone3DSize.x * 0.5f) + normalX * zone3DSize.x;
+	float worldY = (zone3DCenter.y - zone3DSize.y * 0.5f) + normalY * zone3DSize.y;
+	return { worldX, worldY };
+}
+
+DirectX::XMFLOAT2 ballSprite::GetAITarget3D() const
+{
+	return ZoneScreenToWorld(
+		aiTargetScreen.x, aiTargetScreen.y,
+		strikeZoneSpriteData->position,
+		strikeZoneSpriteData->size,
+		zone3DCenter,
+		zone3DSize);
+}
+
+void ballSprite::SetAITargetFromWorld(float worldX, float worldY)
+{
+	aiTargetScreen = WorldToZoneScreen(
+		worldX, worldY,
+		strikeZoneSpriteData->position,
+		strikeZoneSpriteData->size,
+		zone3DCenter,
+		zone3DSize);
+	hasAITarget = true;
+}
+
 void ballSprite::Initialize(ID3D11Device* device)
 {
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -74,6 +114,19 @@ void ballSprite::Update(float elapsedTime)
 	if (nowThrown && !prevThrown)
 		ballTrail2D.clear();
 	prevThrown = nowThrown;
+
+	//投球前に目標地点にスプライトを移動
+	
+		if (hasAITarget)
+		{
+			// AIが設定したターゲット位置を使用
+			DirectX::XMFLOAT2 targetScreenPos = aiTargetScreen;
+			ballDebugSpriteData->position.x = targetScreenPos.x - ballDebugSpriteData->size.x * 0.5f;
+			ballDebugSpriteData->position.y = targetScreenPos.y - ballDebugSpriteData->size.y * 0.5f;
+		}
+		
+		return;
+	
 
 	const DirectX::XMFLOAT3& wp = ball.GetWorldPosition();
 
