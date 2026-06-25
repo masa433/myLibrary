@@ -1298,7 +1298,7 @@ void Pitcher::ApplyAIBezierTarget()
 	}
 
 	//10%の確率で、ど真ん中をターゲットにする(失投)
-	if (GenerateRandomFloat(0.0f, 1.0f) < 0.9f)
+	if (GenerateRandomFloat(0.0f, 1.0f) < 0.1f)
 	{
 		targetX = 0.0f;
 		targetY = 0.0f;
@@ -1356,7 +1356,7 @@ const char* Pitcher::GetPitchTypeName(PitchType pitchType) const
 	switch (pitchType)
 	{
 		//失投の時は球種の後ろに(失投)と表示する
-		if (GenerateRandomFloat(0.0f, 1.0f) < 0.9f)
+		if (GenerateRandomFloat(0.0f, 1.0f) < 0.1f)
 		{
 			return u8"失投";
 		}

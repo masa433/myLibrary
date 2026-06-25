@@ -9,6 +9,7 @@
 #include "collision.h"
 #include "input.h"
 #include "physxManager.h"
+#include "batSprite.h"
 
 
 // 初期化
@@ -52,7 +53,7 @@ void Player::Initialize()
     //バットモデルの読み込み
     bat = std::make_unique<Model>(".\\resources\\object\\bat.mdl");
 	batModel = std::make_unique<gltf_model>(device, ".\\resources\\object\\bat.glb");
-    batScale = { 1.2f,1.1f,1.2f };
+    batScale = { 1.15f,1.1f,1.15f };
 
     meshScale = { 0.03f,0.012f,0.03f };
 
@@ -167,6 +168,8 @@ void Player::Initialize()
         sweetSpotShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
         sweetSpotShape->setName("BatSweetSpot");
     }
+
+	BatSprite::Instance().Initialize(device);
 }
 
 // 解放
@@ -180,6 +183,8 @@ void Player::Uninitialize()
 
     PX_RELEASE(pxBatConvexMesh);
     PX_RELEASE(pxBatMaterial);
+
+	BatSprite::Instance().Uninitialize();
 }
 
 // プレイヤー固有の更新処理
@@ -202,6 +207,8 @@ void Player::Update(float elapsedTime)
     // ボールの位置を取得してルックアット処理を実行
     const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetBallPosition();
     UpdateLookAt(ballPosition);
+
+	BatSprite::Instance().Update(elapsedTime);
 
 	// バットとボールの当たり判定
     //CheckBatAndBallCollision(elapsedTime);
@@ -313,11 +320,14 @@ void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
 	RenderPlayer(rc, renderer);
 	RenderBat(rc, renderer);
 
+	
 }
 
 void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
 {
     batter->render_batched(rc.deviceContext, transform, animated_nodes);
+
+	BatSprite::Instance().Render();
 }
 
 void Player::RenderBat(const RenderContext& rc, ModelRenderer* renderer)
@@ -473,6 +483,8 @@ void Player::DrawGUI()
                 ImGui::Text("No animations available");
             }
         }   
+
+		BatSprite::Instance().DrawGUI();
 #endif
 }
 
@@ -843,12 +855,12 @@ void Player::LoadFromJson(const json& j)
     if (j.contains("position"))   position = { j["position"][0], j["position"][1], j["position"][2] };
     if (j.contains("scale"))      scale = { j["scale"][0], j["scale"][1], j["scale"][2] };
     if (j.contains("angle"))      angle = { j["angle"][0], j["angle"][1], j["angle"][2] };
-    if (j.contains("bat_position")) batPosition = { j["bat_position"][0], j["bat_position"][1], j["bat_position"][2] };
-    if (j.contains("bat_scale"))    batScale = { j["bat_scale"][0], j["bat_scale"][1], j["bat_scale"][2] };
-    if (j.contains("bat_angle"))    batAngle = { j["bat_angle"][0], j["bat_angle"][1], j["bat_angle"][2]};
-    if (j.contains("mesh_scale")) { meshScale = { j["mesh_scale"][0], j["mesh_scale"][1], j["mesh_scale"][2] }; UpdatePhysXMeshTransform(meshScale); }
-    if (j.contains("sweet_spot_offset")) sweetSpotOffset = { j["sweet_spot_offset"][0], j["sweet_spot_offset"][1], j["sweet_spot_offset"][2] };
-    if (j.contains("sweet_spot_scale"))  sweetSpotScale = { j["sweet_spot_scale"][0], j["sweet_spot_scale"][1], j["sweet_spot_scale"][2] };
+    if (j.contains("batPosition")) batPosition = { j["batPosition"][0], j["batPosition"][1], j["batPosition"][2] };
+    if (j.contains("batScale"))    batScale = { j["batScale"][0], j["batScale"][1], j["batScale"][2] };
+    if (j.contains("batAngle"))    batAngle = { j["batAngle"][0], j["batAngle"][1], j["batAngle"][2]};
+    if (j.contains("meshScale")) { meshScale = { j["meshScale"][0], j["meshScale"][1], j["meshScale"][2] }; UpdatePhysXMeshTransform(meshScale); }
+    if (j.contains("sweetSpotOffset")) sweetSpotOffset = { j["sweetSpotOffset"][0], j["sweetSpotOffset"][1], j["sweetSpotOffset"][2] };
+    if (j.contains("sweetSpotScale"))  sweetSpotScale = { j["sweetSpotScale"][0], j["sweetSpotScale"][1], j["sweetSpotScale"][2] };
    
     //利き手が変わっていれば再初期化
     if(j.contains("isRightBatter") && (bool)j["isRightBatter"] != isRightBatter)

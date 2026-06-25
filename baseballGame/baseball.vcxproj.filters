@@ -142,6 +142,9 @@
     <ClCompile Include="Sources\Game\ballSprite.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\batSprite.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -298,6 +301,9 @@
       <Filter>Sources\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Game\ballSprite.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\batSprite.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>

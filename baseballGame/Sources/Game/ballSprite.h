@@ -100,11 +100,11 @@ public:
 	//ボールゾーンのグリッド（5x5）
 	DirectX::XMFLOAT2 ballZoneGrid[5][5] =
 	{
-		{ { -0.286f,  0.4f }, { -0.143f,  0.4f }, {  0.0f,  0.4f }, {  0.143f,  0.4f }, { 0.286f, 0.4f } },
-		{ { -0.286f,  0.6f }, { -0.143f,  0.6f }, {  0.0f,  0.6f }, {  0.143f,  0.6f }, { 0.286f, 0.6f } },
-		{ { -0.286f,  0.8f }, { -0.143f,  0.8f }, {  0.0f,  0.8f }, {  0.143f,  0.8f }, { 0.286f, 0.8f } },
-		{ { -0.286f, 1.0f }, { -0.143f, 1.0f }, {  0.0f, 1.0f }, {  0.143f, 1.0f }, { 0.286f, 1.0f } },
-		{ { -0.286f, 1.2f }, { -0.143f, 1.2f }, {  0.0f, 1.2f }, {  0.143f, 1.2f }, { 0.286f, 1.2f } },
+		{ { -0.21f,  0.5f }, { -0.143f,  0.5f }, {  0.0f,  0.5f }, {  0.143f,  0.5f }, { 0.21f, 0.5f } },
+		{ { -0.21f,  0.6f }, { -0.143f,  0.6f }, {  0.0f,  0.6f }, {  0.143f,  0.6f }, { 0.21f, 0.6f } },
+		{ { -0.21f,  0.8f }, { -0.143f,  0.8f }, {  0.0f,  0.8f }, {  0.143f,  0.8f }, { 0.21f, 0.8f } },
+		{ { -0.21f, 1.0f }, { -0.143f, 1.0f }, {  0.0f, 1.0f }, {  0.143f, 1.0f }, { 0.21f, 1.0f } },
+		{ { -0.21f, 1.1f }, { -0.143f, 1.1f }, {  0.0f, 1.1f }, {  0.143f, 1.1f }, { 0.21f, 1.1f } },
 	};
 
 	bool useBallBreak = false;
@@ -116,4 +116,6 @@ public:
 	//外部から3D座標に変換して取得する
 	DirectX::XMFLOAT2 GetAITarget3D() const;
 	void SetAITargetFromWorld(float worldX, float worldY);
+
+	void GetBallZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX::XMFLOAT2& outBottomRight) const;
 };

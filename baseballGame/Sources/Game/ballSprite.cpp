@@ -66,6 +66,40 @@ void ballSprite::SetAITargetFromWorld(float worldX, float worldY)
 	hasAITarget = true;
 }
 
+void ballSprite::GetBallZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX::XMFLOAT2& outBottomRight) const
+{
+	if (!strikeZoneSpriteData)
+	{
+		//‰Šú‰»
+		outTopLeft = { 0.0f,0.0f };
+		outBottomRight = { 0.0f,0.0f };
+		return;
+	}
+
+	
+	const DirectX::XMFLOAT2& worldTopLeft = ballZoneGrid[0][0];
+	const DirectX::XMFLOAT2& worldBottomRight = ballZoneGrid[4][4];
+
+	DirectX::XMFLOAT2 screenA = WorldToZoneScreen(
+		worldTopLeft.x, worldTopLeft.y,
+		strikeZoneSpriteData->position,
+		strikeZoneSpriteData->size,
+		zone3DCenter,
+		zone3DSize);
+
+	DirectX::XMFLOAT2 screenB = WorldToZoneScreen(
+		worldBottomRight.x, worldBottomRight.y,
+		strikeZoneSpriteData->position,
+		strikeZoneSpriteData->size,
+		zone3DCenter,
+		zone3DSize);
+
+	outTopLeft.x = (std::min)(screenA.x, screenB.x);
+	outTopLeft.y = (std::min)(screenA.y, screenB.y);
+	outBottomRight.x = (std::max)(screenA.x, screenB.x);
+	outBottomRight.y = (std::max)(screenA.y, screenB.y);
+}
+
 void ballSprite::Initialize(ID3D11Device* device)
 {
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
