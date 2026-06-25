@@ -1297,6 +1297,17 @@ void Pitcher::ApplyAIBezierTarget()
 		}
 	}
 
+	//10%の確率で、ど真ん中をターゲットにする(失投)
+	if (GenerateRandomFloat(0.0f, 1.0f) < 0.9f)
+	{
+		targetX = 0.0f;
+		targetY = 0.0f;
+
+		//その際、球速を10キロぐらい落とす
+		ballSpeedKmh -= 10.0f;
+
+	}
+
 	// 2D経由で確定させる（3D→2D→3D で座標系を統一）
 	ballSprite::Instance().SetAITargetFromWorld(
 		boxPosition.x + targetX,
@@ -1344,6 +1355,12 @@ const char* Pitcher::GetPitchTypeName(PitchType pitchType) const
 {
 	switch (pitchType)
 	{
+		//失投の時は球種の後ろに(失投)と表示する
+		if (GenerateRandomFloat(0.0f, 1.0f) < 0.9f)
+		{
+			return u8"失投";
+		}
+
 	case PitchType::Fastball: return u8"ストレート";
 	case PitchType::Slider: return u8"スライダー";
 	case PitchType::Curveball: return u8"カーブ";
