@@ -10,6 +10,7 @@
 #include "input.h"
 #include "physxManager.h"
 #include "batSprite.h"
+#include "ballSprite.h"
 
 
 // 初期化
@@ -17,34 +18,34 @@ void Player::Initialize()
 {
     ID3D11Device* device = Graphics::Instance().GetDevice();
     // モデルの読み込み
-    if(IsRightBatter())
+    if (IsRightBatter())
         batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
     else
-		batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
-    
+        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
 
-    if (IsRightBatter()) 
+
+    if (IsRightBatter())
     {
         position = { -1.0f, 0.01f, -0.4f };
-		batPosition = { -0.08f, 0.0f, 0.05f };
-		batAngle = { 0.0f, 0.0f, -1.6f };
+        batPosition = { -0.08f, 0.0f, 0.05f };
+        batAngle = { 0.0f, 0.0f, -1.6f };
     }
-    else 
+    else
     {
         position = { 1.0f, 0.01f, -0.4f };
-		batPosition = { 0.08f, 0.0f, 0.05f };
-		batAngle = { 0.0f, 0.0f, 1.6f };
+        batPosition = { 0.08f, 0.0f, 0.05f };
+        batAngle = { 0.0f, 0.0f, 1.6f };
     }
-    angle = { 0.0f, 0.0f, 0.0f};
-	
+    angle = { 0.0f, 0.0f, 0.0f };
+
     // アニメーション用のノードをコピー
     animated_nodes = batter->nodes;
 
-	//ステートごとのアニメーションインデックス設定
-	animation_indices[static_cast<int>(State::BattingIdle)] = 0;      // Idleアニメーション
-	animation_indices[static_cast<int>(State::BeforeSwing)] = 1; // BattingIdleアニメーション
-	animation_indices[static_cast<int>(State::Swinging)] = 2;   // Swingingアニメーション
-	
+    //ステートごとのアニメーションインデックス設定
+    animation_indices[static_cast<int>(State::BattingIdle)] = 0;      // Idleアニメーション
+    animation_indices[static_cast<int>(State::BeforeSwing)] = 1; // BattingIdleアニメーション
+    animation_indices[static_cast<int>(State::Swinging)] = 2;   // Swingingアニメーション
+
 
     // 初期ステート設定
     current_state = State::BattingIdle;
@@ -52,70 +53,70 @@ void Player::Initialize()
 
     //バットモデルの読み込み
     bat = std::make_unique<Model>(".\\resources\\object\\bat.mdl");
-	batModel = std::make_unique<gltf_model>(device, ".\\resources\\object\\bat.glb");
+    batModel = std::make_unique<gltf_model>(device, ".\\resources\\object\\bat.glb");
     batScale = { 1.15f,1.1f,1.15f };
 
     meshScale = { 0.03f,0.012f,0.03f };
 
-	sweetSpotOffset = { 0.0f, 0.75f, 0.0f };
-	sweetSpotScale = { 0.2f, 0.2f, 0.2f };
+    sweetSpotOffset = { 0.0f, 0.75f, 0.0f };
+    sweetSpotScale = { 0.2f, 0.2f, 0.2f };
 
-	batter->build_static_batches(device);
-	batModel->build_static_batches(device);
-   
+    batter->build_static_batches(device);
+    batModel->build_static_batches(device);
+
     //バット型の凸形状のメッシュ作成
     {
-		const ModelResource* resource = bat->GetResource();
+        const ModelResource* resource = bat->GetResource();
 
         //頂点数カウント
         size_t numVertices = 0;
-        for (const ModelResource::Mesh& mesh : resource->GetMeshes()) 
+        for (const ModelResource::Mesh& mesh : resource->GetMeshes())
         {
-			numVertices += mesh.vertices.size();
+            numVertices += mesh.vertices.size();
         }
 
         //すべてのメッシュの頂点座標を収集
-		std::vector<DirectX::XMFLOAT3> vertices(numVertices);
-		numVertices = 0;
+        std::vector<DirectX::XMFLOAT3> vertices(numVertices);
+        numVertices = 0;
         for (const ModelResource::Mesh& mesh : resource->GetMeshes())
         {
-			const Model::Node& node = bat->GetNodes().at(mesh.nodeIndex);
-			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform);
+            const Model::Node& node = bat->GetNodes().at(mesh.nodeIndex);
+            DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform);
 
             for (const ModelResource::Vertex& vertex : mesh.vertices)
             {
-				DirectX::XMVECTOR Position = DirectX::XMLoadFloat3(&vertex.position);
-				Position = DirectX::XMVector3Transform(Position, NodeTransform);
+                DirectX::XMVECTOR Position = DirectX::XMLoadFloat3(&vertex.position);
+                Position = DirectX::XMVector3Transform(Position, NodeTransform);
 
-				DirectX::XMFLOAT3& v = vertices.at(numVertices++);
-				DirectX::XMStoreFloat3(&v, Position);
+                DirectX::XMFLOAT3& v = vertices.at(numVertices++);
+                DirectX::XMStoreFloat3(&v, Position);
 
-				/*v.x *= batScale.x;
-				v.y *= batScale.y;
-				v.z *= batScale.z;*/
+                /*v.x *= batScale.x;
+                v.y *= batScale.y;
+                v.z *= batScale.z;*/
             }
         }
 
-		//凸形状のメッシュ作成
-		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
-		physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
-		physx::PxScene* pxScene = Physics::Instance().GetScene();
+        //凸形状のメッシュ作成
+        physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
+        physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
+        physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-		//pxMaterial->setRestitution(0.2f);// 反発係数を設定
-		//pxMaterial->setDynamicFriction(0.3f);// 動的摩擦係数を設定
-		//pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
+        //pxMaterial->setRestitution(0.2f);// 反発係数を設定
+        //pxMaterial->setDynamicFriction(0.3f);// 動的摩擦係数を設定
+        //pxMaterial->setStaticFriction(0.3f);// 静止摩擦係数を設定
 
         //バット専用マテリアルの作成
         pxBatMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
 
-		physx::PxConvexMeshDesc pxConvexMeshDesc;
-		pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
-		pxConvexMeshDesc.points.data = vertices.data();
-		pxConvexMeshDesc.points.stride = sizeof(DirectX::XMFLOAT3);
-		pxConvexMeshDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
+        physx::PxConvexMeshDesc pxConvexMeshDesc;
+        pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
+        pxConvexMeshDesc.points.data = vertices.data();
+        pxConvexMeshDesc.points.stride = sizeof(DirectX::XMFLOAT3);
+        pxConvexMeshDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
 
         physx::PxTolerancesScale pxTolerances;
-		const physx::PxCookingParams pxCookingParams(pxTolerances);
+        const physx::PxCookingParams pxCookingParams(pxTolerances);
         pxBatConvexMesh = PxCreateConvexMesh(pxCookingParams, pxConvexMeshDesc);
 
         //動的剛体生成
@@ -137,7 +138,7 @@ void Player::Initialize()
         physx::PxRigidActorExt::createExclusiveShape(*pxBatRigidBody, pxConvexGeometry, *pxBatMaterial);
 
         // 質量の設定
-		//pxBatRigidBody->setMass(0.9f); // バットの質量を設定
+        //pxBatRigidBody->setMass(0.9f); // バットの質量を設定
         physx::PxRigidBodyExt::setMassAndUpdateInertia(*pxBatRigidBody, 0.9f);
 
         //シーンに剛体を追加
@@ -146,22 +147,22 @@ void Player::Initialize()
 
     //同じpxBatRigidBodyにスイートスポットシェイプを追加(バットの芯)
     {
-        
+
         physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
         physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-		physx::PxMaterial* sweetSpotMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+        physx::PxMaterial* sweetSpotMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
 
         physx::PxBoxGeometry sweetSpotGeometry(
             sweetSpotScale.x * 0.4f, // バットの芯の幅の半分
             sweetSpotScale.y * 0.4f, // バットの芯の高さの半分
             sweetSpotScale.z * 0.4f  // バットの芯の奥行きの半分
-		);
+        );
 
-		//ローカルオフセットを指定してシェイプを作成
+        //ローカルオフセットを指定してシェイプを作成
         physx::PxTransform sweetSpotLocalPose(physx::PxVec3(sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z));
         physx::PxShape* sweetSpotShape = physx::PxRigidActorExt::createExclusiveShape(
-        *pxBatRigidBody, sweetSpotGeometry, *sweetSpotMaterial);
+            *pxBatRigidBody, sweetSpotGeometry, *sweetSpotMaterial);
 
         sweetSpotShape->setLocalPose(sweetSpotLocalPose);
         sweetSpotShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
@@ -169,7 +170,7 @@ void Player::Initialize()
         sweetSpotShape->setName("BatSweetSpot");
     }
 
-	BatSprite::Instance().Initialize(device);
+    BatSprite::Instance().Initialize(device);
 }
 
 // 解放
@@ -184,7 +185,7 @@ void Player::Uninitialize()
     PX_RELEASE(pxBatConvexMesh);
     PX_RELEASE(pxBatMaterial);
 
-	BatSprite::Instance().Uninitialize();
+    BatSprite::Instance().Uninitialize();
 }
 
 // プレイヤー固有の更新処理
@@ -195,29 +196,29 @@ void Player::Update(float elapsedTime)
     // キー入力による移動処理
     HandleInput(elapsedTime);
 
-	// アニメーション更新
-	UpdateAnimation(elapsedTime);
+    // アニメーション更新
+    UpdateAnimation(elapsedTime);
 
     // 位置更新
     UpdateTransform();
 
     //バットをアタッチメント
-	AttachBatToHand();
+    AttachBatToHand();
 
     // ボールの位置を取得してルックアット処理を実行
     const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetBallPosition();
     UpdateLookAt(ballPosition);
 
-	BatSprite::Instance().Update(elapsedTime);
+    BatSprite::Instance().Update(elapsedTime);
 
-	// バットとボールの当たり判定
+    // バットとボールの当たり判定
     //CheckBatAndBallCollision(elapsedTime);
 }
 
 // キー入力処理
 void Player::HandleInput(float elapsedTime)
 {
-  
+
     // スペースキーでスイング
     if (GetAsyncKeyState(VK_SPACE) & 0x8000)
     {
@@ -316,18 +317,18 @@ void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
 
     ////renderer->Render(rc, batTransform, bat.get(), ShaderId::Phong);
     //batModel->render_batched(rc.deviceContext, batTransform, {});
-  
-	RenderPlayer(rc, renderer);
-	RenderBat(rc, renderer);
 
-	
+    RenderPlayer(rc, renderer);
+    RenderBat(rc, renderer);
+
+
 }
 
 void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
 {
     batter->render_batched(rc.deviceContext, transform, animated_nodes);
 
-	BatSprite::Instance().Render();
+    BatSprite::Instance().Render();
 }
 
 void Player::RenderBat(const RenderContext& rc, ModelRenderer* renderer)
@@ -338,153 +339,153 @@ void Player::RenderBat(const RenderContext& rc, ModelRenderer* renderer)
 void Player::DrawGUI()
 {
 #ifdef USE_IMGUI
-	
-        if (ImGui::CollapsingHeader("Player Info"))
+
+    if (ImGui::CollapsingHeader("Player Info"))
+    {
+        ImGui::DragFloat3("Position", &position.x);
+        ImGui::DragFloat3("Scale", &scale.x);
+        ImGui::DragFloat3("Angle", &angle.x);
+
+        // 変更後
+        bool prev = isRightBatter;
+        if (ImGui::Checkbox("Right Handed", &isRightBatter))
         {
-            ImGui::DragFloat3("Position", &position.x);
-            ImGui::DragFloat3("Scale", &scale.x);
-            ImGui::DragFloat3("Angle", &angle.x);
-           
-            // 変更後
-            bool prev = isRightBatter;
-            if (ImGui::Checkbox("Right Handed", &isRightBatter))
+            if (prev != isRightBatter)
             {
-                if (prev != isRightBatter)
+                // モデル・位置を再初期化
+                ID3D11Device* device = Graphics::Instance().GetDevice();
+                if (IsRightBatter())
                 {
-                    // モデル・位置を再初期化
-                    ID3D11Device* device = Graphics::Instance().GetDevice();
-                    if (IsRightBatter())
-                    {
-                        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
-                        position = { -1.0f, 0.01f, -0.4f };
-                        batPosition = { -0.08f, 0.0f, 0.05f };
-                        batAngle = { 0.0f, 0.0f, -1.6f };
-                    }
-                    else
-                    {
-                        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
-                        position = { 1.0f, 0.01f, -0.4f };
-                        batPosition = { 0.08f, 0.0f, 0.05f };
-                        batAngle = { 0.0f, 0.0f, 1.6f };
-                    }
-                    batter->build_static_batches(device);
-                    animated_nodes = batter->nodes;
+                    batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
+                    position = { -1.0f, 0.01f, -0.4f };
+                    batPosition = { -0.08f, 0.0f, 0.05f };
+                    batAngle = { 0.0f, 0.0f, -1.6f };
+                }
+                else
+                {
+                    batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
+                    position = { 1.0f, 0.01f, -0.4f };
+                    batPosition = { 0.08f, 0.0f, 0.05f };
+                    batAngle = { 0.0f, 0.0f, 1.6f };
+                }
+                batter->build_static_batches(device);
+                animated_nodes = batter->nodes;
+                animation_time = 0.0f;
+                current_animation_index = animation_indices[static_cast<int>(current_state)];
+            }
+        }
+    }
+    if (ImGui::CollapsingHeader("Bat"))
+    {
+        ImGui::DragFloat3("Bat Position", &batPosition.x);
+        ImGui::DragFloat3("Bat Scale", &batScale.x);
+        ImGui::DragFloat4("Bat Angle", &batAngle.x);
+
+    }
+
+    // PhysXメッシュ単体操作用
+    if (ImGui::CollapsingHeader("PhysX Bat Mesh Debug"))
+    {
+        ImGui::Text("PhysX Mesh Transform (Independent)");
+
+
+
+
+        // PhysXメッシュのスケール  
+        if (ImGui::DragFloat3("Mesh Scale", &meshScale.x, 0.01f, 0.01f, 10.0f))
+        {
+            UpdatePhysXMeshTransform(meshScale);
+        }
+
+        // リセットボタン
+        if (ImGui::Button("Reset Mesh Transform"))
+        {
+            meshScale = { 0.03f, 0.012f, 0.03f };
+            UpdatePhysXMeshTransform(meshScale);
+        }
+
+
+        //バットのスイートスポットの位置とサイズ
+        ImGui::DragFloat3("Sweet Spot Offset", &sweetSpotOffset.x, 0.01f, -1.0f, 1.0f);
+        ImGui::DragFloat3("Sweet Spot Scale", &sweetSpotScale.x, 0.01f, 0.01f, 1.0f);
+
+        if (batSweetSpot)
+        {
+            // 位置の更新
+            physx::PxTransform transform(physx::PxVec3(sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z));
+            batSweetSpot->setGlobalPose(transform);
+
+            // サイズの更新
+            physx::PxShape* shape = nullptr;
+            batSweetSpot->getShapes(&shape, 1);
+            if (shape)
+            {
+                shape->setGeometry(physx::PxBoxGeometry(sweetSpotScale.x / 2.0f, sweetSpotScale.y / 2.0f, sweetSpotScale.z / 2.0f));
+            }
+        }
+    }
+
+    // アニメーションデバッグ用
+    if (ImGui::CollapsingHeader("Animation"))
+    {
+        if (batter && !batter->animations.empty())
+        {
+            const gltf_model::animation& animation = batter->animations.at(current_animation_index);
+
+            // アニメーション選択
+            int prev_animation_index = current_animation_index;
+            if (ImGui::SliderInt("Animation Index", &current_animation_index, 0, static_cast<int>(batter->animations.size()) - 1))
+            {
+                // アニメーションが変更されたら時間をリセット
+                if (prev_animation_index != current_animation_index)
+                {
                     animation_time = 0.0f;
-                    current_animation_index = animation_indices[static_cast<int>(current_state)];
                 }
             }
-        }
-        if (ImGui::CollapsingHeader("Bat"))
-        {
-            ImGui::DragFloat3("Bat Position", &batPosition.x);
-            ImGui::DragFloat3("Bat Scale", &batScale.x);
-            ImGui::DragFloat4("Bat Angle", &batAngle.x);
 
-        }
+            // アニメーション名の表示
+            ImGui::Text("Current Animation: %s", animation.name.c_str());
 
-        // PhysXメッシュ単体操作用
-        if (ImGui::CollapsingHeader("PhysX Bat Mesh Debug"))
-        {
-            ImGui::Text("PhysX Mesh Transform (Independent)");
-
-
-
-
-            // PhysXメッシュのスケール  
-            if (ImGui::DragFloat3("Mesh Scale", &meshScale.x, 0.01f, 0.01f, 10.0f))
+            // 再生/停止ボタン
+            if (ImGui::Checkbox("Playing", &animation_playing))
             {
-                UpdatePhysXMeshTransform(meshScale);
+                // チェックボックスの状態が変わったときの処理
             }
 
-            // リセットボタン
-            if (ImGui::Button("Reset Mesh Transform"))
+            // タイムスライダー
+            if (ImGui::SliderFloat("Time", &animation_time, 0.0f, animation.duration))
             {
-                meshScale = { 0.03f, 0.012f, 0.03f };
-                UpdatePhysXMeshTransform(meshScale);
+                // スライダーで時間を手動調整したときは再生を一時停止
+                animation_playing = false;
             }
 
+            ImGui::Text("Duration: %.2f sec", animation.duration);
 
-            //バットのスイートスポットの位置とサイズ
-            ImGui::DragFloat3("Sweet Spot Offset", &sweetSpotOffset.x, 0.01f, -1.0f, 1.0f);
-            ImGui::DragFloat3("Sweet Spot Scale", &sweetSpotScale.x, 0.01f, 0.01f, 1.0f);
-
-            if (batSweetSpot)
+            // すべてのアニメーションをリスト表示
+            if (ImGui::TreeNode("All Animations"))
             {
-                // 位置の更新
-                physx::PxTransform transform(physx::PxVec3(sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z));
-                batSweetSpot->setGlobalPose(transform);
-
-                // サイズの更新
-                physx::PxShape* shape = nullptr;
-                batSweetSpot->getShapes(&shape, 1);
-                if (shape)
+                for (size_t i = 0; i < batter->animations.size(); ++i)
                 {
-                    shape->setGeometry(physx::PxBoxGeometry(sweetSpotScale.x / 2.0f, sweetSpotScale.y / 2.0f, sweetSpotScale.z / 2.0f));
-                }
-            }
-        }
+                    const gltf_model::animation& anim = batter->animations.at(i);
+                    bool is_selected = (i == current_animation_index);
 
-        // アニメーションデバッグ用
-        if (ImGui::CollapsingHeader("Animation"))
-        {
-            if (batter && !batter->animations.empty())
-            {
-                const gltf_model::animation& animation = batter->animations.at(current_animation_index);
-
-                // アニメーション選択
-                int prev_animation_index = current_animation_index;
-                if (ImGui::SliderInt("Animation Index", &current_animation_index, 0, static_cast<int>(batter->animations.size()) - 1))
-                {
-                    // アニメーションが変更されたら時間をリセット
-                    if (prev_animation_index != current_animation_index)
+                    if (ImGui::Selectable(anim.name.c_str(), is_selected))
                     {
+                        current_animation_index = static_cast<int>(i);
                         animation_time = 0.0f;
+                        animation_playing = true;
                     }
                 }
-
-                // アニメーション名の表示
-                ImGui::Text("Current Animation: %s", animation.name.c_str());
-
-                // 再生/停止ボタン
-                if (ImGui::Checkbox("Playing", &animation_playing))
-                {
-                    // チェックボックスの状態が変わったときの処理
-                }
-
-                // タイムスライダー
-                if (ImGui::SliderFloat("Time", &animation_time, 0.0f, animation.duration))
-                {
-                    // スライダーで時間を手動調整したときは再生を一時停止
-                    animation_playing = false;
-                }
-
-                ImGui::Text("Duration: %.2f sec", animation.duration);
-
-                // すべてのアニメーションをリスト表示
-                if (ImGui::TreeNode("All Animations"))
-                {
-                    for (size_t i = 0; i < batter->animations.size(); ++i)
-                    {
-                        const gltf_model::animation& anim = batter->animations.at(i);
-                        bool is_selected = (i == current_animation_index);
-
-                        if (ImGui::Selectable(anim.name.c_str(), is_selected))
-                        {
-                            current_animation_index = static_cast<int>(i);
-                            animation_time = 0.0f;
-                            animation_playing = true;
-                        }
-                    }
-                    ImGui::TreePop();
-                }
+                ImGui::TreePop();
             }
-            else
-            {
-                ImGui::Text("No animations available");
-            }
-        }   
+        }
+        else
+        {
+            ImGui::Text("No animations available");
+        }
+    }
 
-		BatSprite::Instance().DrawGUI();
+    BatSprite::Instance().DrawGUI();
 #endif
 }
 
@@ -507,7 +508,7 @@ void Player::UpdatePhysXMeshTransform(const DirectX::XMFLOAT3& scale)
 
 void Player::AttachBatToHand()
 {
-    const char* handName = IsRightBatter() ? "mixamorig:RightHandMiddle1" :  "mixamorig:LeftHandMiddle1";
+    const char* handName = IsRightBatter() ? "mixamorig:RightHandMiddle1" : "mixamorig:LeftHandMiddle1";
 
     // バットのローカル行列を計算（バット専用の変数を使用）
     DirectX::XMMATRIX S = DirectX::XMMatrixScaling(batScale.x, batScale.y, batScale.z);
@@ -564,7 +565,7 @@ void Player::AttachBatToHand()
                 pxBatRigidBody->setKinematicTarget(pxTransform);
             }
 
-			// スイートスポットの位置も更新
+            // スイートスポットの位置も更新
             if (batSweetSpot)
             {
                 // ローカルオフセットをワールド行列で変換（スケール・回転・位置すべて考慮）
@@ -622,7 +623,7 @@ void Player::UpdateAnimation(float elapsedTime)
                 animation_time = START_OFFSET; // 開始位置を少し進める
             }
 
-           
+
             swingStartTime += elapsedTime;
         }
 
@@ -633,7 +634,7 @@ void Player::UpdateAnimation(float elapsedTime)
 
         // アニメーションの長さを取得
         float animation_duration = batter->animations[current_animation_index].duration;
-		
+
 
         if (Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)
         {
@@ -669,22 +670,67 @@ void Player::UpdateAnimation(float elapsedTime)
             // マウスカーソル位置を取得
             Mouse& mouse = Input::Instance().GetMouse();
             float mouseY = static_cast<float>(mouse.GetPositionY());
-			float mouseX = static_cast<float>(mouse.GetPositionX());
+            float mouseX = static_cast<float>(mouse.GetPositionX());
+
+            // ストライクゾーンのスクリーン境界を取得（コース判定に使用）
+            DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
+            ballSprite::Instance().GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
+            float zoneWidth = zoneBottomRight.x - zoneTopLeft.x;
+            float zoneHeight = zoneBottomRight.y - zoneTopLeft.y;
 
             Graphics& graphics = Graphics::Instance();
             float screenHeight = static_cast<float>(graphics.GetScreenHeight());
-			float screenWidth = static_cast<float>(graphics.GetScreenWidth());
 
-            // マウスY座標を正規化（0.0～1.0）
+            // マウスY座標を正規化（0.0～1.0）：高さ用（画面基準のまま）
             swingHeight = mouseY / screenHeight;
             swingHeight = std::clamp(swingHeight, 0.0f, 1.0f);
 
-			// マウスX座標を正規化（-1.0～1.0）
-            swingWidth = (mouseX / screenWidth) * 2.0f - 1.0f;
-			swingWidth = std::clamp(swingWidth, -1.0f, 1.0f);
+            // マウスX座標をストライクゾーン基準で正規化（-1.0=内角側 ～ +1.0=外角側）
+            swingWidth = 0.0f;
+            if (zoneWidth > 0.0f)
+            {
+                swingWidth = ((mouseX - zoneTopLeft.x) / zoneWidth) * 2.0f - 1.0f;
+                swingWidth = std::clamp(swingWidth, -1.0f, 1.0f);
+            }
 
-            // 腕の角度オフセットを計算（-45°～ +45°の範囲）
+            // 高さ方向の腕の角度オフセット（-45°～ +45°の範囲）
             armAngleOffset = DirectX::XMConvertToRadians(-45.0f + swingHeight * 90.0f);
+
+            // ゾーン中央(50%)からの高さの距離を「高め成分」「低め成分」に分ける（0.0～1.0）
+            // swingHeightは画面基準で上が0.0/下が1.0なので、ゾーン内の高さ比率に変換して判定する
+            float zoneSwingHeight = swingHeight; // フォールバック（ゾーン高さが取得できない場合）
+            if (zoneHeight > 0.0f)
+            {
+                zoneSwingHeight = (mouseY - zoneTopLeft.y) / zoneHeight;
+                zoneSwingHeight = std::clamp(zoneSwingHeight, 0.0f, 1.0f);
+            }
+            // zoneSwingHeightは0.0=高め ～ 1.0=低めの想定
+            float lowFactor = std::clamp((zoneSwingHeight - 0.5f) / 0.5f, 0.0f, 1.0f);  // 中央以下は0、低めほど1.0
+            float highFactor = std::clamp((0.5f - zoneSwingHeight) / 0.5f, 0.0f, 1.0f); // 中央以上は0、高めほど1.0
+
+            // 打者の左右で内角/外角の向きが反転するため符号を補正
+            // 右打者：画面右(swingWidth+)が外角、画面左(swingWidth-)が内角
+            // 左打者：画面右(swingWidth+)が内角、画面左(swingWidth-)が外角
+            float courseSign = IsRightBatter() ? -1.0f : 1.0f;
+            float courseValue = courseSign * swingWidth; // +1.0=内角側 ～ -1.0=外角側
+
+            // 内角成分・外角成分（それぞれ0.0～1.0）
+            float inAmount = std::clamp(courseValue, 0.0f, 1.0f);   // 内角に振っている度合い
+            float outAmount = std::clamp(-courseValue, 0.0f, 1.0f); // 外角に振っている度合い
+
+            // 横方向の角度オフセット（最大振れ幅30度）
+            // ・インロー(内角×低め)   : 下向き(プラス)を強める
+            // ・インハイ(内角×高め)   : 上向き(マイナス)を強める
+            // ・アウトロー/アウトハイ(外角は高さ問わず): 常に上向き(マイナス)を強める
+            static constexpr float maxWidthAngle = DirectX::XMConvertToRadians(10.0f);
+			static constexpr float maxOutLowAngle = DirectX::XMConvertToRadians(2.0f);
+            float widthAngleOffset =
+                (inAmount * lowFactor) * maxWidthAngle        // インロー → 下向き
+                - (inAmount * highFactor) * maxWidthAngle        // インハイ → 上向き
+                - (outAmount * highFactor) * maxWidthAngle        // アウトハイ → 上向き
+                - (outAmount * lowFactor) * maxOutLowAngle;       // アウトロー → やや下向き
+
+            armAngleOffset += widthAngleOffset;
 
             // 腕のボーンを変更
             ModifyArmBones();
@@ -707,7 +753,7 @@ void Player::UpdateAnimation(float elapsedTime)
         }
 
     }
-    
+
 }
 
 // ステート切り替え
@@ -834,19 +880,19 @@ void Player::UpdateChildrenRecursive(int nodeIndex)
     }
 }
 
-void Player::SaveToJson(json& j) 
+void Player::SaveToJson(json& j)
 {
-	// 基本的なプロパティを保存
+    // 基本的なプロパティを保存
     j["position"] = { position.x, position.y, position.z };
     j["scale"] = { scale.x, scale.y, scale.z };
     j["angle"] = { angle.x, angle.y, angle.z };
-	j["isRightBatter"] = isRightBatter;
-	j["batPosition"] = { batPosition.x, batPosition.y, batPosition.z };
-	j["batScale"] = { batScale.x, batScale.y, batScale.z };
-	j["batAngle"] = { batAngle.x, batAngle.y, batAngle.z };
-	j["meshScale"] = { meshScale.x, meshScale.y, meshScale.z };
-	j["sweetSpotOffset"] = { sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z };
-	j["sweetSpotScale"] = { sweetSpotScale.x, sweetSpotScale.y, sweetSpotScale.z };
+    j["isRightBatter"] = isRightBatter;
+    j["batPosition"] = { batPosition.x, batPosition.y, batPosition.z };
+    j["batScale"] = { batScale.x, batScale.y, batScale.z };
+    j["batAngle"] = { batAngle.x, batAngle.y, batAngle.z };
+    j["meshScale"] = { meshScale.x, meshScale.y, meshScale.z };
+    j["sweetSpotOffset"] = { sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z };
+    j["sweetSpotScale"] = { sweetSpotScale.x, sweetSpotScale.y, sweetSpotScale.z };
 }
 
 void Player::LoadFromJson(const json& j)
@@ -857,13 +903,13 @@ void Player::LoadFromJson(const json& j)
     if (j.contains("angle"))      angle = { j["angle"][0], j["angle"][1], j["angle"][2] };
     if (j.contains("batPosition")) batPosition = { j["batPosition"][0], j["batPosition"][1], j["batPosition"][2] };
     if (j.contains("batScale"))    batScale = { j["batScale"][0], j["batScale"][1], j["batScale"][2] };
-    if (j.contains("batAngle"))    batAngle = { j["batAngle"][0], j["batAngle"][1], j["batAngle"][2]};
+    if (j.contains("batAngle"))    batAngle = { j["batAngle"][0], j["batAngle"][1], j["batAngle"][2] };
     if (j.contains("meshScale")) { meshScale = { j["meshScale"][0], j["meshScale"][1], j["meshScale"][2] }; UpdatePhysXMeshTransform(meshScale); }
     if (j.contains("sweetSpotOffset")) sweetSpotOffset = { j["sweetSpotOffset"][0], j["sweetSpotOffset"][1], j["sweetSpotOffset"][2] };
     if (j.contains("sweetSpotScale"))  sweetSpotScale = { j["sweetSpotScale"][0], j["sweetSpotScale"][1], j["sweetSpotScale"][2] };
-   
+
     //利き手が変わっていれば再初期化
-    if(j.contains("isRightBatter") && (bool)j["isRightBatter"] != isRightBatter)
+    if (j.contains("isRightBatter") && (bool)j["isRightBatter"] != isRightBatter)
     {
         isRightBatter = j["isRightBatter"];
         ID3D11Device* device = Graphics::Instance().GetDevice();
@@ -879,5 +925,5 @@ void Player::LoadFromJson(const json& j)
         animated_nodes = batter->nodes;
         animation_time = 0.0f;
         current_animation_index = animation_indices[static_cast<int>(current_state)];
-	}
+    }
 }
