@@ -306,6 +306,9 @@
     <ClInclude Include="Sources\Game\batSprite.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\Game\HitJudge2D.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Basic.hlsli">

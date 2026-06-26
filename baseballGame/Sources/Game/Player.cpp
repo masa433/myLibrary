@@ -141,6 +141,14 @@ void Player::Initialize()
         //pxBatRigidBody->setMass(0.9f); // バットの質量を設定
         physx::PxRigidBodyExt::setMassAndUpdateInertia(*pxBatRigidBody, 0.9f);
 
+        physx::PxShape* shape = nullptr;
+        if (pxBatRigidBody->getShapes(&shape, 1))
+        {
+            shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+            shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+        }
+    
+
         //シーンに剛体を追加
         pxScene->addActor(*pxBatRigidBody);
     }
@@ -211,8 +219,75 @@ void Player::Update(float elapsedTime)
 
     BatSprite::Instance().Update(elapsedTime);
 
-    // バットとボールの当たり判定
-    //CheckBatAndBallCollision(elapsedTime);
+	//HitJudge2Dの更新（スイング判定）
+    {
+        // 2D ボール中心（ballDebugSpriteData->position + size/2）
+        ballSprite& bs = ballSprite::Instance();
+        DirectX::XMFLOAT2 ballSprPos = bs.GetBallSpritePosition(); // ← 後述の getter
+        DirectX::XMFLOAT2 ballSprSize = bs.GetBallSpriteSize();
+        DirectX::XMFLOAT2 ballCenter =
+        {
+            ballSprPos.x + ballSprSize.x * 0.5f,
+            ballSprPos.y + ballSprSize.y * 0.5f
+        };
+        HitJudge2D::Instance().SetBallRadiusPx(ballSprSize.x * 0.5f);
+
+        // バット矩形の左上とサイズ（BatSprite が計算した値を使う）
+        // BatSprite::GetBatScreenRect() を追加するか、ここで直接計算する
+        POINT pt;
+        GetCursorPos(&pt);
+        ScreenToClient(GetForegroundWindow(), &pt);
+        float mouseX = static_cast<float>(pt.x);
+        float mouseY = static_cast<float>(pt.y);
+
+        // BatSprite と同じクランプ処理
+        DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
+        bs.GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
+        mouseX = std::max(zoneTopLeft.x, std::min(zoneBottomRight.x, mouseX));
+        mouseY = std::max(zoneTopLeft.y, std::min(zoneBottomRight.y, mouseY));
+
+        // バット描画左上（batSprite.cpp の Render と同じ計算）
+        const DirectX::XMFLOAT2 batSize = { 230.0f, 40.0f }; 
+        DirectX::XMFLOAT2 batCenter;
+        if (IsRightBatter())
+        {
+            batCenter = {
+                (mouseX - batSize.x * 0.7f) + batSize.x * 0.5f,
+                (mouseY - batSize.y) + batSize.y * 0.5f
+            };
+        }
+        else
+        {
+            batCenter = {
+                (mouseX - batSize.x * 0.3f) + batSize.x * 0.5f,
+                (mouseY - batSize.y) + batSize.y * 0.5f
+            };
+        }
+        float batRot = IsRightBatter() ? 25.0f : 155.0f;
+
+        // カーソル中心（batCursorSprite の中心）
+        DirectX::XMFLOAT2 cursorCenter = { mouseX, mouseY };
+
+        // ボールがストライクゾーン到達までの残り秒数を推定
+        // Ball の Z 座標と速度から計算（Z=0 がホームベース）
+        float estTime = 99.0f;
+        {
+            physx::PxVec3 vel = Ball::Instance().GetLinearVelocity();
+            float ballZ = Ball::Instance().GetWorldPosition().z;
+            if (vel.z < -0.001f && ballZ > 0.0f)
+                estTime = ballZ / (-vel.z);   // 到達まで正の秒数
+            else if (ballZ <= 0.0f)
+                estTime = -(std::abs)(ballZ) / 0.1f; // 通過済み → 負値
+        }
+
+        // 紫バットフラグを反映
+        HitJudge2D::Instance().isPurpleBat = isPurpleBat;
+
+        HitJudge2D::Instance().Update(
+            ballCenter, batCenter, batSize, batRot, cursorCenter, estTime);
+    
+    }
+
 }
 
 // キー入力処理
@@ -224,7 +299,24 @@ void Player::HandleInput(float elapsedTime)
     {
         if (current_state != State::Swinging)
         {
-            ChangeState(State::Swinging);
+            HitJudge2DResult result;
+            bool validHit = HitJudge2D::Instance().TrySwing(result);
+
+            if (validHit)
+            {
+                // 有効ヒット：結果を HitJudge2D に保持させておき
+                // onContact(PhysX) 側で GetLastResult() を参照する
+                HitJudge2D::Instance().SetPendingResult(result);
+                ChangeState(State::Swinging);
+            }
+            else
+            {
+                // 空振り：アニメーションだけ再生（打球なし）
+                ChangeState(State::Swinging);  // アニメは通常通り
+                // PhysX の onContact は Ball::GetHasCollided() でガードされるが
+                // さらに pendingResult を無効にしてスルーさせる
+                HitJudge2D::Instance().ClearPendingResult();
+            }
         }
     }
 
@@ -485,6 +577,7 @@ void Player::DrawGUI()
         }
     }
 
+	HitJudge2D::Instance().DrawGUI();
     BatSprite::Instance().DrawGUI();
 #endif
 }

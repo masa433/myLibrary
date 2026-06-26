@@ -118,4 +118,17 @@ public:
 	void SetAITargetFromWorld(float worldX, float worldY);
 
 	void GetBallZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX::XMFLOAT2& outBottomRight) const;
+
+	DirectX::XMFLOAT2 GetBallSpritePosition() const
+	{
+		if (!ballDebugSpriteData) return {};
+		return ballDebugSpriteData->position;
+	}
+	DirectX::XMFLOAT2 GetBallSpriteSize() const
+	{
+		if (!ballDebugSpriteData) return { 20.f, 20.f };
+		return ballDebugSpriteData->size;
+	}
+
+	bool showHitJudgeDebug = false;
 };

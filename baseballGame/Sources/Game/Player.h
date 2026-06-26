@@ -8,6 +8,7 @@
 #include "ModelRenderer.h"
 #include "../Model/gltf_model.h"
 #include "json.hpp"
+#include "HitJudge2D.h"
 
 using json = nlohmann::json;
 
@@ -140,5 +141,6 @@ public:
 	bool GetIsInSweetSpot() const { return isInSweetSpot; } // スイートスポットヒット判定のゲッターメソッド
 	void SetIsInSweetSpot(bool hit) { isInSweetSpot = hit; } // スイートスポットヒット判定のセッターメソッド
 
+	bool isPurpleBat = false; // 紫色のバットに当たったかどうかのフラグ
 
 };

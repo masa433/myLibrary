@@ -1,2 +1,16 @@
-﻿  Player.cpp
+﻿  Pitcher.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.cpp(837,45): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.cpp(837,29): warning C4244: '初期化中': 'double' から 'const float' への変換です。データが失われる可能性があります。
+  Player.cpp
+  batSprite.cpp
+  physxManager.cpp
+  ShadowRenderer.cpp
+  scene_game.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(388,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(389,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(415,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(416,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(671,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+  framework.cpp
+  コードを生成中...
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

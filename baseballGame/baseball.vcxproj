@@ -351,6 +351,7 @@
     <ClInclude Include="Sources\Game\game_object.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Game\HitJudge2D.h" />
     <ClInclude Include="Sources\Game\Pitcher.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
