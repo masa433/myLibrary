@@ -52,5 +52,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
 
-	bool cursorClipped = false;
+
 };
