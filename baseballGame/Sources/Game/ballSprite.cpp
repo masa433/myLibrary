@@ -281,33 +281,33 @@ void ballSprite::Render()
 			ballDebugSpriteData->rotation);
 	}
 
-	//for (int y = 0; y < 3; y++)
-	//{
-	//	for (int x = 0; x < 3; x++)
-	//	{
-	//		const auto& p = strikeZoneGrid[y][x];
+	for (int y = 0; y < 3; y++)
+	{
+		for (int x = 0; x < 3; x++)
+		{
+			const auto& p = strikeZoneGrid[y][x];
 
-	//		float nx = (p.x + 0.43f * 0.5f) / 0.43f;
-	//		float ny = 1.0f - ((p.y - 0.5f) / 0.6f);
+			float nx = (p.x + 0.43f * 0.5f) / 0.43f;
+			float ny = 1.0f - ((p.y - 0.5f) / 0.6f);
 
-	//		float screenX =
-	//			strikeZoneSpriteData->position.x +
-	//			nx * strikeZoneSpriteData->size.x;
+			float screenX =
+				strikeZoneSpriteData->position.x +
+				nx * strikeZoneSpriteData->size.x;
 
-	//		float screenY =
-	//			strikeZoneSpriteData->position.y +
-	//			ny * strikeZoneSpriteData->size.y;
+			float screenY =
+				strikeZoneSpriteData->position.y +
+				ny * strikeZoneSpriteData->size.y;
 
-	//		ballDebugSprite->render(
-	//			dc,
-	//			screenX - 5,
-	//			screenY - 5,
-	//			10,
-	//			10,
-	//			1, 0, 0, 1,
-	//			0);
-	//	}
-	//}
+			ballDebugSprite->render(
+				dc,
+				screenX - 5,
+				screenY - 5,
+				10,
+				10,
+				1, 0, 0, 1,
+				0);
+		}
+	}
 
 	//// ボールゾーンのグリッド描画
 	//for(int y = 0; y < 5; y++)
@@ -472,4 +472,30 @@ void ballSprite::LoadFromJson(const json& j)
 			}
 		}
 	}
+}
+
+//ストライクゾーン境界のゲッター
+void ballSprite::GetStrikeZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX::XMFLOAT2& outBottomRight) const
+{
+	if (!strikeZoneSpriteData)
+	{
+		outTopLeft = { 0.0f, 0.0f };
+		outBottomRight = { 0.0f, 0.0f };
+		return;
+	}
+	// strikeZoneGrid[0][0]?[2][2] の3×3グリッドの外接矩形
+	const DirectX::XMFLOAT2& worldTL = strikeZoneGrid[0][0];
+	const DirectX::XMFLOAT2& worldBR = strikeZoneGrid[2][2];
+
+	DirectX::XMFLOAT2 screenA = WorldToZoneScreen(
+		worldTL.x, worldTL.y,
+		strikeZoneSpriteData->position, strikeZoneSpriteData->size,
+		zone3DCenter, zone3DSize);
+	DirectX::XMFLOAT2 screenB = WorldToZoneScreen(
+		worldBR.x, worldBR.y,
+		strikeZoneSpriteData->position, strikeZoneSpriteData->size,
+		zone3DCenter, zone3DSize);
+
+	outTopLeft = { (std::min)(screenA.x, screenB.x), (std::min)(screenA.y, screenB.y) };
+	outBottomRight = { (std::max)(screenA.x, screenB.x), (std::max)(screenA.y, screenB.y) };
 }

@@ -73,9 +73,7 @@ void Pitcher::Initialize()
 		
 	}
 	
-	//ボールスプライトの初期化
-	ballSprite::Instance().Initialize(device);
-	
+
 	InitializePitchSettings();
 	SelectPitchType();
 
@@ -259,7 +257,6 @@ void Pitcher::Update(float elapsedTime)
 	}
 
 	Wind::Instance().Update(elapsedTime);
-	ballSprite::Instance().Update(elapsedTime);
 
 	// ボールが転がり中（グラウンド着地済み・まだ判定前）のみ監視
 	if (Ball::Instance().GetHasCollidedWithGround() &&
@@ -315,8 +312,6 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 
 	pitcher->render_batched(rc.deviceContext, transform, animated_nodes);
 	Ball::Instance().Render(rc, renderer, isBallThrown);
-
-	ballSprite::Instance().Render();
 
 	Wind::Instance().Render(rc);
 	
@@ -798,206 +793,6 @@ void Pitcher::DrawGUI()
 			}
 		}
 	Wind::Instance().DrawGUI();
-
-	//2Dストライクゾーンビューア
-	if(ImGui::CollapsingHeader(u8"ストライクゾーンビューア"))
-	{
-		//レイアウトの定数
-		constexpr float PANEL_WIDTH = 260.0f;// パネルのサイズ
-		constexpr float PANEL_HEIGHT = 260.0f;// パネルのサイズ
-		constexpr float MARGIN = 30.0f;// パネルの余白
-		constexpr float TRAIL_RADIUS = 3.0f;// 軌跡の点の半径
-		constexpr float BALL_RADIUS = 7.0f;// ボールの半径
-
-		// 3D ストライクゾーン寸法（Pitcher の boxSize.x / boxSize.y を使用）
-		const float zoneW3D = boxSize.x; // 0.43 m
-		const float zoneH3D = boxSize.y; // 0.60 m
-
-		//2Dゾーン描画領域
-		const float drawAreaW = PANEL_WIDTH - MARGIN * 2.0f;// 描画領域の幅
-		const float drawAreaH = PANEL_HEIGHT - MARGIN * 2.0f;// 描画領域の高さ
-
-		// 3D ストライクゾーンのアスペクト比を維持して 2D にスケーリング
-		const float scaleX = drawAreaW / zoneW3D;
-		const float scaleY = drawAreaH / zoneH3D;
-
-		// ImGui カーソル位置（パネル左上隅）を記録し、ダミー領域でスペースを確保
-		ImVec2 panelOrigin = ImGui::GetCursorScreenPos();
-		ImGui::Dummy(ImVec2(PANEL_WIDTH, PANEL_HEIGHT));
-
-		ImDrawList* dl = ImGui::GetWindowDrawList();
-
-		//背景
-		dl->AddRectFilled(panelOrigin, ImVec2(panelOrigin.x + PANEL_WIDTH, panelOrigin.y + PANEL_HEIGHT), IM_COL32(30, 30, 30, 255));
-
-		// ゾーン左上隅（スクリーン座標）
-	// boxPosition.x が横中心、boxPosition.y が縦中心なので：
-	//   左端 = center - zoneW3D/2、上端 = center + zoneH3D/2（Y軸反転）
-		const float zoneCenterXpx = panelOrigin.x + PANEL_WIDTH / 2.0f;
-		const float zoneCenterYpx = panelOrigin.y + PANEL_HEIGHT / 2.0;
-
-		//ゾーン矩形(スクリーン座標)
-		ImVec2 zoneMin(zoneCenterXpx - (zoneW3D / 2.0f) * scaleX, zoneCenterYpx - (zoneH3D / 2.0f) * scaleY);
-		ImVec2 zoneMax(zoneCenterXpx + (zoneW3D / 2.0f) * scaleX, zoneCenterYpx + (zoneH3D / 2.0f) * scaleY);
-
-		//ゾーン塗りつぶし
-		dl->AddRectFilled(zoneMin, zoneMax, IM_COL32(50, 50, 50, 255));
-		//ゾーン枠線
-		dl->AddRect(zoneMin, zoneMax, IM_COL32(100, 180, 255, 220), 2.0f, 0, 2.0f);
-
-		//ゾーン内グリッド(9分割)
-		for(int i = 0; i <= 3; ++i)
-		{
-			float x = zoneMin.x + (zoneMax.x - zoneMin.x) * (i / 3.0f);
-			dl->AddLine(ImVec2(x, zoneMin.y), ImVec2(x, zoneMax.y), IM_COL32(100, 180, 255, 120), 1.0f);
-		}
-		for (int i = 0; i <= 3; ++i)
-		{
-			float y = zoneMin.y + (zoneMax.y - zoneMin.y) * (i / 3.0f);
-			dl->AddLine(ImVec2(zoneMin.x, y), ImVec2(zoneMax.x, y), IM_COL32(100, 180, 255, 120), 1.0f);
-		}
-
-		// 中心十字線（ホームプレート中央の参考）
-		dl->AddLine(
-			ImVec2(zoneCenterXpx, panelOrigin.y + 4.0f),
-			ImVec2(zoneCenterXpx, panelOrigin.y + PANEL_HEIGHT - 4.0f),
-			IM_COL32(60, 80, 120, 80), 1.0f);
-		dl->AddLine(
-			ImVec2(panelOrigin.x + 4.0f, zoneCenterYpx),
-			ImVec2(panelOrigin.x + PANEL_WIDTH - 4.0f, zoneCenterYpx),
-			IM_COL32(60, 80, 120, 80), 1.0f);
-
-		//3Dボール位置を2Dに投影して描画
-		auto To2D = [&](float worldX, float worldY)->ImVec2
-		{
-			//ゾーン中心からのオフセット
-			float relX = (worldX - boxPosition.x) * scaleX;// X軸はそのまま
-			float relY = (worldY - boxPosition.y) * scaleY;// Y軸反転のために符号を反転
-			return ImVec2(zoneCenterXpx + relX, zoneCenterYpx - relY);// Y軸反転
-		};
-
-		// --- ボール軌跡（ballTrail は Ball の private なので
-		//     公開された worldPosition の履歴をリアルタイムで描画する代替案として
-		//     現在フレームの位置だけ描画 + DrawGUI 呼び出し毎に手動履歴を管理） ---
-		// ※ Ball::ballTrail は private のため、ここでは Pitcher 側に
-		//   2D 用の軌跡バッファを持たせて記録します。
-		//   （後述の static 変数による簡易実装）
-
-		// 簡易軌跡バッファ（static で DrawGUI 呼び出し間を持続）
-		static std::deque<DirectX::XMFLOAT2> trail2D;
-		static bool wasThrowing = false;
-
-		const DirectX::XMFLOAT3& ballPos = Ball::Instance().GetWorldPosition();
-		bool nowThrowing = isBallThrown;
-
-		// 投球開始時にクリア
-		if (nowThrowing && !wasThrowing)
-			trail2D.clear();
-		wasThrowing = nowThrowing;
-
-		//投球中のみ記録
-		if(nowThrowing && ballPos.z > -2.0f && ballPos.z < 20.0f)
-		{
-			// 直前と離れている場合だけ追加（重複防止）
-			if (trail2D.empty() ||
-				fabsf(trail2D.back().x - ballPos.x) > 0.001f ||
-				fabsf(trail2D.back().y - ballPos.y) > 0.001f)
-			{
-				trail2D.push_back({ ballPos.x, ballPos.y });
-				if (trail2D.size() > 120)
-					trail2D.pop_front();
-			}
-		}
-
-		// 軌跡描画
-		size_t trailSz = trail2D.size();
-		for (size_t i = 0; i < trailSz; ++i)
-		{
-			float t = static_cast<float>(i) / (trailSz > 1 ? trailSz - 1 : 1);
-			ImU32 col = IM_COL32(
-				(int)(255 * t),           // R: 古→新で赤が増す
-				(int)(120 + 80 * t),      // G
-				(int)(255 * (1.0f - t)),  // B: 古→新で青が減る
-				(int)(60 + 190 * t));     // A: 古いほど薄い
-
-			ImVec2 pt = To2D(trail2D[i].x, trail2D[i].y);
-			float dotR = TRAIL_RADIUS * (0.4f + 0.6f * t);
-			dl->AddCircleFilled(pt, dotR, col);
-		}
-
-		// 軌跡をライン接続
-		if (trailSz > 1)
-		{
-			for (size_t i = 0; i + 1 < trailSz; ++i)
-			{
-				float t = static_cast<float>(i) / (trailSz - 1);
-				ImU32 lineCol = IM_COL32(200, 200, 255, (int)(40 + 120 * t));
-				dl->AddLine(
-					To2D(trail2D[i].x, trail2D[i].y),
-					To2D(trail2D[i + 1].x, trail2D[i + 1].y),
-					lineCol, 1.2f);
-			}
-		}
-
-		//現在のボール位置
-		ImVec2 ball2D = To2D(ballPos.x, ballPos.y);
-
-		//ゾーン内外で色を変える
-		bool inZone = (ballPos.x >= boxPosition.x - boxSize.x / 2.0f && ballPos.x <= boxPosition.x + boxSize.x / 2.0f &&
-			ballPos.y >= boxPosition.y - boxSize.y / 2.0f && ballPos.y <= boxPosition.y + boxSize.y / 2.0f);
-
-		ImU32 ballCol = inZone ? IM_COL32(255, 255, 100, 255) : IM_COL32(255, 100, 100, 255);
-		ImU32 ballGlowCol = inZone ? IM_COL32(255, 255, 100, 120) : IM_COL32(255, 100, 100, 120);
-		dl->AddCircleFilled(ball2D, BALL_RADIUS + 4.0f, ballGlowCol); // グロー
-		dl->AddCircleFilled(ball2D, BALL_RADIUS, ballCol);      // 本体
-		dl->AddCircle(ball2D, BALL_RADIUS, IM_COL32(255, 255, 255, 180), 0, 1.5f); // 縁取り
-
-		// ゾーン通過点マーカー（z≒0 付近で記録した最終位置）
-		static DirectX::XMFLOAT2 zonePassPt = { 0.0f, 0.0f };
-		static bool hasZonePass = false;
-
-		if (isBallThrown && fabsf(ballPos.z) < 0.15f) // ホームプレート通過中
-		{
-			zonePassPt = { ballPos.x, ballPos.y };
-			hasZonePass = true;
-		}
-		if (!isBallThrown) hasZonePass = false; // 次の投球でクリア
-
-		if (hasZonePass)
-		{
-			ImVec2 passPt = To2D(zonePassPt.x, zonePassPt.y);
-			dl->AddCircle(passPt, BALL_RADIUS + 3.0f, IM_COL32(255, 255, 255, 200), 0, 2.0f);
-			dl->AddLine(
-				ImVec2(passPt.x - 8, passPt.y), ImVec2(passPt.x + 8, passPt.y),
-				IM_COL32(255, 255, 255, 180), 1.5f);
-			dl->AddLine(
-				ImVec2(passPt.x, passPt.y - 8), ImVec2(passPt.x, passPt.y + 8),
-				IM_COL32(255, 255, 255, 180), 1.5f);
-		}
-
-		// --- ラベル ---
-		// 上辺ラベル
-		dl->AddText(ImVec2(zoneMin.x, panelOrigin.y + 6.0f),
-			IM_COL32(160, 200, 255, 200), u8"インコース");
-		dl->AddText(ImVec2(zoneMax.x - 60.0f, panelOrigin.y + 6.0f),
-			IM_COL32(160, 200, 255, 200), u8"アウトコース");
-
-		// 左辺ラベル（高め/低め）
-		dl->AddText(ImVec2(panelOrigin.x + 2.0f, zoneMin.y),
-			IM_COL32(160, 200, 255, 200), u8"高");
-		dl->AddText(ImVec2(panelOrigin.x + 2.0f, zoneMax.y - 14.0f),
-			IM_COL32(160, 200, 255, 200), u8"低");
-
-		// ボール現在座標テキスト
-		ImGui::SetCursorScreenPos(ImVec2(panelOrigin.x, panelOrigin.y + PANEL_HEIGHT + 2.0f));
-		ImGui::TextColored(
-			inZone ? ImVec4(1, 0.4f, 0.4f, 1) : ImVec4(1, 0.9f, 0.3f, 1),
-			u8"ボール位置  X: %+.3f  Y: %+.3f  Z: %+.3f  %s",
-			ballPos.x, ballPos.y, ballPos.z,
-			inZone ? u8"[ストライクゾーン内]" : u8"");
-	}
-
-	ballSprite::Instance().DrawGUI();
 
 #endif
 }

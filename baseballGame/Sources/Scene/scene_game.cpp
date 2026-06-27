@@ -16,6 +16,7 @@
 #include "json.hpp"
 #include "Wind.h"
 #include "ballSprite.h"
+#include "batSprite.h"
 #include <fstream>
 #include <string>
 
@@ -210,6 +211,10 @@ void scene_game::initialize()
 
 	// ピッチャーの初期化
     Pitcher::Instance().Initialize();
+
+	ballSprite::Instance().Initialize(device);
+
+	BatSprite::Instance().Initialize(device);
 
     // テクスチャマネージャーの初期化
     textureManager.Initialize(device, L"./resources/texture");
@@ -584,6 +589,10 @@ void scene_game::update(float elapsed_time)
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
 
+	ballSprite::Instance().Update(elapsed_time);
+
+	BatSprite::Instance().Update(elapsed_time);
+
     //太陽方向をライト方向と同期
 	directional_light_direction = skyRenderer.GetSunDirectionToLight();
 
@@ -831,6 +840,8 @@ void scene_game::render(float elapsedTime)
 
     Pitcher::Instance().Render(rc, modelRenderer);
 	Player::Instance().RenderPlayer(rc, modelRenderer);
+	BatSprite::Instance().Render();
+	ballSprite::Instance().Render();
 
     // --- ambient を元に戻す ---
     dc->UpdateSubresource(light_constant_buffer.Get(), 0, 0, &lightConstants, 0, 0);
@@ -1213,6 +1224,23 @@ void scene_game::DrawGUI()
     if (ImGui::CollapsingHeader("Sky & Time"))
     {
         skyRenderer.DrawGUI();
+    }
+
+	ImGui::Separator();
+
+    //ボールスプライト
+    if (ImGui::CollapsingHeader("Ball Sprite"))
+    {
+        ballSprite::Instance().DrawGUI();
+	}
+
+	ImGui::Separator();
+
+	//バットスプライト
+    if (ImGui::CollapsingHeader("Bat Sprite"))
+    {
+        BatSprite::Instance().DrawGUI();
+        
     }
 
     ImGui::End();

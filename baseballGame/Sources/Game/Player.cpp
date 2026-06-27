@@ -178,7 +178,6 @@ void Player::Initialize()
         sweetSpotShape->setName("BatSweetSpot");
     }
 
-    BatSprite::Instance().Initialize(device);
 }
 
 // 解放
@@ -193,7 +192,6 @@ void Player::Uninitialize()
     PX_RELEASE(pxBatConvexMesh);
     PX_RELEASE(pxBatMaterial);
 
-    BatSprite::Instance().Uninitialize();
 }
 
 // プレイヤー固有の更新処理
@@ -217,44 +215,40 @@ void Player::Update(float elapsedTime)
     const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetBallPosition();
     UpdateLookAt(ballPosition);
 
-    BatSprite::Instance().Update(elapsedTime);
 
-	//HitJudge2Dの更新（スイング判定）
+    // HitJudge2Dの更新（スイング判定）
     {
-        // 2D ボール中心（ballDebugSpriteData->position + size/2）
         ballSprite& bs = ballSprite::Instance();
-        DirectX::XMFLOAT2 ballSprPos = bs.GetBallSpritePosition(); // ← 後述の getter
+        DirectX::XMFLOAT2 ballSprPos = bs.GetBallSpritePosition();
         DirectX::XMFLOAT2 ballSprSize = bs.GetBallSpriteSize();
         DirectX::XMFLOAT2 ballCenter =
         {
             ballSprPos.x + ballSprSize.x * 0.5f,
             ballSprPos.y + ballSprSize.y * 0.5f
         };
-        HitJudge2D::Instance().SetBallRadiusPx(ballSprSize.x * 0.5f);
+        float ballRadius = ballSprSize.x * 0.5f;
+        HitJudge2D::Instance().SetBallRadiusPx(ballRadius);
 
-        // バット矩形の左上とサイズ（BatSprite が計算した値を使う）
-        // BatSprite::GetBatScreenRect() を追加するか、ここで直接計算する
         POINT pt;
         GetCursorPos(&pt);
         ScreenToClient(GetForegroundWindow(), &pt);
         float mouseX = static_cast<float>(pt.x);
         float mouseY = static_cast<float>(pt.y);
-
-        // BatSprite と同じクランプ処理
         DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
         bs.GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
         mouseX = std::max(zoneTopLeft.x, std::min(zoneBottomRight.x, mouseX));
         mouseY = std::max(zoneTopLeft.y, std::min(zoneBottomRight.y, mouseY));
 
-        // バット描画左上（batSprite.cpp の Render と同じ計算）
-        const DirectX::XMFLOAT2 batSize = { 230.0f, 40.0f }; 
+        const DirectX::XMFLOAT2 batSize = { 230.0f, 40.0f };
         DirectX::XMFLOAT2 batCenter;
+        float batRot;
         if (IsRightBatter())
         {
             batCenter = {
                 (mouseX - batSize.x * 0.7f) + batSize.x * 0.5f,
                 (mouseY - batSize.y) + batSize.y * 0.5f
             };
+            batRot = 25.0f;
         }
         else
         {
@@ -262,30 +256,60 @@ void Player::Update(float elapsedTime)
                 (mouseX - batSize.x * 0.3f) + batSize.x * 0.5f,
                 (mouseY - batSize.y) + batSize.y * 0.5f
             };
+            batRot = 155.0f;
         }
-        float batRot = IsRightBatter() ? 25.0f : 155.0f;
 
-        // カーソル中心（batCursorSprite の中心）
+        // 紫バットOBBを別途計算してボールと重なり判定
+        // 紫バットは白バットの先端寄り1/3程度（芯～先端）と仮定
+        // batSprite.png上の紫部分のサイズ・オフセットに合わせて調整してください
+        {
+            const DirectX::XMFLOAT2 purpleSize = { 230.0f, 40.0f }; 
+            // 紫バットはバットOBBのローカル座標で先端側にオフセット
+            // 右打ち：バットOBB中心からローカルX+方向（先端）にずらす
+            float offsetAlongBat = (batSize.x * 0.5f) - (purpleSize.x * 0.5f); // 先端寄りのオフセット量
+
+            float radBat = DirectX::XMConvertToRadians(batRot);
+            float cosB = cosf(radBat), sinB = sinf(radBat);
+
+            OBB2D purpleOBB;
+            purpleOBB.center = {
+                batCenter.x + cosB * offsetAlongBat,
+                batCenter.y + sinB * offsetAlongBat
+            };
+            purpleOBB.halfSize = { purpleSize.x * 0.5f, purpleSize.y * 0.5f };
+            purpleOBB.rotationDeg = batRot;
+
+            isPurpleBat = HitJudge2D::OBBvsCircle(purpleOBB, ballCenter, ballRadius);
+        }
+
+        // 白丸（cursorCenter）とボールの重なり判定は HitJudge2D 内で行う
+        // cursorRadius は HitJudge2D のメンバで調整可能
         DirectX::XMFLOAT2 cursorCenter = { mouseX, mouseY };
 
-        // ボールがストライクゾーン到達までの残り秒数を推定
-        // Ball の Z 座標と速度から計算（Z=0 がホームベース）
         float estTime = 99.0f;
         {
             physx::PxVec3 vel = Ball::Instance().GetLinearVelocity();
-            float ballZ = Ball::Instance().GetWorldPosition().z;
+            float         ballZ = Ball::Instance().GetWorldPosition().z;
             if (vel.z < -0.001f && ballZ > 0.0f)
-                estTime = ballZ / (-vel.z);   // 到達まで正の秒数
+                estTime = ballZ / (-vel.z);
             else if (ballZ <= 0.0f)
-                estTime = -(std::abs)(ballZ) / 0.1f; // 通過済み → 負値
+                estTime = -(std::abs)(ballZ) / 0.1f;
         }
 
-        // 紫バットフラグを反映
         HitJudge2D::Instance().isPurpleBat = isPurpleBat;
+
+        // ストライクゾーンのスクリーン境界を取得
+        DirectX::XMFLOAT2 szTopLeft, szBottomRight;
+        bs.GetStrikeZoneScreenBounds(szTopLeft, szBottomRight); // 後述のgetter
+
+        // ボールスプライトがストライクゾーン外 = ボールゾーン
+        bool isBallZone = (ballCenter.x < szTopLeft.x || ballCenter.x > szBottomRight.x ||
+            ballCenter.y < szTopLeft.y || ballCenter.y > szBottomRight.y);
+
+        HitJudge2D::Instance().isBallZone = isBallZone; // 後述のメンバ
 
         HitJudge2D::Instance().Update(
             ballCenter, batCenter, batSize, batRot, cursorCenter, estTime);
-    
     }
 
 }
@@ -420,7 +444,6 @@ void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
 {
     batter->render_batched(rc.deviceContext, transform, animated_nodes);
 
-    BatSprite::Instance().Render();
 }
 
 void Player::RenderBat(const RenderContext& rc, ModelRenderer* renderer)
@@ -472,6 +495,7 @@ void Player::DrawGUI()
         ImGui::DragFloat3("Bat Position", &batPosition.x);
         ImGui::DragFloat3("Bat Scale", &batScale.x);
         ImGui::DragFloat4("Bat Angle", &batAngle.x);
+        ImGui::Checkbox("Purple Bat", &isPurpleBat);
 
     }
 
@@ -578,7 +602,7 @@ void Player::DrawGUI()
     }
 
 	HitJudge2D::Instance().DrawGUI();
-    BatSprite::Instance().DrawGUI();
+
 #endif
 }
 

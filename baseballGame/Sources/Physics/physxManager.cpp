@@ -921,6 +921,27 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				if (collisionNormal.normalize() < 1e-4f)
 					collisionNormal = physx::PxVec3(0.0f, 0.0f, -1.0f);
 			}
+
+			{
+				float angle2DRad = result.launchAngle2DDeg * (3.14159265359f / 180.0f);
+
+				// XZ方向（水平方向）はバット速度から維持
+				physx::PxVec3 horizDir = collisionNormal;
+				horizDir.y = 0.0f;
+				if (horizDir.magnitude() < 1e-3f)
+					horizDir = physx::PxVec3(0.0f, 0.0f, -1.0f);
+				else
+					horizDir.normalize();
+
+				// 2Dの仰角でY成分を決定
+				collisionNormal = physx::PxVec3(
+					horizDir.x * cosf(angle2DRad),
+					sinf(angle2DRad),
+					horizDir.z * cosf(angle2DRad)
+				);
+				collisionNormal.normalize();
+			}
+
 			// 打球速度計算（onContact と同じロジック）
 			physx::PxVec3 relativeVelocity = batVelocity - ballVelocity;
 			float relativeVelocityAlongNormal = relativeVelocity.dot(collisionNormal);
@@ -936,11 +957,14 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			float estimatedExitVelocity = q * ballSpeed + (1.0f + q) * batSpeed;
 
 			// 打球角度補正
-			float launchAngle = std::atan2(
+			/*float launchAngle = std::atan2(
 				collisionNormal.y,
 				std::sqrt(collisionNormal.x * collisionNormal.x +
 					collisionNormal.z * collisionNormal.z));
-			float launchAngleDeg = launchAngle * (180.0f / PI);
+			float launchAngleDeg = launchAngle * (180.0f / PI);*/
+
+			// 2D判定の仰角を使用
+			float launchAngleDeg = result.launchAngle2DDeg;
 
 			float angleScale = 1.0f;
 			if (launchAngleDeg <= -20.0f) angleScale = 0.85f - 0.1f * std::clamp((launchAngleDeg + 20.0f) / -40.0f, 0.0f, 1.0f);

@@ -18,7 +18,12 @@ struct HitJudge2DResult
     float velocityScale = 1.0f;  // 打球速度への倍率
     float overlapRatio = 0.0f;  // 重なり度 0~1（デバッグ用）
     bool  cursorOverlap = false; // 丸カーソルが重なっていたか
+	float cursorOverlapRatio = 0.0f; // 丸カーソルの重なり度 0~1
     bool  purpleBat = false; // 紫バットだったか
+	bool isGroundBall = false; // 地面に落ちる打球か（onContact で判定）
+	float launchAngle2DDeg = 15.0f; // 2D判定での打球角度（onContact で計算）
+	float hitNormalizedY = 0.0f; // バット上端からのヒット位置（0=上端, 1=下端）
+	bool isBallZone = false; // ボールがストライクゾーン内に入っていたか（デバッグ用）
 };
 
 struct OBB2D
@@ -40,7 +45,7 @@ public:
     //設定
     //ヒット有効窓：ボールがストライクゾーン到達の何秒前から何秒後まで有効か
 	float hitWindowBeforeSec = 0.5f; //早すぎ判定
-	float hitWindowAfterSec = 0.10f;  //遅すぎ判定
+	float hitWindowAfterSec = 0.5f;  //遅すぎ判定
 
     // バット矩形のうち「当たり」と見なす上端オフセット（px）
    // バット画像の上端からこの範囲をヒット帯とする
@@ -51,11 +56,15 @@ public:
 
     // 紫バット判定フラグ（外部から set する）
     bool  isPurpleBat = false;
+	bool  isBallZone = false; // ボールがストライクゾーン内に入っていたか（外部から set する）
 
     // カーソル円と重なった時の速度ボーナス
-    float cursorOverlapBonus = 0.08f;   // +8%
+    float cursorOverlapBonus = 0.4f;   // +40%
     // 紫バットのペナルティ
-    float purpleBatPenalty = 0.20f;   // -20%
+    float purpleBatPenalty = 0.40f;   // -40%
+
+    //ボールゾーンのペナルティ
+	float ballZonePenalty = 0.40f; // -40%
 
     // ballScreenCenter  : 2Dボールスプライトの中心(px)
     // batTopLeft        : バット矩形の左上(px)
@@ -108,13 +117,34 @@ public:
         outResult.validHit = true;
         outResult.overlapRatio = overlapResult_.ratio;
         outResult.cursorOverlap = overlapResult_.cursorOverlap;
+		outResult.cursorOverlapRatio = overlapResult_.cursorOverlapRatio;
         outResult.purpleBat = isPurpleBat;
+		outResult.isGroundBall = overlapResult_.isGroundBall;
+		outResult.launchAngle2DDeg = overlapResult_.launchAngle2DDeg;
+		outResult.hitNormalizedY = overlapResult_.hitNormalizedY;
+		outResult.isBallZone = isBallZone;
 
         float scale = 1.0f;
+
+        //ボールゾーンなら減速
+        if(outResult.isBallZone)
+        {
+            scale -= ballZonePenalty;
+		}
+      
+        // 優先順位：カーソル重なり > 紫バット
         if (overlapResult_.cursorOverlap)
-            scale += cursorOverlapBonus;
-        if (isPurpleBat)
+        {
+            
+			//どれくらい重なっているかでボーナスを増減する場合は、ここで ratio を使って調整可能
+			scale += cursorOverlapBonus * overlapResult_.cursorOverlapRatio;
+
+        }
+        else if (isPurpleBat)
+        {
+            // 白丸が重なっていない かつ 紫バット：ペナルティ
             scale -= purpleBatPenalty;
+        }
 
         outResult.velocityScale = scale;
         lastResult_ = outResult;
@@ -130,6 +160,8 @@ public:
     float GetOverlapRatio() const { return overlapResult_.ratio; }
     float GetTimeToZone()   const { return timeToZone_; }
 
+	bool IsCursorOverlapping() const { return overlapResult_.cursorOverlap; }
+
 private:
     HitJudge2D() = default;
 
@@ -138,6 +170,10 @@ private:
         bool  anyOverlap = false;
         float ratio = 0.0f;
         bool  cursorOverlap = false;
+		float cursorOverlapRatio = 0.0f;
+        bool  isGroundBall = false;
+        float launchAngle2DDeg = 15.0f;  
+        float hitNormalizedY = 0.0f;     
     };
 
     // ---- AABB + ボール半径による重なり判定 ----
@@ -169,14 +205,49 @@ private:
             float clampY = (std::max)(-batOBB.halfSize.y, (std::min)(batOBB.halfSize.y, localY));
             float dist = sqrtf((localX - clampX) * (localX - clampX) + (localY - clampY) * (localY - clampY));
             info.ratio = 1.0f - (std::min)(1.0f, dist / br);
+
+            // ボールのローカルY（スクリーン座標 → 上がマイナス）を正規化
+            // localY < 0 : ボール中心がバットの上側 → フライ
+            // localY > 0 : ボール中心がバットの下側 → ゴロ
+            // 正規化：バット半径とボール半径の合計で割る
+            float maxOffset = batOBB.halfSize.y + br;
+            float normalizedY = (maxOffset > 0.0f)
+                ? (std::max)(-1.0f, (std::min)(1.0f, localY / maxOffset))
+                : 0.0f;
+            info.hitNormalizedY = normalizedY;
+
+            // 打球仰角：normalizedY -1(上端)→launchAngleTop, +1(下端)→launchAngleBottom
+            // 区間補間（中心を境に上下で別レンジ）
+            float angle;
+            if (normalizedY <= 0.0f)
+            {
+                // 上半分：center ～ top
+                float t = -normalizedY; // 0～1（0=中心, 1=上端）
+                angle = launchAngleCenter + t * (launchAngleTop - launchAngleCenter);
+            }
+            else
+            {
+                // 下半分：center ～ bottom
+                float t = normalizedY; // 0～1（0=中心, 1=下端）
+                angle = launchAngleCenter + t * (launchAngleBottom - launchAngleCenter);
+            }
+            info.launchAngle2DDeg = angle;
+            info.isGroundBall = (normalizedY >= groundBallThreshold);
         }
 
         // 丸カーソルとの判定（変更なし）
         float dx = ballCenter_.x - cursorCenter_.x;
         float dy = ballCenter_.y - cursorCenter_.y;
-        float distSq = dx * dx + dy * dy;
+        float dist = sqrtf(dx * dx + dy * dy);
         float sumR = br + cursorRadius;
-        info.cursorOverlap = (distSq < sumR * sumR);
+        info.cursorOverlap = (dist < sumR);
+
+        if (info.cursorOverlap)
+        {
+			// カーソル重なり度：ボール中心からカーソル中心までの距離で簡易計算
+            info.cursorOverlapRatio = 1.0f - (dist / sumR);
+			info.cursorOverlapRatio = (std::max)(0.0f, info.cursorOverlapRatio);
+        }
 
         return info;
     }
@@ -194,6 +265,12 @@ private:
     OverlapInfo        overlapResult_ = {};
     HitJudge2DResult   lastResult_ = {};
     bool               swingConsumed_ = false;
+
+    // 打球角度マッピング（ボール上端に当たった時 → 最大フライ、下端 → ゴロ）
+    float launchAngleTop = 150.0f;   // ボール上端に当たった時の仰角(度)
+    float launchAngleCenter = 10.0f;   // ボール中心に当たった時
+    float launchAngleBottom = -0.0f;  // ボール下端に当たった時(ゴロ)
+    float groundBallThreshold = 0.3f;  // hitNormalizedY がこれ以上でゴロ判定
 
 public:
     // ballRadius_px を外から設定できるようにする
@@ -223,16 +300,33 @@ public:
         if (ImGui::CollapsingHeader("HitJudge2D Debug"))
         {
             HitJudge2D& hj = HitJudge2D::Instance();
-            ImGui::Text("Overlapping: %s", hj.IsOverlapping() ? "YES" : "no");
-            ImGui::Text("Overlap ratio: %.2f", hj.GetOverlapRatio());
-            ImGui::Text("TimeToZone: %.3f sec", hj.GetTimeToZone());
-            ImGui::DragFloat("Hit Window Before(sec)", &hj.hitWindowBeforeSec, 0.01f, 0.0f, 1.0f);
-            ImGui::DragFloat("Hit Window After(sec)", &hj.hitWindowAfterSec, 0.01f, 0.0f, 1.0f);
-            ImGui::DragFloat("Bat Hit Band Height(px)", &hj.batHitBandHeight, 1.0f, 1.0f, 100.0f);
-            ImGui::DragFloat("Cursor Radius(px)", &hj.cursorRadius, 1.0f, 1.0f, 80.0f);
-            ImGui::DragFloat("Cursor Overlap Bonus", &hj.cursorOverlapBonus, 0.01f, 0.0f, 1.0f);
-            ImGui::DragFloat("Purple Bat Penalty", &hj.purpleBatPenalty, 0.01f, 0.0f, 1.0f);
-            ImGui::Checkbox("Is Purple Bat", &hj.isPurpleBat);
+            ImGui::Text(u8"かぶっているか : %s", hj.IsOverlapping() ? "YES" : "no");
+            ImGui::Text(u8"重なり率: %.2f", hj.GetOverlapRatio());
+            ImGui::Text(u8"時間: %.3f 秒", hj.GetTimeToZone());
+            ImGui::Text(u8"ゴロ判定の割合: %.3f  (- = フライ, + = ゴロ)",
+                hj.overlapResult_.hitNormalizedY);
+            ImGui::Text(u8"打球角度 2D: %.1f 度", hj.overlapResult_.launchAngle2DDeg);
+            ImGui::Text(u8"ゴロ判定: %s", hj.overlapResult_.isGroundBall ? "YES" : "no");
+            // DrawGUI
+            ImGui::Text(u8"カーソル重なり: %s", hj.IsCursorOverlapping() ? "YES" : "no");
+
+            ImGui::Text(u8"カーソル重なり率: %.2f", hj.overlapResult_.cursorOverlapRatio); 
+            ImGui::Separator();
+
+            ImGui::DragFloat(u8"ヒットの有効時間 (前)", &hj.hitWindowBeforeSec, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat(u8"ヒットの有効時間 (後)", &hj.hitWindowAfterSec, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat(u8"バットヒットバンドの高さ (px)", &hj.batHitBandHeight, 1.0f, 1.0f, 100.0f);
+            ImGui::DragFloat(u8"カーソルの半径 (px)", &hj.cursorRadius, 1.0f, 1.0f, 80.0f);
+            ImGui::DragFloat(u8"カーソル重なりボーナス", &hj.cursorOverlapBonus, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat(u8"パープルバットペナルティ", &hj.purpleBatPenalty, 0.01f, 0.0f, 1.0f);
+            ImGui::Checkbox(u8"パープルバットか", &hj.isPurpleBat);
+            ImGui::Text(u8"-- 打球角度マッピング --");
+            ImGui::DragFloat(u8"角度 上端 (フライ)", &hj.launchAngleTop, 0.5f, 0.0f, 60.0f);
+            ImGui::DragFloat(u8"角度 中心", &hj.launchAngleCenter, 0.5f, -30.0f, 60.0f);
+            ImGui::DragFloat(u8"角度 下端 (ゴロ)", &hj.launchAngleBottom, 0.5f, -30.0f, 10.0f);
+            ImGui::DragFloat(u8"地面の閾値", &hj.groundBallThreshold, 0.01f, 0.0f, 1.0f);
+            ImGui::Text(u8"ボールゾーン: %s", hj.isBallZone ? "YES" : "no");
+            ImGui::DragFloat(u8"ボールゾーンペナルティ", &hj.ballZonePenalty, 0.01f, 0.0f, 1.0f);
         }
     }
 

@@ -92,9 +92,9 @@ public:
 	//ストライクゾーンのグリッド（3x3）
 	DirectX::XMFLOAT2 strikeZoneGrid[3][3] =
 	{
-		{{ -0.143f,  0.6f }, {  0.0f,  0.6f }, {  0.143f,  0.6f } },
-		{ { -0.143f,  0.8f }, {  0.0f,  0.8f }, {  0.143f,  0.8f } },
-		{ { -0.143f, 1.0f }, {  0.0f, 1.0f }, {  0.143f, 1.0f }},
+		{{ -0.2f,  0.52f }, {  0.0f,  0.52f }, {  0.2f,  0.52f } },
+		{ { -0.2f,  0.8f }, {  0.0f,  0.8f }, {  0.2f,  0.8f } },
+		{ { -0.2f, 1.08f }, {  0.0f, 1.08f }, {  0.2f, 1.08f }},
 	};
 
 	//ボールゾーンのグリッド（5x5）
@@ -131,4 +131,6 @@ public:
 	}
 
 	bool showHitJudgeDebug = false;
+
+	void GetStrikeZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX::XMFLOAT2& outBottomRight) const;
 };
