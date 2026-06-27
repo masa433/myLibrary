@@ -281,7 +281,7 @@ void ballSprite::Render()
 			ballDebugSpriteData->rotation);
 	}
 
-	for (int y = 0; y < 3; y++)
+	/*for (int y = 0; y < 3; y++)
 	{
 		for (int x = 0; x < 3; x++)
 		{
@@ -307,7 +307,7 @@ void ballSprite::Render()
 				1, 0, 0, 1,
 				0);
 		}
-	}
+	}*/
 
 	//// ボールゾーンのグリッド描画
 	//for(int y = 0; y < 5; y++)
