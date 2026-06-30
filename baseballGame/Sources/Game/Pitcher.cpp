@@ -135,6 +135,8 @@ void Pitcher::Update(float elapsedTime)
 				snprintf(debugMessage, sizeof(debugMessage), "[Info] Forced Throw: Backspace pressed\n");
 				consoleLog->push_back(debugMessage);
 			}
+			isBallThrown = false;
+			ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
 		}
 	}
 
@@ -149,6 +151,7 @@ void Pitcher::Update(float elapsedTime)
 			stateTime = 0.0f;
 			hasReachedZero = false;
 			throwCounter = 0.0f;
+			isBallThrown = false;
 			SelectPitchTypeByAI(); // 球種選択
 			Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
 			Ball::Instance().SetHasCollided(false); // 衝突フラグをリセット
@@ -157,6 +160,7 @@ void Pitcher::Update(float elapsedTime)
 			Ball::Instance().SetHasCollidedWithGround(false); // 地面衝突フラグをリセット
 			Ball::Instance().SetHasPassedFairFoulTrigger(false); // フェア/ファウル判定トリガー通過フラグをリセット
 			Ball::Instance().SetFoulLogged(false); // ファウルログフラグをリセット
+			ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
 
 			OutputDebugStringA("Judgment reset\n");
 			if(consoleLog)

@@ -6,6 +6,7 @@
 #include <vector>
 #include "sprite.h"
 #include "RenderContext.h"
+#include "FontRenderer.h"
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -63,7 +64,7 @@ private:
 	std::unique_ptr<sprite> windDirectionSpriteRenderer;
 	std::unique_ptr<Sprite> windGroundSprite;
 	std::unique_ptr<sprite> windGroundSpriteRenderer;
-	std::unique_ptr<sprite> windStrengthFontRenderer;
+	FontRenderer windStrengthFont;
 
 	// シェーダー関連メンバーを追加
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;

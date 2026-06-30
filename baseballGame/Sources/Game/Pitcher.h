@@ -48,6 +48,9 @@ public:
 
 	void ThrowBallBezier();
 
+	float GetBallSpeedKmh() const { return ballSpeedKmh; }
+
+
 public:
 
 	enum class PitchType
@@ -72,6 +75,9 @@ public:
 
 	PitchType GetSelectedPitchType() const { return selectedPitchType; }
 	bool GetIsBallThrown() const { return isBallThrown; }
+
+	float GetSpeedVarianceKmh(PitchType pitchType) const;
+	const char* GetPitchTypeName(PitchType pitchType) const;
 
 private:
 	// モデル関連
@@ -156,8 +162,7 @@ private:
 	void SelectPitchTypeByAI();
 	void ApplyAIBezierTarget();
 	PitchType ChooseAIPitchType() const;
-	float GetSpeedVarianceKmh(PitchType pitchType) const;
-	const char* GetPitchTypeName(PitchType pitchType) const;
+	
 
 	// ===== 2Dスプライトの変化量(breakX/breakY)から3Dの回転(角速度ベクトル)を逆算する =====
 	// useBallBreakがオンの場合、ballSprite側のbreakX/breakY(cm)から

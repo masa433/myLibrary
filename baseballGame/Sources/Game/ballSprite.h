@@ -7,6 +7,7 @@
 #include "sprite.h"
 #include "json.hpp"
 #include "Pitcher.h"
+#include "FontRenderer.h"
 
 using json = nlohmann::json;
 
@@ -28,6 +29,9 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
+	bool GetShowBallBoard() const { return showBallBoard; }
+	void SetShowBallBoard(bool value) { showBallBoard = value; }
+
 private:
 	//スプライトデータ
 	struct Sprite
@@ -43,6 +47,11 @@ private:
 	std::unique_ptr<Sprite> strikeZoneSpriteData;
 	std::unique_ptr<sprite> ballDebugSprite;
 	std::unique_ptr<Sprite> ballDebugSpriteData;
+	std::unique_ptr<sprite> ballBoardSprite;
+	std::unique_ptr<Sprite> ballBoardSpriteData;
+
+	bool showBallBoard = false;
+	
 
 	// シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
@@ -145,4 +154,25 @@ public:
 
 private:
 	std::vector<std::string>* consoleLog = nullptr;
+
+public:
+	FontRenderer pitchInfoFont;
+	float pitchInfoFontScale = 1.0f;
+
+	// 球種ごとの表示位置オフセット（14球種分）
+	DirectX::XMFLOAT2 pitchNameOffsets[14] = {
+		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},
+		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},
+		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f}
+	};
+	DirectX::XMFLOAT2 pitchSpeedOffsets[14] = {
+		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},
+		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},
+		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f}
+	};
+
+	// 表示色（球種名は固定なのでここでは球速の通常色のみ使う）
+	DirectX::XMFLOAT4 pitchSpeedNormalColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT4 pitchSpeedFastColor = { 1.0f, 0.9f, 0.0f, 1.0f }; // 黄色
+	float pitchSpeedFastThresholdKmh = 150.0f;
 };

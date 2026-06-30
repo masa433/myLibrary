@@ -205,6 +205,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 		input_element_desc, _countof(input_element_desc));
 	create_ps_from_cso(device, "sprite_ps.cso", spritePS.GetAddressOf());
 
+	//ストライクゾーンの初期化
 	strikeZoneSpriteData = std::make_unique<Sprite>();
 	strikeZoneSpriteData->texturePath = L".\\resources\\textures\\strikeZone.png";
 	strikeZoneSpriteData->position = { 1100.0f, 400.0f };
@@ -213,13 +214,45 @@ void ballSprite::Initialize(ID3D11Device* device)
 	strikeZoneSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	strikeZoneSprite = std::make_unique<sprite>(device, strikeZoneSpriteData->texturePath.c_str());
 
+	//ボールの初期化
 	ballDebugSpriteData = std::make_unique<Sprite>();
 	ballDebugSpriteData->texturePath = L".\\resources\\textures\\ball.png";
 	ballDebugSpriteData->position = { 1100.0f, 400.0f };
-	ballDebugSpriteData->size = { 20.0f, 20.0f };
+	ballDebugSpriteData->size = { 30.0f, 30.0f };
 	ballDebugSpriteData->rotation = 0.0f;
 	ballDebugSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	ballDebugSprite = std::make_unique<sprite>(device, ballDebugSpriteData->texturePath.c_str());
+
+	//ボールボードの初期化
+	ballBoardSpriteData = std::make_unique<Sprite>();
+	ballBoardSpriteData->texturePath = L".\\resources\\textures\\ballBoard.png";
+	ballBoardSpriteData->position = { 1100.0f, 400.0f };
+	ballBoardSpriteData->size = { 200.0f, 300.0f };
+	ballBoardSpriteData->rotation = 0.0f;
+	ballBoardSpriteData->color = { 1.0f, 1.0f, 1.0f, 0.7f };
+	ballBoardSprite = std::make_unique<sprite>(device, ballBoardSpriteData->texturePath.c_str());
+
+	// added: pitch info font init (日本語対応版)
+	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+
+	// 球種名と球速表示に必要な文字だけをベイクする
+	std::vector<int> pitchInfoCodepoints = FontRenderer::Utf8ToCodepoints(
+		u8"0123456789.km/h"
+		u8"失投ストレートスライダー"
+		u8"カーブチェンジアップフォーク"
+		u8"ツーシームカットボールシンカー"
+		u8"スクリュー縦スプリットスローカーブ"
+		u8"シュートナックルボール不明"
+	);
+
+	// 日本語グリフを持つフォントを用意して配置する
+	pitchInfoFont.Initialize(device,
+		L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf",
+		28.0f,
+		screenWidth, screenHeight,
+		512, 512,
+		&pitchInfoCodepoints);
 }
 
 void ballSprite::Uninitialize()
@@ -228,6 +261,9 @@ void ballSprite::Uninitialize()
 	strikeZoneSpriteData.reset();
 	ballDebugSprite.reset();
 	ballDebugSpriteData.reset();
+	ballBoardSprite.reset();
+	ballBoardSpriteData.reset();
+	pitchInfoFont.Uninitialize();
 }
 
 void ballSprite::Update(float elapsedTime)
@@ -314,6 +350,16 @@ void ballSprite::Update(float elapsedTime)
 		if (nowThrown)
 		{
 			AddTrailPoint(currentScreenPos);
+		}
+
+		//3Dボールのポジションzが0.0fの時またはボールとバットが当たった時に、BallBoardを表示する
+		if(Ball::Instance().GetWorldPosition().z <= 0.0f || Ball::Instance().GetHasCollided())
+		{
+			showBallBoard = true;
+		}
+		else
+		{
+			showBallBoard = false;
 		}
 	}
 	else if (nowThrown && wp.z >= -0.5f && wp.z <= 18.5f)
@@ -442,65 +488,49 @@ void ballSprite::Render()
 			ballDebugSpriteData->rotation);
 	}
 
-	/*for (int y = 0; y < 3; y++)
+	if(ballBoardSprite && ballBoardSpriteData && showBallBoard)
 	{
-		for (int x = 0; x < 3; x++)
+		ballBoardSprite->render(dc,
+			ballBoardSpriteData->position.x, ballBoardSpriteData->position.y,
+			ballBoardSpriteData->size.x, ballBoardSpriteData->size.y,
+			ballBoardSpriteData->color.x, ballBoardSpriteData->color.y,
+			ballBoardSpriteData->color.z, ballBoardSpriteData->color.w,
+			ballBoardSpriteData->rotation);
+
+		if (pitchInfoFont.IsValid())
 		{
-			const auto& p = strikeZoneGrid[y][x];
+			Pitcher& pitcher = Pitcher::Instance();
+			const char* pitchTypeName = pitcher.GetPitchTypeName(pitcher.GetSelectedPitchType());
+			const float ballSpeedKmh = pitcher.GetBallSpeedKmh();
 
-			float nx = (p.x + 0.43f * 0.5f) / 0.43f;
-			float ny = 1.0f - ((p.y - 0.5f) / 0.6f);
+			char speedText[32];
+			snprintf(speedText, sizeof(speedText), "%.0fkm/h", ballSpeedKmh);
 
-			float screenX =
-				strikeZoneSpriteData->position.x +
-				nx * strikeZoneSpriteData->size.x;
+			const int pitchIndex = Pitcher::PitchTypeToBreakIndex(pitcher.GetSelectedPitchType());
+			const DirectX::XMFLOAT2& nameOffset = pitchNameOffsets[pitchIndex];
+			const DirectX::XMFLOAT2& speedOffset = pitchSpeedOffsets[pitchIndex];
 
-			float screenY =
-				strikeZoneSpriteData->position.y +
-				ny * strikeZoneSpriteData->size.y;
+			const float boardTop = ballBoardSpriteData->position.y;
+			const float boardBottom = ballBoardSpriteData->position.y + ballBoardSpriteData->size.y;
+			const float boardCenterY = boardTop + (boardBottom - boardTop) * 0.5f;
 
-			ballDebugSprite->render(
-				dc,
-				screenX - 5,
-				screenY - 5,
-				10,
-				10,
-				1, 0, 0, 1,
-				0);
+			float speedTextWidth = 0.0f, speedTextHeight = 0.0f;
+			pitchInfoFont.MeasureText(speedText, 1.0f, speedTextWidth, speedTextHeight);
+
+			// 左側: 球種（白固定）
+			const float pitchTextX = ballBoardSpriteData->position.x + nameOffset.x;
+			const float pitchTextY = boardCenterY + nameOffset.y;
+			pitchInfoFont.DrawTextW(dc, pitchTypeName, pitchTextX, pitchTextY, pitchInfoFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
+			// 右側: 球速（150km/h超で黄色）
+			const DirectX::XMFLOAT4& speedColor = (ballSpeedKmh > pitchSpeedFastThresholdKmh) ? pitchSpeedFastColor : pitchSpeedNormalColor;
+			const float speedTextX = ballBoardSpriteData->position.x + ballBoardSpriteData->size.x - speedOffset.x - speedTextWidth;
+			const float speedTextY = boardCenterY + speedOffset.y;
+			pitchInfoFont.DrawTextW(dc, speedText, speedTextX, speedTextY, pitchInfoFontScale, speedColor.x, speedColor.y, speedColor.z, speedColor.w);
 		}
-	}*/
+	}
 
-	//// ボールゾーンのグリッド描画
-	//for(int y = 0; y < 5; y++)
-	//{
-	//	for(int x = 0; x < 5; x++)
-	//	{
-
-	//		const auto& p = ballZoneGrid[y][x];
-	//		float nx = (p.x + 0.43f * 0.5f) / 0.43f;
-	//		float ny = 1.0f - ((p.y - 0.5f) / 0.6f);
-	//		float screenX =
-	//			strikeZoneSpriteData->position.x +
-	//			nx * strikeZoneSpriteData->size.x;
-	//		float screenY =
-	//			strikeZoneSpriteData->position.y +
-	//			ny * strikeZoneSpriteData->size.y;
-
-	//		// ストライクゾーン内のグリッドは描画しない
-	//		if (x >= 1 && x <= 3 && y >= 1 && y <= 3)
-	//			continue;
-
-	//		ballDebugSprite->render(
-	//			dc,
-	//			screenX - 5,
-	//			screenY - 5,
-	//			10,
-	//			10,
-	//			0, 0, 1, 1,
-	//			0);
-	//	}
-	//}
-
+	
 	// 後始末（Wind と同じ）
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -526,6 +556,24 @@ void ballSprite::DrawGUI()
 		ImGui::DragFloat2(u8"ボール 位置(px)", &ballDebugSpriteData->position.x, 1.0f);
 		ImGui::DragFloat2(u8"ボール サイズ(px)", &ballDebugSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
 		ImGui::ColorEdit4(u8"ボール 透明度", &ballDebugSpriteData->color.x);
+
+		ImGui::Separator();
+
+		ImGui::DragFloat2(u8"ボールボード 位置(px)", &ballBoardSpriteData->position.x, 1.0f);
+		ImGui::DragFloat2(u8"ボールボード サイズ(px)", &ballBoardSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
+		ImGui::ColorEdit4(u8"ボールボード 透明度", &ballBoardSpriteData->color.x);
+		ImGui::Checkbox(u8"ボールボード表示", &showBallBoard);
+	}
+
+	if (ImGui::CollapsingHeader(u8"球種情報フォント"))
+	{
+		ImGui::DragFloat(u8"フォントサイズ", &pitchInfoFontScale, 0.1f, 1.0f, 100.0f);
+
+		ImGui::Separator();
+		ImGui::Text(u8"球速 色設定");
+		ImGui::ColorEdit4(u8"通常色", &pitchSpeedNormalColor.x);
+		ImGui::ColorEdit4(u8"速球色", &pitchSpeedFastColor.x);
+		ImGui::DragFloat(u8"速球判定 (km/h)", &pitchSpeedFastThresholdKmh, 1.0f, 0.0f, 300.0f);
 	}
 
 	ImGui::Separator();
@@ -533,17 +581,24 @@ void ballSprite::DrawGUI()
 
 	const char* names[] = {
 		u8"ストレート", u8"スライダー", u8"カーブ", u8"チェンジアップ", u8"フォーク",
-				u8"ツーシーム", u8"カットボール", Pitcher::Instance().IsRightPitcher() ? u8"シンカー" : u8"スクリュー", u8"縦スライダー", u8"スプリット",
-				u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール"
+		u8"ツーシーム", u8"カットボール", Pitcher::Instance().IsRightPitcher() ? u8"シンカー" : u8"スクリュー", u8"縦スライダー", u8"スプリット",
+		u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール"
 	};
 
 	ImGui::Combo(u8"編集球種", reinterpret_cast<int*>(&Pitcher::Instance().selectedPitchType), names, 14);
 
-	ballBreak2D& brk = pitchBreaks[Pitcher::PitchTypeToBreakIndex(Pitcher::Instance().GetSelectedPitchType())];
+	const int editIndex = Pitcher::PitchTypeToBreakIndex(Pitcher::Instance().GetSelectedPitchType());
+
+	ballBreak2D& brk = pitchBreaks[editIndex];
 	ImGui::SliderFloat(u8"横変化 (+ アウト / - イン)", &brk.breakX, -20.0f, 20.0f, "%.1f cm");
 	ImGui::SliderFloat(u8"縦変化 (+ 伸び / - 落ち)", &brk.breakY, -25.0f, 10.0f, "%.1f cm");
 
 	ImGui::Checkbox(u8"変化量を反映", &useBallBreak);
+
+	ImGui::Separator();
+	ImGui::Text(u8"球種名/球速 表示位置 (%s)", names[editIndex]);
+	ImGui::DragFloat2(u8"球種名 オフセット(左余白, Y)##pitchName", &pitchNameOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
+	ImGui::DragFloat2(u8"球速 オフセット(右余白, Y)##pitchSpeed", &pitchSpeedOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
 
 }
 
@@ -563,6 +618,20 @@ void ballSprite::SaveToJson(json& j)
 		{"rotation", ballDebugSpriteData->rotation},
 		{"color", {ballDebugSpriteData->color.x, ballDebugSpriteData->color.y, ballDebugSpriteData->color.z, ballDebugSpriteData->color.w}}
 	};
+	j["ballBoardSprite"] = {
+		{"texturePath", ballBoardSpriteData->texturePath},
+		{"position", {ballBoardSpriteData->position.x, ballBoardSpriteData->position.y}},
+		{"size", {ballBoardSpriteData->size.x, ballBoardSpriteData->size.y}},
+		{"rotation", ballBoardSpriteData->rotation},
+		{"color", {ballBoardSpriteData->color.x, ballBoardSpriteData->color.y, ballBoardSpriteData->color.z, ballBoardSpriteData->color.w}},
+		{"showBallBoard", showBallBoard }
+	};
+	j["pitchInfoFont"] = {
+		{"fontScale", pitchInfoFontScale},
+		{"pitchSpeedNormalColor", {pitchSpeedNormalColor.x, pitchSpeedNormalColor.y, pitchSpeedNormalColor.z, pitchSpeedNormalColor.w}},
+		{"pitchSpeedFastColor", {pitchSpeedFastColor.x, pitchSpeedFastColor.y, pitchSpeedFastColor.z, pitchSpeedFastColor.w}},
+		{"pitchSpeedFastThresholdKmh", pitchSpeedFastThresholdKmh}
+	};
 	// 変化量エディタの有効フラグを保存
 	j["useBallBreak"] = useBallBreak;
 
@@ -576,6 +645,18 @@ void ballSprite::SaveToJson(json& j)
 			});
 	}
 	j["pitchBreaks"] = breaksArray;
+
+	j["pitchNameOffsets"] = json::array();
+	for (int i = 0; i < 14; ++i)
+	{
+		j["pitchNameOffsets"].push_back({ pitchNameOffsets[i].x, pitchNameOffsets[i].y });
+	}
+
+	j["pitchSpeedOffsets"] = json::array();
+	for (int i = 0; i < 14; ++i)
+	{
+		j["pitchSpeedOffsets"].push_back({ pitchSpeedOffsets[i].x, pitchSpeedOffsets[i].y });
+	}
 }
 
 void ballSprite::LoadFromJson(const json& j)
@@ -609,6 +690,37 @@ void ballSprite::LoadFromJson(const json& j)
 		ballDebugSpriteData->color.w = bd["color"][3].get<float>();
 	}
 
+	if(j.contains("ballBoardSprite"))
+	{
+		const auto& bb = j["ballBoardSprite"];
+		//ballBoardSpriteData->texturePath = bb.value("texturePath", L".\\resources\\textures\\ballBoard.png");
+		ballBoardSpriteData->position.x = bb["position"][0].get<float>();
+		ballBoardSpriteData->position.y = bb["position"][1].get<float>();
+		ballBoardSpriteData->size.x = bb["size"][0].get<float>();
+		ballBoardSpriteData->size.y = bb["size"][1].get<float>();
+		ballBoardSpriteData->rotation = bb.value("rotation", 0.0f);
+		ballBoardSpriteData->color.x = bb["color"][0].get<float>();
+		ballBoardSpriteData->color.y = bb["color"][1].get<float>();
+		ballBoardSpriteData->color.z = bb["color"][2].get<float>();
+		ballBoardSpriteData->color.w = bb["color"][3].get<float>();
+		showBallBoard = bb.value("showBallBoard", true);
+	}
+
+	if(j.contains("pitchInfoFont"))
+	{
+		const auto& pf = j["pitchInfoFont"];
+		pitchInfoFontScale = pf.value("fontScale", 28.0f);
+		pitchSpeedNormalColor.x = pf["pitchSpeedNormalColor"][0].get<float>();
+		pitchSpeedNormalColor.y = pf["pitchSpeedNormalColor"][1].get<float>();
+		pitchSpeedNormalColor.z = pf["pitchSpeedNormalColor"][2].get<float>();
+		pitchSpeedNormalColor.w = pf["pitchSpeedNormalColor"][3].get<float>();
+		pitchSpeedFastColor.x = pf["pitchSpeedFastColor"][0].get<float>();
+		pitchSpeedFastColor.y = pf["pitchSpeedFastColor"][1].get<float>();
+		pitchSpeedFastColor.z = pf["pitchSpeedFastColor"][2].get<float>();
+		pitchSpeedFastColor.w = pf["pitchSpeedFastColor"][3].get<float>();
+		pitchSpeedFastThresholdKmh = pf.value("pitchSpeedFastThresholdKmh", 150.0f);
+	}
+
 	// 変化量エディタの有効フラグを読み込み
 	if (j.contains("useBallBreak"))
 	{
@@ -630,6 +742,29 @@ void ballSprite::LoadFromJson(const json& j)
 			if (breaksArray[i].contains("breakY")) {
 				pitchBreaks[i].breakY = breaksArray[i]["breakY"].get<float>();
 			}
+		}
+	}
+
+	// 球種名/球速の表示位置オフセットを復元
+	if (j.contains("pitchNameOffsets") && j["pitchNameOffsets"].is_array())
+	{
+		const auto& nameOffsetsArray = j["pitchNameOffsets"];
+		int size = (std::min)(14, (int)nameOffsetsArray.size());
+		for (int i = 0; i < size; ++i)
+		{
+			pitchNameOffsets[i].x = nameOffsetsArray[i][0].get<float>();
+			pitchNameOffsets[i].y = nameOffsetsArray[i][1].get<float>();
+		}
+	}
+
+	if(j.contains("pitchSpeedOffsets") && j["pitchSpeedOffsets"].is_array())
+	{
+		const auto& speedOffsetsArray = j["pitchSpeedOffsets"];
+		int size = (std::min)(14, (int)speedOffsetsArray.size());
+		for (int i = 0; i < size; ++i)
+		{
+			pitchSpeedOffsets[i].x = speedOffsetsArray[i][0].get<float>();
+			pitchSpeedOffsets[i].y = speedOffsetsArray[i][1].get<float>();
 		}
 	}
 }

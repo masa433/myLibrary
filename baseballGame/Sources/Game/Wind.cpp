@@ -5,6 +5,7 @@
 #include "imgui.h"
 #include "Ball.h"
 #include <shader.h>
+#include "FontRenderer.h" // ★追加: TTF/OTFを直接読み込めるフォントレンダラー
 
 void Wind::Initialize()
 {
@@ -36,8 +37,20 @@ void Wind::Initialize()
 	windGroundSprite->rotation = 0.0f;
 	windGroundSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	windGroundSpriteRenderer = std::make_unique<sprite>(device, windGroundSprite->texturePath.c_str());
-	// フォントレンダラーの初期化
-	windStrengthFontRenderer = std::make_unique<sprite>(device, L".\\resources\\fonts\\font6.png");
+
+	// ★変更: フォントレンダラーの初期化(font6.png + sprite -> TTF直読みのFontRendererへ)
+	// 第2引数: TTF/OTFファイルパス
+	// 第3引数: ベイクする基準フォントサイズ(px)。32にしておくと旧実装の"32"高さに近い見た目になる
+	// 第4,5引数: 画面解像度(ピクセル->NDC変換に使用)。Graphics側に取得関数が無ければ
+	//            定数(例: 1280, 720)に置き換えるか、Graphics::Instance()に
+	//            GetScreenWidth()/GetScreenHeight()相当を追加してください。
+	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+	windStrengthFont.Initialize(device,
+		L".\\resources\\fonts\\LotusEdenSample-Medium.ttf",
+		32.0f,
+		screenWidth, screenHeight,
+		/*atlasWidth*/ 256, /*atlasHeight*/ 256);
 
 	// 風表現用の流線を生成
 	windLines.clear();
@@ -68,7 +81,7 @@ void Wind::Uninitialize()
 {
 	windDirectionSpriteRenderer.reset();
 	windGroundSpriteRenderer.reset();
-	windStrengthFontRenderer.reset();
+	windStrengthFont.Uninitialize(); // ★変更
 }
 
 void Wind::Update(float elapsedTime)
@@ -147,7 +160,8 @@ void Wind::Render(const RenderContext& rc)
 
 	}
 
-	if (windStrengthFontRenderer)
+	// ★変更: 風の強さテキストをFontRenderer(TTF直読み)で描画
+	if (windStrengthFont.IsValid())
 	{
 		physx::PxVec3 windVec(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength);
 		float currentWindSpeed = windVec.magnitude();
@@ -159,10 +173,11 @@ void Wind::Render(const RenderContext& rc)
 		float textX = windDirectionSprite->position.x + 60.0f;
 		float textY = windDirectionSprite->position.y + 15.0f;
 
-		// 文字描画 (文字の幅と高さを適当なサイズで指定。例: 16x32 や 20x40 など適宜調整)
-		windStrengthFontRenderer->textout(rc.deviceContext, speedText,
+		// scale=1.0でInitialize時のpixelHeight(32px)相当の大きさになる。
+		// 大きさを変えたい場合はscaleを調整する(例: 1.5fで1.5倍)。
+		windStrengthFont.DrawText(dc, speedText,
 			textX, textY,
-			16.0f, 32.0f,
+			1.0f,
 			1.0f, 1.0f, 1.0f, 1.0f);
 	}
 

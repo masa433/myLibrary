@@ -11,6 +11,7 @@
 #include "stage.h"
 #include "Wind.h"
 #include "Ball.h"
+#include "ballSprite.h"
 
 // グローバルまたはクラス内にキューを用意
 std::queue<std::function<void()>> velocityUpdateQueue;
@@ -819,6 +820,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 
 			Ball::Instance().SetHasCollided(true);
 			Ball::Instance().CancelBezier();
+			ballSprite::Instance().SetShowBallBoard(true);
 
 			physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 			physx::PxRigidDynamic* batCollider = Player::Instance().GetBatCollider();
