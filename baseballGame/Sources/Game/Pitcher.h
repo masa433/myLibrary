@@ -126,8 +126,9 @@ public:
 		}
 	}
 
-private:
+	public:
 	PitchType selectedPitchType = PitchType::Fastball;
+private:
 
 	struct PitchParameter
 	{
@@ -231,4 +232,16 @@ private:
 
 	DirectX::XMFLOAT2 targetPosition3D = { 0.0f, 0.0f }; // AIが狙うターゲット位置（3D空間上のX,Z座標）
 	bool hasTargetSet = false; // AIがターゲット位置の接線を設定したかどうか
+
+public:
+	//球速のモード
+	enum class BallSpeedMode
+	{
+		slowSpeed,//遅い
+		fastSpeed,//早い
+		realSpeed,//リアルスピード
+	};
+	BallSpeedMode ballSpeedMode = BallSpeedMode::realSpeed;
+
+
 };

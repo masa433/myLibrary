@@ -157,7 +157,7 @@ void Pitcher::Update(float elapsedTime)
 			Ball::Instance().SetHasCollidedWithGround(false); // 地面衝突フラグをリセット
 			Ball::Instance().SetHasPassedFairFoulTrigger(false); // フェア/ファウル判定トリガー通過フラグをリセット
 			Ball::Instance().SetFoulLogged(false); // ファウルログフラグをリセット
-			Ball::Instance().SetThroughStrikeZone(false); // ストライクゾーン通過フラグをリセット
+
 			OutputDebugStringA("Judgment reset\n");
 			if(consoleLog)
 			{
@@ -213,19 +213,7 @@ void Pitcher::Update(float elapsedTime)
 				hasReachedZero = true;
 
 				char debugMessage[256];
-				if (Ball::Instance().GetThroughStrikeZone())
-				{
-					snprintf(debugMessage, sizeof(debugMessage), u8"[Info] ストライク！\n");
-				}
-				else
-				{
-					snprintf(debugMessage, sizeof(debugMessage), u8"[Info] ボール！\n");
-				}
-				if (consoleLog)
-				{
-					consoleLog->push_back(debugMessage);
-				}
-
+			
 				char timeMessage[128];
 				snprintf(timeMessage, sizeof(timeMessage),
 					"Time to reach z=0.0f: %.2f seconds\n", throwCounter);
@@ -253,7 +241,7 @@ void Pitcher::Update(float elapsedTime)
 		Ball::Instance().SetHasCollidedWithGround(false); // 地面衝突フラグをリセット
 		Ball::Instance().SetHasPassedFairFoulTrigger(false); // フェア/ファウル判定トリガー通過フラグをリセット
 		Ball::Instance().SetFoulLogged(false); // ファウルログフラグをリセット
-		Ball::Instance().SetThroughStrikeZone(false); // ストライクゾーン通過フラグをリセット
+	
 	}
 
 	Wind::Instance().Update(elapsedTime);
@@ -362,6 +350,18 @@ void Pitcher::DrawGUI()
 			ImGui::SliderFloat(u8"ストライク率", &aiStrikeRate, 0.0f, 1.0f, "%.2f");
 			ImGui::DragFloat(u8"少し外す幅", &aiNearBallMargin, 0.005f, 0.0f, 0.20f, "%.3f");
 			ImGui::Text(u8"現在: %s %.1f km/h", GetPitchTypeName(selectedPitchType), ballSpeedKmh);
+		}
+
+		if(ImGui::CollapsingHeader(u8"球速モード"))
+		{
+			const char* ballSpeedModeNames[] = {
+				u8"遅い", u8"早い", u8"リアルスピード"
+			};
+			int ballSpeedModeIndex = static_cast<int>(ballSpeedMode);
+			if (ImGui::Combo(u8"モード", &ballSpeedModeIndex, ballSpeedModeNames, IM_ARRAYSIZE(ballSpeedModeNames)))
+			{
+				ballSpeedMode = static_cast<BallSpeedMode>(ballSpeedModeIndex);
+			}
 		}
 
 		if (ImGui::CollapsingHeader(u8"球種エディター"))
@@ -829,7 +829,6 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 			Ball::Instance().SetHasPassedHomeRunZone(false);
 			Ball::Instance().SetHasBeenJudged(false);
 			Ball::Instance().SetFoulLogged(false);
-			Ball::Instance().SetThroughStrikeZone(false); // ストライクゾーン通過フラグをリセット
 			Ball::Instance().ResetMotion();
 		}
 	}
@@ -870,8 +869,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			Ball::Instance().SetHasPassedFairFoulTrigger(false);
 			Ball::Instance().SetHasBeenJudged(false);
 			Ball::Instance().SetFoulLogged(false);
-			Ball::Instance().SetThroughStrikeZone(false); // ストライクゾーン通過フラグをリセット
-
+		
 			float speedMs = ballSpeedKmh / 3.6f;
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
 
@@ -922,6 +920,21 @@ void Pitcher::ThrowBallBezier()
 
 	//到達時間を球速から計算
 	float speedMs = params.ballSpeedKmh / 3.6f;
+
+	//球速モードによって
+	switch (ballSpeedMode)
+	{
+	case BallSpeedMode::slowSpeed:
+		speedMs *= 0.7f;
+		break;
+	case BallSpeedMode::fastSpeed:
+		speedMs *= 0.85f;
+		break;
+	case BallSpeedMode::realSpeed:
+	default:
+		break;
+	}
+
 	float distanceZ = std::fabs(p0.z - p3.z);
 	if (distanceZ < 1.0f)distanceZ = 18.44f; //距離が短すぎる場合はマウンドからホームまでの距離を使用
 	float durationSec = distanceZ / speedMs;//到達時間を球速から計算

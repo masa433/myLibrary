@@ -156,10 +156,6 @@ public:
 	bool GetFoulLogged() const { return foulLogged; }
 	void SetFoulLogged(bool value) { foulLogged = value; }
 
-	bool throughStrikeZone = false;
-	bool GetThroughStrikeZone() const { return throughStrikeZone; }
-	void SetThroughStrikeZone(bool value) { throughStrikeZone = value; }
-
 	void SetModelRotationSpeed(const DirectX::XMFLOAT3& speed) { modelRotationSpeed = speed; }
 	const DirectX::XMFLOAT3& GetModelAngle() const { return modelAngle; }
 
@@ -204,6 +200,12 @@ public:
 
 	bool  IsBezierFlying()  const { return bezierFlying; }
 	void  CancelBezier();   // バット衝突時に呼ぶ
+
+	// ===== 2Dスプライト側で同じ曲線を再現するための公開API =====
+	float GetBezierT() const { return bezierT; }
+	const BezierPitchData& GetBezierData() const { return bezierData; }
+	// EvalCubicBezierはprivateのまま、外部からはこのラッパー経由で呼ぶ
+	DirectX::XMFLOAT3 GetBezierPositionAt(float t) const { return EvalCubicBezier(t); }
 
 private:
 	BezierPitchData bezierData = {};

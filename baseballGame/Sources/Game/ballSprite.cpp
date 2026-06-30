@@ -4,7 +4,100 @@
 #include <imgui.h>
 #include "Pitcher.h"
 #include "Ball.h"
+#include <algorithm>
+#include <cmath>
 
+namespace
+{
+	float Clamp01(float value)
+	{
+		return (std::max)(0.0f, (std::min)(1.0f, value));
+	}
+
+	float SmoothStep(float value)
+	{
+		value = Clamp01(value);
+		return value * value * (3.0f - 2.0f * value);
+	}
+
+	DirectX::XMFLOAT2 EvalCubicBezier2D(
+		const DirectX::XMFLOAT2& p0,
+		const DirectX::XMFLOAT2& p1,
+		const DirectX::XMFLOAT2& p2,
+		const DirectX::XMFLOAT2& p3,
+		float t)
+	{
+		const float u = 1.0f - t;
+		const float u2 = u * u;
+		const float u3 = u2 * u;
+		const float t2 = t * t;
+		const float t3 = t2 * t;
+
+		return {
+			u3 * p0.x + 3.0f * u2 * t * p1.x + 3.0f * u * t2 * p2.x + t3 * p3.x,
+			u3 * p0.y + 3.0f * u2 * t * p1.y + 3.0f * u * t2 * p2.y + t3 * p3.y
+		};
+	}
+
+	DirectX::XMFLOAT2 EvalPitchBreakScreenPath(
+		const DirectX::XMFLOAT2& targetScreenPos,
+		const ballSprite::ballBreak2D& breakData,
+		const DirectX::XMFLOAT2& zoneScreenSize,
+		int pitchBreakIndex,
+		float t)
+	{
+		const float breakOffsetX = (breakData.breakX / 43.0f) * zoneScreenSize.x;
+		const float breakOffsetY = (breakData.breakY / 60.0f) * zoneScreenSize.y;
+
+		DirectX::XMFLOAT2 p0 = {
+			targetScreenPos.x - breakOffsetX,
+			targetScreenPos.y + breakOffsetY
+		};
+		DirectX::XMFLOAT2 travel = {
+			targetScreenPos.x - p0.x,
+			targetScreenPos.y - p0.y
+		};
+
+		DirectX::XMFLOAT2 p1 = {
+			p0.x + travel.x * 0.08f,
+			p0.y + travel.y * 0.08f
+		};
+		DirectX::XMFLOAT2 p2 = {
+			targetScreenPos.x - travel.x * 0.30f,
+			targetScreenPos.y - travel.y * 0.10f
+		};
+
+		// 球種ごとの変化量を調整
+		switch (pitchBreakIndex)
+		{
+		case 3:  // スライダー
+		case 2:  // カットボール
+		case 11: // シュート
+		case 1:  // ツーシーム
+			p1.y = p0.y + travel.y * 0.03f;
+			p2.y = targetScreenPos.y + travel.y * 0.04f;
+			break;
+		case 4:  // カーブ
+		case 10: // スローカーブ
+			p1.x = p0.x + travel.x * 0.04f;
+			p1.y = p0.y + travel.y * 0.02f;
+			p2.x = targetScreenPos.x - travel.x * 0.42f;
+			p2.y = targetScreenPos.y - travel.y * 0.22f;
+			break;
+		case 8:  // 縦スライダー
+		case 6:  // フォークボール
+		case 9:  // スプリット
+			p1.x = p0.x + travel.x * 0.02f;
+			p2.x = targetScreenPos.x - travel.x * 0.08f;
+			break;
+		default:
+			break;
+		}
+
+		//const float lateBreakT = SmoothStep((t - 0.12f) / 0.88f);
+		return EvalCubicBezier2D(p0, p1, p2, targetScreenPos, Clamp01(t));
+	}
+}
 static DirectX::XMFLOAT2 WorldToZoneScreen(
 	float worldX, float worldY,
 	const DirectX::XMFLOAT2& zoneScreenPos,  // ゾーンスプライト左上
@@ -142,57 +235,119 @@ void ballSprite::Update(float elapsedTime)
 	Pitcher& pitcher = Pitcher::Instance();
 	Ball& ball = Ball::Instance();
 
-	// Pitcherの考慮を無視するため、Stateのみで判定するか、ボールが動いているかで判定
-	bool nowThrown = (pitcher.GetCurrentState() == Pitcher::State::Throwing);
+	currentPitchIndex = Pitcher::PitchTypeToBreakIndex(pitcher.GetSelectedPitchType());
+
+	const bool pitchingState = (pitcher.GetCurrentState() == Pitcher::State::Throwing);
+	const bool nowThrown = pitcher.GetIsBallThrown();
 
 	if (nowThrown && !prevThrown)
+	{
 		ballTrail2D.clear();
+		strikeJudgeDone = false;
+	}
 	prevThrown = nowThrown;
-
-	//投球前に目標地点にスプライトを移動
-	
-		if (hasAITarget)
-		{
-			// AIが設定したターゲット位置を使用
-			DirectX::XMFLOAT2 targetScreenPos = aiTargetScreen;
-			ballDebugSpriteData->position.x = targetScreenPos.x - ballDebugSpriteData->size.x * 0.5f;
-			ballDebugSpriteData->position.y = targetScreenPos.y - ballDebugSpriteData->size.y * 0.5f;
-		}
-		
-		return;
-	
 
 	const DirectX::XMFLOAT3& wp = ball.GetWorldPosition();
 
-	// 投球中かつ、ピッチャープレートからホームベースの範囲
-	if (nowThrown && wp.z >= -0.5f && wp.z <= 18.5f)
+	auto AddTrailPoint = [&](const DirectX::XMFLOAT2& currentScreenPos)
 	{
-		// 1. まず Zの進行度 t を計算 (18.0m から 0.0m への進行度 0.0~1.0)
-		float t = 1.0f - (wp.z / 18.0f);
-		t = max(0.0f, min(1.0f, t));
+		if (ballTrail2D.empty() ||
+			fabsf(ballTrail2D.back().x - currentScreenPos.x) > 0.5f ||
+			fabsf(ballTrail2D.back().y - currentScreenPos.y) > 0.5f)
+		{
+			ballTrail2D.push_back(currentScreenPos);
+			if ((int)ballTrail2D.size() > MAX_TRAIL)
+			{
+				ballTrail2D.pop_front();
+			}
+		}
+	};
 
-		float screenX = 0.0f;
-		float screenY = 0.0f;
+	auto ApplyBallSpritePosition = [&](const DirectX::XMFLOAT2& currentScreenPos)
+	{
+		ballDebugSpriteData->position.x = currentScreenPos.x - ballDebugSpriteData->size.x * 0.5f;
+		ballDebugSpriteData->position.y = currentScreenPos.y - ballDebugSpriteData->size.y * 0.5f;
+	};
+
+	auto GetPitchProgress = [&]()
+	{
+		if (nowThrown)
+		{
+			float t = Clamp01(ball.GetBezierT());
+			//P1とP3の間での進行度を返す
+			static constexpr float P1T = 0.35f;
+			static constexpr float P3T = 1.0f;
+			float linear;
+			if (t < P1T)
+			{
+				linear = 0.0f;
+			}
+			else if (t > P3T)
+			{	
+				linear =  1.0f;
+			}
+			else
+			{
+				linear = (t - P1T) / (P3T - P1T);
+			}
+			return SmoothStep(linear);
+		}
+		if (pitchingState)
+		{
+			return 0.0f;
+		}
+		return 0.0f;
+	};
+
+	if (hasAITarget)
+	{
+		const ballBreak2D& brk = pitchBreaks[currentPitchIndex];
+		const DirectX::XMFLOAT2 targetScreenPos = aiTargetScreen;
+		const DirectX::XMFLOAT2 currentScreenPos = EvalPitchBreakScreenPath(
+			targetScreenPos,
+			brk,
+			strikeZoneSpriteData->size,
+			currentPitchIndex,
+			GetPitchProgress());
+
+		ApplyBallSpritePosition(currentScreenPos);
+		if (nowThrown)
+		{
+			AddTrailPoint(currentScreenPos);
+		}
+	}
+	else if (nowThrown && wp.z >= -0.5f && wp.z <= 18.5f)
+	{
+		float t = Clamp01(ball.GetBezierT());
+		if (t <= 0.0f)
+		{
+			t = Clamp01(1.0f - (wp.z / 18.0f));
+		}
+
+		DirectX::XMFLOAT2 currentScreenPos = {};
 
 		if (useBallBreak)
 		{
-			// === 変化量エディタベースの軌跡計算 ===
 			const ballBreak2D& brk = pitchBreaks[currentPitchIndex];
-			float ease = t * t * (3.0f - 2.0f * t); // smoothstep
+			DirectX::XMFLOAT2 targetScreenPos = WorldToZoneScreen(
+				zone3DCenter.x,
+				zone3DCenter.y,
+				strikeZoneSpriteData->position,
+				strikeZoneSpriteData->size,
+				zone3DCenter,
+				zone3DSize);
 
-			// ゾーン中心を基準に、エディタの設定値を反映
-			float normalX = 0.5f + (brk.breakX / 43.0f) * ease;
-			float normalY = 0.5f - (brk.breakY / 60.0f) * ease;
-
-			screenX = strikeZoneSpriteData->position.x + normalX * strikeZoneSpriteData->size.x;
-			screenY = strikeZoneSpriteData->position.y + normalY * strikeZoneSpriteData->size.y;
+			currentScreenPos = EvalPitchBreakScreenPath(
+				targetScreenPos,
+				brk,
+				strikeZoneSpriteData->size,
+				currentPitchIndex,
+				t);
 		}
 		else
 		{
-			// === 物理演算(PhysX)ベースの軌跡計算（グリッド内完結版） ===
 			physx::PxVec3 velocity = ball.GetLinearVelocity();
 
-			// 最終的にボールが Z=0 に到達したときの予測座標を計算
 			float finalX = wp.x;
 			float finalY = wp.y;
 
@@ -201,12 +356,8 @@ void ballSprite::Update(float elapsedTime)
 				float t_remain = -wp.z / velocity.z;
 				finalX = wp.x + velocity.x * t_remain;
 				finalY = wp.y + velocity.y * t_remain;
-
-				// もし重力による自然落下成分も含める場合はコメント解除
-				// finalY += 0.5f * -9.81f * t_remain * t_remain;
 			}
 
-			// 最終的な到達位置（Z=0面）をスクリーン上の2D座標に変換
 			DirectX::XMFLOAT2 finalScreenPos = WorldToZoneScreen(
 				finalX, finalY,
 				strikeZoneSpriteData->position,
@@ -214,36 +365,46 @@ void ballSprite::Update(float elapsedTime)
 				zone3DCenter,
 				zone3DSize);
 
-			// 【ここが重要】
-			// 2D上の初期位置（ピッチャーがボールを離した瞬間の2D位置。例えばグリッドのど真ん中）
-			// から、最終的な2D到達位置に向かって、進行度 t で滑らかに移動させる
 			DirectX::XMFLOAT2 startScreenPos = WorldToZoneScreen(
-				zone3DCenter.x, zone3DCenter.y, // 開始位置を3Dゾーンの中心（グリッド中央）とする
+				zone3DCenter.x, zone3DCenter.y,
 				strikeZoneSpriteData->position,
 				strikeZoneSpriteData->size,
 				zone3DCenter,
 				zone3DSize);
 
-			// 進行度 t (0.0~1.0) で線形補間（ラープ）する
-			screenX = startScreenPos.x + (finalScreenPos.x - startScreenPos.x) * t;
-			screenY = startScreenPos.y + (finalScreenPos.y - startScreenPos.y) * t;
+			currentScreenPos = {
+				startScreenPos.x + (finalScreenPos.x - startScreenPos.x) * t,
+				startScreenPos.y + (finalScreenPos.y - startScreenPos.y) * t
+			};
 		}
 
-		// 2D座標を共通でトレイルとデバッグスプライトに適用
-		DirectX::XMFLOAT2 currentScreenPos = { screenX, screenY };
+		AddTrailPoint(currentScreenPos);
+		ApplyBallSpritePosition(currentScreenPos);
+	}
 
-		if (ballTrail2D.empty() ||
-			fabsf(ballTrail2D.back().x - currentScreenPos.x) > 0.5f ||
-			fabsf(ballTrail2D.back().y - currentScreenPos.y) > 0.5f)
+	if (pitchingState && wp.z < -0.5f && wp.z > -0.7f && !strikeJudgeDone)
+	{
+		strikeJudgeDone = true;
+
+		DirectX::XMFLOAT2 ballCenter = {
+			ballDebugSpriteData->position.x + ballDebugSpriteData->size.x * 0.5f,
+			ballDebugSpriteData->position.y + ballDebugSpriteData->size.y * 0.5f
+		};
+		DirectX::XMFLOAT2 szTopLeft, szBottomRight;
+		GetStrikeZoneScreenBounds(szTopLeft, szBottomRight);
+
+		bool isStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
+			ballCenter.y >= szTopLeft.y && ballCenter.y <= szBottomRight.y);
+
+		if (consoleLog)
 		{
-			ballTrail2D.push_back(currentScreenPos);
-			if ((int)ballTrail2D.size() > MAX_TRAIL)
-				ballTrail2D.pop_front();
+			char buf[256];
+			if (isStrike)
+				snprintf(buf, sizeof(buf), u8"[Info] ストライク！");
+			else
+				snprintf(buf, sizeof(buf), u8"[Info] ボール！");
+			consoleLog->push_back(buf);
 		}
-
-		// ボール画像の位置を中心基準で更新
-		ballDebugSpriteData->position.x = currentScreenPos.x - ballDebugSpriteData->size.x * 0.5f;
-		ballDebugSpriteData->position.y = currentScreenPos.y - ballDebugSpriteData->size.y * 0.5f;
 	}
 }
 
@@ -371,15 +532,14 @@ void ballSprite::DrawGUI()
 	ImGui::Text(u8"--- 変化量エディタ ---");
 
 	const char* names[] = {
-		u8"ストレート",u8"ツーシーム",u8"カットボール",u8"スライダー",
-		u8"カーブ",u8"チェンジアップ",u8"フォーク",u8"シンカー",
-		u8"縦スライダー",u8"スプリット",u8"スローカーブ",u8"シュート",
-		u8"ナックル",u8"スローボール"
+		u8"ストレート", u8"スライダー", u8"カーブ", u8"チェンジアップ", u8"フォーク",
+				u8"ツーシーム", u8"カットボール", Pitcher::Instance().IsRightPitcher() ? u8"シンカー" : u8"スクリュー", u8"縦スライダー", u8"スプリット",
+				u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール"
 	};
 
-	ImGui::Combo(u8"編集球種", &currentPitchIndex, names, 14);
+	ImGui::Combo(u8"編集球種", reinterpret_cast<int*>(&Pitcher::Instance().selectedPitchType), names, 14);
 
-	ballBreak2D& brk = pitchBreaks[currentPitchIndex];
+	ballBreak2D& brk = pitchBreaks[Pitcher::PitchTypeToBreakIndex(Pitcher::Instance().GetSelectedPitchType())];
 	ImGui::SliderFloat(u8"横変化 (+ アウト / - イン)", &brk.breakX, -20.0f, 20.0f, "%.1f cm");
 	ImGui::SliderFloat(u8"縦変化 (+ 伸び / - 落ち)", &brk.breakY, -25.0f, 10.0f, "%.1f cm");
 

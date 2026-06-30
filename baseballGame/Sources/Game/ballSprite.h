@@ -133,4 +133,16 @@ public:
 	bool showHitJudgeDebug = false;
 
 	void GetStrikeZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX::XMFLOAT2& outBottomRight) const;
+
+	bool strikeJudgeDone = false;// ストライク判定が完了したかどうか
+
+	DirectX::XMFLOAT2 aiTargetFinalScreen = { 0.0f, 0.0f }; // AIが最終的に狙うターゲット位置（スクリーン座標）
+	bool aiTargetLocked = false; // AIがターゲット位置をロックしたかどうか
+
+public:
+	// コンソールログへのポインタをセット
+	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
+
+private:
+	std::vector<std::string>* consoleLog = nullptr;
 };

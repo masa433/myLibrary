@@ -800,57 +800,6 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			}
 		}
 
-		//ボールがストライクゾーンを通った瞬間
-		// onTrigger — フラグONのみ、ログは出さない
-		if (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
-		{
-			bool ballIsTriggerActor = (pair.otherActor == Ball::Instance().GetBallCollider());
-			bool triggerIsStrikeZone = (pair.triggerActor->getName() &&
-				std::string(pair.triggerActor->getName()) == "StrikeZoneTrigger");
-
-			if (ballIsTriggerActor && triggerIsStrikeZone)
-			{
-				Ball::Instance().SetThroughStrikeZone(true);
-			}
-		}
-
-		// バットのスイートスポットトリガーをボールが通った瞬間
-		if (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
-		{
-			bool ballIsTriggerActor = (pair.otherActor == Ball::Instance().GetBallCollider());
-			bool triggerIsSweetSpot = (pair.triggerShape->getName() &&
-				std::string(pair.triggerShape->getName()) == "BatSweetSpot");
-
-			if (ballIsTriggerActor && triggerIsSweetSpot)
-			{
-				Player::Instance().SetIsInSweetSpot(true);
-				// デバッグ出力
-
-				OutputDebugStringA("スイートスポットに入った！\n");
-				if (consoleLog)
-					consoleLog->push_back(u8"[Info] スイートスポットに入った！");
-
-			}
-		}
-
-		// スイートスポットからボールが出た瞬間
-		if (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
-		{
-			bool ballIsTriggerActor = (pair.otherActor == Ball::Instance().GetBallCollider());
-			bool triggerIsSweetSpot = (pair.triggerShape->getName() &&
-				std::string(pair.triggerShape->getName()) == "BatSweetSpot");
-
-			if (ballIsTriggerActor && triggerIsSweetSpot)
-			{
-				Player::Instance().SetIsInSweetSpot(false);
-
-				// デバッグ出力
-				OutputDebugStringA("スイートスポットから出た！\n");
-				if (consoleLog)
-					consoleLog->push_back(u8"[Info] スイートスポットから出た！");
-			}
-		}
-
 		// ボールとバットの組み合わせか確認
 		// onTrigger 内のバット処理ブロックをこれに差し替え
 		{
@@ -869,7 +818,6 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				continue; // 空振り：トリガーなので何も起きない
 
 			Ball::Instance().SetHasCollided(true);
-			Ball::Instance().SetThroughStrikeZone(true);
 			Ball::Instance().CancelBezier();
 
 			physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();

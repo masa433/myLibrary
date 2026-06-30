@@ -58,9 +58,6 @@ void Player::Initialize()
 
     meshScale = { 0.03f,0.012f,0.03f };
 
-    sweetSpotOffset = { 0.0f, 0.75f, 0.0f };
-    sweetSpotScale = { 0.2f, 0.2f, 0.2f };
-
     batter->build_static_batches(device);
     batModel->build_static_batches(device);
 
@@ -151,31 +148,6 @@ void Player::Initialize()
 
         //シーンに剛体を追加
         pxScene->addActor(*pxBatRigidBody);
-    }
-
-    //同じpxBatRigidBodyにスイートスポットシェイプを追加(バットの芯)
-    {
-
-        physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
-        physx::PxScene* pxScene = Physics::Instance().GetScene();
-
-        physx::PxMaterial* sweetSpotMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
-
-        physx::PxBoxGeometry sweetSpotGeometry(
-            sweetSpotScale.x * 0.4f, // バットの芯の幅の半分
-            sweetSpotScale.y * 0.4f, // バットの芯の高さの半分
-            sweetSpotScale.z * 0.4f  // バットの芯の奥行きの半分
-        );
-
-        //ローカルオフセットを指定してシェイプを作成
-        physx::PxTransform sweetSpotLocalPose(physx::PxVec3(sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z));
-        physx::PxShape* sweetSpotShape = physx::PxRigidActorExt::createExclusiveShape(
-            *pxBatRigidBody, sweetSpotGeometry, *sweetSpotMaterial);
-
-        sweetSpotShape->setLocalPose(sweetSpotLocalPose);
-        sweetSpotShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
-        sweetSpotShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
-        sweetSpotShape->setName("BatSweetSpot");
     }
 
 }
@@ -520,25 +492,6 @@ void Player::DrawGUI()
             UpdatePhysXMeshTransform(meshScale);
         }
 
-
-        //バットのスイートスポットの位置とサイズ
-        ImGui::DragFloat3("Sweet Spot Offset", &sweetSpotOffset.x, 0.01f, -1.0f, 1.0f);
-        ImGui::DragFloat3("Sweet Spot Scale", &sweetSpotScale.x, 0.01f, 0.01f, 1.0f);
-
-        if (batSweetSpot)
-        {
-            // 位置の更新
-            physx::PxTransform transform(physx::PxVec3(sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z));
-            batSweetSpot->setGlobalPose(transform);
-
-            // サイズの更新
-            physx::PxShape* shape = nullptr;
-            batSweetSpot->getShapes(&shape, 1);
-            if (shape)
-            {
-                shape->setGeometry(physx::PxBoxGeometry(sweetSpotScale.x / 2.0f, sweetSpotScale.y / 2.0f, sweetSpotScale.z / 2.0f));
-            }
-        }
     }
 
     // アニメーションデバッグ用
@@ -682,41 +635,7 @@ void Player::AttachBatToHand()
                 pxBatRigidBody->setKinematicTarget(pxTransform);
             }
 
-            // スイートスポットの位置も更新
-            if (batSweetSpot)
-            {
-                // ローカルオフセットをワールド行列で変換（スケール・回転・位置すべて考慮）
-                DirectX::XMMATRIX offsetMatrix = DirectX::XMMatrixTranslation(
-                    sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z);
-                DirectX::XMMATRIX sweetSpotWorldMatrix = offsetMatrix * batWorldMatrix;
-
-                // 位置・回転を取り出す
-                DirectX::XMVECTOR scale;
-                DirectX::XMVECTOR rotation;
-                DirectX::XMVECTOR translation;
-                DirectX::XMMatrixDecompose(&scale, &rotation, &translation, sweetSpotWorldMatrix);
-
-                DirectX::XMFLOAT4 quatFloat;
-                DirectX::XMStoreFloat4(&quatFloat, rotation);
-
-                physx::PxTransform sweetSpotTransform(
-                    physx::PxVec3(
-                        DirectX::XMVectorGetX(translation),
-                        DirectX::XMVectorGetY(translation),
-                        DirectX::XMVectorGetZ(translation)
-                    ),
-                    physx::PxQuat(
-                        quatFloat.x,
-                        quatFloat.y,
-                        quatFloat.z,
-                        quatFloat.w
-                    )
-                );
-
-                batSweetSpot->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
-                batSweetSpot->setKinematicTarget(sweetSpotTransform);
-            }
-
+         
             // ボーンが見つかったらループを抜ける
             break;
         }
@@ -1008,8 +927,7 @@ void Player::SaveToJson(json& j)
     j["batScale"] = { batScale.x, batScale.y, batScale.z };
     j["batAngle"] = { batAngle.x, batAngle.y, batAngle.z };
     j["meshScale"] = { meshScale.x, meshScale.y, meshScale.z };
-    j["sweetSpotOffset"] = { sweetSpotOffset.x, sweetSpotOffset.y, sweetSpotOffset.z };
-    j["sweetSpotScale"] = { sweetSpotScale.x, sweetSpotScale.y, sweetSpotScale.z };
+
 }
 
 void Player::LoadFromJson(const json& j)
@@ -1022,9 +940,7 @@ void Player::LoadFromJson(const json& j)
     if (j.contains("batScale"))    batScale = { j["batScale"][0], j["batScale"][1], j["batScale"][2] };
     if (j.contains("batAngle"))    batAngle = { j["batAngle"][0], j["batAngle"][1], j["batAngle"][2] };
     if (j.contains("meshScale")) { meshScale = { j["meshScale"][0], j["meshScale"][1], j["meshScale"][2] }; UpdatePhysXMeshTransform(meshScale); }
-    if (j.contains("sweetSpotOffset")) sweetSpotOffset = { j["sweetSpotOffset"][0], j["sweetSpotOffset"][1], j["sweetSpotOffset"][2] };
-    if (j.contains("sweetSpotScale"))  sweetSpotScale = { j["sweetSpotScale"][0], j["sweetSpotScale"][1], j["sweetSpotScale"][2] };
-
+  
     //利き手が変わっていれば再初期化
     if (j.contains("isRightBatter") && (bool)j["isRightBatter"] != isRightBatter)
     {
