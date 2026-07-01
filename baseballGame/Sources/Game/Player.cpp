@@ -259,9 +259,15 @@ void Player::Update(float elapsedTime)
         DirectX::XMFLOAT2 cursorCenter = { mouseX, mouseY };
 
         float estTime = 99.0f;
+        if (Ball::Instance().IsBezierFlying())
         {
+            estTime = Ball::Instance().GetBezierRemainingTime();
+        }
+        else
+        {
+            // ベジェ終了後（コンタクト直前のaddForceフェーズ）は従来通り物理速度で外挿
             physx::PxVec3 vel = Ball::Instance().GetLinearVelocity();
-            float         ballZ = Ball::Instance().GetWorldPosition().z;
+            float ballZ = Ball::Instance().GetWorldPosition().z;
             if (vel.z < -0.001f && ballZ > 0.0f)
                 estTime = ballZ / (-vel.z);
             else if (ballZ <= 0.0f)
@@ -306,17 +312,6 @@ void Player::HandleInput(float elapsedTime)
                 // onContact(PhysX) 側で GetLastResult() を参照する
                 HitJudge2D::Instance().SetPendingResult(result);
                 ChangeState(State::Swinging);
-
-                char buf[256];
-                snprintf(buf, sizeof(buf),
-                    "[SwingCheck] valid=%d isBallZone=%d cursorOverlap=%d overlapRatio=%.2f velScale=%.2f angle=%.1f",
-                    result.validHit,
-                    result.isBallZone,
-                    result.cursorOverlap,
-                    result.overlapRatio,
-                    result.velocityScale,
-                    result.launchAngle2DDeg);
-                consoleLog->push_back(buf); // 既存のImGuiコンソールログに流す
             }
             else
             {

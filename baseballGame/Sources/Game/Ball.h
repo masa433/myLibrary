@@ -199,6 +199,11 @@ public:
 	void UpdateBezierFlight(float elapsedTime);  // 毎フレーム呼ぶ
 
 	bool  IsBezierFlying()  const { return bezierFlying; }
+	float GetBezierRemainingTime() const
+	{
+		if (!bezierFlying) return -1.0f;// 飛行中でない場合は-1を返す
+		return bezierData.durationSec * (1.0f - bezierT);
+	}
 	void  CancelBezier();   // バット衝突時に呼ぶ
 
 	// ===== 2Dスプライト側で同じ曲線を再現するための公開API =====

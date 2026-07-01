@@ -78,6 +78,7 @@ namespace
 		case 2:  // カットボール
 		case 11: // シュート
 		case 1:  // ツーシーム
+		case 14: // スイーパー
 			p1.y = p0.y + travel.y * 0.03f;
 			p2.y = targetScreenPos.y + travel.y * 0.04f;
 			break;
@@ -336,7 +337,7 @@ void ballSprite::Update(float elapsedTime)
 		{
 			float t = Clamp01(ball.GetBezierT());
 			//P1とP3の間での進行度を返す
-			static constexpr float P1T = 0.35f;
+			static constexpr float P1T = 0.15f;
 			static constexpr float P3T = 1.0f;
 			float linear;
 			if (t < P1T)
@@ -364,15 +365,25 @@ void ballSprite::Update(float elapsedTime)
 	{
 		const ballBreak2D& brk = pitchBreaks[currentPitchIndex];
 		const DirectX::XMFLOAT2 targetScreenPos = aiTargetScreen;
-		const DirectX::XMFLOAT2 currentScreenPos = EvalPitchBreakScreenPath(
-			targetScreenPos,
-			brk,
-			strikeZoneSpriteData->size,
-			currentPitchIndex,
-			GetPitchProgress(),
-			pitcher.IsRightPitcher());
+		DirectX::XMFLOAT2 currentScreenPos;
 
-		
+		// ベジェ曲線が終着点(t>=1.0)に到達済みの場合は、
+		// 補間計算を経由せず必ず終着点(targetScreenPos)にスプライトを一致させる
+		if (nowThrown && !ball.IsBezierFlying() && ball.GetBezierT() >= 1.0f)
+		{
+			currentScreenPos = targetScreenPos;
+		}
+		else
+		{
+			currentScreenPos = EvalPitchBreakScreenPath(
+				targetScreenPos,
+				brk,
+				strikeZoneSpriteData->size,
+				currentPitchIndex,
+				GetPitchProgress(),
+				pitcher.IsRightPitcher());
+		}
+
 		ApplyBallSpritePosition(currentScreenPos);
 		if (nowThrown)
 		{
