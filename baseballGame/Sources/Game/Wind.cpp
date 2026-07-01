@@ -38,19 +38,27 @@ void Wind::Initialize()
 	windGroundSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	windGroundSpriteRenderer = std::make_unique<sprite>(device, windGroundSprite->texturePath.c_str());
 
-	// ★変更: フォントレンダラーの初期化(font6.png + sprite -> TTF直読みのFontRendererへ)
-	// 第2引数: TTF/OTFファイルパス
-	// 第3引数: ベイクする基準フォントサイズ(px)。32にしておくと旧実装の"32"高さに近い見た目になる
-	// 第4,5引数: 画面解像度(ピクセル->NDC変換に使用)。Graphics側に取得関数が無ければ
-	//            定数(例: 1280, 720)に置き換えるか、Graphics::Instance()に
-	//            GetScreenWidth()/GetScreenHeight()相当を追加してください。
+	windBoardSprite = std::make_unique<Sprite>();
+	windBoardSprite->texturePath = L".\\resources\\textures\\windBoard.png";
+	windBoardSprite->position = { 1100.0f, 200.0f };
+	windBoardSprite->size = { 150.0f, 100.0f };
+	windBoardSprite->rotation = 0.0f;
+	windBoardSprite->color = { 1.0f, 1.0f, 1.0f, 0.8f };
+	windBoardSpriteRenderer = std::make_unique<sprite>(device, windBoardSprite->texturePath.c_str());
+
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+
+	std::vector<int> windStrengthCodepoints = FontRenderer::Utf8ToCodepoints(
+		u8"0123456789.m"
+	);
+
 	windStrengthFont.Initialize(device,
 		L".\\resources\\fonts\\LotusEdenSample-Medium.ttf",
 		32.0f,
 		screenWidth, screenHeight,
-		/*atlasWidth*/ 256, /*atlasHeight*/ 256);
+		/*atlasWidth*/ 256, /*atlasHeight*/ 256,
+		&windStrengthCodepoints);
 
 	// 風表現用の流線を生成
 	windLines.clear();
@@ -160,22 +168,31 @@ void Wind::Render(const RenderContext& rc)
 
 	}
 
-	// ★変更: 風の強さテキストをFontRenderer(TTF直読み)で描画
+	// 風の強さを示すボードスプライトの描画
+	if (windBoardSprite && windBoardSpriteRenderer)
+	{
+		windBoardSpriteRenderer->render(rc.deviceContext, windBoardSprite->position.x, windBoardSprite->position.y,
+			windBoardSprite->size.x, windBoardSprite->size.y,
+			windBoardSprite->color.x, windBoardSprite->color.y, windBoardSprite->color.z, windBoardSprite->color.w,
+			0.0f);
+	}
+
+	// 風の強さテキストをFontRenderer(TTF直読み)で描画
 	if (windStrengthFont.IsValid())
 	{
 		physx::PxVec3 windVec(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength);
 		float currentWindSpeed = windVec.magnitude();
 
 		char speedText[64];
-		snprintf(speedText, sizeof(speedText), "%.fm", currentWindSpeed);
+		snprintf(speedText, sizeof(speedText), "%.f m", currentWindSpeed);
 
 		// アイコンの座標に基づいてテキスト位置を決定
-		float textX = windDirectionSprite->position.x + 60.0f;
-		float textY = windDirectionSprite->position.y + 15.0f;
+		float textX = windDirectionSprite->position.x + 80.0f;
+		float textY = windDirectionSprite->position.y + 100.0f;
 
 		// scale=1.0でInitialize時のpixelHeight(32px)相当の大きさになる。
 		// 大きさを変えたい場合はscaleを調整する(例: 1.5fで1.5倍)。
-		windStrengthFont.DrawText(dc, speedText,
+		windStrengthFont.DrawTextW(dc, speedText,
 			textX, textY,
 			1.0f,
 			1.0f, 1.0f, 1.0f, 1.0f);
@@ -243,6 +260,13 @@ void Wind::DrawGUI()
 			ImGui::DragFloat2("Wind Ground Sprite Size", &windGroundSprite->size.x, 1.0f, 1.0f, 500.0f);
 			ImGui::ColorEdit4("Wind Ground Sprite Color", &windGroundSprite->color.x);
 		}
+		ImGui::Separator();
+		if (windBoardSprite)
+		{
+			ImGui::DragFloat2("Wind Board Sprite Position", &windBoardSprite->position.x, 1.0f, 0.0f, 1280.0f);
+			ImGui::DragFloat2("Wind Board Sprite Size", &windBoardSprite->size.x, 1.0f, 1.0f, 500.0f);
+			ImGui::ColorEdit4("Wind Board Sprite Color", &windBoardSprite->color.x);
+		}
 	}
 #endif
 }
@@ -277,6 +301,12 @@ void Wind::SaveToJson(json& j)
 		j["ground_sprite"]["size"] = { windGroundSprite->size.x, windGroundSprite->size.y };
 		j["ground_sprite"]["color"] = { windGroundSprite->color.x, windGroundSprite->color.y, windGroundSprite->color.z, windGroundSprite->color.w };
 	}
+	if(windBoardSprite)
+	{
+		j["board_sprite"]["position"] = { windBoardSprite->position.x, windBoardSprite->position.y };
+		j["board_sprite"]["size"] = { windBoardSprite->size.x, windBoardSprite->size.y };
+		j["board_sprite"]["color"] = { windBoardSprite->color.x, windBoardSprite->color.y, windBoardSprite->color.z, windBoardSprite->color.w };
+	}
 }
 
 void Wind::LoadFromJson(const json& j)
@@ -298,5 +328,11 @@ void Wind::LoadFromJson(const json& j)
 		windGroundSprite->position = { j["ground_sprite"]["position"][0], j["ground_sprite"]["position"][1] };
 		windGroundSprite->size = { j["ground_sprite"]["size"][0], j["ground_sprite"]["size"][1] };
 		windGroundSprite->color = { j["ground_sprite"]["color"][0], j["ground_sprite"]["color"][1], j["ground_sprite"]["color"][2], j["ground_sprite"]["color"][3] };
+	}
+	if (j.contains("board_sprite") && windBoardSprite)
+	{
+		windBoardSprite->position = { j["board_sprite"]["position"][0], j["board_sprite"]["position"][1] };
+		windBoardSprite->size = { j["board_sprite"]["size"][0], j["board_sprite"]["size"][1] };
+		windBoardSprite->color = { j["board_sprite"]["color"][0], j["board_sprite"]["color"][1], j["board_sprite"]["color"][2], j["board_sprite"]["color"][3] };
 	}
 }

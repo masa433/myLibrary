@@ -861,11 +861,8 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 
 		float animation_duration = pitcher->animations[current_animation_index].duration;
 
-		if (!isBallThrown && animation_time >= throwTiming * animation_duration)
+		if (!isBallThrown)
 		{
-			isBallThrown = true;
-			throwCounter = 0.0f;
-			hasReachedZero = false;
 			Ball::Instance().SetHasCollided(false);
 			Ball::Instance().SetHasCollidedWithFence(false);
 			Ball::Instance().SetHasPassedHomeRunZone(false);
@@ -873,7 +870,14 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			Ball::Instance().SetHasPassedFairFoulTrigger(false);
 			Ball::Instance().SetHasBeenJudged(false);
 			Ball::Instance().SetFoulLogged(false);
-		
+		}
+
+		if (!isBallThrown && animation_time >= throwTiming * animation_duration)
+		{
+			isBallThrown = true;
+			throwCounter = 0.0f;
+			hasReachedZero = false;
+			
 			float speedMs = ballSpeedKmh / 3.6f;
 			float launchAngleRadians = DirectX::XMConvertToRadians(launchAngleDegrees);
 

@@ -64,6 +64,8 @@ private:
 	std::unique_ptr<sprite> windDirectionSpriteRenderer;
 	std::unique_ptr<Sprite> windGroundSprite;
 	std::unique_ptr<sprite> windGroundSpriteRenderer;
+	std::unique_ptr<Sprite> windBoardSprite;
+	std::unique_ptr<sprite> windBoardSpriteRenderer;
 	FontRenderer windStrengthFont;
 
 	// シェーダー関連メンバーを追加
