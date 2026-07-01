@@ -122,6 +122,7 @@ void scene_game::initialize()
 	// コンソールログを物理システムに渡す
     Physics::Instance().SetConsoleLog(&consoleLog);
 	Pitcher::Instance().SetConsoleLog(&consoleLog);
+	Player::Instance().SetConsoleLog(&consoleLog);
 	ballSprite::Instance().SetConsoleLog(&consoleLog);
 
     // カメラ設定をここに移動

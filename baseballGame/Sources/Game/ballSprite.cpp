@@ -44,9 +44,13 @@ namespace
 		const ballSprite::ballBreak2D& breakData,
 		const DirectX::XMFLOAT2& zoneScreenSize,
 		int pitchBreakIndex,
-		float t)
+		float t,
+		bool isRightPitcher)
 	{
-		const float breakOffsetX = (breakData.breakX / 43.0f) * zoneScreenSize.x;
+		//左投手の時はX軸を反転する
+		float effectiveBreakX = isRightPitcher ? breakData.breakX : -breakData.breakX;
+
+		const float breakOffsetX = (effectiveBreakX / 43.0f) * zoneScreenSize.x;
 		const float breakOffsetY = (breakData.breakY / 60.0f) * zoneScreenSize.y;
 
 		DirectX::XMFLOAT2 p0 = {
@@ -103,10 +107,17 @@ static DirectX::XMFLOAT2 WorldToZoneScreen(
 	const DirectX::XMFLOAT2& zoneScreenPos,  // ゾーンスプライト左上
 	const DirectX::XMFLOAT2& zoneScreenSize, // ゾーンスプライトサイズ(px)
 	const DirectX::XMFLOAT2& zone3DCenter,   // 3Dゾーン中心(x,y)
-	const DirectX::XMFLOAT2& zone3DSize)     // 3Dゾーンサイズ(m)
+	const DirectX::XMFLOAT2& zone3DSize,     // 3Dゾーンサイズ(m)
+	bool isRightPitcher)     
 {
 	// 3D座標をゾーン内の正規化座標(0~1)に変換
 	float normalX = (worldX - (zone3DCenter.x - zone3DSize.x * 0.5f)) / zone3DSize.x;
+
+	// 左投手なら正規化座標を反転させる
+	if (!isRightPitcher) {
+		normalX = 1.0f - normalX;
+	}
+
 	float normalY = (worldY - (zone3DCenter.y - zone3DSize.y * 0.5f)) / zone3DSize.y;
 
 	// Y軸反転（3DはY上が正、2DはY下が正）
@@ -125,10 +136,17 @@ static DirectX::XMFLOAT2 ZoneScreenToWorld(
 	const DirectX::XMFLOAT2& zoneScreenPos,  // ゾーンスプライト左上
 	const DirectX::XMFLOAT2& zoneScreenSize, // ゾーンスプライトサイズ(px)
 	const DirectX::XMFLOAT2& zone3DCenter,   // 3Dゾーン中心(x,y)
-	const DirectX::XMFLOAT2& zone3DSize)     // 3Dゾーンサイズ(m)
+	const DirectX::XMFLOAT2& zone3DSize,     // 3Dゾーンサイズ(m)
+	bool isRightPitcher)     
 {
 	// スクリーン座標を正規化座標(0~1)に変換
 	float normalX = (screenX - zoneScreenPos.x) / zoneScreenSize.x;
+
+	// 左投手なら正規化座標を反転させる
+	if (!isRightPitcher) {
+		normalX = 1.0f - normalX;
+	}
+
 	float normalY = (screenY - zoneScreenPos.y) / zoneScreenSize.y;
 	// Y軸反転（3DはY上が正、2DはY下が正）
 	normalY = 1.0f - normalY;
@@ -145,7 +163,8 @@ DirectX::XMFLOAT2 ballSprite::GetAITarget3D() const
 		strikeZoneSpriteData->position,
 		strikeZoneSpriteData->size,
 		zone3DCenter,
-		zone3DSize);
+		zone3DSize,
+		Pitcher::Instance().IsRightPitcher());
 }
 
 void ballSprite::SetAITargetFromWorld(float worldX, float worldY)
@@ -155,7 +174,8 @@ void ballSprite::SetAITargetFromWorld(float worldX, float worldY)
 		strikeZoneSpriteData->position,
 		strikeZoneSpriteData->size,
 		zone3DCenter,
-		zone3DSize);
+		zone3DSize,
+		Pitcher::Instance().IsRightPitcher());
 	hasAITarget = true;
 }
 
@@ -178,14 +198,16 @@ void ballSprite::GetBallZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX:
 		strikeZoneSpriteData->position,
 		strikeZoneSpriteData->size,
 		zone3DCenter,
-		zone3DSize);
+		zone3DSize,
+		Pitcher::Instance().IsRightPitcher());
 
 	DirectX::XMFLOAT2 screenB = WorldToZoneScreen(
 		worldBottomRight.x, worldBottomRight.y,
 		strikeZoneSpriteData->position,
 		strikeZoneSpriteData->size,
 		zone3DCenter,
-		zone3DSize);
+		zone3DSize,
+		Pitcher::Instance().IsRightPitcher());
 
 	outTopLeft.x = (std::min)(screenA.x, screenB.x);
 	outTopLeft.y = (std::min)(screenA.y, screenB.y);
@@ -243,7 +265,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 		u8"カーブチェンジアップフォーク"
 		u8"ツーシームカットボールシンカー"
 		u8"スクリュー縦スプリットスローカーブ"
-		u8"シュートナックルボール不明"
+		u8"シュートナックルボールスイーパーパーム"
 	);
 
 	// 日本語グリフを持つフォントを用意して配置する
@@ -268,6 +290,9 @@ void ballSprite::Uninitialize()
 
 void ballSprite::Update(float elapsedTime)
 {
+	//実在投手の切り替えを検知し、その投手の球種に応じた変化量を設定する
+	SyncRealPitcherBreaks();
+
 	Pitcher& pitcher = Pitcher::Instance();
 	Ball& ball = Ball::Instance();
 
@@ -344,8 +369,10 @@ void ballSprite::Update(float elapsedTime)
 			brk,
 			strikeZoneSpriteData->size,
 			currentPitchIndex,
-			GetPitchProgress());
+			GetPitchProgress(),
+			pitcher.IsRightPitcher());
 
+		
 		ApplyBallSpritePosition(currentScreenPos);
 		if (nowThrown)
 		{
@@ -381,14 +408,16 @@ void ballSprite::Update(float elapsedTime)
 				strikeZoneSpriteData->position,
 				strikeZoneSpriteData->size,
 				zone3DCenter,
-				zone3DSize);
+				zone3DSize,
+				pitcher.IsRightPitcher());
 
 			currentScreenPos = EvalPitchBreakScreenPath(
 				targetScreenPos,
 				brk,
 				strikeZoneSpriteData->size,
 				currentPitchIndex,
-				t);
+				t,
+				pitcher.IsRightPitcher());
 		}
 		else
 		{
@@ -409,14 +438,16 @@ void ballSprite::Update(float elapsedTime)
 				strikeZoneSpriteData->position,
 				strikeZoneSpriteData->size,
 				zone3DCenter,
-				zone3DSize);
+				zone3DSize,
+				pitcher.IsRightPitcher());
 
 			DirectX::XMFLOAT2 startScreenPos = WorldToZoneScreen(
 				zone3DCenter.x, zone3DCenter.y,
 				strikeZoneSpriteData->position,
 				strikeZoneSpriteData->size,
 				zone3DCenter,
-				zone3DSize);
+				zone3DSize,
+				pitcher.IsRightPitcher());
 
 			currentScreenPos = {
 				startScreenPos.x + (finalScreenPos.x - startScreenPos.x) * t,
@@ -576,30 +607,155 @@ void ballSprite::DrawGUI()
 		ImGui::DragFloat(u8"速球判定 (km/h)", &pitchSpeedFastThresholdKmh, 1.0f, 0.0f, 300.0f);
 	}
 
-	ImGui::Separator();
-	ImGui::Text(u8"--- 変化量エディタ ---");
+	const Pitcher::RealPitcher selectedRP = Pitcher::Instance().GetSelectedRealPitcher();
+	if (selectedRP != Pitcher::RealPitcher::None)
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.2f, 1.0f), u8"※「%s」専用の変化量データを編集中（他の投手には影響しません）",
+			Pitcher::GetRealPitcherName(selectedRP));
+	}
+	else
+	{
+		ImGui::Text(u8"※現在は共通エディター値を編集中（実在投手プリセット未選択）");
+	}
 
 	const char* names[] = {
 		u8"ストレート", u8"スライダー", u8"カーブ", u8"チェンジアップ", u8"フォーク",
 		u8"ツーシーム", u8"カットボール", Pitcher::Instance().IsRightPitcher() ? u8"シンカー" : u8"スクリュー", u8"縦スライダー", u8"スプリット",
-		u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール"
+		u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール", u8"スイーパー", u8"パーム"
 	};
 
-	ImGui::Combo(u8"編集球種", reinterpret_cast<int*>(&Pitcher::Instance().selectedPitchType), names, 14);
+	ImGui::Combo(u8"編集する球種", reinterpret_cast<int*>(&Pitcher::Instance().selectedPitchType), names, 16);
 
 	const int editIndex = Pitcher::PitchTypeToBreakIndex(Pitcher::Instance().GetSelectedPitchType());
 
+	// 実在投手選択中なら、その投手専用の変化量セットを直接編集する
+	PitchBreakSet* activeSet = nullptr;
+	if (selectedRP != Pitcher::RealPitcher::None)
+	{
+		activeSet = &realPitcherBreaks[static_cast<int>(selectedRP)];
+	}
+
 	ballBreak2D& brk = pitchBreaks[editIndex];
-	ImGui::SliderFloat(u8"横変化 (+ アウト / - イン)", &brk.breakX, -20.0f, 20.0f, "%.1f cm");
-	ImGui::SliderFloat(u8"縦変化 (+ 伸び / - 落ち)", &brk.breakY, -25.0f, 10.0f, "%.1f cm");
+
+	// ----- グレード（段階）で一括指定 -----
+	if (activeSet != nullptr)
+	{
+		int gradeIndex = static_cast<int>(activeSet->grades[editIndex]); // E=0 ... S=5
+		static const char* gradeNames[] = { u8"E", u8"D", u8"C", u8"B", u8"A", u8"S" };
+		ImGui::TextColored(ImVec4(0.3f, 0.9f, 1.0f, 1.0f), u8"曲がりグレード : %s", GetBreakGradeLabel(activeSet->grades[editIndex]));
+		if (ImGui::Combo(u8"グレード変更", &gradeIndex, gradeNames, IM_ARRAYSIZE(gradeNames)))
+		{
+			activeSet->grades[editIndex] = static_cast<Pitcher::BreakGrade>(gradeIndex);
+			// グレード基準の形状（=C相当の向き）に対して倍率をかけ直す
+			const float baseScale = GetBreakGradeScale(Pitcher::BreakGrade::C);
+			const float newScale = GetBreakGradeScale(activeSet->grades[editIndex]);
+			const float ratio = newScale / baseScale;
+			activeSet->breaks[editIndex].breakX = brk.breakX * ratio;
+			activeSet->breaks[editIndex].breakY = brk.breakY * ratio;
+			brk = activeSet->breaks[editIndex];
+		}
+		ImGui::Spacing();
+	}
+
+	// ----- 数値での微調整（従来通り） -----
+	float displayBreakX = Pitcher::Instance().IsRightPitcher() ? brk.breakX : -brk.breakX;
+	if (ImGui::SliderFloat(u8"横変化 (+ アウト / - イン)", &displayBreakX, -20.0f, 20.0f, "%.1f cm"))
+	{
+		brk.breakX = Pitcher::Instance().IsRightPitcher() ? displayBreakX : -displayBreakX;
+		if (activeSet != nullptr)
+		{
+			activeSet->breaks[editIndex] = brk; // 投手専用データにも反映
+		}
+	}
+	if (ImGui::SliderFloat(u8"縦変化 (+ 落ち / - 上げ)", &brk.breakY, -25.0f, 10.0f, "%.1f cm"))
+	{
+		if (activeSet != nullptr)
+		{
+			activeSet->breaks[editIndex] = brk; // 投手専用データにも反映
+		}
+	}
 
 	ImGui::Checkbox(u8"変化量を反映", &useBallBreak);
 
 	ImGui::Separator();
 	ImGui::Text(u8"球種名/球速 表示位置 (%s)", names[editIndex]);
-	ImGui::DragFloat2(u8"球種名 オフセット(左余白, Y)##pitchName", &pitchNameOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
-	ImGui::DragFloat2(u8"球速 オフセット(右余白, Y)##pitchSpeed", &pitchSpeedOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
+	ImGui::DragFloat2(u8"球種名 オフセット(左右, Y)##pitchName", &pitchNameOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
+	ImGui::DragFloat2(u8"球速 オフセット(右寄せ, Y)##pitchSpeed", &pitchSpeedOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
+}
 
+void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
+{
+	int index = static_cast<int>(rp);
+	if(index < 0 || index >= static_cast<int>(Pitcher::RealPitcher::Count))
+	{
+		return;// 無効な投手
+	}
+
+	PitchBreakSet& breakSet = realPitcherBreaks[index];
+	if(breakSet.initialized)
+	{
+		return; // すでに初期化済み
+	}
+
+	// この時点のpitchBreaks[16]を「グレードCの基準形状」として使用する
+	ballBreak2D baseShape[16];
+	for(int i = 0; i < 16; ++i)
+	{
+		baseShape[i] = pitchBreaks[i];
+		breakSet.breaks[i] = pitchBreaks[i];
+		breakSet.grades[i] = Pitcher::BreakGrade::C; // デフォルトはグレードC
+	}
+
+	std::vector<Pitcher::RealArsenalEntry> arsenal;
+	bool isRight = true;
+	const char* name = "";
+	if (!Pitcher::GetRealPitcherArsenalData(rp, arsenal, isRight, name))
+	{
+		breakSet.initialized = true;
+		return;
+	}
+
+	// arsenalの各球種について、グレードに応じてpitchBreaksを調整する
+	for(const Pitcher::RealArsenalEntry& entry : arsenal)
+	{
+		int breakIndex = Pitcher::PitchTypeToBreakIndex(entry.pitchType);
+		if(breakIndex < 0 || breakIndex >= 16)
+		{
+			continue; // 無効な球種
+		}
+
+		// グレードに応じて変化量を調整する
+		const float scale = GetBreakGradeScale(entry.breakGrade);
+		breakSet.breaks[breakIndex].breakX = baseShape[breakIndex].breakX * scale;
+		breakSet.breaks[breakIndex].breakY = baseShape[breakIndex].breakY * scale;
+		breakSet.grades[breakIndex] = entry.breakGrade;
+	}
+
+	breakSet.initialized = true;
+}
+
+void ballSprite::SyncRealPitcherBreaks()
+{
+	const Pitcher::RealPitcher currentRealPitcher = Pitcher::Instance().GetSelectedRealPitcher();
+	if (currentRealPitcher == lastAppliedPitcher)
+	{
+		return; // 変更なし
+	}
+	lastAppliedPitcher = currentRealPitcher;
+
+	if(currentRealPitcher == Pitcher::RealPitcher::None)
+	{
+		return; // 実在投手なし
+	}
+
+	BuildRealPitcherBreakSet(currentRealPitcher);
+
+	const int index = static_cast<int>(currentRealPitcher);
+	const PitchBreakSet& breakSet = realPitcherBreaks[index];
+	for(int i = 0; i < 16; ++i)
+	{
+		pitchBreaks[i] = breakSet.breaks[i];
+	}
 }
 
 void ballSprite::SaveToJson(json& j)
@@ -635,9 +791,30 @@ void ballSprite::SaveToJson(json& j)
 	// 変化量エディタの有効フラグを保存
 	j["useBallBreak"] = useBallBreak;
 
+	json realPitcherBreaksJson = json::array();
+	for (size_t rp = 1; rp < realPitcherBreaks.size(); ++rp) // 0=Noneはスキップ
+	{
+		if (!realPitcherBreaks[rp].initialized) continue;
+
+		json breaksArr = json::array();
+		for (int i = 0; i < 16; ++i)
+		{
+			breaksArr.push_back({
+				{"breakX", realPitcherBreaks[rp].breaks[i].breakX},
+				{"breakY", realPitcherBreaks[rp].breaks[i].breakY},
+				{"grade", static_cast<int>(realPitcherBreaks[rp].grades[i])}
+				});
+		}
+		realPitcherBreaksJson.push_back({
+			{"pitcher", static_cast<int>(rp)},
+			{"breaks", breaksArr}
+			});
+	}
+	j["realPitcherBreaks"] = realPitcherBreaksJson;
+
 	// 全14球種の変化量をJSONの配列オブジェクトとしてまとめて保存
 	json breaksArray = json::array();
-	for (int i = 0; i < 14; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
 		breaksArray.push_back({
 			{"breakX", pitchBreaks[i].breakX},
@@ -647,13 +824,13 @@ void ballSprite::SaveToJson(json& j)
 	j["pitchBreaks"] = breaksArray;
 
 	j["pitchNameOffsets"] = json::array();
-	for (int i = 0; i < 14; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
 		j["pitchNameOffsets"].push_back({ pitchNameOffsets[i].x, pitchNameOffsets[i].y });
 	}
 
 	j["pitchSpeedOffsets"] = json::array();
-	for (int i = 0; i < 14; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
 		j["pitchSpeedOffsets"].push_back({ pitchSpeedOffsets[i].x, pitchSpeedOffsets[i].y });
 	}
@@ -727,13 +904,40 @@ void ballSprite::LoadFromJson(const json& j)
 		useBallBreak = j["useBallBreak"].get<bool>();
 	}
 
+	// LoadFromJson 内の末尾あたりに追加
+	if (j.contains("realPitcherBreaks") && j["realPitcherBreaks"].is_array())
+	{
+		for (const auto& entry : j["realPitcherBreaks"])
+		{
+			int rp = entry.value("pitcher", -1);
+			if (rp <= 0 || rp >= static_cast<int>(realPitcherBreaks.size())) continue;
+			if (!entry.contains("breaks") || !entry["breaks"].is_array()) continue;
+
+			const auto& breaksArr = entry["breaks"];
+			for (size_t i = 0; i < breaksArr.size() && i < 16; ++i)
+			{
+				if (breaksArr[i].contains("breakX"))
+					realPitcherBreaks[rp].breaks[i].breakX = breaksArr[i]["breakX"].get<float>();
+				if (breaksArr[i].contains("breakY"))
+					realPitcherBreaks[rp].breaks[i].breakY = breaksArr[i]["breakY"].get<float>();
+				if (breaksArr[i].contains("grade"))
+					realPitcherBreaks[rp].grades[i] = static_cast<Pitcher::BreakGrade>(breaksArr[i]["grade"].get<int>());
+			}
+			realPitcherBreaks[rp].initialized = true;
+		}
+	}
+
+	// 現在選択中の実在投手のデータを強制再反映
+	lastAppliedPitcher = Pitcher::RealPitcher::None;
+	SyncRealPitcherBreaks();
+
 	// 全14球種の変化量を配列から復元
 	if (j.contains("pitchBreaks") && j["pitchBreaks"].is_array())
 	{
 		const auto& breaksArray = j["pitchBreaks"];
 
-		// クラッシュ防止のため、保存されたデータの数と、配列サイズ(14)の小さい方に合わせてループ
-		int size = (std::min)(14, (int)breaksArray.size());
+		// クラッシュ防止のため、保存されたデータの数と、配列サイズ(16)の小さい方に合わせてループ
+		int size = (std::min)(16, (int)breaksArray.size());
 		for (int i = 0; i < size; ++i)
 		{
 			if (breaksArray[i].contains("breakX")) {
@@ -745,11 +949,12 @@ void ballSprite::LoadFromJson(const json& j)
 		}
 	}
 
+	
 	// 球種名/球速の表示位置オフセットを復元
 	if (j.contains("pitchNameOffsets") && j["pitchNameOffsets"].is_array())
 	{
 		const auto& nameOffsetsArray = j["pitchNameOffsets"];
-		int size = (std::min)(14, (int)nameOffsetsArray.size());
+		int size = (std::min)(16, (int)nameOffsetsArray.size());
 		for (int i = 0; i < size; ++i)
 		{
 			pitchNameOffsets[i].x = nameOffsetsArray[i][0].get<float>();
@@ -760,7 +965,7 @@ void ballSprite::LoadFromJson(const json& j)
 	if(j.contains("pitchSpeedOffsets") && j["pitchSpeedOffsets"].is_array())
 	{
 		const auto& speedOffsetsArray = j["pitchSpeedOffsets"];
-		int size = (std::min)(14, (int)speedOffsetsArray.size());
+		int size = (std::min)(16, (int)speedOffsetsArray.size());
 		for (int i = 0; i < size; ++i)
 		{
 			pitchSpeedOffsets[i].x = speedOffsetsArray[i][0].get<float>();
@@ -785,11 +990,13 @@ void ballSprite::GetStrikeZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, Direct
 	DirectX::XMFLOAT2 screenA = WorldToZoneScreen(
 		worldTL.x, worldTL.y,
 		strikeZoneSpriteData->position, strikeZoneSpriteData->size,
-		zone3DCenter, zone3DSize);
+		zone3DCenter, zone3DSize,
+		Pitcher::Instance().IsRightPitcher());
 	DirectX::XMFLOAT2 screenB = WorldToZoneScreen(
 		worldBR.x, worldBR.y,
 		strikeZoneSpriteData->position, strikeZoneSpriteData->size,
-		zone3DCenter, zone3DSize);
+		zone3DCenter, zone3DSize,
+		Pitcher::Instance().IsRightPitcher());
 
 	outTopLeft = { (std::min)(screenA.x, screenB.x), (std::min)(screenA.y, screenB.y) };
 	outBottomRight = { (std::max)(screenA.x, screenB.x), (std::max)(screenA.y, screenB.y) };

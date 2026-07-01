@@ -48,32 +48,32 @@ void BatSprite::Uninitialize()
 void BatSprite::Update(float elapsedTime)
 {
 	// 左コントロールキーでカーソル制限をトグル
-	static bool prevCtrl = false;
-	bool ctrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
-	if (ctrl && !prevCtrl)
-	{
-		cursorClipped = !cursorClipped;
-		if (!cursorClipped)
-			ClipCursor(nullptr); // 解除
-	}
-	prevCtrl = ctrl;
-	
-	if (cursorClipped)
-	{
-		// ストライクゾーンのスクリーン境界を取得
-		DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
-		ballSprite::Instance().GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
+	//static bool prevCtrl = false;
+	//bool ctrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+	//if (ctrl && !prevCtrl)
+	//{
+	//	cursorClipped = !cursorClipped;
+	//	if (!cursorClipped)
+	//		ClipCursor(nullptr); // 解除
+	//}
+	//prevCtrl = ctrl;
+	//
+	//if (cursorClipped)
+	//{
+	//	// ストライクゾーンのスクリーン境界を取得
+	//	DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
+	//	ballSprite::Instance().GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
 
-		// クライアント座標 → スクリーン座標に変換
-		HWND hwnd = GetForegroundWindow();
-		POINT tl = { (LONG)zoneTopLeft.x,     (LONG)zoneTopLeft.y };
-		POINT br = { (LONG)zoneBottomRight.x,  (LONG)zoneBottomRight.y };
-		ClientToScreen(hwnd, &tl);
-		ClientToScreen(hwnd, &br);
+	//	// クライアント座標 → スクリーン座標に変換
+	//	HWND hwnd = GetForegroundWindow();
+	//	POINT tl = { (LONG)zoneTopLeft.x,     (LONG)zoneTopLeft.y };
+	//	POINT br = { (LONG)zoneBottomRight.x,  (LONG)zoneBottomRight.y };
+	//	ClientToScreen(hwnd, &tl);
+	//	ClientToScreen(hwnd, &br);
 
-		RECT clipRect = { tl.x, tl.y, br.x, br.y };
-		ClipCursor(&clipRect);
-	}
+	//	RECT clipRect = { tl.x, tl.y, br.x, br.y };
+	//	ClipCursor(&clipRect);
+	//}
 }
 
 void BatSprite::Render()

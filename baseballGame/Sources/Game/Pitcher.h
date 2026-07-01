@@ -16,6 +16,19 @@
 
 using json = nlohmann::json;
 
+enum class PitcherType
+{
+	
+	rightPowerPitcher,//右速球派,
+	leftPowerPitcher,//左速球派,
+	rightRealisticPitcher,//右本格派,
+	leftRealisticPitcher,//左本格派,
+	rightTechnicalPitcher,//右技巧派,
+	leftTechnicalPitcher,//左技巧派,
+	rightSoftPitcher,//右軟投派,
+	leftSoftPitcher,//左軟投派,
+};
+
 class Pitcher : public GameObject
 {
 public:
@@ -40,8 +53,6 @@ public:
 	void ApplyPhysicsToBall(float elapsedTime);
 
 	void SelectPitchType();
-
-	void ResetBall();
 
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
@@ -69,9 +80,9 @@ public:
 		Shooter,//シュート
 		Knuckleball,//ナックル
 		SlowBall,//スローボール
+		Sweeper,//スイーパー
+		Palm,//パーム
 	};
-
-	bool IsBallInStrikeZone() const;
 
 	PitchType GetSelectedPitchType() const { return selectedPitchType; }
 	bool GetIsBallThrown() const { return isBallThrown; }
@@ -128,6 +139,8 @@ public:
 		case PitchType::Shooter:        return 11;
 		case PitchType::Knuckleball:    return 12;
 		case PitchType::SlowBall:       return 13;
+		case PitchType::Sweeper:        return 14;
+		case PitchType::Palm:           return 15;
 		default:                        return 0;
 		}
 	}
@@ -154,7 +167,7 @@ private:
 	};
 	std::vector<PitchParameter> pitchParameters;
 
-	static constexpr int PITCH_TYPE_COUNT = 14; // 球種の数
+	static constexpr int PITCH_TYPE_COUNT = 16; // 球種の数
 
 	int editerPitchIndex = 0; // エディタで選択された球種のインデックス
 
@@ -162,13 +175,6 @@ private:
 	void SelectPitchTypeByAI();
 	void ApplyAIBezierTarget();
 	PitchType ChooseAIPitchType() const;
-	
-
-	// ===== 2Dスプライトの変化量(breakX/breakY)から3Dの回転(角速度ベクトル)を逆算する =====
-	// useBallBreakがオンの場合、ballSprite側のbreakX/breakY(cm)から
-	// 目標の横変化・縦変化を再現するための回転軸とrpmを逆算して返す。
-	// useBallBreakがオフの場合は従来のGetSpinAxisFromPitchType()と同じ結果を返す。
-	physx::PxVec3 GetSpinFromBreakOrDefault(float speedMs) const;
 
 	bool usePitchAI = true;
 	float aiStrikeRate = 0.92f;
@@ -243,10 +249,75 @@ public:
 	enum class BallSpeedMode
 	{
 		slowSpeed,//遅い
-		fastSpeed,//早い
+		highSpeed,//早い
 		realSpeed,//リアルスピード
 	};
 	BallSpeedMode ballSpeedMode = BallSpeedMode::realSpeed;
 
+	
 
+	PitcherType pitcherType = PitcherType::rightRealisticPitcher;
+
+	
+private:
+	void UpdatePitcherModel(PitcherType type);
+
+public:
+	enum class RealPitcher
+	{
+		None,
+		Togo, //戸郷翔征
+		Saiki, //才木浩人
+		Azuma, //東克樹
+		Miyagi, //宮城大弥
+		Ito, //伊藤大海
+		Tokoda, //床田寛樹
+		Ishikawa,// 石川雅規
+		Kuri,//九里亜蓮
+		Ohtani,//大谷翔平
+		Yamamoto,//山本由伸
+		Imanaga,//今永昇太
+		Kikuchi,//菊池雄星
+		Senga,//千賀滉大
+		Count,//カウント
+	};
+
+	enum class BreakGrade
+	{
+		F,
+		E,
+		D,
+		C,//デフォルトのpitchBreaksと同じ大きさ
+		B,
+		A,
+		S
+	};
+
+	//実在投手が投げる球種のデータ
+	struct RealArsenalEntry
+	{
+		PitchType pitchType;
+		float weightPercent; // その球種を投げる確率（0.0～1.0）
+		float speedKmh; // 球速（km/h）
+		BreakGrade breakGrade = BreakGrade::C;
+	};
+
+	// 実在投手プリセットを選択する。球種別球速をpitchParametersへ反映し、
+	// 配球AI（ChooseAIPitchType）が実測の投球割合に基づいて球種を選ぶようになる。
+	void SelectRealPitcher(RealPitcher rp);
+	RealPitcher GetSelectedRealPitcher() const { return selectedRealPitcher; }
+	static const char* GetRealPitcherName(RealPitcher rp);
+
+private:
+	// 現在選択中の実在投手プリセット、およびその持ち球リスト（配球AIが参照する）
+	RealPitcher selectedRealPitcher = RealPitcher::None;
+	std::vector<RealArsenalEntry> realPitcherArsenal;
+
+public:
+	// 実在投手プリセットのデータテーブルを取得する（球種構成・球速・投げ手・表示名）
+	// 該当データが無い場合はfalseを返す
+	//outArsenal: 該当投手の持ち球リストを返す（空の場合あり）
+	//outIsRight: 該当投手が右投げかどうかを返す
+	//outName: 該当投手の表示名を返す
+	static bool GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalEntry>& outArsenal, bool& outIsRight, const char*& outName);
 };

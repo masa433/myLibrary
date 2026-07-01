@@ -99,6 +99,8 @@ void Pitcher::InitializePitchSettings()
 	pitchParameters[static_cast<int>(PitchType::Shooter)] = { 130.0f, -2.5f, { 0.0f, 0.0f, 300.0f }, { 0.02f, 0.2f, -1.02f }, 1800.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 	pitchParameters[static_cast<int>(PitchType::Knuckleball)] = { 90.0f, -2.5f, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.2f, -1.0f }, 500.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 	pitchParameters[static_cast<int>(PitchType::SlowBall)] = { 70.0f, 4.0f, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.2f, -1.0f }, 300.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Sweeper)] = { 120.0f, -3.0f, { 200.0f, 0.0f, 0.0f }, { 0.02f, 0.1f, -1.02f }, 1500.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+	pitchParameters[static_cast<int>(PitchType::Palm)] = { 110.0f, -2.5f, { 0.0f, 200.0f, 0.0f }, { -0.02f, 0.2f, -1.02f }, 1200.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 }
 
 void Pitcher::Uninitialize() 
@@ -311,6 +313,29 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 	
 }
 
+void Pitcher::UpdatePitcherModel(PitcherType type)
+{
+	pitcherType = type;
+	//右か左かを判定
+	bool isNowRight = (pitcherType == PitcherType::rightPowerPitcher ||  pitcherType == PitcherType::rightRealisticPitcher || pitcherType == PitcherType::rightTechnicalPitcher || pitcherType == PitcherType::rightSoftPitcher);
+	isRightPitcher = isNowRight;
+
+	// モデルの切り替え
+	ID3D11Device* device = Graphics::Instance().GetDevice();
+	const char* modelPath = isRightPitcher ? ".\\resources\\pitcher\\rightPitcher.glb" : ".\\resources\\pitcher\\leftPitcher.glb";
+
+	pitcher = std::make_unique<gltf_model>(device, modelPath);
+	position = { 0.0f, 0.22f, 18.15f };
+
+	float angleZ = isRightPitcher ? DirectX::XMConvertToRadians(180.0f) : 0.0f;
+	Ball::Instance().SetBallPosition({ 0.0f, 0.0f, 0.05f });
+	Ball::Instance().SetBallAngle({ 0.0f, 0.0f, angleZ });
+
+	pitcher->build_static_batches(device);
+	animated_nodes = pitcher->nodes;
+	animation_time = 0.0f;
+}
+
 void Pitcher::DrawGUI()
 {
 #ifdef USE_IMGUI
@@ -368,12 +393,48 @@ void Pitcher::DrawGUI()
 			}
 		}
 
+		if(ImGui::CollapsingHeader(u8"投手タイプ"))
+		{const char* pitcherTypeNames[] = {
+				u8"右剛腕", u8"左剛腕", u8"右速球派", u8"左速球派", u8"右本格派", u8"左本格派", u8"右技巧派", u8"左技巧派", u8"右軟投派", u8"左軟投派"
+			};
+			int pitcherTypeIndex = static_cast<int>(pitcherType);
+			if (ImGui::Combo(u8"タイプ", &pitcherTypeIndex, pitcherTypeNames, IM_ARRAYSIZE(pitcherTypeNames)))
+			{
+				UpdatePitcherModel(static_cast<PitcherType>(pitcherTypeIndex));
+			}
+		}
+
+		if (ImGui::CollapsingHeader(u8"実在投手プリセット"))
+		{
+			const char* realPitcherNames[] = {
+				u8"なし",
+				u8"戸郷翔征", u8"才木浩人", u8"東克樹", u8"宮城大弥", u8"伊藤大海",
+				u8"床田寛樹", u8"石川雅規", u8"九里亜蓮",
+				u8"大谷翔平", u8"山本由伸", u8"今永昇太", u8"菊池雄星", u8"千賀滉大"
+			};
+			int realPitcherIndex = static_cast<int>(selectedRealPitcher);
+			if (ImGui::Combo(u8"実在投手", &realPitcherIndex, realPitcherNames, IM_ARRAYSIZE(realPitcherNames)))
+			{
+				SelectRealPitcher(static_cast<RealPitcher>(realPitcherIndex));
+			}
+
+			if (selectedRealPitcher != RealPitcher::None)
+			{
+				ImGui::TextWrapped(u8"※実際の球種構成・平均球速データをもとに、この投手が投げる球種と球速を再現しています。配球AIもこの投手の実測投球割合に基づいて球種を選択します。");
+				for (const RealArsenalEntry& entry : realPitcherArsenal)
+				{
+					ImGui::BulletText(u8"%s : %.1f%% / 平均%.1fkm/h",
+						GetPitchTypeName(entry.pitchType), entry.weightPercent, entry.speedKmh);
+				}
+			}
+		}
+
 		if (ImGui::CollapsingHeader(u8"球種エディター"))
 		{
 			const char* pitchTypeNames[] = {
 				u8"ストレート", u8"スライダー", u8"カーブ", u8"チェンジアップ", u8"フォーク",
 				u8"ツーシーム", u8"カットボール", IsRightPitcher() ? u8"シンカー" : u8"スクリュー", u8"縦スライダー", u8"スプリット",
-				u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール"
+				u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール",u8"スイーパー", u8"パーム"
 			};
 
 			//現在選択されている球種を基準に編集
@@ -768,33 +829,10 @@ void Pitcher::DrawGUI()
 			}
 		}
 
-		// 変更後
-		bool prev = isRightPitcher;
 		if (ImGui::Checkbox("Right Handed", &isRightPitcher))
 		{
-			if (prev != isRightPitcher)
-			{
-				// モデル・位置を再初期化
-				ID3D11Device* device = Graphics::Instance().GetDevice();
-				if (IsRightPitcher())
-				{
-					pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\rightPitcher.glb");
-					position = { 0.0f,0.22f,18.15f };
-					Ball::Instance().SetBallPosition({ 0.0f, 0.0f, 0.05f });
-					Ball::Instance().SetBallAngle({ 0.0f, 0.0f, -1.6f });
-				}
-				else
-				{
-					pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
-					position = { 0.0f,0.22f,18.15f };
-					Ball::Instance().SetBallPosition({ 0.0f, 0.0f, 0.05f });
-					Ball::Instance().SetBallAngle({ 0.0f, 0.0f, 1.6f });
-				}
-				pitcher->build_static_batches(device);
-				animated_nodes = pitcher->nodes;
-				animation_time = 0.0f;
-				
-			}
+			PitcherType newType = isRightPitcher ? PitcherType::rightPowerPitcher : PitcherType::leftPowerPitcher;
+			UpdatePitcherModel(newType);
 		}
 	Wind::Instance().DrawGUI();
 
@@ -935,7 +973,7 @@ void Pitcher::ThrowBallBezier()
 	case BallSpeedMode::slowSpeed:
 		speedMs *= 0.7f;
 		break;
-	case BallSpeedMode::fastSpeed:
+	case BallSpeedMode::highSpeed:
 		speedMs *= 0.85f;
 		break;
 	case BallSpeedMode::realSpeed:
@@ -1039,6 +1077,27 @@ void Pitcher::SelectPitchTypeByAI()
 
 Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 {
+	//実在投手プリセットが選択されていたら、実測の投球割合をそのまま反映
+	if (!realPitcherArsenal.empty())
+	{
+		float totalRealWeight = 0.0f;
+		for (const RealArsenalEntry& entry : realPitcherArsenal)
+		{
+			totalRealWeight += entry.weightPercent;
+		}
+
+		float realRoll = GenerateRandomFloat(0.0f, totalRealWeight);
+		for (const RealArsenalEntry& entry : realPitcherArsenal)
+		{
+			realRoll -= entry.weightPercent;
+			if (realRoll <= 0.0f)
+			{
+				return entry.pitchType;
+			}
+		}
+		return realPitcherArsenal.front().pitchType;
+	}
+
 	struct WeightedPitch
 	{
 		PitchType type;
@@ -1061,6 +1120,8 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 		{ PitchType::SlowCurve, 1.0f },
 		{ PitchType::Knuckleball, 0.7f },
 		{ PitchType::SlowBall, 0.3f },
+		{ PitchType::Sweeper, 15.5f },
+		{ PitchType::Palm, 0.3f }
 	};
 
 	float totalWeight = 0.0f;
@@ -1081,6 +1142,267 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 
 	
 	return PitchType::Fastball;
+}
+
+bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalEntry>& outArsenal, bool& outIsRight, const char*& outName)
+{
+	outArsenal.clear();
+	outIsRight = true;
+	outName = "";
+
+	switch (rp)
+	{
+	case RealPitcher::Togo://戸郷翔征
+		outName = u8"戸郷翔征";
+		outIsRight = true;
+		outArsenal = {
+			{ PitchType::Fastball,			 53.2f, 146.7f, BreakGrade::C },
+			{ PitchType::Forkball,			 24.9f, 134.4f, BreakGrade::A },
+			{ PitchType::VerticalSlider,     16.3f, 130.9f, BreakGrade::B },
+			{ PitchType::Curveball,			  5.3f, 124.9f, BreakGrade::D },
+			{ PitchType::Cutter,			  0.3f, 138.0f, BreakGrade::C },
+		};
+		return true;
+
+	case RealPitcher::Saiki://才木浩人
+		outName = u8"才木浩人";
+		outIsRight = true;
+		outArsenal = {
+			{ PitchType::Fastball,   51.4f, 151.0f, BreakGrade::C },
+			{ PitchType::Forkball,   23.3f, 133.6f, BreakGrade::A },
+			{ PitchType::Slider,     16.9f, 132.4f, BreakGrade::B },
+			{ PitchType::Curveball,   8.9f, 116.6f, BreakGrade::D },
+		};
+		return true;
+
+	case RealPitcher::Azuma: // 東克樹
+		outName = u8"東克樹";
+		outIsRight = false;
+		outArsenal = {
+			{ PitchType::Fastball,   26.2f, 143.0f, BreakGrade::C },
+			{ PitchType::Slider,     23.5f, 126.8f, BreakGrade::B },
+			{ PitchType::Changeup,   21.7f, 124.8f, BreakGrade::A },
+			{ PitchType::TwoSeam,    19.2f, 142.7f, BreakGrade::C },
+			{ PitchType::Cutter,      4.6f, 135.3f, BreakGrade::C },
+			{ PitchType::Curveball,   3.6f, 109.2f, BreakGrade::D },
+			{ PitchType::Shooter,     1.3f, 141.8f, BreakGrade::C },
+		};
+		return true;
+
+	case RealPitcher::Miyagi://宮城大弥
+		outName = u8"宮城大弥";
+		outIsRight = false;
+		outArsenal = {
+			{ PitchType::Fastball,   42.7f, 147.4f, BreakGrade::C },
+			{ PitchType::Slider,     30.1f, 130.7f, BreakGrade::A },
+			{ PitchType::Splitter,   18.9f, 137.4f, BreakGrade::C },
+			{ PitchType::Changeup,    4.2f, 126.3f, BreakGrade::C },
+			{ PitchType::Curveball,   4.2f, 102.2f, BreakGrade::C },
+			{ PitchType::SlowCurve,   4.2f,  92.5f, BreakGrade::D },
+		};
+		return true;
+
+	case RealPitcher::Ito: // 伊藤大海
+		outName = u8"伊藤大海";
+		outIsRight = true;
+		outArsenal = {
+			{ PitchType::Fastball,   35.4f, 148.0f, BreakGrade::C },
+			{ PitchType::Slider,     13.2f, 134.5f, BreakGrade::B },
+			{ PitchType::Splitter,   12.7f, 140.4f, BreakGrade::C },
+			{ PitchType::Sweeper,    11.0f, 131.0f, BreakGrade::D }, 
+			{ PitchType::TwoSeam,     9.4f, 146.3f, BreakGrade::C },
+			{ PitchType::Cutter,      7.0f, 144.9f, BreakGrade::C },
+			{ PitchType::Curveball,   5.5f, 121.6f, BreakGrade::D },
+			{ PitchType::Changeup,    3.4f, 134.5f, BreakGrade::C },
+			{ PitchType::Forkball,    1.6f, 135.3f, BreakGrade::D },
+			{ PitchType::SlowBall,	  1.6f,  90.0f, BreakGrade::D },
+		};
+		return true;
+
+	case RealPitcher::Tokoda: // 床田寛樹
+		outName = u8"床田寛樹";
+		outIsRight = false;
+		outArsenal = {
+			{ PitchType::Fastball,   30.1f, 143.1f, BreakGrade::C },
+			{ PitchType::Cutter,     19.4f, 136.3f, BreakGrade::C },
+			{ PitchType::TwoSeam,    17.6f, 135.9f, BreakGrade::C },
+			{ PitchType::Slider,     15.8f, 125.3f, BreakGrade::B },
+			{ PitchType::Changeup,    8.7f, 126.0f, BreakGrade::C },
+			{ PitchType::Curveball,   5.9f, 118.0f, BreakGrade::D },
+			{ PitchType::Palm,        2.4f, 112.8f, BreakGrade::C },
+		};
+		return true;
+
+	case RealPitcher::Ishikawa://石川雅規
+		outName = u8"石川雅規";
+		outIsRight = false;
+		outArsenal = {
+			{ PitchType::Fastball,   27.2f, 129.0f, BreakGrade::C },
+			{ PitchType::Sinker,     19.3f, 119.0f, BreakGrade::C }, //左投げなので表示はスクリュー
+			{ PitchType::Slider,     17.4f, 118.2f, BreakGrade::B },
+			{ PitchType::Cutter,     14.7f, 126.2f, BreakGrade::C },
+			{ PitchType::Shooter,    10.8f, 128.0f, BreakGrade::E },
+			{ PitchType::Curveball,   6.2f, 110.0f, BreakGrade::B }, // カツオカーブ
+			{ PitchType::Changeup,    4.4f, 110.2f, BreakGrade::E },
+		};
+		return true;
+
+	case RealPitcher::Kuri://九里亜蓮
+		outName = u8"九里亜蓮";
+		outIsRight = true;
+		outArsenal = {
+			{ PitchType::Changeup,    27.5f, 126.9f, BreakGrade::C },
+			{ PitchType::Shooter,     20.7f, 140.1f, BreakGrade::E },
+			{ PitchType::Slider,      19.9f, 122.1f, BreakGrade::B },
+			{ PitchType::Sinker,      13.2f, 129.7f, BreakGrade::D },
+			{ PitchType::Fastball,    10.1f, 142.0f, BreakGrade::C },
+			{ PitchType::Cutter,       6.5f, 133.0f, BreakGrade::C },
+			{ PitchType::Curveball,    1.5f, 114.0f, BreakGrade::D },
+			{ PitchType::Knuckleball,  0.4f, 109.0f, BreakGrade::D },
+		};
+		return true;
+
+	case RealPitcher::Ohtani://大谷翔平
+		outName = u8"大谷翔平";
+		outIsRight = true;
+		outArsenal = {
+			{ PitchType::Fastball,     45.3f, 157.7f, BreakGrade::C },
+			{ PitchType::Sweeper,      29.5f, 136.7f, BreakGrade::S },
+			{ PitchType::Curveball,    10.4f, 121.0f, BreakGrade::C },
+			{ PitchType::Splitter,      8.8f, 143.2f, BreakGrade::B },
+			{ PitchType::TwoSeam,       4.1f, 155.2f, BreakGrade::C },
+			{ PitchType::VerticalSlider,1.2f, 141.6f, BreakGrade::B },
+			{ PitchType::Cutter,        0.7f, 148.7f, BreakGrade::D },
+		};
+		return true;
+
+	case RealPitcher::Yamamoto: // 山本由伸
+		outName = u8"山本由伸";
+		outIsRight = true;
+		outArsenal = {
+			{ PitchType::Fastball,   27.1f, 154.5f, BreakGrade::C },
+			{ PitchType::Splitter,   26.3f, 147.1f, BreakGrade::A },
+			{ PitchType::Cutter,     13.5f, 147.0f, BreakGrade::C },
+			{ PitchType::Curveball,  13.5f, 124.0f, BreakGrade::A },
+			{ PitchType::Sinker,     12.7f, 153.5f, BreakGrade::C },
+			{ PitchType::Slider,      6.9f, 140.5f, BreakGrade::C },
+		};
+		return true;
+
+	case RealPitcher::Imanaga: // 今永昇太
+		outName = u8"今永昇太";
+		outIsRight = false;
+		outArsenal = {
+			{ PitchType::Fastball,   43.5f, 147.8f, BreakGrade::C },
+			{ PitchType::Splitter,   33.2f, 134.0f, BreakGrade::A },
+			{ PitchType::Slider,     13.8f, 131.1f, BreakGrade::B },
+			{ PitchType::Sinker,      6.5f, 145.3f, BreakGrade::C },
+			{ PitchType::Curveball,   3.0f, 119.6f, BreakGrade::C },
+		};
+		return true;
+
+	case RealPitcher::Kikuchi: // 菊池雄星
+		outName = u8"菊池雄星";
+		outIsRight = false;
+		outArsenal = {
+			{ PitchType::Fastball,   28.3f, 153.5f, BreakGrade::C },
+			{ PitchType::Splitter,   21.9f, 139.7f, BreakGrade::A },
+			{ PitchType::Slider,     20.8f, 138.3f, BreakGrade::B },
+			{ PitchType::Cutter,     18.3f, 145.2f, BreakGrade::C },
+			{ PitchType::Curveball,   9.7f, 126.8f, BreakGrade::C },
+			{ PitchType::Sinker,      1.0f, 154.8f, BreakGrade::D },
+		};
+		return true;
+
+	case RealPitcher::Senga: // 千賀滉大
+		outName = u8"千賀滉大";
+		outIsRight = true;
+		outArsenal = {
+			{ PitchType::Fastball,   37.7f, 154.6f, BreakGrade::C },
+			{ PitchType::Cutter,     23.8f, 143.9f, BreakGrade::C },
+			{ PitchType::Forkball,   21.0f, 133.6f, BreakGrade::S },
+			{ PitchType::Slider,      4.6f, 138.3f, BreakGrade::B },
+			{ PitchType::Sinker,      4.0f, 143.1f, BreakGrade::C },
+			{ PitchType::Curveball,   0.4f, 105.5f, BreakGrade::D },
+		};
+		return true;
+
+	default:
+		return false;
+	}
+	
+}
+
+const char* Pitcher::GetRealPitcherName(RealPitcher rp)
+{
+	std::vector<RealArsenalEntry> dummyArsenal;//ダミーのアーセナル
+	bool dummyIsRight = true;
+	const char* name = "";
+	if(GetRealPitcherArsenalData(rp, dummyArsenal, dummyIsRight, name))
+	{
+		return name;
+	}
+	else
+	{
+		return "";
+	}
+}
+
+void Pitcher::SelectRealPitcher(RealPitcher rp)
+{
+	selectedRealPitcher = rp;
+
+	if(rp == RealPitcher::None)
+	{
+		realPitcherArsenal.clear();
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"[Info] 実在投手プリセットを解除しました\n");
+		}
+		return;
+	}
+
+	std::vector<RealArsenalEntry> arsenal;//ダミーのアーセナル
+	bool isRight = true;
+	const char* name = "";
+	//実在投手のアーセナルデータを取得
+	if(!GetRealPitcherArsenalData(rp, arsenal, isRight, name))
+	{
+		selectedRealPitcher = RealPitcher::None;
+		realPitcherArsenal.clear();
+		return;
+	}
+
+	realPitcherArsenal = arsenal;
+
+	//球種別の実測球速をパラメーターへ反映
+	for(const RealArsenalEntry& entry : realPitcherArsenal)
+	{
+		int index = static_cast<int>(entry.pitchType);
+		//球種が有効範囲内か確認してから反映
+		if(index >= 0 && index < static_cast<int>(pitchParameters.size()))
+		{
+			pitchParameters[index].ballSpeedKmh = entry.speedKmh;
+		}
+	}
+
+	//投手の左右設定を反映
+	if(isRight != isRightPitcher)
+	{
+		isRightPitcher = isRight;
+		PitcherType newType = isRightPitcher ? PitcherType::rightPowerPitcher : PitcherType::leftPowerPitcher;
+		UpdatePitcherModel(newType);
+	}
+
+	// 現在選択中の球種のパラメーターを再適用（球速表示を即時更新）
+	SelectPitchType();
+
+	if (consoleLog)
+	{
+		char msg[128];
+		snprintf(msg, sizeof(msg), u8"[Info] 実在投手プリセット選択: %s\n", name);
+		consoleLog->push_back(msg);
+	}
 }
 
 void Pitcher::ApplyAIBezierTarget()
@@ -1163,6 +1485,8 @@ float Pitcher::GetSpeedVarianceKmh(PitchType pitchType) const
 	case PitchType::Shooter: return 3.5f;
 	case PitchType::Knuckleball: return 7.0f;
 	case PitchType::SlowBall: return 8.0f;
+	case PitchType::Sweeper: return 3.0f;
+	case PitchType::Palm: return 3.0f;
 	default: return 3.0f;
 	}
 }
@@ -1191,6 +1515,8 @@ const char* Pitcher::GetPitchTypeName(PitchType pitchType) const
 	case PitchType::Shooter: return u8"シュート";
 	case PitchType::Knuckleball: return u8"ナックルボール";
 	case PitchType::SlowBall: return u8"スローボール";
+	case PitchType::Sweeper: return u8"スイーパー";
+	case PitchType::Palm: return u8"パーム";
 	default: return u8"不明";
 	}
 }
@@ -1260,6 +1586,7 @@ void Pitcher::SaveToJson(json& j)
 	j["use_pitch_ai"] = usePitchAI;
 	j["ai_strike_rate"] = aiStrikeRate;
 	j["ai_near_ball_margin"] = aiNearBallMargin;
+	j["selected_real_pitcher"] = static_cast<int>(selectedRealPitcher);
 
 	// 球種設定を配列として保存
 	json pitchArray = json::array();
@@ -1361,6 +1688,15 @@ void Pitcher::LoadFromJson(const json& j)
 				pitchParameters[i].bezierTarget = { p["bezier_target"][0],
 													p["bezier_target"][1],
 													p["bezier_target"][2] };
+		}
+	}
+
+	if (j.contains("selected_real_pitcher"))
+	{
+		int rpIndex = j["selected_real_pitcher"];
+		if (rpIndex > 0 && rpIndex < static_cast<int>(RealPitcher::Count))
+		{
+			SelectRealPitcher(static_cast<RealPitcher>(rpIndex));
 		}
 	}
 

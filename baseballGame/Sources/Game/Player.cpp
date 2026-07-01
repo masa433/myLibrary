@@ -282,6 +282,8 @@ void Player::Update(float elapsedTime)
 
         HitJudge2D::Instance().Update(
             ballCenter, batCenter, batSize, batRot, cursorCenter, estTime);
+
+		
     }
 
 }
@@ -304,6 +306,17 @@ void Player::HandleInput(float elapsedTime)
                 // onContact(PhysX) 側で GetLastResult() を参照する
                 HitJudge2D::Instance().SetPendingResult(result);
                 ChangeState(State::Swinging);
+
+                char buf[256];
+                snprintf(buf, sizeof(buf),
+                    "[SwingCheck] valid=%d isBallZone=%d cursorOverlap=%d overlapRatio=%.2f velScale=%.2f angle=%.1f",
+                    result.validHit,
+                    result.isBallZone,
+                    result.cursorOverlap,
+                    result.overlapRatio,
+                    result.velocityScale,
+                    result.launchAngle2DDeg);
+                consoleLog->push_back(buf); // 既存のImGuiコンソールログに流す
             }
             else
             {

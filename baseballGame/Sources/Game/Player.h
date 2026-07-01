@@ -135,4 +135,11 @@ public:
 
 	bool isPurpleBat = false; // 紫色のバットに当たったかどうかのフラグ
 
+public:
+    // コンソールログへのポインタをセット
+    void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
+
+private:
+    std::vector<std::string>* consoleLog = nullptr;
+
 };

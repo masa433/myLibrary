@@ -4,6 +4,7 @@
 #include <memory>
 #include <wrl.h>
 #include <deque>
+#include <array>
 #include "sprite.h"
 #include "json.hpp"
 #include "Pitcher.h"
@@ -78,7 +79,7 @@ public:
 	};
 
 	//各球種の変化量
-	ballBreak2D pitchBreaks[14] =
+	ballBreak2D pitchBreaks[16] =
 	{
 		{  0.0f,  0.0f },  // Fastball
 		{ -4.0f,  2.0f },  // TwoSeam
@@ -94,6 +95,8 @@ public:
 		{-10.0f, -2.0f },  // Shooter
 		{  0.0f, -2.0f },  // Knuckleball
 		{  0.0f, -3.0f },  // SlowBall
+		{  20.0f,  0.0f },  // Sweeper
+		{  3.0f,  -5.0f }   // Palm
 	};
 
 	int currentPitchIndex = 0;  // 現在の球種インデックス
@@ -117,6 +120,67 @@ public:
 	};
 
 	bool useBallBreak = false;
+
+	// グレード(F～S)を表示用文字列に変換
+	static const char* GetBreakGradeLabel(Pitcher::BreakGrade grade)
+	{
+		switch (grade)
+		{
+		case Pitcher::BreakGrade::F: return "F";
+		case Pitcher::BreakGrade::E: return "E";
+		case Pitcher::BreakGrade::D: return "D";
+		case Pitcher::BreakGrade::C: return "C";
+		case Pitcher::BreakGrade::B: return "B";
+		case Pitcher::BreakGrade::A: return "A";
+		case Pitcher::BreakGrade::S: return "S";
+		default: return "";
+		}
+
+		return "C";
+	}
+
+	//グレードを基準変化量のCに対する倍率に変換
+	static float GetBreakGradeScale(Pitcher::BreakGrade grade)
+	{
+		switch (grade)
+		{
+		case Pitcher::BreakGrade::F: return 0.5f;
+		case Pitcher::BreakGrade::E: return 0.75f;
+		case Pitcher::BreakGrade::D: return 0.9f;
+		case Pitcher::BreakGrade::C: return 1.0f;
+		case Pitcher::BreakGrade::B: return 1.1f;
+		case Pitcher::BreakGrade::A: return 1.25f;
+		case Pitcher::BreakGrade::S: return 1.5f;
+		default: return 1.0f;
+		}
+
+		return 1.0f;
+	}
+
+	//投手1人分・球種16個分の変化量を設定する
+	struct PitchBreakSet
+	{
+		ballBreak2D breaks[16];
+		Pitcher::BreakGrade grades[16] = {
+			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C,
+			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C,
+			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C,
+			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C
+		};
+		bool initialized = false;
+	};
+
+	// インデックスは Pitcher::RealPitcher の値（Noneは未使用）
+	// 投手ごとに完全に独立したデータを持つため、他の投手の値を書き換えることはない
+	std::array<PitchBreakSet, static_cast<size_t>(Pitcher::RealPitcher::Count)> realPitcherBreaks;
+
+	Pitcher::RealPitcher lastAppliedPitcher = Pitcher::RealPitcher::None; // 最後に適用した投手の種類
+
+	// 実在投手の選択が変わったことを検知し、その投手専用の変化量をpitchBreaksへ反映する
+	void SyncRealPitcherBreaks();
+
+	// 指定投手の変化量セットを（初回のみ）Pitcherの持ち球データから生成する
+	void BuildRealPitcherBreakSet(Pitcher::RealPitcher rp);
 
 public:
 	DirectX::XMFLOAT2 aiTargetScreen = { 0.0f, 0.0f }; // AIが狙うターゲット位置（スクリーン座標）
@@ -159,16 +223,16 @@ public:
 	FontRenderer pitchInfoFont;
 	float pitchInfoFontScale = 1.0f;
 
-	// 球種ごとの表示位置オフセット（14球種分）
-	DirectX::XMFLOAT2 pitchNameOffsets[14] = {
+	// 球種ごとの表示位置オフセット（16球種分）
+	DirectX::XMFLOAT2 pitchNameOffsets[16] = {
 		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},
 		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},
-		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f}
+		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f}
 	};
-	DirectX::XMFLOAT2 pitchSpeedOffsets[14] = {
+	DirectX::XMFLOAT2 pitchSpeedOffsets[16] = {
 		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},
 		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},
-		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f}
+		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f}
 	};
 
 	// 表示色（球種名は固定なのでここでは球速の通常色のみ使う）
