@@ -238,5 +238,7 @@ public:
 	// 表示色（球種名は固定なのでここでは球速の通常色のみ使う）
 	DirectX::XMFLOAT4 pitchSpeedNormalColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	DirectX::XMFLOAT4 pitchSpeedFastColor = { 1.0f, 0.9f, 0.0f, 1.0f }; // 黄色
+	DirectX::XMFLOAT4 pitchSpeedHighFastColor = { 1.0f, 0.5f, 0.0f, 1.0f }; // オレンジ色
 	float pitchSpeedFastThresholdKmh = 150.0f;
+	float pitchSpeedHighFastThresholdKmh = 160.0f; // これ以上の球速はさらに強調表示
 };

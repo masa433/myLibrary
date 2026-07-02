@@ -564,8 +564,9 @@ void ballSprite::Render()
 			const float pitchTextY = boardCenterY + nameOffset.y;
 			pitchInfoFont.DrawTextW(dc, pitchTypeName, pitchTextX, pitchTextY, pitchInfoFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
 
-			// 右側: 球速（150km/h超で黄色）
-			const DirectX::XMFLOAT4& speedColor = (ballSpeedKmh > pitchSpeedFastThresholdKmh) ? pitchSpeedFastColor : pitchSpeedNormalColor;
+			// 右側: 球速（150km/h超で黄色、160km/h超でオレンジ色）
+			const DirectX::XMFLOAT4& speedColor = (ballSpeedKmh >= pitchSpeedHighFastThresholdKmh) ? pitchSpeedHighFastColor :
+				(ballSpeedKmh >= pitchSpeedFastThresholdKmh) ? pitchSpeedFastColor : pitchSpeedNormalColor;
 			const float speedTextX = ballBoardSpriteData->position.x + ballBoardSpriteData->size.x - speedOffset.x - speedTextWidth;
 			const float speedTextY = boardCenterY + speedOffset.y;
 			pitchInfoFont.DrawTextW(dc, speedText, speedTextX, speedTextY, pitchInfoFontScale, speedColor.x, speedColor.y, speedColor.z, speedColor.w);
