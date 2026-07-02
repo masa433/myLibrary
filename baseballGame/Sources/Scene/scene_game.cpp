@@ -576,6 +576,10 @@ void scene_game::update(float elapsed_time)
         );
     }
 
+    ballSprite::Instance().Update(elapsed_time);
+
+    BatSprite::Instance().Update(elapsed_time);
+
     // ステージの更新
     stage::Instance().update(elapsed_time);
 
@@ -591,10 +595,7 @@ void scene_game::update(float elapsed_time)
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
 
-	ballSprite::Instance().Update(elapsed_time);
-
-	BatSprite::Instance().Update(elapsed_time);
-
+	
     //太陽方向をライト方向と同期
 	directional_light_direction = skyRenderer.GetSunDirectionToLight();
 

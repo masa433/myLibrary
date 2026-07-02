@@ -6,7 +6,7 @@
 #include <deque>
 #include "sprite.h"
 #include "json.hpp"
-#include "Player.h"
+
 
 using json = nlohmann::json;
 
@@ -30,6 +30,13 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
+	//バットのサイズとポジションのゲッター
+	DirectX::XMFLOAT2 GetBatSpriteSize() const { return batSpriteData->size; }
+	DirectX::XMFLOAT2 GetBatSpritePosition() const { return batSpriteData->position; }
+
+	//バットカーソルのサイズとポジションのゲッター
+	DirectX::XMFLOAT2 GetBatCursorSpriteSize() const { return batCursorSpriteData->size; }
+	DirectX::XMFLOAT2 GetBatCursorSpritePosition() const { return batCursorSpriteData->position; }
 private:
 	//スプライトデータ
 	struct Sprite

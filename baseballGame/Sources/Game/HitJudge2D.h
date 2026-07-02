@@ -2,6 +2,8 @@
 #include <DirectXMath.h>
 #include <algorithm>
 #include "imgui.h"
+#include "ballSprite.h"
+#include "batSprite.h"
 
 // ============================================================
 //  HitJudge2D  ―  2Dスプライト重なり & タイミング判定
@@ -52,7 +54,7 @@ public:
     float batHitBandHeight = 10.0f;
 
     // カーソル円の半径（px）
-    float cursorRadius = 15.0f;
+    float cursorRadius = BatSprite::Instance().GetBatCursorSpriteSize().x * 0.5f;
 
     // 紫バット判定フラグ（外部から set する）
     bool  isPurpleBat = false;
@@ -61,10 +63,10 @@ public:
     // カーソル円と重なった時の速度ボーナス
     float cursorOverlapBonus = 0.4f;   // +40%
     // 紫バットのペナルティ
-    float purpleBatPenalty = 0.40f;   // -40%
+    float purpleBatPenalty = 0.20f;   // -20%
 
     //ボールゾーンのペナルティ
-	float ballZonePenalty = 0.40f; // -40%
+	float ballZonePenalty = 0.20f; // -20%
 
     // ballScreenCenter  : 2Dボールスプライトの中心(px)
     // batTopLeft        : バット矩形の左上(px)
@@ -265,7 +267,7 @@ private:
     DirectX::XMFLOAT2 cursorCenter_ = {};
     float              timeToZone_ = 99.0f;
 
-    float              ballRadius_px_ = 10.0f;  // 2Dボール画像の半径(px)
+    float              ballRadius_px_ = ballSprite::Instance().GetBallSpriteSize().x * 0.5f;  // 2Dボール画像の半径(px)
 
     OverlapInfo        overlapResult_ = {};
     HitJudge2DResult   lastResult_ = {};
@@ -273,7 +275,7 @@ private:
 
     // 打球角度マッピング（ボール上端に当たった時 → 最大フライ、下端 → ゴロ）
     float launchAngleTop = 150.0f;   // ボール上端に当たった時の仰角(度)
-    float launchAngleCenter = 12.0f;   // ボール中心に当たった時
+    float launchAngleCenter = 0.0f;   // ボール中心に当たった時
     float launchAngleBottom = -5.0f;  // ボール下端に当たった時(ゴロ)
     float groundBallThreshold = 0.5f;  // hitNormalizedY がこれ以上でゴロ判定
 

@@ -39,7 +39,6 @@ void Ball::ThrowBezier(const BezierPitchData& data,
 	/*collider->setLinearVelocity(physx::PxVec3(0, 0, 0));
 	collider->setAngularVelocity(physx::PxVec3(0, 0, 0));*/
 
-
 	//見た目の回転をリセット
 	modelRotationSpeed = visualRotationSpeed;
 	modelAngle =

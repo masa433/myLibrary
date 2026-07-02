@@ -139,6 +139,7 @@ void Pitcher::Update(float elapsedTime)
 			}
 			isBallThrown = false;
 			ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
+			ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
 		}
 	}
 
@@ -163,6 +164,7 @@ void Pitcher::Update(float elapsedTime)
 			Ball::Instance().SetHasPassedFairFoulTrigger(false); // フェア/ファウル判定トリガー通過フラグをリセット
 			Ball::Instance().SetFoulLogged(false); // ファウルログフラグをリセット
 			ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
+			ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
 
 			OutputDebugStringA("Judgment reset\n");
 			if(consoleLog)
@@ -313,12 +315,8 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 	
 }
 
-void Pitcher::UpdatePitcherModel(PitcherType type)
+void Pitcher::UpdatePitcherModel()
 {
-	pitcherType = type;
-	//右か左かを判定
-	bool isNowRight = (pitcherType == PitcherType::rightPowerPitcher ||  pitcherType == PitcherType::rightRealisticPitcher || pitcherType == PitcherType::rightTechnicalPitcher || pitcherType == PitcherType::rightSoftPitcher);
-	isRightPitcher = isNowRight;
 
 	// モデルの切り替え
 	ID3D11Device* device = Graphics::Instance().GetDevice();
@@ -390,17 +388,6 @@ void Pitcher::DrawGUI()
 			if (ImGui::Combo(u8"モード", &ballSpeedModeIndex, ballSpeedModeNames, IM_ARRAYSIZE(ballSpeedModeNames)))
 			{
 				ballSpeedMode = static_cast<BallSpeedMode>(ballSpeedModeIndex);
-			}
-		}
-
-		if(ImGui::CollapsingHeader(u8"投手タイプ"))
-		{const char* pitcherTypeNames[] = {
-				u8"右剛腕", u8"左剛腕", u8"右速球派", u8"左速球派", u8"右本格派", u8"左本格派", u8"右技巧派", u8"左技巧派", u8"右軟投派", u8"左軟投派"
-			};
-			int pitcherTypeIndex = static_cast<int>(pitcherType);
-			if (ImGui::Combo(u8"タイプ", &pitcherTypeIndex, pitcherTypeNames, IM_ARRAYSIZE(pitcherTypeNames)))
-			{
-				UpdatePitcherModel(static_cast<PitcherType>(pitcherTypeIndex));
 			}
 		}
 
@@ -831,8 +818,7 @@ void Pitcher::DrawGUI()
 
 		if (ImGui::Checkbox("Right Handed", &isRightPitcher))
 		{
-			PitcherType newType = isRightPitcher ? PitcherType::rightPowerPitcher : PitcherType::leftPowerPitcher;
-			UpdatePitcherModel(newType);
+			UpdatePitcherModel();
 		}
 	Wind::Instance().DrawGUI();
 
@@ -1056,6 +1042,13 @@ void Pitcher::SelectPitchTypeByAI()
 	selectedPitchType = ChooseAIPitchType();
 	SelectPitchType();
 
+	// 配球履歴を更新（直近 kPitchHistorySize 球分だけ保持）
+	pitchHistory.push_back(selectedPitchType);
+	if (static_cast<int>(pitchHistory.size()) > PITCH_HISTORY_SIZE)
+	{
+		pitchHistory.pop_front();
+	}
+
 	const float speedVariance = GetSpeedVarianceKmh(selectedPitchType);
 	ballSpeedKmh += GenerateRandomFloat(-speedVariance, speedVariance);
 	ballSpeedKmh = (std::max)(60.0f, (std::min)(ballSpeedKmh, 180.0f));
@@ -1083,13 +1076,15 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 		float totalRealWeight = 0.0f;
 		for (const RealArsenalEntry& entry : realPitcherArsenal)
 		{
-			totalRealWeight += entry.weightPercent;
+			//実測の投球割合にシーケンス補正を掛けて合計を計算
+			totalRealWeight += entry.weightPercent * GetSequencingMultiplier(entry.pitchType);
 		}
 
 		float realRoll = GenerateRandomFloat(0.0f, totalRealWeight);
 		for (const RealArsenalEntry& entry : realPitcherArsenal)
 		{
-			realRoll -= entry.weightPercent;
+			//実測の投球割合にシーケンス補正を掛けてランダムロールを減算
+			realRoll -= entry.weightPercent * GetSequencingMultiplier(entry.pitchType);
 			if (realRoll <= 0.0f)
 			{
 				return entry.pitchType;
@@ -1127,13 +1122,15 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 	float totalWeight = 0.0f;
 	for (const WeightedPitch& pitch : weights)
 	{
-		totalWeight += pitch.weight;
+		//シーケンス補正を掛けた重みの合計を計算
+		totalWeight += pitch.weight * GetSequencingMultiplier(pitch.type);
 	}
 
 	float roll = GenerateRandomFloat(0.0f, totalWeight);
 	for (const WeightedPitch& pitch : weights)
 	{
-		roll -= pitch.weight;
+		//シーケンス補正を掛けた重みでランダムロールを減算
+		roll -= pitch.weight * GetSequencingMultiplier(pitch.type);
 		if (roll <= 0.0f)
 		{
 			return pitch.type;
@@ -1333,6 +1330,28 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 	
 }
 
+// 直近の投球履歴から、この球種をどれだけ抑制すべきかを計算する
+// 直前の球ほど強く減衰させ、同じ球種が続くほど累積的にペナルティがかかる
+float Pitcher::GetSequencingMultiplier(PitchType type) const
+{
+	float multiplier = 1.0f;
+	const int historyCount = static_cast<int>(pitchHistory.size());
+
+	for(int i = 0; i < historyCount; ++i)
+	{
+		if(pitchHistory[i] !=type)
+		{
+			continue;
+		}
+
+		//distance = 0なら直前の1球、大きいほど過去の球になる
+		int distance = historyCount - 1 - i;//直近の球ほど強く減衰させる
+		float decay = pow(pitchSequenceDecay, static_cast<float>(distance));
+			multiplier *= (1.0f - pitchRepeatPenalty * decay);
+	}
+	return (std::max)(pitchSequenceFloor, multiplier);
+}
+
 const char* Pitcher::GetRealPitcherName(RealPitcher rp)
 {
 	std::vector<RealArsenalEntry> dummyArsenal;//ダミーのアーセナル
@@ -1390,8 +1409,7 @@ void Pitcher::SelectRealPitcher(RealPitcher rp)
 	if(isRight != isRightPitcher)
 	{
 		isRightPitcher = isRight;
-		PitcherType newType = isRightPitcher ? PitcherType::rightPowerPitcher : PitcherType::leftPowerPitcher;
-		UpdatePitcherModel(newType);
+		UpdatePitcherModel();
 	}
 
 	// 現在選択中の球種のパラメーターを再適用（球速表示を即時更新）

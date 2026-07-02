@@ -54,7 +54,7 @@ void Wind::Initialize()
 	);
 
 	windStrengthFont.Initialize(device,
-		L".\\resources\\fonts\\LotusEdenSample-Medium.ttf",
+		L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf",
 		32.0f,
 		screenWidth, screenHeight,
 		/*atlasWidth*/ 256, /*atlasHeight*/ 256,

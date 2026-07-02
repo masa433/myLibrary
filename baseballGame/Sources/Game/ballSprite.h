@@ -212,6 +212,11 @@ public:
 	DirectX::XMFLOAT2 aiTargetFinalScreen = { 0.0f, 0.0f }; // AIが最終的に狙うターゲット位置（スクリーン座標）
 	bool aiTargetLocked = false; // AIがターゲット位置をロックしたかどうか
 
+	//3Dのボールとバットが当たった段階で、2Dボールの動きを止める
+	// これをtrueにすると、2Dボールは当たった位置で止まる
+	bool stopBallOnHit = false;
+	bool SetStopBallOnHit(bool value) { stopBallOnHit = value; return stopBallOnHit; }
+
 public:
 	// コンソールログへのポインタをセット
 	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }

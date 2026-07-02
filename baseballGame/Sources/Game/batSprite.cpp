@@ -5,6 +5,7 @@
 #include "input.h"
 #include "ballSprite.h"
 #include <algorithm>
+#include "Player.h"
 
 void BatSprite::Initialize(ID3D11Device* device)
 {

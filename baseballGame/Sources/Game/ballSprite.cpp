@@ -47,31 +47,41 @@ namespace
 		float t,
 		bool isRightPitcher)
 	{
-		//左投手の時はX軸を反転する
+		// 左投手の場合は横変化を左右反転する
 		float effectiveBreakX = isRightPitcher ? breakData.breakX : -breakData.breakX;
 
+		// 変化量(実データ)をストライクゾーンの画面サイズに合わせたピクセル量へ変換
 		const float breakOffsetX = (effectiveBreakX / 43.0f) * zoneScreenSize.x;
 		const float breakOffsetY = (breakData.breakY / 60.0f) * zoneScreenSize.y;
 
+		// ボールのリリース位置(P0)
+		// 最終到達位置(targetScreenPos)から変化量分だけ離れた位置を始点とする
 		DirectX::XMFLOAT2 p0 = {
 			targetScreenPos.x - breakOffsetX,
 			targetScreenPos.y + breakOffsetY
 		};
+
+		// リリース位置から到達位置までの移動量
 		DirectX::XMFLOAT2 travel = {
 			targetScreenPos.x - p0.x,
 			targetScreenPos.y - p0.y
 		};
 
+		// ベジェ曲線の第1制御点(P1)
+		// リリース直後の軌道を決める
 		DirectX::XMFLOAT2 p1 = {
 			p0.x + travel.x * 0.08f,
 			p0.y + travel.y * 0.08f
 		};
+
+		// ベジェ曲線の第2制御点(P2)
+		// ホームベース付近での変化量を決める
 		DirectX::XMFLOAT2 p2 = {
 			targetScreenPos.x - travel.x * 0.30f,
 			targetScreenPos.y - travel.y * 0.10f
 		};
 
-		// 球種ごとの変化量を調整
+		// 球種ごとに制御点を変更して軌道を調整する
 		switch (pitchBreakIndex)
 		{
 		case 3:  // スライダー
@@ -79,29 +89,39 @@ namespace
 		case 11: // シュート
 		case 1:  // ツーシーム
 		case 14: // スイーパー
+			// 横変化系
+			// P1・P2のY座標を調整して横方向へ滑るような軌道にする
 			p1.y = p0.y + travel.y * 0.03f;
 			p2.y = targetScreenPos.y + travel.y * 0.04f;
 			break;
+
 		case 4:  // カーブ
 		case 10: // スローカーブ
+			// 山なりに大きく曲がる軌道にする
 			p1.x = p0.x + travel.x * 0.04f;
 			p1.y = p0.y + travel.y * 0.02f;
 			p2.x = targetScreenPos.x - travel.x * 0.42f;
 			p2.y = targetScreenPos.y - travel.y * 0.22f;
 			break;
+
 		case 8:  // 縦スライダー
 		case 6:  // フォークボール
 		case 9:  // スプリット
-			p1.x = p0.x + travel.x * 0.02f;
-			p2.x = targetScreenPos.x - travel.x * 0.08f;
+			// 制御点を終点側へ寄せることで、
+			// 最後に一気に落ちるような軌道を作る
+			p1.x = p0.x + travel.x * 0.9f;
+			p2.x = targetScreenPos.x - travel.x * 0.02f;
 			break;
+
 		default:
+			// その他の球種は初期設定の制御点を使用
 			break;
 		}
 
-		//const float lateBreakT = SmoothStep((t - 0.12f) / 0.88f);
+		// t(0～1)の位置に対応するベジェ曲線上の座標を返す
 		return EvalCubicBezier2D(p0, p1, p2, targetScreenPos, Clamp01(t));
 	}
+
 }
 static DirectX::XMFLOAT2 WorldToZoneScreen(
 	float worldX, float worldY,
@@ -335,24 +355,93 @@ void ballSprite::Update(float elapsedTime)
 	{
 		if (nowThrown)
 		{
+			
+			//球種ごとにベジェ曲線の進行度を調整する
 			float t = Clamp01(ball.GetBezierT());
-			//P1とP3の間での進行度を返す
-			static constexpr float P1T = 0.15f;
-			static constexpr float P3T = 1.0f;
-			float linear;
-			if (t < P1T)
+			switch (currentPitchIndex)
 			{
-				linear = 0.0f;
-			}
-			else if (t > P3T)
-			{	
-				linear =  1.0f;
-			}
-			else
+			case 3:  // スライダー
+			case 2:  // カットボール
+			case 11: // シュート
+			case 1:  // ツーシーム
+			case 8:  // 縦スライダー
+			case 5:  // チェンジアップ
+			case 14: // スイーパー
 			{
-				linear = (t - P1T) / (P3T - P1T);
+				// 横変化系はP1とP3の間での進行度を返す
+				static constexpr float P1T = 0.15f;
+				static constexpr float P3T = 1.0f;
+				if (t < P1T)
+				{
+					return 0.0f;
+				}
+				else if (t > P3T)
+				{
+					return 1.0f;
+				}
+				else
+				{
+					float linear = (t - P1T) / (P3T - P1T);
+					return SmoothStep(linear);
+				}
 			}
-			return SmoothStep(linear);
+				break;
+
+			case 4:  // カーブ
+			case 10: // スローカーブ
+			case 7:  // シンカー
+			case 12: // ナックルボール
+			case 13: // スローボール
+			case 15: // パーム
+			{
+				// 山なりに大きく曲がる軌道はP1とP3の間での進行度を返す
+				static constexpr float P1T_Curve = 0.1f;
+				static constexpr float P3T_Curve = 1.0f;
+				if (t < P1T_Curve)
+				{
+					return 0.0f;
+				}
+				else if (t > P3T_Curve)
+				{
+					return 1.0f;
+				}
+				else
+				{
+					float linear = (t - P1T_Curve) / (P3T_Curve - P1T_Curve);
+					return SmoothStep(linear);
+				}
+			}
+				break;
+
+			
+			case 6:  // フォークボール
+			case 9:  // スプリット
+			{
+				// 最後に一気に落ちる軌道はP1とP3の間での進行度を返す
+				static constexpr float P1T_Fall = 0.5f;
+				static constexpr float P3T_Fall = 1.0f;
+				if (t < P1T_Fall)
+				{
+					return 0.0f;
+				}
+				else if (t > P3T_Fall)
+				{
+					return 1.0f;
+				}
+				else
+				{
+					float linear = (t - P1T_Fall) / (P3T_Fall - P1T_Fall);
+					return SmoothStep(linear);
+				}
+			}
+				break;
+
+			default:
+				break;
+			}
+
+
+
 		}
 		if (pitchingState)
 		{
@@ -390,15 +479,7 @@ void ballSprite::Update(float elapsedTime)
 			AddTrailPoint(currentScreenPos);
 		}
 
-		//3Dボールのポジションzが0.0fの時またはボールとバットが当たった時に、BallBoardを表示する
-		if(Ball::Instance().GetWorldPosition().z <= 0.0f || Ball::Instance().GetHasCollided())
-		{
-			showBallBoard = true;
-		}
-		else
-		{
-			showBallBoard = false;
-		}
+		
 	}
 	else if (nowThrown && wp.z >= -0.5f && wp.z <= 18.5f)
 	{
@@ -493,6 +574,30 @@ void ballSprite::Update(float elapsedTime)
 				snprintf(buf, sizeof(buf), u8"[Info] ボール！");
 			consoleLog->push_back(buf);
 		}
+	}
+
+	// 3Dボールとバットが当たった段階で、2Dボールの動きを当たった位置で止める
+	if (Ball::Instance().GetHasCollided())
+	{
+		stopBallOnHit = true;
+		//2Dのボールが最大移動値のうち、どの位置まで移動したかを計算して1度だけログ出力
+		/*if(consoleLog)
+		{
+			float t = Clamp01(ball.GetBezierT());
+			char buf[256];
+			snprintf(buf, sizeof(buf), u8"[Info] ボールとバットが衝突！ 2Dボールの進行度: %.2f", t);
+			consoleLog->push_back(buf);
+		}*/
+	}
+
+	//3Dボールのポジションzが0.0fの時またはボールとバットが当たった時に、BallBoardを表示する
+	if (Ball::Instance().GetWorldPosition().z <= 0.0f || Ball::Instance().GetHasCollided())
+	{
+		showBallBoard = true;
+	}
+	else
+	{
+		showBallBoard = false;
 	}
 }
 

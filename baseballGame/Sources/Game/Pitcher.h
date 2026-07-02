@@ -16,19 +16,6 @@
 
 using json = nlohmann::json;
 
-enum class PitcherType
-{
-	
-	rightPowerPitcher,//右速球派,
-	leftPowerPitcher,//左速球派,
-	rightRealisticPitcher,//右本格派,
-	leftRealisticPitcher,//左本格派,
-	rightTechnicalPitcher,//右技巧派,
-	leftTechnicalPitcher,//左技巧派,
-	rightSoftPitcher,//右軟投派,
-	leftSoftPitcher,//左軟投派,
-};
-
 class Pitcher : public GameObject
 {
 public:
@@ -254,13 +241,9 @@ public:
 	};
 	BallSpeedMode ballSpeedMode = BallSpeedMode::realSpeed;
 
-	
 
-	PitcherType pitcherType = PitcherType::rightRealisticPitcher;
-
-	
 private:
-	void UpdatePitcherModel(PitcherType type);
+	void UpdatePitcherModel();
 
 public:
 	enum class RealPitcher
@@ -307,6 +290,15 @@ public:
 	void SelectRealPitcher(RealPitcher rp);
 	RealPitcher GetSelectedRealPitcher() const { return selectedRealPitcher; }
 	static const char* GetRealPitcherName(RealPitcher rp);
+
+	//配球の偏りを抑える
+	std::deque<PitchType> pitchHistory;
+	static constexpr int PITCH_HISTORY_SIZE = 6; // 過去6球分の履歴を保持
+	float pitchRepeatPenalty = 0.5f; // 過去に投げた球種を再度選ぶ確率を減らすペナルティ（0.0～1.0）
+	float pitchSequenceDecay = 0.55f; // 過去の投球履歴の影響を減らす減衰率（0.0～1.0）
+	float pitchSequenceFloor = 0.1f; // 重みが下がりすぎないようにする下限倍率
+
+	float GetSequencingMultiplier(PitchType type) const;
 
 private:
 	// 現在選択中の実在投手プリセット、およびその持ち球リスト（配球AIが参照する）

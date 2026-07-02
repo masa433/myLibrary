@@ -211,7 +211,7 @@ void Player::Update(float elapsedTime)
         mouseX = std::max(zoneTopLeft.x, std::min(zoneBottomRight.x, mouseX));
         mouseY = std::max(zoneTopLeft.y, std::min(zoneBottomRight.y, mouseY));
 
-        const DirectX::XMFLOAT2 batSize = { 230.0f, 40.0f };
+        const DirectX::XMFLOAT2 batSize = BatSprite::Instance().GetBatSpriteSize();
         DirectX::XMFLOAT2 batCenter;
         float batRot;
         if (IsRightBatter())
@@ -235,7 +235,7 @@ void Player::Update(float elapsedTime)
         // 紫バットは白バットの先端寄り1/3程度（芯～先端）と仮定
         // batSprite.png上の紫部分のサイズ・オフセットに合わせて調整してください
         {
-            const DirectX::XMFLOAT2 purpleSize = { 230.0f, 40.0f }; 
+            const DirectX::XMFLOAT2 purpleSize = BatSprite::Instance().GetBatSpriteSize();
             // 紫バットはバットOBBのローカル座標で先端側にオフセット
             // 右打ち：バットOBB中心からローカルX+方向（先端）にずらす
             float offsetAlongBat = (batSize.x * 0.5f) - (purpleSize.x * 0.5f); // 先端寄りのオフセット量
