@@ -79,7 +79,7 @@ public:
 	};
 
 	//各球種の変化量
-	ballBreak2D pitchBreaks[16] =
+	ballBreak2D pitchBreaks[19] =
 	{
 		{  0.0f,  0.0f },  // Fastball
 		{ -4.0f,  2.0f },  // TwoSeam
@@ -96,8 +96,13 @@ public:
 		{  0.0f, -2.0f },  // Knuckleball
 		{  0.0f, -3.0f },  // SlowBall
 		{  20.0f,  0.0f },  // Sweeper
-		{  3.0f,  -5.0f }   // Palm
+		{  3.0f,  -5.0f },  // Palm
+		{  0.0f,  0.0f },  // NaturalShoot
+		{  0.0f,  0.0f },  // TrueSlider
+		{  0.0f,  0.0f }   // BlazingFastball
 	};
+
+	const int PITCH_TYPE_COUNT = 19;  // 球種の数
 
 	int currentPitchIndex = 0;  // 現在の球種インデックス
 
@@ -160,12 +165,13 @@ public:
 	//投手1人分・球種16個分の変化量を設定する
 	struct PitchBreakSet
 	{
-		ballBreak2D breaks[16];
-		Pitcher::BreakGrade grades[16] = {
+		ballBreak2D breaks[19];
+		Pitcher::BreakGrade grades[19] = {
 			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C,
 			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C,
 			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C,
-			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C
+			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C,
+			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C
 		};
 		bool initialized = false;
 	};
@@ -228,16 +234,16 @@ public:
 	FontRenderer pitchInfoFont;
 	float pitchInfoFontScale = 1.0f;
 
-	// 球種ごとの表示位置オフセット（16球種分）
-	DirectX::XMFLOAT2 pitchNameOffsets[16] = {
+	// 球種ごとの表示位置オフセット（19球種分）
+	DirectX::XMFLOAT2 pitchNameOffsets[19] = {
 		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},
 		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},
-		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f}
+		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f}
 	};
-	DirectX::XMFLOAT2 pitchSpeedOffsets[16] = {
+	DirectX::XMFLOAT2 pitchSpeedOffsets[19] = {
 		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},
 		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},
-		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f}
+		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f}
 	};
 
 	// 表示色（球種名は固定なのでここでは球速の通常色のみ使う）

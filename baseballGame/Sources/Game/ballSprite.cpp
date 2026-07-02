@@ -287,6 +287,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 		u8"ツーシームカットボールシンカー"
 		u8"スクリュー縦スプリットスローカーブ"
 		u8"シュートナックルボールスイーパーパーム"
+		u8"ナチュラルシュート真っスラ火の玉ストレート"
 	);
 
 	// 日本語グリフを持つフォントを用意して配置する
@@ -393,6 +394,9 @@ void ballSprite::Update(float elapsedTime)
 			case 12: // ナックルボール
 			case 13: // スローボール
 			case 15: // パーム
+			case 16: // ナチュラルシュート
+			case 17: // 真っスラ
+			case 18: // 火の玉ストレート
 			{
 				// 山なりに大きく曲がる軌道はP1とP3の間での進行度を返す
 				static constexpr float P1T_Curve = 0.1f;
@@ -738,10 +742,11 @@ void ballSprite::DrawGUI()
 	const char* names[] = {
 		u8"ストレート", u8"スライダー", u8"カーブ", u8"チェンジアップ", u8"フォーク",
 		u8"ツーシーム", u8"カットボール", Pitcher::Instance().IsRightPitcher() ? u8"シンカー" : u8"スクリュー", u8"縦スライダー", u8"スプリット",
-		u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール", u8"スイーパー", u8"パーム"
+		u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール", u8"スイーパー", u8"パーム",
+		u8"ナチュラルシュート", u8"真っスラ", u8"火の玉ストレート"
 	};
 
-	ImGui::Combo(u8"編集する球種", reinterpret_cast<int*>(&Pitcher::Instance().selectedPitchType), names, 16);
+	ImGui::Combo(u8"編集する球種", reinterpret_cast<int*>(&Pitcher::Instance().selectedPitchType), names, PITCH_TYPE_COUNT);
 
 	const int editIndex = Pitcher::PitchTypeToBreakIndex(Pitcher::Instance().GetSelectedPitchType());
 
@@ -914,7 +919,7 @@ void ballSprite::SaveToJson(json& j)
 		if (!realPitcherBreaks[rp].initialized) continue;
 
 		json breaksArr = json::array();
-		for (int i = 0; i < 16; ++i)
+		for (int i = 0; i < PITCH_TYPE_COUNT; ++i)
 		{
 			breaksArr.push_back({
 				{"breakX", realPitcherBreaks[rp].breaks[i].breakX},
@@ -929,9 +934,9 @@ void ballSprite::SaveToJson(json& j)
 	}
 	j["realPitcherBreaks"] = realPitcherBreaksJson;
 
-	// 全14球種の変化量をJSONの配列オブジェクトとしてまとめて保存
+	// 全19球種の変化量をJSONの配列オブジェクトとしてまとめて保存
 	json breaksArray = json::array();
-	for (int i = 0; i < 16; ++i)
+	for (int i = 0; i < PITCH_TYPE_COUNT; ++i)
 	{
 		breaksArray.push_back({
 			{"breakX", pitchBreaks[i].breakX},
@@ -941,13 +946,13 @@ void ballSprite::SaveToJson(json& j)
 	j["pitchBreaks"] = breaksArray;
 
 	j["pitchNameOffsets"] = json::array();
-	for (int i = 0; i < 16; ++i)
+	for (int i = 0; i < PITCH_TYPE_COUNT; ++i)
 	{
 		j["pitchNameOffsets"].push_back({ pitchNameOffsets[i].x, pitchNameOffsets[i].y });
 	}
 
 	j["pitchSpeedOffsets"] = json::array();
-	for (int i = 0; i < 16; ++i)
+	for (int i = 0; i < PITCH_TYPE_COUNT; ++i)
 	{
 		j["pitchSpeedOffsets"].push_back({ pitchSpeedOffsets[i].x, pitchSpeedOffsets[i].y });
 	}
@@ -1031,7 +1036,7 @@ void ballSprite::LoadFromJson(const json& j)
 			if (!entry.contains("breaks") || !entry["breaks"].is_array()) continue;
 
 			const auto& breaksArr = entry["breaks"];
-			for (size_t i = 0; i < breaksArr.size() && i < 16; ++i)
+			for (size_t i = 0; i < breaksArr.size() && i < PITCH_TYPE_COUNT; ++i)
 			{
 				if (breaksArr[i].contains("breakX"))
 					realPitcherBreaks[rp].breaks[i].breakX = breaksArr[i]["breakX"].get<float>();
@@ -1054,7 +1059,7 @@ void ballSprite::LoadFromJson(const json& j)
 		const auto& breaksArray = j["pitchBreaks"];
 
 		// クラッシュ防止のため、保存されたデータの数と、配列サイズ(16)の小さい方に合わせてループ
-		int size = (std::min)(16, (int)breaksArray.size());
+		int size = (std::min)(PITCH_TYPE_COUNT, (int)breaksArray.size());
 		for (int i = 0; i < size; ++i)
 		{
 			if (breaksArray[i].contains("breakX")) {
@@ -1071,7 +1076,7 @@ void ballSprite::LoadFromJson(const json& j)
 	if (j.contains("pitchNameOffsets") && j["pitchNameOffsets"].is_array())
 	{
 		const auto& nameOffsetsArray = j["pitchNameOffsets"];
-		int size = (std::min)(16, (int)nameOffsetsArray.size());
+		int size = (std::min)(PITCH_TYPE_COUNT, (int)nameOffsetsArray.size());
 		for (int i = 0; i < size; ++i)
 		{
 			pitchNameOffsets[i].x = nameOffsetsArray[i][0].get<float>();
@@ -1082,7 +1087,7 @@ void ballSprite::LoadFromJson(const json& j)
 	if(j.contains("pitchSpeedOffsets") && j["pitchSpeedOffsets"].is_array())
 	{
 		const auto& speedOffsetsArray = j["pitchSpeedOffsets"];
-		int size = (std::min)(16, (int)speedOffsetsArray.size());
+		int size = (std::min)(PITCH_TYPE_COUNT, (int)speedOffsetsArray.size());
 		for (int i = 0; i < size; ++i)
 		{
 			pitchSpeedOffsets[i].x = speedOffsetsArray[i][0].get<float>();

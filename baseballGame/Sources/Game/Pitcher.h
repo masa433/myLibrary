@@ -69,6 +69,9 @@ public:
 		SlowBall,//スローボール
 		Sweeper,//スイーパー
 		Palm,//パーム
+		NaturalShoot,//ナチュラルシュート
+		CutFastball,//真っスラ
+		BlazingFastball,//火の玉ストレート
 	};
 
 	PitchType GetSelectedPitchType() const { return selectedPitchType; }
@@ -128,6 +131,9 @@ public:
 		case PitchType::SlowBall:       return 13;
 		case PitchType::Sweeper:        return 14;
 		case PitchType::Palm:           return 15;
+		case PitchType::NaturalShoot:   return 16;
+		case PitchType::CutFastball:    return 17;
+		case PitchType::BlazingFastball:return 18;
 		default:                        return 0;
 		}
 	}
@@ -154,7 +160,7 @@ private:
 	};
 	std::vector<PitchParameter> pitchParameters;
 
-	static constexpr int PITCH_TYPE_COUNT = 16; // 球種の数
+	static constexpr int PITCH_TYPE_COUNT = 19; // 球種の数
 
 	int editerPitchIndex = 0; // エディタで選択された球種のインデックス
 
@@ -262,6 +268,11 @@ public:
 		Imanaga,//今永昇太
 		Kikuchi,//菊池雄星
 		Senga,//千賀滉大
+		Taisei,//大勢
+		Fujikawa,//藤川球児
+		Martinez,//マルティネス
+		Ishi,//石井大智
+		Vieira,//ビエイラ
 		Count,//カウント
 	};
 
