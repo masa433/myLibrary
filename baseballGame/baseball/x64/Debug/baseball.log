@@ -1,2 +1,3 @@
-﻿  ballSprite.cpp
+﻿  Pitcher.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.cpp(226,10): warning C4101: 'debugMessage': ローカル変数は 1 度も使われていません。
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

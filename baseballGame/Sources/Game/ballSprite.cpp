@@ -454,107 +454,38 @@ void ballSprite::Update(float elapsedTime)
 		return 0.0f;
 	};
 
-	if (hasAITarget)
+	if (nowThrown && wp.z >= -0.5f && wp.z <= 18.5f)
 	{
-		const ballBreak2D& brk = pitchBreaks[currentPitchIndex];
-		const DirectX::XMFLOAT2 targetScreenPos = aiTargetScreen;
-		DirectX::XMFLOAT2 currentScreenPos;
+		// 本物のベジェ進行度をそのまま使う（remap一切なし）
+		float t = ball.IsBezierFlying() ? Clamp01(ball.GetBezierT()) : 1.0f;
 
-		// ベジェ曲線が終着点(t>=1.0)に到達済みの場合は、
-		// 補間計算を経由せず必ず終着点(targetScreenPos)にスプライトを一致させる
-		if (nowThrown && !ball.IsBezierFlying() && ball.GetBezierT() >= 1.0f)
-		{
-			currentScreenPos = targetScreenPos;
-		}
-		else
-		{
-			currentScreenPos = EvalPitchBreakScreenPath(
-				targetScreenPos,
-				brk,
-				strikeZoneSpriteData->size,
-				currentPitchIndex,
-				GetPitchProgress(),
-				pitcher.IsRightPitcher());
-		}
+		// 最終到達点（p3）をゾーン画面座標へ
+		DirectX::XMFLOAT2 finalScreenPos = WorldToZoneScreen(
+			ball.GetBezierP3().x, ball.GetBezierP3().y,   // Ball側にp3を返すgetterを用意
+			strikeZoneSpriteData->position,
+			strikeZoneSpriteData->size,
+			zone3DCenter,
+			zone3DSize,
+			pitcher.IsRightPitcher());
 
-		ApplyBallSpritePosition(currentScreenPos);
-		if (nowThrown)
-		{
-			AddTrailPoint(currentScreenPos);
-		}
+		// 開始点はゾーン中心（見た目上「まっすぐ来た場合」の基準点）
+		DirectX::XMFLOAT2 startScreenPos = EvalPitchBreakScreenPath(
+			finalScreenPos,
+			pitchBreaks[currentPitchIndex],
+			strikeZoneSpriteData->size,
+			currentPitchIndex,
+			0.0f, // t=0で開始点を取得
+			pitcher.IsRightPitcher()
+		);
 
-		
-	}
-	else if (nowThrown && wp.z >= -0.5f && wp.z <= 18.5f)
-	{
-		float t = Clamp01(ball.GetBezierT());
-		if (t <= 0.0f)
-		{
-			t = Clamp01(1.0f - (wp.z / 18.0f));
-		}
-
-		DirectX::XMFLOAT2 currentScreenPos = {};
-
-		if (useBallBreak)
-		{
-			const ballBreak2D& brk = pitchBreaks[currentPitchIndex];
-			DirectX::XMFLOAT2 targetScreenPos = WorldToZoneScreen(
-				zone3DCenter.x,
-				zone3DCenter.y,
-				strikeZoneSpriteData->position,
-				strikeZoneSpriteData->size,
-				zone3DCenter,
-				zone3DSize,
-				pitcher.IsRightPitcher());
-
-			currentScreenPos = EvalPitchBreakScreenPath(
-				targetScreenPos,
-				brk,
-				strikeZoneSpriteData->size,
-				currentPitchIndex,
-				t,
-				pitcher.IsRightPitcher());
-		}
-		else
-		{
-			physx::PxVec3 velocity = ball.GetLinearVelocity();
-
-			float finalX = wp.x;
-			float finalY = wp.y;
-
-			if (velocity.z < -0.001f && wp.z > 0.0f)
-			{
-				float t_remain = -wp.z / velocity.z;
-				finalX = wp.x + velocity.x * t_remain;
-				finalY = wp.y + velocity.y * t_remain;
-			}
-
-			DirectX::XMFLOAT2 finalScreenPos = WorldToZoneScreen(
-				finalX, finalY,
-				strikeZoneSpriteData->position,
-				strikeZoneSpriteData->size,
-				zone3DCenter,
-				zone3DSize,
-				pitcher.IsRightPitcher());
-
-			DirectX::XMFLOAT2 startScreenPos = WorldToZoneScreen(
-				zone3DCenter.x, zone3DCenter.y,
-				strikeZoneSpriteData->position,
-				strikeZoneSpriteData->size,
-				zone3DCenter,
-				zone3DSize,
-				pitcher.IsRightPitcher());
-
-			currentScreenPos = {
-				startScreenPos.x + (finalScreenPos.x - startScreenPos.x) * t,
-				startScreenPos.y + (finalScreenPos.y - startScreenPos.y) * t
-			};
-		}
+		DirectX::XMFLOAT2 currentScreenPos = {
+			startScreenPos.x + (finalScreenPos.x - startScreenPos.x) * t,
+			startScreenPos.y + (finalScreenPos.y - startScreenPos.y) * t
+		};
 
 		AddTrailPoint(currentScreenPos);
 		ApplyBallSpritePosition(currentScreenPos);
-	}
-
+}
 	if (pitchingState && wp.z < -0.5f && wp.z > -0.7f && !strikeJudgeDone)
 	{
 		strikeJudgeDone = true;
@@ -674,8 +605,11 @@ void ballSprite::Render()
 			pitchInfoFont.DrawTextW(dc, pitchTypeName, pitchTextX, pitchTextY, pitchInfoFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
 
 			// 右側: 球速（150km/h超で黄色、160km/h超でオレンジ色）
-			const DirectX::XMFLOAT4& speedColor = (ballSpeedKmh >= pitchSpeedHighFastThresholdKmh) ? pitchSpeedHighFastColor :
-				(ballSpeedKmh >= pitchSpeedFastThresholdKmh) ? pitchSpeedFastColor : pitchSpeedNormalColor;
+			//小数点以下を四捨五入して整数表示するため、球速の閾値も四捨五入して判定する
+			const float roundedSpeed = std::roundf(ballSpeedKmh);//四捨五入
+
+			const DirectX::XMFLOAT4& speedColor = (roundedSpeed >= std::roundf(pitchSpeedHighFastThresholdKmh)) ? pitchSpeedHighFastColor :
+				(roundedSpeed >= std::roundf(pitchSpeedFastThresholdKmh)) ? pitchSpeedFastColor : pitchSpeedNormalColor;
 			const float speedTextX = ballBoardSpriteData->position.x + ballBoardSpriteData->size.x - speedOffset.x - speedTextWidth;
 			const float speedTextY = boardCenterY + speedOffset.y;
 			pitchInfoFont.DrawTextW(dc, speedText, speedTextX, speedTextY, pitchInfoFontScale, speedColor.x, speedColor.y, speedColor.z, speedColor.w);

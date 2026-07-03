@@ -212,6 +212,8 @@ public:
 	// EvalCubicBezierはprivateのまま、外部からはこのラッパー経由で呼ぶ
 	DirectX::XMFLOAT3 GetBezierPositionAt(float t) const { return EvalCubicBezier(t); }
 
+	DirectX::XMFLOAT3 GetBezierP3() const { return bezierData.p3; } // 終点を取得するための関数
+
 private:
 	BezierPitchData bezierData = {};
 	float           bezierT = 0.0f;   // 0→1の進行度
