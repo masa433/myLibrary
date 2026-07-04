@@ -1536,7 +1536,10 @@ void Pitcher::ApplyAIBezierTarget()
 	// ballSpriteの2D座標から3Dに変換して bezierTarget に書き戻す
 	DirectX::XMFLOAT2 world = ballSprite::Instance().GetAITarget3D();
 	auto& target = pitchParameters[static_cast<int>(selectedPitchType)].bezierTarget;
-	target.x = world.x - boxPosition.x;
+
+	const float side = IsRightPitcher() ? 1.0f : -1.0f;
+
+	target.x = world.x - boxPosition.x * side;
 	target.y = world.y - boxPosition.y;
 	target.z = 0.0f;
 

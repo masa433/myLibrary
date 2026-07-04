@@ -128,16 +128,16 @@ static DirectX::XMFLOAT2 WorldToZoneScreen(
 	const DirectX::XMFLOAT2& zoneScreenPos,  // ゾーンスプライト左上
 	const DirectX::XMFLOAT2& zoneScreenSize, // ゾーンスプライトサイズ(px)
 	const DirectX::XMFLOAT2& zone3DCenter,   // 3Dゾーン中心(x,y)
-	const DirectX::XMFLOAT2& zone3DSize,     // 3Dゾーンサイズ(m)
-	bool isRightPitcher)     
+	const DirectX::XMFLOAT2& zone3DSize    // 3Dゾーンサイズ(m)
+	)     
 {
 	// 3D座標をゾーン内の正規化座標(0~1)に変換
 	float normalX = (worldX - (zone3DCenter.x - zone3DSize.x * 0.5f)) / zone3DSize.x;
 
-	// 左投手なら正規化座標を反転させる
-	if (!isRightPitcher) {
-		normalX = 1.0f - normalX;
-	}
+	//// 左投手なら正規化座標を反転させる
+	//if (!isRightPitcher) {
+	//	normalX = 1.0f - normalX;
+	//}
 
 	float normalY = (worldY - (zone3DCenter.y - zone3DSize.y * 0.5f)) / zone3DSize.y;
 
@@ -179,24 +179,27 @@ static DirectX::XMFLOAT2 ZoneScreenToWorld(
 
 DirectX::XMFLOAT2 ballSprite::GetAITarget3D() const
 {
+	// 投手の左右に合わせて変換する
+	bool isRight = Pitcher::Instance().IsRightPitcher();
 	return ZoneScreenToWorld(
 		aiTargetScreen.x, aiTargetScreen.y,
 		strikeZoneSpriteData->position,
 		strikeZoneSpriteData->size,
 		zone3DCenter,
 		zone3DSize,
-		Pitcher::Instance().IsRightPitcher());
+		isRight);
 }
 
 void ballSprite::SetAITargetFromWorld(float worldX, float worldY)
 {
+	bool isRight = Pitcher::Instance().IsRightPitcher();
 	aiTargetScreen = WorldToZoneScreen(
 		worldX, worldY,
 		strikeZoneSpriteData->position,
 		strikeZoneSpriteData->size,
 		zone3DCenter,
-		zone3DSize,
-		Pitcher::Instance().IsRightPitcher());
+		zone3DSize
+		);
 	hasAITarget = true;
 }
 
@@ -219,16 +222,16 @@ void ballSprite::GetBallZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX:
 		strikeZoneSpriteData->position,
 		strikeZoneSpriteData->size,
 		zone3DCenter,
-		zone3DSize,
-		Pitcher::Instance().IsRightPitcher());
+		zone3DSize
+		);
 
 	DirectX::XMFLOAT2 screenB = WorldToZoneScreen(
 		worldBottomRight.x, worldBottomRight.y,
 		strikeZoneSpriteData->position,
 		strikeZoneSpriteData->size,
 		zone3DCenter,
-		zone3DSize,
-		Pitcher::Instance().IsRightPitcher());
+		zone3DSize
+		);
 
 	outTopLeft.x = (std::min)(screenA.x, screenB.x);
 	outTopLeft.y = (std::min)(screenA.y, screenB.y);
@@ -323,6 +326,148 @@ void ballSprite::Update(float elapsedTime)
 	const bool pitchingState = (pitcher.GetCurrentState() == Pitcher::State::Throwing);
 	const bool nowThrown = pitcher.GetIsBallThrown();
 
+
+
+	const DirectX::XMFLOAT3& wp = ball.GetWorldPosition();
+
+	auto AddTrailPoint = [&](const DirectX::XMFLOAT2& currentScreenPos)
+		{
+			if (ballTrail2D.empty() ||
+				fabsf(ballTrail2D.back().x - currentScreenPos.x) > 0.5f ||
+				fabsf(ballTrail2D.back().y - currentScreenPos.y) > 0.5f)
+			{
+				ballTrail2D.push_back(currentScreenPos);
+				if ((int)ballTrail2D.size() > MAX_TRAIL)
+				{
+					ballTrail2D.pop_front();
+				}
+			}
+		};
+
+	auto ApplyBallSpritePosition = [&](const DirectX::XMFLOAT2& currentScreenPos)
+		{
+			ballDebugSpriteData->position.x = currentScreenPos.x - ballDebugSpriteData->size.x * 0.5f;
+			ballDebugSpriteData->position.y = currentScreenPos.y - ballDebugSpriteData->size.y * 0.5f;
+		};
+
+	auto GetPitchProgress = [&]()
+		{
+			// 本物の進行度を先に計算しておく（未対応の球種はこれをそのまま使う）
+			float t = Clamp01(ball.GetBezierT());
+
+			if (nowThrown)
+			{
+
+				//球種ごとにベジェ曲線の進行度を調整する
+				switch (currentPitchIndex)
+				{
+				case 3:  // スライダー
+				case 2:  // カットボール
+				case 11: // シュート
+				case 1:  // ツーシーム
+				case 8:  // 縦スライダー
+				case 5:  // チェンジアップ
+				case 14: // スイーパー
+				{
+					// 横変化系はP1とP3の間での進行度を返す
+					static constexpr float P1T = 0.15f;
+					static constexpr float P3T = 1.0f;
+					if (t < P1T)
+					{
+						return 0.0f;
+					}
+					else if (t > P3T)
+					{
+						return 1.0f;
+					}
+					else
+					{
+						float linear = (t - P1T) / (P3T - P1T);
+						return SmoothStep(linear);
+					}
+				}
+				break;
+
+				case 4:  // カーブ
+				case 10: // スローカーブ
+				case 7:  // シンカー
+				case 12: // ナックルボール
+				case 13: // スローボール
+				case 15: // パーム
+				case 16: // ナチュラルシュート
+				case 17: // 真っスラ
+				case 18: // 火の玉ストレート
+				{
+					// 山なりに大きく曲がる軌道はP1とP3の間での進行度を返す
+					static constexpr float P1T_Curve = 0.1f;
+					static constexpr float P3T_Curve = 1.0f;
+					if (t < P1T_Curve)
+					{
+						return 0.0f;
+					}
+					else if (t > P3T_Curve)
+					{
+						return 1.0f;
+					}
+					else
+					{
+						float linear = (t - P1T_Curve) / (P3T_Curve - P1T_Curve);
+						return SmoothStep(linear);
+					}
+				}
+				break;
+
+
+				case 6:  // フォークボール
+				case 9:  // スプリット
+				{
+					// 最後に一気に落ちる軌道はP1とP3の間での進行度を返す
+					static constexpr float P1T_Fall = 0.5f;
+					static constexpr float P3T_Fall = 1.0f;
+					if (t < P1T_Fall)
+					{
+						return 0.0f;
+					}
+					else if (t > P3T_Fall)
+					{
+						return 1.0f;
+					}
+					else
+					{
+						float linear = (t - P1T_Fall) / (P3T_Fall - P1T_Fall);
+						return SmoothStep(linear);
+					}
+				}
+				break;
+
+				default:
+					// ストレートなど、特別なリマップ対象外の球種は本物の進行度をそのまま使う
+					return t;
+				}
+
+
+
+			}
+			return 0.0f;
+		};
+
+	// ワインドアップ開始の立ち上がりを検知
+	if (pitchingState && !prevPitchingState)
+	{
+		// 目標地点(生のaiTargetScreen)ではなく、breakX/breakYを考慮した見かけ上のスタート地点(p0)へスナップする
+		// hasAITargetブロックが!nowThrown時に計算するp0と全く同じ式・同じ引数にすることで、直後のジャンプを防ぐ
+		DirectX::XMFLOAT2 snapPos = EvalPitchBreakScreenPath(
+			aiTargetScreen,
+			pitchBreaks[currentPitchIndex],
+			strikeZoneSpriteData->size,
+			currentPitchIndex,
+			0.0f,
+			pitcher.IsRightPitcher());
+		ApplyBallSpritePosition(snapPos);
+		ballTrail2D.clear();
+	}
+	prevPitchingState = pitchingState;
+
 	if (nowThrown && !prevThrown)
 	{
 		ballTrail2D.clear();
@@ -330,143 +475,20 @@ void ballSprite::Update(float elapsedTime)
 	}
 	prevThrown = nowThrown;
 
-	const DirectX::XMFLOAT3& wp = ball.GetWorldPosition();
-
-	auto AddTrailPoint = [&](const DirectX::XMFLOAT2& currentScreenPos)
-	{
-		if (ballTrail2D.empty() ||
-			fabsf(ballTrail2D.back().x - currentScreenPos.x) > 0.5f ||
-			fabsf(ballTrail2D.back().y - currentScreenPos.y) > 0.5f)
-		{
-			ballTrail2D.push_back(currentScreenPos);
-			if ((int)ballTrail2D.size() > MAX_TRAIL)
-			{
-				ballTrail2D.pop_front();
-			}
-		}
-	};
-
-	auto ApplyBallSpritePosition = [&](const DirectX::XMFLOAT2& currentScreenPos)
-	{
-		ballDebugSpriteData->position.x = currentScreenPos.x - ballDebugSpriteData->size.x * 0.5f;
-		ballDebugSpriteData->position.y = currentScreenPos.y - ballDebugSpriteData->size.y * 0.5f;
-	};
-
-	auto GetPitchProgress = [&]()
-	{
-		if (nowThrown)
-		{
-			
-			//球種ごとにベジェ曲線の進行度を調整する
-			float t = Clamp01(ball.GetBezierT());
-			switch (currentPitchIndex)
-			{
-			case 3:  // スライダー
-			case 2:  // カットボール
-			case 11: // シュート
-			case 1:  // ツーシーム
-			case 8:  // 縦スライダー
-			case 5:  // チェンジアップ
-			case 14: // スイーパー
-			{
-				// 横変化系はP1とP3の間での進行度を返す
-				static constexpr float P1T = 0.15f;
-				static constexpr float P3T = 1.0f;
-				if (t < P1T)
-				{
-					return 0.0f;
-				}
-				else if (t > P3T)
-				{
-					return 1.0f;
-				}
-				else
-				{
-					float linear = (t - P1T) / (P3T - P1T);
-					return SmoothStep(linear);
-				}
-			}
-				break;
-
-			case 4:  // カーブ
-			case 10: // スローカーブ
-			case 7:  // シンカー
-			case 12: // ナックルボール
-			case 13: // スローボール
-			case 15: // パーム
-			case 16: // ナチュラルシュート
-			case 17: // 真っスラ
-			case 18: // 火の玉ストレート
-			{
-				// 山なりに大きく曲がる軌道はP1とP3の間での進行度を返す
-				static constexpr float P1T_Curve = 0.1f;
-				static constexpr float P3T_Curve = 1.0f;
-				if (t < P1T_Curve)
-				{
-					return 0.0f;
-				}
-				else if (t > P3T_Curve)
-				{
-					return 1.0f;
-				}
-				else
-				{
-					float linear = (t - P1T_Curve) / (P3T_Curve - P1T_Curve);
-					return SmoothStep(linear);
-				}
-			}
-				break;
-
-			
-			case 6:  // フォークボール
-			case 9:  // スプリット
-			{
-				// 最後に一気に落ちる軌道はP1とP3の間での進行度を返す
-				static constexpr float P1T_Fall = 0.5f;
-				static constexpr float P3T_Fall = 1.0f;
-				if (t < P1T_Fall)
-				{
-					return 0.0f;
-				}
-				else if (t > P3T_Fall)
-				{
-					return 1.0f;
-				}
-				else
-				{
-					float linear = (t - P1T_Fall) / (P3T_Fall - P1T_Fall);
-					return SmoothStep(linear);
-				}
-			}
-				break;
-
-			default:
-				break;
-			}
-
-
-
-		}
-		if (pitchingState)
-		{
-			return 0.0f;
-		}
-		return 0.0f;
-	};
-
-	if (nowThrown && wp.z >= -0.5f && wp.z <= 18.5f)
+	if (nowThrown && hasAITarget)
 	{
 		// 本物のベジェ進行度をそのまま使う（remap一切なし）
 		float t = ball.IsBezierFlying() ? Clamp01(ball.GetBezierT()) : 1.0f;
 
 		// 最終到達点（p3）をゾーン画面座標へ
+		bool isRight = Pitcher::Instance().IsRightPitcher();
 		DirectX::XMFLOAT2 finalScreenPos = WorldToZoneScreen(
-			ball.GetBezierP3().x, ball.GetBezierP3().y,   // Ball側にp3を返すgetterを用意
+			ball.GetBezierP3().x, ball.GetBezierP3().y,
 			strikeZoneSpriteData->position,
 			strikeZoneSpriteData->size,
 			zone3DCenter,
-			zone3DSize,
-			pitcher.IsRightPitcher());
+			zone3DSize
+			);
 
 		// 開始点はゾーン中心（見た目上「まっすぐ来た場合」の基準点）
 		DirectX::XMFLOAT2 startScreenPos = EvalPitchBreakScreenPath(
@@ -475,8 +497,7 @@ void ballSprite::Update(float elapsedTime)
 			strikeZoneSpriteData->size,
 			currentPitchIndex,
 			0.0f, // t=0で開始点を取得
-			pitcher.IsRightPitcher()
-		);
+			pitcher.IsRightPitcher());
 
 		DirectX::XMFLOAT2 currentScreenPos = {
 			startScreenPos.x + (finalScreenPos.x - startScreenPos.x) * t,
@@ -485,7 +506,8 @@ void ballSprite::Update(float elapsedTime)
 
 		AddTrailPoint(currentScreenPos);
 		ApplyBallSpritePosition(currentScreenPos);
-}
+	}
+
 	if (pitchingState && wp.z < -0.5f && wp.z > -0.7f && !strikeJudgeDone)
 	{
 		strikeJudgeDone = true;
@@ -515,14 +537,6 @@ void ballSprite::Update(float elapsedTime)
 	if (Ball::Instance().GetHasCollided())
 	{
 		stopBallOnHit = true;
-		//2Dのボールが最大移動値のうち、どの位置まで移動したかを計算して1度だけログ出力
-		/*if(consoleLog)
-		{
-			float t = Clamp01(ball.GetBezierT());
-			char buf[256];
-			snprintf(buf, sizeof(buf), u8"[Info] ボールとバットが衝突！ 2Dボールの進行度: %.2f", t);
-			consoleLog->push_back(buf);
-		}*/
 	}
 
 	//3Dボールのポジションzが0.0fの時またはボールとバットが当たった時に、BallBoardを表示する
@@ -1046,13 +1060,12 @@ void ballSprite::GetStrikeZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, Direct
 	DirectX::XMFLOAT2 screenA = WorldToZoneScreen(
 		worldTL.x, worldTL.y,
 		strikeZoneSpriteData->position, strikeZoneSpriteData->size,
-		zone3DCenter, zone3DSize,
-		Pitcher::Instance().IsRightPitcher());
+		zone3DCenter, zone3DSize
+		);
 	DirectX::XMFLOAT2 screenB = WorldToZoneScreen(
 		worldBR.x, worldBR.y,
 		strikeZoneSpriteData->position, strikeZoneSpriteData->size,
-		zone3DCenter, zone3DSize,
-		Pitcher::Instance().IsRightPitcher());
+		zone3DCenter, zone3DSize);
 
 	outTopLeft = { (std::min)(screenA.x, screenB.x), (std::min)(screenA.y, screenB.y) };
 	outBottomRight = { (std::max)(screenA.x, screenB.x), (std::max)(screenA.y, screenB.y) };

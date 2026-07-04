@@ -223,6 +223,10 @@ public:
 	bool stopBallOnHit = false;
 	bool SetStopBallOnHit(bool value) { stopBallOnHit = value; return stopBallOnHit; }
 
+	bool prevPitchingState = false;
+	ballBreak2D activePitchBreak = {};
+	int activePitchIndex = 0;
+
 public:
 	// コンソールログへのポインタをセット
 	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
