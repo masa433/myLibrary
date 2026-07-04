@@ -224,6 +224,7 @@
     </ClCompile>
     <ClCompile Include="Sources\Game\ballSprite.cpp" />
     <ClCompile Include="Sources\Game\batSprite.cpp" />
+    <ClCompile Include="Sources\Game\Flag.cpp" />
     <ClCompile Include="Sources\Game\game_object.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -349,6 +350,7 @@
     </ClInclude>
     <ClInclude Include="Sources\Game\ballSprite.h" />
     <ClInclude Include="Sources\Game\batSprite.h" />
+    <ClInclude Include="Sources\Game\Flag.h" />
     <ClInclude Include="Sources\Game\game_object.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

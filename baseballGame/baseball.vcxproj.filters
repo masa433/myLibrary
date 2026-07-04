@@ -148,6 +148,9 @@
     <ClCompile Include="Sources\Renderer\FontRenderer.cpp">
       <Filter>Sources\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\Flag.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -314,6 +317,9 @@
     </ClInclude>
     <ClInclude Include="Sources\Renderer\FontRenderer.h">
       <Filter>Sources\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\Flag.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

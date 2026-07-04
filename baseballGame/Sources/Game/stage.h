@@ -8,6 +8,7 @@
 #include "physxManager.h"
 #include "ModelRenderer.h"
 #include "ShaderId.h"
+#include "Flag.h"
 
 class gltf_model;
 class Model;
@@ -45,6 +46,7 @@ private:
 	std::vector<physx::PxActor*> actors;
 	DirectX::XMFLOAT4X4					transform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 
+	Flag flag;
 	
 	// ライトタワーの位置（6基分）
 	DirectX::XMFLOAT3 towerPositions[6] =

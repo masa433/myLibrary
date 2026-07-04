@@ -401,7 +401,8 @@ void Pitcher::DrawGUI()
 				u8"戸郷翔征", u8"才木浩人", u8"東克樹", u8"宮城大弥", u8"伊藤大海",
 				u8"床田寛樹", u8"石川雅規", u8"九里亜蓮",
 				u8"大谷翔平", u8"山本由伸", u8"今永昇太", u8"菊池雄星", u8"千賀滉大",
-				u8"大勢",u8"藤川球児",u8"ライデル・マルティネス",u8"石井大智",u8"ビエイラ"
+				u8"大勢",u8"藤川球児",u8"ライデル・マルティネス",u8"石井大智",u8"ビエイラ",
+				u8"高梨雄平",u8"松山晋也",u8"大竹耕太郎"
 			};
 			int realPitcherIndex = static_cast<int>(selectedRealPitcher);
 			if (ImGui::Combo(u8"実在投手", &realPitcherIndex, realPitcherNames, IM_ARRAYSIZE(realPitcherNames)))
@@ -1385,6 +1386,41 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::VerticalSlider,20.1f, 139.7f, BreakGrade::A },
 			{ PitchType::TwoSeam,        7.3f, 156.2f, BreakGrade::C },
 			{ PitchType::Splitter,       1.5f, 148.3f, BreakGrade::E },
+		};
+		return true;
+
+	case RealPitcher::Takanashi: //高梨雄平
+		outName = u8"高梨雄平";
+		outIsRight = false;
+		outArsenal = {
+			{ PitchType::Slider,        58.6f, 126.5f, BreakGrade::S },
+			{ PitchType::Shooter,       31.0f, 141.4f, BreakGrade::C },
+			{ PitchType::Fastball,      10.3f, 142.7f, BreakGrade::C },
+		};
+		return true;
+
+	case RealPitcher::Matsuyama: //松山晋也
+		outName = u8"松山晋也";
+		outIsRight = true;
+		outArsenal = {
+			{ PitchType::Fastball,      58.8f, 153.9f, BreakGrade::C },
+			{ PitchType::Forkball,      40.6f, 145.2f, BreakGrade::B },
+			{ PitchType::Cutter,         0.6f, 152.0f, BreakGrade::D },
+		};
+		return true;
+
+	case RealPitcher::Ohtake:  //大竹耕太郎
+		outName = u8"大竹耕太郎";
+		outIsRight = false;
+		outArsenal = {
+			{ PitchType::Fastball,      39.1f, 137.5f, BreakGrade::C },
+			{ PitchType::Changeup,      25.6f, 116.4f, BreakGrade::B },
+			{ PitchType::Cutter,		13.3f, 131.3f, BreakGrade::C },
+			{ PitchType::TwoSeam,        8.8f, 131.1f, BreakGrade::D },
+			{ PitchType::Slider,         8.1f, 117.4f, BreakGrade::C },
+			{ PitchType::SlowBall,       2.3f,  85.0f, BreakGrade::E },
+			{ PitchType::Curveball,      2.0f, 105.5f, BreakGrade::D },
+			{ PitchType::Knuckleball,    0.7f, 129.6f, BreakGrade::E },
 		};
 		return true;
 

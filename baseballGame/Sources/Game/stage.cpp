@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "Graphics.h"
 
+
 //std::vector<physx::PxRigidStatic*> stage::boxColliders;
 
 // 初期化
@@ -275,6 +276,8 @@ void stage::initialize()
 			pxScene->addActor(*homeRunTrigger);
 		}
 	}
+
+	flag.Initialize();
 }
 
 
@@ -292,6 +295,8 @@ void stage::update(float elapsedTime)
 	//ボックスの位置とサイズを更新
 
 	UpdateTransform();
+
+	flag.Update(elapsedTime);
 }
 
 void stage::render(const RenderContext& rc, ModelRenderer* renderer)
@@ -313,6 +318,8 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 
 		lightTower2->render_batched(rc.deviceContext, towerTransform, {});
 	}
+
+	flag.Render(rc, renderer);
 }
 
 // 終了
@@ -341,6 +348,8 @@ void stage::uninitialize()
 	ground2.reset();
 	pole2.reset();
 	lightTower2.reset();
+
+	flag.UnInitialize();
 }
 
 void stage::DrawGUI()
@@ -384,6 +393,8 @@ void stage::DrawGUI()
 			ImGui::DragFloat3((label + " Scale").c_str(), &lightScale[i].x, 0.01f);
 		}
 	}
+
+	flag.DrawGUI();
 
 #endif //  USE_IMGUI
 }

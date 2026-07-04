@@ -273,6 +273,9 @@ public:
 		Martinez,//マルティネス
 		Ishi,//石井大智
 		Vieira,//ビエイラ
+		Takanashi,//高梨雄平
+		Matsuyama,//松山晋也
+		Ohtake,//大竹耕太郎
 		Count,//カウント
 	};
 
