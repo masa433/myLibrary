@@ -2,9 +2,6 @@
 #include "imgui.h"
 #include "Graphics.h"
 
-
-//std::vector<physx::PxRigidStatic*> stage::boxColliders;
-
 // 初期化
 void stage::initialize()
 {
@@ -204,61 +201,6 @@ void stage::initialize()
 			triangle_meshes.emplace_back(pxTriangleMesh);
 		}
 
-		//// LightTower モデルのメッシュを処理
-		//const ModelResource* lightTowerResources = lightTower->GetResource();
-		//for (const ModelResource::Mesh& mesh : lightTowerResources->GetMeshes())
-		//{
-		//	physx::PxTriangleMeshDesc meshDesc;
-		//	meshDesc.points.count = static_cast<physx::PxU32>(mesh.vertices.size());
-		//	meshDesc.points.data = mesh.vertices.data();
-		//	meshDesc.points.stride = sizeof(ModelResource::Vertex);
-		//	meshDesc.triangles.count = static_cast<physx::PxU32>(mesh.indices.size() / 3);
-		//	meshDesc.triangles.data = mesh.indices.data();
-		//	meshDesc.triangles.stride = sizeof(UINT) * 3;
-		//	physx::PxTolerancesScale pxTolerances;
-		//	const physx::PxCookingParams cookingParams(pxTolerances);
-		//	physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
-		//	triangle_meshes.emplace_back(pxTriangleMesh);
-
-		//	const Model::Node& node = lightTower->GetNodes().at(mesh.nodeIndex);
-		//	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
-		//	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
-		//	DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * Transform;
-		//	physx::PxVec3 pxScale(
-		//		DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
-		//		DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),
-		//		DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[2]))
-		//	);
-
-		//	NodeTransform.r[0] = DirectX::XMVector3Normalize(NodeTransform.r[0]);
-		//	NodeTransform.r[1] = DirectX::XMVector3Normalize(NodeTransform.r[1]);
-		//	NodeTransform.r[2] = DirectX::XMVector3Normalize(NodeTransform.r[2]);
-
-		//	DirectX::XMFLOAT4X4 nodeTransform;
-		//	DirectX::XMStoreFloat4x4(&nodeTransform, NodeTransform);
-		//	physx::PxTransform pxTransform(physx::PxMat44(
-		//		physx::PxVec3(nodeTransform._11, nodeTransform._12, nodeTransform._13),
-		//		physx::PxVec3(nodeTransform._21, nodeTransform._22, nodeTransform._23),
-		//		physx::PxVec3(nodeTransform._31, nodeTransform._32, nodeTransform._33),
-		//		physx::PxVec3(nodeTransform._41, nodeTransform._42, nodeTransform._43)
-		//	));
-
-		//	physx::PxRigidStatic* pxRigidBody = pxPhysics->createRigidStatic(pxTransform);
-		//	_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create light tower rigid body");
-
-		//	physx::PxMeshScale pxMeshScale(pxScale);
-		//	physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
-		//	physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *standMaterial);
-
-		//	pxRigidBody->setName("LightTower");
-
-		//	pxScene->addActor(*pxRigidBody);
-
-		//	actors.emplace_back(pxRigidBody);
-		//	triangle_meshes.emplace_back(pxTriangleMesh);
-		//}
-
-
 		// ホームラン判定用トリガーの作成
 		{
 			physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
@@ -277,7 +219,33 @@ void stage::initialize()
 		}
 	}
 
-	flag.Initialize();
+	// 旗の初期化
+	{
+		//旗を等間隔で並べる
+		static const Flag::FlagColor flagColors[FLAG_COUNT] =
+		{
+			Flag::FlagColor::Blue,
+			Flag::FlagColor::Green,
+			Flag::FlagColor::Japan,
+			Flag::FlagColor::Red,
+			Flag::FlagColor::Yellow,
+		};
+		const DirectX::XMFLOAT3 flagBasePosition = { 0.0f, 70.0f, 140.0f };
+		const float flagSpacing = 15.0f;
+
+		flags.resize(FLAG_COUNT);
+		for (int i = 0; i < FLAG_COUNT; ++i)
+		{
+			//iが2の時だけpositionを70にして、他の旗はpositionを60にする
+			DirectX::XMFLOAT3 flagPosition = flagBasePosition;
+			if (i != 2)
+			{
+				flagPosition.y = 60.0f;
+			}
+
+			flags[i].Initialize(i, flagColors[i], flagSpacing, flagPosition);
+		}
+	}
 }
 
 
@@ -296,7 +264,10 @@ void stage::update(float elapsedTime)
 
 	UpdateTransform();
 
-	flag.Update(elapsedTime);
+	for (Flag& f : flags)
+	{
+		f.Update(elapsedTime);
+	}
 }
 
 void stage::render(const RenderContext& rc, ModelRenderer* renderer)
@@ -319,7 +290,11 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 		lightTower2->render_batched(rc.deviceContext, towerTransform, {});
 	}
 
-	flag.Render(rc, renderer);
+	for (Flag& f : flags)
+	{
+		f.Render(rc, renderer);
+	}
+
 }
 
 // 終了
@@ -349,7 +324,10 @@ void stage::uninitialize()
 	pole2.reset();
 	lightTower2.reset();
 
-	flag.UnInitialize();
+	for (Flag& f : flags)
+	{
+		f.UnInitialize();
+	}
 }
 
 void stage::DrawGUI()
@@ -394,7 +372,14 @@ void stage::DrawGUI()
 		}
 	}
 
-	flag.DrawGUI();
+	for (int i = 0; i < FLAG_COUNT; ++i)
+	{
+		std::string flagLabel = "Flag " + std::to_string(i);
+		if (ImGui::CollapsingHeader(flagLabel.c_str()))
+		{
+			flags[i].DrawGUI(i);
+		}
+	}
 
 #endif //  USE_IMGUI
 }

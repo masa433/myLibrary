@@ -46,7 +46,9 @@ private:
 	std::vector<physx::PxActor*> actors;
 	DirectX::XMFLOAT4X4					transform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 
-	Flag flag;
+
+	static constexpr int FLAG_COUNT = 5;
+	std::vector<Flag> flags;
 	
 	// ライトタワーの位置（6基分）
 	DirectX::XMFLOAT3 towerPositions[6] =
