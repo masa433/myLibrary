@@ -213,14 +213,16 @@ void Player::Update(float elapsedTime)
 
         const DirectX::XMFLOAT2 batSize = BatSprite::Instance().GetBatSpriteSize();
         DirectX::XMFLOAT2 batCenter;
-        float batRot;
+        float batRotDisplay; // 見た目のスプライト回転
+        float batRotPhysics; // 当たり判定用の回転（新規）
         if (IsRightBatter())
         {
             batCenter = {
                 (mouseX - batSize.x * 0.7f) + batSize.x * 0.5f,
                 (mouseY - batSize.y) + batSize.y * 0.5f
             };
-            batRot = 25.0f;
+            batRotDisplay = 25.0f;
+            batRotPhysics = 25.0f;
         }
         else
         {
@@ -228,7 +230,8 @@ void Player::Update(float elapsedTime)
                 (mouseX - batSize.x * 0.3f) + batSize.x * 0.5f,
                 (mouseY - batSize.y) + batSize.y * 0.5f
             };
-            batRot = 155.0f;
+            batRotDisplay = 155.0f;
+            batRotPhysics = -25.0f;
         }
 
         // 紫バットOBBを別途計算してボールと重なり判定
@@ -240,7 +243,7 @@ void Player::Update(float elapsedTime)
             // 右打ち：バットOBB中心からローカルX+方向（先端）にずらす
             float offsetAlongBat = (batSize.x * 0.5f) - (purpleSize.x * 0.5f); // 先端寄りのオフセット量
 
-            float radBat = DirectX::XMConvertToRadians(batRot);
+            float radBat = DirectX::XMConvertToRadians(batRotPhysics);
             float cosB = cosf(radBat), sinB = sinf(radBat);
 
             OBB2D purpleOBB;
@@ -249,7 +252,7 @@ void Player::Update(float elapsedTime)
                 batCenter.y + sinB * offsetAlongBat
             };
             purpleOBB.halfSize = { purpleSize.x * 0.5f, purpleSize.y * 0.5f };
-            purpleOBB.rotationDeg = batRot;
+            purpleOBB.rotationDeg = batRotPhysics;
 
             isPurpleBat = HitJudge2D::OBBvsCircle(purpleOBB, ballCenter, ballRadius);
         }
@@ -287,7 +290,7 @@ void Player::Update(float elapsedTime)
         HitJudge2D::Instance().isBallZone = isBallZone; // 後述のメンバ
 
         HitJudge2D::Instance().Update(
-            ballCenter, batCenter, batSize, batRot, cursorCenter, estTime);
+            ballCenter, batCenter, batSize, batRotPhysics, cursorCenter, estTime);
 
 		
     }
