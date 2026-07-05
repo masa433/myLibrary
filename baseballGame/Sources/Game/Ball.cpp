@@ -143,6 +143,7 @@ void Ball::Initialize()
 	physx::PxTransform transform(physx::PxVec3(worldPosition.x, worldPosition.y, worldPosition.z));
 
 	collider = pxPhysics->createRigidDynamic(transform);
+	collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
 	_ASSERT_EXPR(collider != nullptr, "Failed to create ball collider");
 
 	physx::PxShape* shape = pxPhysics->createShape(geometry, *material);

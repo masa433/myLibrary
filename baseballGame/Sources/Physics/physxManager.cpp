@@ -59,6 +59,9 @@ void Physics::Initialize()
 		pxSceneDesc.filterShader = SimulationFilterShader;
 		pxSceneDesc.simulationEventCallback = this;
 
+		//CCDを有効化
+		pxSceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
+
 		pxScene = pxPhysics->createScene(pxSceneDesc);
 		_ASSERT_EXPR(pxScene != nullptr, "Failed pxPhysics->createScene");
 	}
@@ -505,6 +508,8 @@ physx::PxFilterFlags Physics::SimulationFilterShader(
 
 	pairFlags = physx::PxPairFlag::eCONTACT_DEFAULT;
 	pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_FOUND | physx::PxPairFlag::eNOTIFY_TOUCH_LOST | physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS | physx::PxPairFlag::eNOTIFY_CONTACT_POINTS;
+
+	pairFlags |= physx::PxPairFlag::eDETECT_CCD_CONTACT;
 
 	return physx::PxFilterFlag::eDEFAULT;
 }
