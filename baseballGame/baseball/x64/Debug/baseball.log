@@ -1,5 +1,5 @@
-﻿  physxManager.cpp
+﻿  framework.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Flag.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
-  (ソース ファイル 'Sources/Physics/physxManager.cpp' をコンパイルしています)
+  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
   
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe
