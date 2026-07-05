@@ -297,9 +297,12 @@
     <ClCompile Include="Sources\Renderer\UIEasing.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Scene\sceneManager.cpp" />
     <ClCompile Include="Sources\Scene\scene_game.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Scene\scene_loading.cpp" />
+    <ClCompile Include="Sources\Scene\scene_title.cpp" />
     <ClCompile Include="Sources\Shader\BasicShader.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -433,9 +436,12 @@
     <ClInclude Include="Sources\Scene\scene.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Scene\sceneManager.h" />
     <ClInclude Include="Sources\Scene\scene_game.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Scene\scene_loading.h" />
+    <ClInclude Include="Sources\Scene\scene_title.h" />
     <ClInclude Include="Sources\Shader\BasicShader.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

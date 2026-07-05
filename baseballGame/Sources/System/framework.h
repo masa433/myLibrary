@@ -12,6 +12,8 @@
 #include "fullscreen_quad.h"
 #include "../Model/gltf_model.h"
 #include "scene_game.h"
+#include "scene_title.h"
+#include "sceneManager.h"
 #include "Graphics.h"
 
 #ifdef USE_IMGUI
@@ -152,8 +154,7 @@ private:
 	float elapsed_time{ 0.0f };
 	HDC hDC;
 
-	// ÉVÅ[Éìä«óù
-	scene_game sceneGame;
+	
 
 	void calculate_frame_stats()
 	{

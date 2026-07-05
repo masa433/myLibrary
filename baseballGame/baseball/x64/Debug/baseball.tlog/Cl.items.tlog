@@ -40,7 +40,10 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\SkyRenderer.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\sprite.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\sprite.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\sprite_batch.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\sprite_batch.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\UIEasing.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\UIEasing.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\sceneManager.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\sceneManager.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\scene_game.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_loading.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\scene_loading.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\scene_title.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Shader\BasicShader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\BasicShader.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Shader\LambertShader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\LambertShader.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Shader\shader.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\shader.obj

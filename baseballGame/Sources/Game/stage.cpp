@@ -304,6 +304,7 @@ void stage::uninitialize()
 	{
 		pxTriangleMesh->release();
 	}
+	triangle_meshes.clear();
 
 	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 	physx::PxScene* pxScene = Physics::Instance().GetScene();
@@ -312,6 +313,8 @@ void stage::uninitialize()
 	{
 		pxScene->removeActors(actors.data(), static_cast<physx::PxU32>(actors.size()));
 	}
+
+	actors.clear();
 
 	/*for (auto* boxCollider : boxColliders)
 	{

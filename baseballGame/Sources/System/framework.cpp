@@ -54,7 +54,7 @@ framework::framework(HWND hwnd) : hwnd(hwnd)
 
 
 
-	sceneGame.initialize();
+	sceneManager::Instance().ChangeScene(new scene_game());
 
 
 }
@@ -76,7 +76,7 @@ void framework::update(float elapsed_time/*Elapsed seconds from last frame*/)
 
 
 
-	sceneGame.update(elapsed_time);
+	sceneManager::Instance().Update(elapsed_time);
 
 }
 void framework::render(float elapsed_time/*Elapsed seconds from last frame*/)
@@ -89,9 +89,9 @@ void framework::render(float elapsed_time/*Elapsed seconds from last frame*/)
 	//レンダーターゲット設定
 	Graphics::Instance().SetRenderTarget();
 
-	sceneGame.render(elapsed_time);
+	sceneManager::Instance().Render();
 
-	sceneGame.DrawGUI();
+	sceneManager::Instance().DrawGUI();
 
 #ifdef USE_IMGUI
 	ImGui::Render();
@@ -112,7 +112,7 @@ bool framework::uninitialize()
 framework::~framework()
 {
 
-	sceneGame.uninitialize();
+	sceneManager::Instance().Clear();
 
 
 	ReleaseDC(hwnd, hDC);
