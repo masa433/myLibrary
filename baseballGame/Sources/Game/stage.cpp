@@ -258,6 +258,183 @@ void stage::initialize()
 	}
 }
 
+void stage::UpdateFenceEditor(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
+	float viewportX, float viewportY, float viewportWidth, float viewportHeight)
+{
+	if (!fenceEditMode)return;
+	if (!ImGui::IsMouseClicked(ImGuiMouseButton_Left)) return;// 左クリックが押されていない場合は何もしない
+
+	ImVec2 mousePos = ImGui::GetMousePos();
+
+	//GameViewウィンドウ内かどうか判定
+	float localX = mousePos.x - viewportX;
+	float localY = mousePos.y - viewportY;
+	if(localX < 0 || localX > viewportWidth || localY < 0 || localY > viewportHeight)
+	{
+		return; // GameViewウィンドウ外なら何もしない
+	}
+
+	//スクリーン座標を正規化デバイス座標に変換
+	float ndcX = (localX / viewportWidth) * 2.0f - 1.0f;
+	float ndcY = 1.0f - (localY / viewportHeight) * 2.0f; // Y軸反転
+
+	DirectX::XMMATRIX View = DirectX::XMLoadFloat4x4(&view);
+	DirectX::XMMATRIX Proj = DirectX::XMLoadFloat4x4(&proj);
+	DirectX::XMMATRIX invVP = DirectX::XMMatrixInverse(nullptr, View * Proj);
+
+	DirectX::XMVECTOR nearP = DirectX::XMVector3TransformCoord(DirectX::XMVectorSet(ndcX, ndcY, 0.0f, 1.0f), invVP);
+	DirectX::XMVECTOR farP = DirectX::XMVector3TransformCoord(DirectX::XMVectorSet(ndcX, ndcY, 1.0f, 1.0f), invVP);
+
+	DirectX::XMVECTOR dirV = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(farP, nearP));
+
+	DirectX::XMFLOAT3 rayOrigin, rayDir;
+	DirectX::XMStoreFloat3(&rayOrigin, nearP);
+	DirectX::XMStoreFloat3(&rayDir, dirV);
+
+	physx::PxScene* pxScene = Physics::Instance().GetScene();
+	physx::PxRaycastBuffer hitBuffer;
+	physx::PxQueryFilterData filterData;
+	filterData.flags |= physx::PxQueryFlag::eSTATIC; // 静的オブジェクトのみを対象
+
+	bool hit = pxScene->raycast(
+		physx::PxVec3(rayOrigin.x, rayOrigin.y, rayOrigin.z),// レイの原点
+		physx::PxVec3(rayDir.x, rayDir.y, rayDir.z),// レイの方向
+		1000.0f, // 最大距離
+		hitBuffer,// ヒット情報を格納するバッファ
+		physx::PxHitFlag::eDEFAULT,// ヒット情報の取得フラグ
+		filterData// フィルタリング情報
+	);
+
+	// ヒットした場合、ヒットした位置をフェンスラインの頂点として追加
+	if (hit && hitBuffer.hasBlock)
+	{
+		physx::PxRigidActor* actor = hitBuffer.block.actor;
+		if (actor && actor->getName() && std::string(actor->getName()) == "Stand")
+		{
+			physx::PxVec3 p = hitBuffer.block.position;
+			fenceLinePoints.push_back({ p.x, p.y, p.z });
+		}
+	}
+}
+
+void stage::RebuildFenceTriggers()
+{
+	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
+	physx::PxScene* pxScene = Physics::Instance().GetScene();
+
+	// 既存のフェンスラインのトリガーコライダーを削除
+	for (auto* actor : fenceTriggers)
+	{
+		pxScene->removeActor(*actor);
+		actor->release();
+	}
+	fenceTriggers.clear();
+
+	if(fenceLinePoints.size() < 2)
+	{
+		return; // フェンスラインの頂点が2つ未満の場合は何もしない
+	}
+
+	physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+	
+
+	for(size_t i = 0; i < fenceLinePoints.size() - 1; ++i)
+	{
+		const auto& p1 = fenceLinePoints[i];
+		const auto& p2 = fenceLinePoints[i + 1];
+		
+		// フェンスラインの中点を計算
+		float dx = p2.x - p1.x;
+		float dz = p2.z - p1.z;
+		float length = std::sqrt(dx * dx + dz * dz);
+		if (length < 1e-3f) continue; // 長さがほぼゼロの場合はスキップ
+
+		float midX = (p1.x + p2.x) * 0.5f;
+		float midZ = (p1.z + p2.z) * 0.5f;
+		float baseY = (std::min)(p1.y, p2.y); // フェンスラインの下端のY座標
+		float height = fenceExtraHeight;// フェンスラインの上端からさらに上へ伸ばす高さ
+		float midY = baseY + height * 0.5f; // フェンスラインの中点のY座標
+
+		float angle = std::atan2(-dz, dx);// フェンスラインの角度を計算
+
+		physx::PxTransform triggerTransform(
+			physx::PxVec3(midX, midY, midZ),
+			physx::PxQuat(angle, physx::PxVec3(0, 1, 0)) // Y軸回転
+		);
+
+		physx::PxBoxGeometry geometry(length * 0.5f, height * 0.5f, fenceThickness * 0.5f);
+
+		physx::PxRigidStatic* actor = pxPhysics->createRigidStatic(triggerTransform);
+		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, geometry, *triggerMaterial);
+		shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+
+		actor->setName("HomeRunTrigger");
+
+		pxScene->addActor(*actor);
+		fenceTriggers.push_back(actor);
+	}
+}
+
+void stage::DrawFenceOverlay(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
+	float viewportX, float viewportY, float viewportWidth, float viewportHeight)
+{
+	if (fenceLinePoints.empty()) return;
+
+	DirectX::XMMATRIX View = DirectX::XMLoadFloat4x4(&view);
+	DirectX::XMMATRIX Proj = DirectX::XMLoadFloat4x4(&proj);
+	DirectX::XMMATRIX VP = View * Proj;
+
+	auto worldToScreen = [&](const DirectX::XMFLOAT3& worldPos, ImVec2& outScreen)->bool
+	{
+		DirectX::XMVECTOR clip = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&worldPos), VP);
+
+		//画面の裏側にある場合は描画しない
+		DirectX::XMFLOAT4 clipCheck;
+		DirectX::XMStoreFloat4(&clipCheck, DirectX::XMVector3Transform(DirectX::XMLoadFloat3(&worldPos), VP));
+		if (clipCheck.w <= 0.0f) return false;
+
+		// NDC座標に変換
+		float ndcX, ndcY;
+		DirectX::XMFLOAT3 c;
+		DirectX::XMStoreFloat3(&c, clip);
+		ndcX = c.x;
+		ndcY = c.y;
+
+		// スクリーン座標に変換
+		outScreen.x = viewportX + (ndcX * 0.5f + 0.5f) * viewportWidth;
+		outScreen.y = viewportY + (1.0f - (ndcY * 0.5f + 0.5f)) * viewportHeight;
+
+		return true;
+	};
+
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	const ImU32 lineColor = IM_COL32(255, 60, 60, 255);
+	const ImU32 pointColor = IM_COL32(255, 255, 0, 255);
+
+	ImVec2 prevScreen;
+	bool hasPrev = false;
+
+	for (const auto& p : fenceLinePoints)
+	{
+		ImVec2 screenPos;
+		if (!worldToScreen(p, screenPos))
+		{
+			hasPrev = false;
+			continue;
+		}
+
+		if (hasPrev)
+		{
+			drawList->AddLine(prevScreen, screenPos, lineColor, 2.0f);
+		}
+		drawList->AddCircleFilled(screenPos, 4.0f, pointColor);
+
+		prevScreen = screenPos;
+		hasPrev = true;
+	}
+
+}
 
 // 更新
 void stage::update(float elapsedTime)
@@ -408,7 +585,7 @@ void stage::DrawGUI()
 
 	if (ImGui::CollapsingHeader("LightTower"))
 	{
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < TOWER_COUNT; i++)
 		{
 			std::string label = "Tower[" + std::to_string(i) + "]";
 			ImGui::DragFloat3(label.c_str(), &towerPositions[i].x, 0.5f);
@@ -423,6 +600,30 @@ void stage::DrawGUI()
 		if (ImGui::CollapsingHeader(flagLabel.c_str()))
 		{
 			flags[i].DrawGUI(i);
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Fence Line Editor"))
+	{
+		ImGui::Checkbox(u8"Edit Mode (Game View上でフェンスをクリック)", &fenceEditMode);
+		ImGui::Text("Points: %d", (int)fenceLinePoints.size());
+
+		if (ImGui::Button("Undo Last Point") && !fenceLinePoints.empty())
+			fenceLinePoints.pop_back();
+		ImGui::SameLine();
+		if (ImGui::Button("Clear All"))
+			fenceLinePoints.clear();
+		ImGui::SameLine();
+		if (ImGui::Button("Rebuild Triggers"))
+			RebuildFenceTriggers();
+
+		ImGui::DragFloat("Extra Height", &fenceExtraHeight, 0.5f);
+		ImGui::DragFloat("Thickness", &fenceThickness, 0.1f);
+
+		for (size_t i = 0; i < fenceLinePoints.size(); ++i)
+		{
+			ImGui::Text("[%d] (%.2f, %.2f, %.2f)", (int)i,
+				fenceLinePoints[i].x, fenceLinePoints[i].y, fenceLinePoints[i].z);
 		}
 	}
 

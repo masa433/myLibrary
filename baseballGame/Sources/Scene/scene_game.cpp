@@ -1278,10 +1278,29 @@ void scene_game::DrawGUI()
             ImGui::GetCursorPosX() + offX,
             ImGui::GetCursorPosY() + offY));
 
+        // 画像が実際に描画されるスクリーン座標(左上)を取得 
+		ImVec2 imageScreenPos = ImGui::GetCursorScreenPos();
+
         // scene_shader_resource_view = シーンのカラーバッファ SRV
         ImGui::Image(
             ImTextureRef(scene_shader_resource_view.Get()),
             ImVec2(dispW, dispH));
+
+        // ── フェンスライン編集ツールの更新 ──
+        Camera& camera = Camera::Instance();
+        DirectX::XMFLOAT4X4 view = camera.GetView();          // ※名称が違う場合は合わせてください
+        DirectX::XMFLOAT4X4 proj = camera.GetProjection();    // ※同上
+
+        stage::Instance().UpdateFenceEditor(
+            view, proj,
+            imageScreenPos.x, imageScreenPos.y,
+            dispW, dispH);
+
+        // ── 打った点をその場でつないで見せる(Rebuildする前のプレビュー) ──
+        stage::Instance().DrawFenceOverlay(
+            view, proj,
+            imageScreenPos.x, imageScreenPos.y,
+            dispW, dispH);
     }
     ImGui::End();
 

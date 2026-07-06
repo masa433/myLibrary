@@ -106,5 +106,17 @@ public:
 	DirectX::XMFLOAT3 hrTriggerPos = { 0.0f, 10.0f, -80.0f }; // トリガーの初期位置
 	DirectX::XMFLOAT3 hrTriggerHalfExtents = { 60.0f, 20.0f, 10.0f }; // トリガーの半分のサイズ(XYZ)
 
+	std::vector<DirectX::XMFLOAT3> fenceLinePoints; // クリックで拾ったフェンス上部の実座標
+	std::vector<physx::PxRigidStatic*> fenceTriggers;
+	bool fenceEditMode = false;   // 編集モードのON/OFF
+	float fenceThickness = 0.5f;// フェンスラインの厚み
+	float fenceExtraHeight = 40.0f; // フェンス上端からさらに上へ判定を伸ばす高さ
 
+	void UpdateFenceEditor(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj, 
+		float viewportX, float viewportY, float viewportWidth, float viewportHeight);
+
+	void RebuildFenceTriggers(); // フェンスラインのトリガーコライダーを再構築する
+
+	void DrawFenceOverlay(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
+		float viewportX, float viewportY, float viewportWidth, float viewportHeight);
 };
