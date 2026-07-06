@@ -428,3 +428,65 @@ void stage::DrawGUI()
 
 #endif //  USE_IMGUI
 }
+
+void stage::SaveToJson(json& j)
+{
+	j["standPosition"] = { standPosition.x, standPosition.y, standPosition.z };
+	j["standScale"] = { standScale.x, standScale.y, standScale.z };
+	j["standAngle"] = { standAngle.x, standAngle.y, standAngle.z };
+	j["groundPosition"] = { groundPosition.x, groundPosition.y, groundPosition.z };
+	j["groundScale"] = { groundScale.x, groundScale.y, groundScale.z };
+	j["groundAngle"] = { groundAngle.x, groundAngle.y, groundAngle.z };
+	j["polePosition"] = { polePosition.x, polePosition.y, polePosition.z };
+	j["poleScale"] = { poleScale.x, poleScale.y, poleScale.z };
+	j["poleAngle"] = { poleAngle.x, poleAngle.y, poleAngle.z };
+	// ホームラン判定用トリガーの位置とサイズを保存
+	j["hrTriggerPos"] = { hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z };
+	j["hrTriggerHalfExtents"] = { hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z };
+	// ライトタワーの位置、角度、スケールを保存
+	for (int i = 0; i < TOWER_COUNT; ++i)
+	{
+		std::string towerKey = "tower" + std::to_string(i);
+		j[towerKey]["position"] = { towerPositions[i].x, towerPositions[i].y, towerPositions[i].z };
+		j[towerKey]["angle"] = { towerAngle[i].x, towerAngle[i].y, towerAngle[i].z };
+		j[towerKey]["scale"] = { lightScale[i].x, lightScale[i].y, lightScale[i].z };
+	}
+	
+}
+
+void stage::LoadFromJson(const json& j)
+{
+	standPosition = { j["standPosition"][0], j["standPosition"][1], j["standPosition"][2] };
+	standScale = { j["standScale"][0], j["standScale"][1], j["standScale"][2] };
+	standAngle = { j["standAngle"][0], j["standAngle"][1], j["standAngle"][2] };
+	groundPosition = { j["groundPosition"][0], j["groundPosition"][1], j["groundPosition"][2] };
+	groundScale = { j["groundScale"][0], j["groundScale"][1], j["groundScale"][2] };
+	groundAngle = { j["groundAngle"][0], j["groundAngle"][1], j["groundAngle"][2] };
+	polePosition = { j["polePosition"][0], j["polePosition"][1], j["polePosition"][2] };
+	poleScale = { j["poleScale"][0], j["poleScale"][1], j["poleScale"][2] };
+	poleAngle = { j["poleAngle"][0], j["poleAngle"][1], j["poleAngle"][2] };
+	// ホームラン判定用トリガーの位置とサイズを読み込み
+	hrTriggerPos = { j["hrTriggerPos"][0], j["hrTriggerPos"][1], j["hrTriggerPos"][2] };
+	hrTriggerHalfExtents = { j["hrTriggerHalfExtents"][0], j["hrTriggerHalfExtents"][1], j["hrTriggerHalfExtents"][2] };
+	// ライトタワーの位置、角度、スケールを読み込み
+	for (int i = 0; i < TOWER_COUNT; ++i)
+	{
+		std::string towerKey = "tower" + std::to_string(i);
+		towerPositions[i] = {
+			j[towerKey]["position"][0],
+			j[towerKey]["position"][1],
+			j[towerKey]["position"][2]
+		};
+		towerAngle[i] = {
+			j[towerKey]["angle"][0],
+			j[towerKey]["angle"][1],
+			j[towerKey]["angle"][2]
+		};
+		lightScale[i] = {
+			j[towerKey]["scale"][0],
+			j[towerKey]["scale"][1],
+			j[towerKey]["scale"][2]
+		};
+	}
+
+}

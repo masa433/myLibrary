@@ -9,6 +9,9 @@
 #include "ModelRenderer.h"
 #include "ShaderId.h"
 #include "Flag.h"
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 class gltf_model;
 class Model;
@@ -31,6 +34,9 @@ public:
 	void render(const RenderContext& rc, ModelRenderer* renderer);
 	void uninitialize();
 	void DrawGUI();
+
+	void SaveToJson(json& j);
+	void LoadFromJson(const json& j);
 
 private:
 
