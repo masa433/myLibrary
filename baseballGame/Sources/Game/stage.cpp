@@ -23,9 +23,17 @@ void stage::initialize()
 	lightTower2->build_static_batches(device);
 
 	// 位置、スケール、回転の初期化
-	position = { 0.0f, 0.0f, 0.0f };
-	scale = { 1.0f, 1.0f, 1.0f };
-	angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f };
+	standPosition = { 0.0f, 0.0f, 0.0f };
+	standScale = { 1.0f, 1.0f, 1.0f };
+	standAngle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f };
+
+	groundPosition = { 0.0f, 0.0f, 0.0f };
+	groundScale = { 1.0f, 1.0f, 1.0f };
+	groundAngle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f };
+
+	polePosition = { 0.0f, 0.0f, 0.0f };
+	poleScale = { 1.0f, 1.0f, 1.0f };
+	poleAngle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f };
 
 	hrTriggerPos = { 0.0f, 55.0f, 67.5f }; // トリガーの初期位置
 	hrTriggerHalfExtents = { 67.0f, 55.0f, 0.5f }; // トリガーの半分のサイズ(XYZ)
@@ -44,7 +52,9 @@ void stage::initialize()
 		//Pole用のマテリアル（あまり跳ねない）
 		physx::PxMaterial* poleMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.2f);
 
-		DirectX::XMMATRIX Transform = DirectX::XMLoadFloat4x4(&transform);
+		DirectX::XMMATRIX StandTransform = DirectX::XMLoadFloat4x4(&standTransform);
+		DirectX::XMMATRIX GroundTransform = DirectX::XMLoadFloat4x4(&groundTransform);
+		DirectX::XMMATRIX PoleTransform = DirectX::XMLoadFloat4x4(&poleTransform);
 
 		// Stand モデルのメッシュを処理
 		const ModelResource* standResources = stand->GetResource();
@@ -63,9 +73,9 @@ void stage::initialize()
 			physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
 
 			const Model::Node& node = stand->GetNodes().at(mesh.nodeIndex);
-			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
-			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
-			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * Transform;
+			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(standScale.x, standScale.y, standScale.z);
+			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(standAngle.x, standAngle.y, standAngle.z);
+			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * StandTransform;
 			physx::PxVec3 pxScale(
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),
@@ -115,9 +125,9 @@ void stage::initialize()
 			physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
 
 			const Model::Node& node = ground->GetNodes().at(mesh.nodeIndex);
-			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
-			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
-			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * Transform;
+			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(groundScale.x, groundScale.y, groundScale.z);
+			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(groundAngle.x, groundAngle.y, groundAngle.z);
+			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * GroundTransform;
 			physx::PxVec3 pxScale(
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),
@@ -167,9 +177,9 @@ void stage::initialize()
 			physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
 
 			const Model::Node& node = pole->GetNodes().at(mesh.nodeIndex);
-			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
-			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
-			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * Transform;
+			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(poleScale.x, poleScale.y, poleScale.z);
+			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(poleAngle.x, poleAngle.y, poleAngle.z);
+			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * PoleTransform;
 			physx::PxVec3 pxScale(
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
 				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),
@@ -253,12 +263,28 @@ void stage::initialize()
 void stage::update(float elapsedTime)
 {
 
+	//スタンド用
+	//スタンドだけ右手系で描画する
+	DirectX::XMMATRIX C = { -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(standScale.x, standScale.y, standScale.z);
+	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(standAngle.x, standAngle.y, standAngle.z);
+	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(standPosition.x, standPosition.y, standPosition.z);
+	DirectX::XMMATRIX world = C * S * R * T;
+	DirectX::XMStoreFloat4x4(&standTransform, world);
 
-	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
-	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
-	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-	DirectX::XMMATRIX world = S * R * T;
-	DirectX::XMStoreFloat4x4(&transform, world);
+	//グラウンド用
+	S = DirectX::XMMatrixScaling(groundScale.x, groundScale.y, groundScale.z);
+	R = DirectX::XMMatrixRotationRollPitchYaw(groundAngle.x, groundAngle.y, groundAngle.z);
+	T = DirectX::XMMatrixTranslation(groundPosition.x, groundPosition.y, groundPosition.z);
+	world = S * R * T;
+	DirectX::XMStoreFloat4x4(&groundTransform, world);
+
+	//ポール用
+	S = DirectX::XMMatrixScaling(poleScale.x, poleScale.y, poleScale.z);
+	R = DirectX::XMMatrixRotationRollPitchYaw(poleAngle.x, poleAngle.y, poleAngle.z);
+	T = DirectX::XMMatrixTranslation(polePosition.x, polePosition.y, polePosition.z);
+	world = S * R * T;
+	DirectX::XMStoreFloat4x4(&poleTransform, world);
 
 	//ボックスの位置とサイズを更新
 
@@ -275,11 +301,11 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 	//renderer->Render(rc, transform, stand.get(), ShaderId::ShadowMap);
 	//renderer->Render(rc, transform, ground.get(), ShaderId::ShadowMap);
 
-	stand2->render_batched(rc.deviceContext, transform, {});
-	ground2->render_batched(rc.deviceContext, transform, {});
-	pole2->render_batched(rc.deviceContext, transform, {});
-	// ライトタワーをスポットライトの位置に6箇所配置
-	for (int i = 0; i < 6; i++)
+	stand2->render_batched(rc.deviceContext, standTransform, {});
+	ground2->render_batched(rc.deviceContext, groundTransform, {});
+	pole2->render_batched(rc.deviceContext, poleTransform, {});
+	// ライトタワーをスポットライトの位置に4箇所配置
+	for (int i = 0; i < TOWER_COUNT; i++)
 	{
 		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(lightScale[i].x, lightScale[i].y, lightScale[i].z);
 		DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(towerAngle[i].x, towerAngle[i].y, towerAngle[i].z);
@@ -339,9 +365,24 @@ void stage::DrawGUI()
 #ifdef  USE_IMGUI
 	if (ImGui::CollapsingHeader("Stage Info"))
 	{
-		ImGui::DragFloat3("Position", &position.x);
-		ImGui::DragFloat3("Scale", &scale.x);
-		ImGui::DragFloat3("Angle", &angle.x);
+		// スタンドの位置、スケール、回転を表示
+		ImGui::DragFloat3("Stand Position", &standPosition.x, 0.5f);
+		ImGui::DragFloat3("Stand Scale", &standScale.x, 0.1f);
+		ImGui::DragFloat3("Stand Angle", &standAngle.x, 0.01f);
+
+		ImGui::Separator();
+
+		// グラウンドの位置、スケール、回転を表示
+		ImGui::DragFloat3("Ground Position", &groundPosition.x, 0.5f);
+		ImGui::DragFloat3("Ground Scale", &groundScale.x, 0.1f);
+		ImGui::DragFloat3("Ground Angle", &groundAngle.x, 0.01f);
+
+		ImGui::Separator();
+
+		// ポールの位置、スケール、回転を表示
+		ImGui::DragFloat3("Pole Position", &polePosition.x, 0.5f);
+		ImGui::DragFloat3("Pole Scale", &poleScale.x, 0.1f);
+		ImGui::DragFloat3("Pole Angle", &poleAngle.x, 0.01f);
 	}
 
 	if (ImGui::CollapsingHeader("Home Run Trigger"))

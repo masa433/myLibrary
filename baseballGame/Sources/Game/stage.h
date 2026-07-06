@@ -47,33 +47,47 @@ private:
 	DirectX::XMFLOAT4X4					transform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 
 
+	DirectX::XMFLOAT3 standPosition = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT3 standScale = { 1.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT3 standAngle = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT4X4 standTransform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+
+	DirectX::XMFLOAT3 groundPosition = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT3 groundScale = { 1.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT3 groundAngle = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT4X4 groundTransform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+
+	DirectX::XMFLOAT3 polePosition = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT3 poleScale = { 1.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT3 poleAngle = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT4X4 poleTransform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+
 	static constexpr int FLAG_COUNT = 5;
 	std::vector<Flag> flags;
 	
-	// ライトタワーの位置（6基分）
-	DirectX::XMFLOAT3 towerPositions[6] =
+	static constexpr int TOWER_COUNT = 4;
+
+	// ライトタワーの位置（4基分）
+	DirectX::XMFLOAT3 towerPositions[TOWER_COUNT] =
 	{
-		{  80.0f, 0.0f, -90.0f },
-		{ -80.0f, 0.0f, -90.0f },
+		
 		{ -160.0f, 0.0f,  40.0f },
 		{  160.0f, 0.0f,  40.0f },
 		{  80.0f, 0.0f,  140.0f },
 		{ -80.0f, 0.0f,  140.0f },
 	};
 
-	DirectX::XMFLOAT3 towerAngle[6] = {	
-		{ 0.0f, DirectX::XMConvertToRadians(-35.0f), 0.0f },
-		{ 0.0f, DirectX::XMConvertToRadians(35.0f), 0.0f },
+	DirectX::XMFLOAT3 towerAngle[TOWER_COUNT] = {	
+		
 		{ 0.0f, DirectX::XMConvertToRadians(90.0f), 0.0f },
 		{ 0.0f, DirectX::XMConvertToRadians(-90.0f), 0.0f },
 		{ 0.0f, DirectX::XMConvertToRadians(-145.0f), 0.0f },
 		{ 0.0f, DirectX::XMConvertToRadians(145.0f), 0.0f }
 	};
 
-	DirectX::XMFLOAT3 lightScale[6] =
+	DirectX::XMFLOAT3 lightScale[TOWER_COUNT] =
 	{
-		{ 5.0f, 3.0f, 3.0f },
-		{ 5.0f, 3.0f, 3.0f },
+		
 		{ 5.0f, 3.0f, 3.0f },
 		{ 5.0f, 3.0f, 3.0f },
 		{ 5.0f, 2.5f, 3.0f },
