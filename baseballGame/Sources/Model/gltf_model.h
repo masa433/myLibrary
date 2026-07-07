@@ -253,4 +253,39 @@ public:
 	 void render_batched(ID3D11DeviceContext* immediate_context,
 		 const DirectX::XMFLOAT4X4& world, const std::vector<node>& animated_nodes);
 
+	
+public:
+	//フラスタムカリング用のバウンディングボックス
+	struct BoundingBox
+	{
+		DirectX::XMFLOAT3 box_min;
+		DirectX::XMFLOAT3 box_max;
+
+		BoundingBox() : box_min(FLT_MAX, FLT_MAX, FLT_MAX), box_max(-FLT_MAX, -FLT_MAX, -FLT_MAX) {}
+
+		void Merge(const DirectX::XMFLOAT3& point);// 点を含むようにバウンディングボックスを拡張
+		void Merge(const BoundingBox& other);// 他のバウンディングボックスを含むように拡張
+		DirectX::XMFLOAT3 GetCenter() const; // バウンディングボックスの中心を取得
+		DirectX::XMFLOAT3 GetExtents() const; // バウンディングボックスの半分のサイズ（extents）を取得
+		float GetRadius() const; // バウンディングボックスの半径を取得
+	};
+
+	//バウンディングスフィア
+	struct BoundingSphere
+	{
+		DirectX::XMFLOAT3 center;
+		float radius;
+		BoundingSphere() : center(0.0f, 0.0f, 0.0f), radius(0.0f) {}
+	};
+
+	//モデル全体のバウンディングボックスとバウンディングスフィアを取得
+	const BoundingBox& GetBoundingBox() const { return boundingBox; }
+	const BoundingSphere& GetBoundingSphere() const { return boundingSphere; }
+
+	//モデル全体のバウンディングボックスとバウンディングスフィアを計算
+	void CalculateBounds();
+
+private:
+	BoundingBox boundingBox;
+	BoundingSphere boundingSphere;
 };

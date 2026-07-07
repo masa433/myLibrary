@@ -14,6 +14,7 @@
 #include "SkyRenderer.h"
 #include "ShadowRenderer.h"
 #include "FreeCameraController.h"
+#include "FrustumCulling.h"
 #include "json.hpp"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
@@ -37,6 +38,8 @@ private:
 
     FreeCameraController freeCameraController;
 	bool useFreeCamera = false;//	フリーカメラを使用するかどうか
+
+	FrustumCulling frustumCulling;
 
 private:
     //	カスケードシャドウマップ数
@@ -235,6 +238,7 @@ private:
 	bool physxSkipSleepingActors = true;
 	bool enableShadows = false;
 	bool enableBloom = false;
+	bool enableFrustumCulling = true;
 
 private:	
     //	2D描画関係

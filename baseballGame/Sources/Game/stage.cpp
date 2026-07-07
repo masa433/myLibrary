@@ -475,14 +475,59 @@ void stage::update(float elapsedTime)
 	}
 }
 
-void stage::render(const RenderContext& rc, ModelRenderer* renderer)
+void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCulling* frustumCulling)
 {
 	//renderer->Render(rc, transform, stand.get(), ShaderId::ShadowMap);
 	//renderer->Render(rc, transform, ground.get(), ShaderId::ShadowMap);
 
-	stand2->render_batched(rc.deviceContext, standTransform, {});
-	ground2->render_batched(rc.deviceContext, groundTransform, {});
-	pole2->render_batched(rc.deviceContext, poleTransform, {});
+	if (stand2)
+	{
+		bool isVisibled = true;//フラスタムカリングの判定
+		if (frustumCulling)
+		{
+			const auto& sphere = stand2->GetBoundingSphere();//バウンディングスフィアを取得
+			//フラスタムカリングの判定
+			isVisibled = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, standTransform);
+		}
+		if(isVisibled)
+		{
+			//フラスタムカリングに入っている場合のみ描画する
+			stand2->render_batched(rc.deviceContext, standTransform, {});
+		}
+	}
+
+	if(ground2)
+	{
+		bool isVisibled = true;//フラスタムカリングの判定
+		if (frustumCulling)
+		{
+			const auto& sphere = ground2->GetBoundingSphere();//バウンディングスフィアを取得
+			//フラスタムカリングの判定
+			isVisibled = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, groundTransform);
+		}
+		if(isVisibled)
+		{
+			//フラスタムカリングに入っている場合のみ描画する
+			ground2->render_batched(rc.deviceContext, groundTransform, {});
+		}
+	}
+
+	if(pole2)
+	{
+		bool isVisibled = true;//フラスタムカリングの判定
+		if (frustumCulling)
+		{
+			const auto& sphere = pole2->GetBoundingSphere();//バウンディングスフィアを取得
+			//フラスタムカリングの判定
+			isVisibled = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, poleTransform);
+		}
+		if(isVisibled)
+		{
+			//フラスタムカリングに入っている場合のみ描画する
+			pole2->render_batched(rc.deviceContext, poleTransform, {});
+		}
+	}
+
 	// ライトタワーをスポットライトの位置に4箇所配置
 	for (int i = 0; i < TOWER_COUNT; i++)
 	{
@@ -493,7 +538,16 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 		DirectX::XMFLOAT4X4 towerTransform;
 		DirectX::XMStoreFloat4x4(&towerTransform, S * R * T);
 
-		lightTower2->render_batched(rc.deviceContext, towerTransform, {});
+		bool isVisible = true;
+		if (frustumCulling)
+		{
+			const auto& sphere = lightTower2->GetBoundingSphere();
+			isVisible = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, towerTransform);
+		}
+		if (isVisible)
+		{
+			lightTower2->render_batched(rc.deviceContext, towerTransform, {});
+		}
 	}
 
 	/*for (Flag& f : flags)

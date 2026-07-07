@@ -9,6 +9,7 @@
 #include "ModelRenderer.h"
 #include "ShaderId.h"
 #include "Flag.h"
+#include "FrustumCulling.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -31,7 +32,7 @@ public:
 	virtual ~stage() = default;
 	void initialize();
 	void update(float elapsedTime);
-	void render(const RenderContext& rc, ModelRenderer* renderer);
+	void render(const RenderContext& rc, ModelRenderer* renderer, class FrustumCulling* frustumCulling = nullptr);
 	void uninitialize();
 	void DrawGUI();
 

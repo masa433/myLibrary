@@ -82,6 +82,8 @@ gltf_model::gltf_model(ID3D11Device* device, const std::string& filename) : file
 	hr = device->CreateBuffer(&buffer_desc, NULL, primitive_joint_cbuffer.ReleaseAndGetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
+	CalculateBounds();
+
 }
 //find関数の戻り値が「検索した文字列が見つからなかった場合」だから
 //!=を使って「filename の中に .glb という文字列が含まれていれば true、含まれていなければ false」になる
@@ -1257,4 +1259,75 @@ void gltf_model::render_batched(ID3D11DeviceContext* immediate_context,
         immediate_context->IASetIndexBuffer(bp.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
         immediate_context->DrawIndexed(bp.index_count, 0, 0);
     }
+}
+
+// 点を含むようにバウンディングボックスを拡張
+void gltf_model::BoundingBox::Merge(const DirectX::XMFLOAT3& point)
+{
+	box_min.x = std::min(box_min.x, point.x);
+	box_min.y = std::min(box_min.y, point.y);
+	box_min.z = std::min(box_min.z, point.z);
+
+	box_max.x = std::max(box_max.x, point.x);
+	box_max.y = std::max(box_max.y, point.y);
+	box_max.z = std::max(box_max.z, point.z);
+}
+
+//ほかのバウンディングボックスを含むように拡張
+void gltf_model::BoundingBox::Merge(const BoundingBox& other)
+{
+	box_min.x = std::min(box_min.x, other.box_min.x);
+	box_min.y = std::min(box_min.y, other.box_min.y);
+	box_min.z = std::min(box_min.z, other.box_min.z);
+	box_max.x = std::max(box_max.x, other.box_max.x);
+	box_max.y = std::max(box_max.y, other.box_max.y);
+	box_max.z = std::max(box_max.z, other.box_max.z);
+}
+
+//バウンディングボックスの中心座標を取得
+DirectX::XMFLOAT3 gltf_model::BoundingBox::GetCenter() const
+{
+		return DirectX::XMFLOAT3(
+		(box_min.x + box_max.x) * 0.5f,
+		(box_min.y + box_max.y) * 0.5f,
+			(box_min.z + box_max.z) * 0.5f);
+}
+
+//バウンディングボックスの半分のサイズを取得
+DirectX::XMFLOAT3 gltf_model::BoundingBox::GetExtents() const
+{
+	return DirectX::XMFLOAT3(
+		(box_max.x - box_min.x) * 0.5f,
+		(box_max.y - box_min.y) * 0.5f,
+		(box_max.z - box_min.z) * 0.5f);
+}
+
+//バウンディングボックスの半径を取得
+float gltf_model::BoundingBox::GetRadius() const
+{
+	DirectX::XMFLOAT3 extents = GetExtents();
+	return std::sqrt(extents.x * extents.x + extents.y * extents.y + extents.z * extents.z);
+}
+
+//モデル全体のバウンディングボックスとバウンディングスフィアを計算
+void gltf_model::CalculateBounds()
+{
+	boundingBox = BoundingBox();
+
+	//すべてのプリミティブの頂点位置を走査
+	for (const auto& mesh : meshes)
+	{
+		for (const auto& prim : mesh.primitives)
+		{
+			// CPU側の頂点位置を使ってバウンディングボックスを更新
+			for (const auto& pos : prim.cpu_positions)
+			{
+				boundingBox.Merge(pos);
+			}
+		}
+	}
+
+	// バウンディングスフィアの中心と半径を計算
+	boundingSphere.center = boundingBox.GetCenter();
+	boundingSphere.radius = boundingBox.GetRadius();
 }

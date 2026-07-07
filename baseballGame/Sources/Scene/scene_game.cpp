@@ -653,6 +653,11 @@ void scene_game::render(float elapsedTime)
 
     Camera& camera = Camera::Instance();
 
+    if (enableFrustumCulling)
+    {
+		frustumCulling.Construct(camera.GetView(), camera.GetProjection());
+    }
+
     // 前フレームの結果を取得（ノンブロッキング）
     /*dc->GetData(pipeline_stats_query.Get(), &pipeline_stats,
         sizeof(pipeline_stats), D3D11_ASYNC_GETDATA_DONOTFLUSH);*/
@@ -815,7 +820,9 @@ void scene_game::render(float elapsedTime)
     dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
-    stage::Instance().render(rc, modelRenderer);
+	// ステージの描画
+	//フラスタムカリングを有効にする場合は frustumCulling を渡す、無効にする場合は nullptr を渡す
+    stage::Instance().render(rc, modelRenderer, enableFrustumCulling ? &frustumCulling : nullptr);
 
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
@@ -1639,6 +1646,14 @@ void scene_game::DrawGUI()
         ImGui::Checkbox("Skip Sleeping Actors", &physxSkipSleepingActors);
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Skip rendering of sleeping physics actors");
+    }
+
+    // ── Culling ──
+    if (ImGui::CollapsingHeader("Culling"))
+    {
+        ImGui::Checkbox("Enable Frustum Culling", &enableFrustumCulling);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Cull objects outside the camera's view frustum");
     }
 
     // ── Performance Options ──
