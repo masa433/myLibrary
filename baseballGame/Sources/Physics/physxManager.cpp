@@ -538,13 +538,99 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 	{
 		const physx::PxContactPair& pair = pairs[i];
 
+		//----------------------------------------------------------------
+		// エンタイトルツーベース以外でホームラントリガーをダイレクトで通過した場合、
+		// 以降どのオブジェクトに衝突しても無条件でホームランにする
+		//（GetHasPassedHomeRunZone() はグラウンドに触れる前にトリガーを
+		//  通過した場合のみ true になるため、エンタイトルツーベースは含まれない）
+		//----------------------------------------------------------------
+		if (Ball::Instance().GetHasPassedHomeRunZone() && !Ball::Instance().GetHasCollidedWithFence())
+		{
+			bool ballIsActor0 = (pairHeader.actors[0] == Ball::Instance().GetBallCollider());
+			bool ballIsActor1 = (pairHeader.actors[1] == Ball::Instance().GetBallCollider());
+
+			if (ballIsActor0 || ballIsActor1)
+			{
+				Ball::Instance().SetHasCollided(true);
+				Ball::Instance().SetHasCollidedWithFence(true);
+				Ball::Instance().SetHasCollidedWithGround(true);
+
+				const char* otherName = ballIsActor0 ?
+					pairHeader.actors[1]->getName() : pairHeader.actors[0]->getName();
+
+				physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+				if (ballCollider)
+				{
+					// ===== 飛距離計算 =====
+					physx::PxVec3 ballPosition = ballCollider->getGlobalPose().p;
+					DirectX::XMFLOAT3 ballHitPos = Ball::Instance().GetBallHitPosition();
+
+					float distanceX = ballPosition.x - ballHitPos.x;
+					float distanceZ = ballPosition.z - ballHitPos.z;
+					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
+
+					physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
+					float exitVelocity = ballVelocity.magnitude();
+					float estimatedDistance = 0.0f;
+
+					if (exitVelocity > 0.1f)
+					{
+						float launchAngle = std::atan2(ballVelocity.y,
+							sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z));
+
+						float initialHeight = ballHitPos.y;
+						float v_y = exitVelocity * sinf(launchAngle);
+						float a = 0.5f * 9.81f;
+						float b = -v_y;
+						float c = -initialHeight;
+						float discriminant = b * b - 4.0f * a * c;
+
+						if (discriminant >= 0.0f)
+						{
+							float t = (-b + sqrtf(discriminant)) / (2.0f * a);
+							if (t > 0.0f)
+							{
+								estimatedDistance = exitVelocity * cosf(launchAngle) * t;
+							}
+						}
+					}
+
+					float totalDistance = horizontalDistance + estimatedDistance;
+
+					char debugMessage[768];
+					snprintf(debugMessage, sizeof(debugMessage),
+						"=== ホームラン！（トリガー直接通過） ===\n"
+						"衝突オブジェクト: %s\n"
+						"水平飛距離（実測）: %.2f m\n"
+						"推定飛距離（スタンドなしでグラウンド着地）: %.2f m\n"
+						"総飛距離: %.2f m\n",
+						otherName ? otherName : "不明",
+						horizontalDistance,
+						estimatedDistance,
+						totalDistance);
+					OutputDebugStringA(debugMessage);
+
+					if (consoleLog)
+					{
+						char logBuf[512];
+						snprintf(logBuf, sizeof(logBuf),
+							u8"[Hit] ホームラン！ 飛距離: %.1f m",
+							totalDistance);
+						consoleLog->push_back(logBuf);
+					}
+				}
+
+				continue; // このペアはホームランとして処理済みなので以降の個別判定はスキップ
+			}
+		}
+
 
 		// ボールとグラウンドの衝突を検知
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Ground") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Ground"))
 		{
 			Ball::Instance().SetHasCollided(true); // 衝突フラグを設定
-			
+
 
 			// キューに速度変更リクエストを追加
 			{
@@ -594,18 +680,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						ballCollider->setLinearVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
 						ballCollider->setAngularVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
 					}
-				});
+					});
 
-				//ホームラントリガーを通過したうえで地面に着地した場合はホームラン判定
-				if(Ball::Instance().GetHasPassedHomeRunZone() && !Ball::Instance().GetHasCollidedWithFence())
-				{
-					char debugMessage[256];
-					snprintf(debugMessage, sizeof(debugMessage),
-						"ホームラン！：ボールが地面に着地\n");
-					OutputDebugStringA(debugMessage);
-					if(consoleLog)
-						consoleLog->push_back(u8"[Hit] ホームラン！：ボールが地面に着地");
-				}
 
 				//飛距離計算
 				physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
@@ -634,9 +710,9 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						horizontalDistance);
 					OutputDebugStringA(debugMessage);
 
-					if(consoleLog)
+					if (consoleLog)
 					{
-						
+
 						char logBuf[512];
 						snprintf(logBuf, sizeof(logBuf),
 							u8"[Hit] ボールが地面に着地！ 判定: %s 飛距離: %.1f m",
@@ -664,135 +740,174 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				{
 					physx::PxVec3 ballPosition = ballCollider->getGlobalPose().p;
 
-					// ===== ホームラン判定 =====
-					/*if (ballPosition.z < 67.0f || !Ball::Instance().GetHasPassedHomeRunZone())
+					// フェア/ファウル判定（ホームベースから見た角度が±45度以内ならフェア）
+					float standAngleDeg = std::atan2(ballPosition.x, ballPosition.z) * (180.0f / 3.14159265359f);
+					bool isFairAtStand = (ballPosition.z >= 0.0f) && (std::fabs(standAngleDeg) <= 45.0f);
+
+					if (!isFairAtStand)
 					{
 						char debugMessage[256];
 						snprintf(debugMessage, sizeof(debugMessage),
-							"ファウル：x=%.2f y=%.2f z=%.2f\n",
-							ballPosition.x, ballPosition.y, ballPosition.z);
+							"ファウル：スタンドに衝突 x=%.2f y=%.2f z=%.2f 角度=%.1f°\n",
+							ballPosition.x, ballPosition.y, ballPosition.z, standAngleDeg);
 						OutputDebugStringA(debugMessage);
-
-						if(consoleLog)
-							consoleLog->push_back(u8"[Hit] ファウル");
+						if (consoleLog)
+							consoleLog->push_back(u8"[Hit] ファウル：スタンドに衝突");
 					}
 					else
 					{
-						if (ballPosition.y >= 4.0f)
+
+						// ===== ホームラン判定 =====
+						/*if (ballPosition.z < 67.0f || !Ball::Instance().GetHasPassedHomeRunZone())
 						{
 							char debugMessage[256];
 							snprintf(debugMessage, sizeof(debugMessage),
-								"ホームラン！：ボールの高さ %.2f m\n",
-								ballPosition.y);
+								"ファウル：x=%.2f y=%.2f z=%.2f\n",
+								ballPosition.x, ballPosition.y, ballPosition.z);
 							OutputDebugStringA(debugMessage);
+
 							if(consoleLog)
-							{
-								
-								char logBuf[512];
-								snprintf(logBuf, sizeof(logBuf),
-									u8"[Hit] ホームラン！：ボールの高さ: %.1f m",
-									ballPosition.y);
-								consoleLog->push_back(logBuf);
-							}
+								consoleLog->push_back(u8"[Hit] ファウル");
 						}
 						else
 						{
+							if (ballPosition.y >= 4.0f)
+							{
+								char debugMessage[256];
+								snprintf(debugMessage, sizeof(debugMessage),
+									"ホームラン！：ボールの高さ %.2f m\n",
+									ballPosition.y);
+								OutputDebugStringA(debugMessage);
+								if(consoleLog)
+								{
+
+									char logBuf[512];
+									snprintf(logBuf, sizeof(logBuf),
+										u8"[Hit] ホームラン！：ボールの高さ: %.1f m",
+										ballPosition.y);
+									consoleLog->push_back(logBuf);
+								}
+							}
+							else
+							{
+								char debugMessage[256];
+								snprintf(debugMessage, sizeof(debugMessage),
+									"フェンスに当たったがホームランではない：ボールの高さ %.2f m\n",
+									ballPosition.y);
+								OutputDebugStringA(debugMessage);
+								if(consoleLog)
+								{
+									char logBuf[512];
+									snprintf(logBuf, sizeof(logBuf),
+										u8"[Hit] フェンスに当たったがホームランではない : ボールの高さ: %.1f m",
+										ballPosition.y);
+									consoleLog->push_back(logBuf);
+								}
+							}
+						}*/
+
+						////ホームラントリガーを通過した状態でスタンドに衝突した場合はホームラン判定
+						//if (Ball::Instance().GetHasPassedHomeRunZone())
+						//{
+						//	char debugMessage[256];
+						//	snprintf(debugMessage, sizeof(debugMessage),
+						//		"ホームラン！：スタンドに衝突\n");
+						//	OutputDebugStringA(debugMessage);
+						//	if(consoleLog)
+						//		consoleLog->push_back(u8"[Hit] ホームラン！：スタンドに衝突");
+						//}
+						//else
+						//{
+						//	char debugMessage[256];
+						//	snprintf(debugMessage, sizeof(debugMessage),
+						//		"フェンスに当たったがホームランではない：スタンドに衝突\n");
+						//	OutputDebugStringA(debugMessage);
+						//	if(consoleLog)
+						//		consoleLog->push_back(u8"[Hit] フェンスに当たったがホームランではない：スタンドに衝突");
+						//}
+
+						//グラウンドに当たらずかつホームランゾーンを通過せずにスタンドに当たったらフェンス直撃
+						//グラウンドに当たってかつホームランゾーンを通過していなかったらヒット
+						if (Ball::Instance().GetHasCollidedWithGround() && !Ball::Instance().GetHasPassedHomeRunZone())
+						{
 							char debugMessage[256];
 							snprintf(debugMessage, sizeof(debugMessage),
-								"フェンスに当たったがホームランではない：ボールの高さ %.2f m\n",
-								ballPosition.y);
+								"ヒット！：スタンドに衝突\n");
 							OutputDebugStringA(debugMessage);
-							if(consoleLog)
-							{
-								char logBuf[512];
-								snprintf(logBuf, sizeof(logBuf),
-									u8"[Hit] フェンスに当たったがホームランではない : ボールの高さ: %.1f m",
-									ballPosition.y);
-								consoleLog->push_back(logBuf);
-							}
+							if (consoleLog)
+								consoleLog->push_back(u8"[Hit] ヒット！：スタンドに衝突");
 						}
-					}*/
-
-					//ホームラントリガーを通過した状態でスタンドに衝突した場合はホームラン判定
-					if (Ball::Instance().GetHasPassedHomeRunZone())
-					{
-						char debugMessage[256];
-						snprintf(debugMessage, sizeof(debugMessage),
-							"ホームラン！：スタンドに衝突\n");
-						OutputDebugStringA(debugMessage);
-						if(consoleLog)
-							consoleLog->push_back(u8"[Hit] ホームラン！：スタンドに衝突");
-					}
-					else
-					{
-						char debugMessage[256];
-						snprintf(debugMessage, sizeof(debugMessage),
-							"フェンスに当たったがホームランではない：スタンドに衝突\n");
-						OutputDebugStringA(debugMessage);
-						if(consoleLog)
-							consoleLog->push_back(u8"[Hit] フェンスに当たったがホームランではない：スタンドに衝突");
-					}
-					
-
-					// ===== 飛距離計算 =====
-					physx::PxVec3 ballFencePosition = ballCollider->getGlobalPose().p;
-					DirectX::XMFLOAT3 ballHitPos = Ball::Instance().GetBallHitPosition();
-
-					float distanceX = ballFencePosition.x - ballHitPos.x;
-					float distanceY = ballFencePosition.y - ballHitPos.y;
-					float distanceZ = ballFencePosition.z - ballHitPos.z;
-					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
-
-					physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
-					float exitVelocity = ballVelocity.magnitude();
-					float estimatedDistance = 0.0f;
-
-					if (exitVelocity > 0.1f)
-					{
-						float launchAngle = std::atan2(ballVelocity.y,
-							sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z));
-
-						float initialHeight = ballHitPos.y;
-						float v_y = exitVelocity * sinf(launchAngle);
-						float a = 0.5f * 9.81f;
-						float b = -v_y;
-						float c = -initialHeight;
-						float discriminant = b * b - 4.0f * a * c;
-
-						if (discriminant >= 0.0f)
+						else if (!Ball::Instance().GetHasCollidedWithGround() && !Ball::Instance().GetHasPassedHomeRunZone())
 						{
-							float t = (-b + sqrtf(discriminant)) / (2.0f * a);
-							if (t > 0.0f)
+							char debugMessage[256];
+							snprintf(debugMessage, sizeof(debugMessage),
+								"フェンス直撃！：スタンドに衝突\n");
+							OutputDebugStringA(debugMessage);
+							if (consoleLog)
+								consoleLog->push_back(u8"[Hit] フェンス直撃！：スタンドに衝突");
+						}
+
+
+						// ===== 飛距離計算 =====
+						physx::PxVec3 ballFencePosition = ballCollider->getGlobalPose().p;
+						DirectX::XMFLOAT3 ballHitPos = Ball::Instance().GetBallHitPosition();
+
+						float distanceX = ballFencePosition.x - ballHitPos.x;
+						float distanceY = ballFencePosition.y - ballHitPos.y;
+						float distanceZ = ballFencePosition.z - ballHitPos.z;
+						float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
+
+						physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
+						float exitVelocity = ballVelocity.magnitude();
+						float estimatedDistance = 0.0f;
+
+						if (exitVelocity > 0.1f)
+						{
+							float launchAngle = std::atan2(ballVelocity.y,
+								sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z));
+
+							float initialHeight = ballHitPos.y;
+							float v_y = exitVelocity * sinf(launchAngle);
+							float a = 0.5f * 9.81f;
+							float b = -v_y;
+							float c = -initialHeight;
+							float discriminant = b * b - 4.0f * a * c;
+
+							if (discriminant >= 0.0f)
 							{
-								estimatedDistance = exitVelocity * cosf(launchAngle) * t;
+								float t = (-b + sqrtf(discriminant)) / (2.0f * a);
+								if (t > 0.0f)
+								{
+									estimatedDistance = exitVelocity * cosf(launchAngle) * t;
+								}
 							}
 						}
-					}
 
-					float totalDistance = horizontalDistance + estimatedDistance;
+						float totalDistance = horizontalDistance + estimatedDistance;
 
-					char debugMessage[768];
-					snprintf(debugMessage, sizeof(debugMessage),
-						"=== ボールがフェンスに入った ===\n"
-						"水平飛距離（実測）: %.2f m\n"
-						"推定飛距離（スタンドなしでグラウンド着地）: %.2f m\n"
-						"総飛距離: %.2f m\n",
-						horizontalDistance,
-						estimatedDistance,
-						totalDistance);
-					OutputDebugStringA(debugMessage);
-					if(consoleLog)
-					{
-						char logBuf[512];
-						snprintf(logBuf, sizeof(logBuf),
-							u8"[Hit] ボールがフェンスに入った！ 飛距離: %.1f m",
+						char debugMessage[768];
+						snprintf(debugMessage, sizeof(debugMessage),
+							"=== ボールがフェンスに入った ===\n"
+							"水平飛距離（実測）: %.2f m\n"
+							"推定飛距離（スタンドなしでグラウンド着地）: %.2f m\n"
+							"総飛距離: %.2f m\n",
+							horizontalDistance,
+							estimatedDistance,
 							totalDistance);
-						consoleLog->push_back(logBuf);
-					}
+						OutputDebugStringA(debugMessage);
+						if (consoleLog)
+						{
+							char logBuf[512];
+							snprintf(logBuf, sizeof(logBuf),
+								u8"[Hit] ボールがフェンスに入った！ 飛距離: %.1f m",
+								totalDistance);
+							consoleLog->push_back(logBuf);
+						}
+					} // isFairAtStand
 				}
 			}
 		}
-		
+
 
 		//ボールとポールの衝突を検知
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Pole") ||
@@ -806,7 +921,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			if (!Ball::Instance().GetHasCollidedWithFence())
 			{
 				Ball::Instance().SetHasCollidedWithFence(true);
-				
+
 				OutputDebugStringA("ホームラン！：ポールに衝突");
 				if (consoleLog)
 					consoleLog->push_back(u8"[Hit] ホームラン！：ポールに衝突");
@@ -840,24 +955,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				{
 					physx::PxVec3 ballPos = ballCollider->getGlobalPose().p;
 
-					
-					//{
-					//	// トリガー通過でホームラン確定フラグをON
-					//	Ball::Instance().SetHasPassedHomeRunZone(true);
 
-					//	OutputDebugStringA("ホームランゾーン通過！\n");
-					//	if (consoleLog)
-					//		consoleLog->push_back(u8"[Hit] ホームランゾーン通過！");
-					//}
-
-					////グラウンドに当たった後にホームランゾーンを通過した場合はエンタイトルツーベース
-					//if (Ball::Instance().GetHasCollidedWithGround() && Ball::Instance().GetHasPassedHomeRunZone())
-					//{
-					//	OutputDebugStringA("エンタイトルツーベース！\n");
-					//	if (consoleLog)
-					//		consoleLog->push_back(u8"[Hit] エンタイトルツーベース！");
-					//}
-					
 					//ホームランゾーンを通過する前にグラウンドに当たった状態で
 					//ホームランゾーンを通過したらエンタイトルツーベース
 					//通過する前にグラウンドに当たっていない場合はホームラン
