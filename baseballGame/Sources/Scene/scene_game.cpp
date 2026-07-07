@@ -664,16 +664,19 @@ void scene_game::render(float elapsedTime)
     shadowRenderer.SetCameraPosition(cameraPosition);
 
     // 3本の描画呼び出し（関数名だけ変わる）
-    if (shadowRenderer.use_cascade_shadow_map)
-        shadowRenderer.RenderCascadeShadowMap(elapsedTime);
-    else
-        shadowRenderer.RenderShadowMap(elapsedTime);
-
-    shadowRenderer.spot_shadow_frame_count++;
-    if (shadowRenderer.spot_shadow_frame_count >= shadowRenderer.spot_shadow_update_interval)
+    if (enableShadows)
     {
-        shadowRenderer.RenderSpotShadowMap(elapsedTime);
-        shadowRenderer.spot_shadow_frame_count = 0;
+        if (shadowRenderer.use_cascade_shadow_map)
+            shadowRenderer.RenderCascadeShadowMap(elapsedTime);
+        else
+            shadowRenderer.RenderShadowMap(elapsedTime);
+
+        shadowRenderer.spot_shadow_frame_count++;
+        if (shadowRenderer.spot_shadow_frame_count >= shadowRenderer.spot_shadow_update_interval)
+        {
+            shadowRenderer.RenderSpotShadowMap(elapsedTime);
+            shadowRenderer.spot_shadow_frame_count = 0;
+        }
     }
 
 	//ポイントライトの描画
@@ -908,12 +911,17 @@ void scene_game::render(float elapsedTime)
             rc.lightDirection
         );
 
+        Physics::Instance().SetRenderSimpleShapesOnly(physxRenderSimpleShapesOnly);
+        Physics::Instance().SetSkipSleepingActors(physxSkipSleepingActors);
         Physics::Instance().Render(camera.GetView(), camera.GetProjection(), rc.lightDirection);
     }
 
     // ここで高輝度抽出とぼかしを実行してパスのSRVを更新する
-    luminance_extract_pass(elapsedTime);
-    bokeh_luminance_extract_pass(elapsedTime);
+    if (enableBloom)
+    {
+        luminance_extract_pass(elapsedTime);
+        bokeh_luminance_extract_pass(elapsedTime);
+    }
 
     // ... 描画後に ...
     shadowRenderer.UnbindShadowResources(dc);
@@ -933,6 +941,7 @@ void scene_game::render(float elapsedTime)
     textureManager.Render(dc);
 
     //	ぼかした結果を加算合成
+    if (enableBloom)
     {
         dc->OMSetBlendState(renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
         dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
@@ -1624,20 +1633,29 @@ void scene_game::DrawGUI()
     if (ImGui::CollapsingHeader("Physics"))
     {
         ImGui::Checkbox("Show PhysX Debug", &showPhysxDebug);
+        ImGui::Checkbox("Render Simple Shapes Only (High Performance)", &physxRenderSimpleShapesOnly);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Skip ConvexMesh/TriangleMesh rendering for better FPS");
+        ImGui::Checkbox("Skip Sleeping Actors", &physxSkipSleepingActors);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Skip rendering of sleeping physics actors");
+    }
+
+    // ── Performance Options ──
+    if (ImGui::CollapsingHeader("Performance"))
+    {
+        ImGui::Checkbox("Enable Shadows", &enableShadows);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Disable for better FPS");
+        ImGui::Checkbox("Enable Bloom", &enableBloom);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Disable for better FPS");
     }
 
     // ── Texture Manager ──
     if (ImGui::CollapsingHeader("Textures"))
     {
         textureManager.DrawGUI();
-    }
-
-    // ── Performance ──
-    if (ImGui::CollapsingHeader("Performance"))
-    {
-        ImGui::Text("FPS          : %.1f", ImGui::GetIO().Framerate);
-        ImGui::Text("VS Invokes   : %llu", pipeline_stats.VSInvocations);
-        ImGui::Text("Primitives   : %llu", pipeline_stats.IAPrimitives);
     }
 
     ImGui::End();
@@ -1816,6 +1834,10 @@ void scene_game::SaveSetting()
 	//physxの保存
 	j["physx"]["show_debug"] = showPhysxDebug;
 
+	// ── Performance Options の保存
+	j["performance"]["enable_shadows"] = enableShadows;
+	j["performance"]["enable_bloom"] = enableBloom;
+
 	//各クラスの保存処理
 	Pitcher::Instance().SaveToJson(j["pitcher"]);
 	Player::Instance().SaveToJson(j["player"]);
@@ -1989,6 +2011,13 @@ void scene_game::LoadSetting()
     if (j.contains("physx"))
     {
         showPhysxDebug = j["physx"]["show_debug"];
+	}
+
+	// ── Performance Options の読み込み
+    if (j.contains("performance"))
+    {
+        enableShadows = j["performance"].value("enable_shadows", true);
+        enableBloom = j["performance"].value("enable_bloom", true);
 	}
 
 	//各クラスの読み込み処理

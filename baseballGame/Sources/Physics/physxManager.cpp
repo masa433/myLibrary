@@ -191,6 +191,10 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 			}
 			case physx::PxGeometryType::eCONVEXMESH:
 			{
+				// シンプルシェイプのみモードではスキップ
+				if (renderSimpleShapesOnly)
+					break;
+
 				const physx::PxConvexMeshGeometry& pxConvexMeshGeometry = static_cast<const physx::PxConvexMeshGeometry&>(pxGeometry);
 
 				const physx::PxConvexMesh& pxConvexMesh = *pxConvexMeshGeometry.convexMesh;
@@ -248,6 +252,10 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 			}
 			case physx::PxGeometryType::eTETRAHEDRONMESH:
 			{
+				// シンプルシェイプのみモードではスキップ
+				if (renderSimpleShapesOnly)
+					break;
+
 				const physx::PxTetrahedronMeshGeometry& pxTetrahedronMeshGeometry = static_cast<const physx::PxTetrahedronMeshGeometry&>(pxGeometry);
 				const physx::PxTetrahedronMesh& pxTetrahedronMesh = *pxTetrahedronMeshGeometry.tetrahedronMesh;
 				const physx::PxVec3* pxVertices = pxTetrahedronMesh.getVertices();
@@ -307,6 +315,10 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 			}
 			case physx::PxGeometryType::eTRIANGLEMESH:
 			{
+				// シンプルシェイプのみモードではスキップ
+				if (renderSimpleShapesOnly)
+					break;
+
 				const physx::PxTriangleMeshGeometry& pxTriangleMeshGeometry = static_cast<const physx::PxTriangleMeshGeometry&>(pxGeometry);
 				const physx::PxTriangleMesh& pxTriangleMesh = *pxTriangleMeshGeometry.triangleMesh;
 				const physx::PxVec3* pxVertices = pxTriangleMesh.getVertices();
@@ -386,6 +398,10 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 
 			physx::PxRigidDynamic* pxDynamic = pxActor->is<physx::PxRigidDynamic>();
 			bool sleeping = pxDynamic ? pxDynamic->isSleeping() : false;
+
+			// スリープ中のアクターをスキップ
+			if (skipSleepingActors && sleeping)
+				return;
 
 			for (physx::PxU32 pxShapeIndex = 0; pxShapeIndex < pxNumShapes; ++pxShapeIndex)
 			{

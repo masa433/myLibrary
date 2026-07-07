@@ -231,6 +231,10 @@ private:
     TextureManager textureManager;
 
 	bool showPhysxDebug = true;
+	bool physxRenderSimpleShapesOnly = true;
+	bool physxSkipSleepingActors = true;
+	bool enableShadows = false;
+	bool enableBloom = false;
 
 private:	
     //	2D描画関係

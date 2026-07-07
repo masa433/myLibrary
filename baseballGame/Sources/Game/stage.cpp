@@ -213,19 +213,19 @@ void stage::initialize()
 
 		// ホームラン判定用トリガーの作成
 		{
-			physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
-			physx::PxTransform triggerTransform(physx::PxVec3(hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z));
-			homeRunTrigger = pxPhysics->createRigidStatic(triggerTransform);
+			//physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+			//physx::PxTransform triggerTransform(physx::PxVec3(hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z));
+			//homeRunTrigger = pxPhysics->createRigidStatic(triggerTransform);
 
-			physx::PxBoxGeometry triggerGeometry(physx::PxVec3(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
-			physx::PxShape* triggerShape = physx::PxRigidActorExt::createExclusiveShape(*homeRunTrigger, triggerGeometry, *triggerMaterial);
+			//physx::PxBoxGeometry triggerGeometry(physx::PxVec3(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
+			//physx::PxShape* triggerShape = physx::PxRigidActorExt::createExclusiveShape(*homeRunTrigger, triggerGeometry, *triggerMaterial);
 
-			// 物理的な衝突を無効にし、トリガー（重なり判定）として設定する
-			triggerShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
-			triggerShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+			//// 物理的な衝突を無効にし、トリガー（重なり判定）として設定する
+			//triggerShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+			//triggerShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
 
-			homeRunTrigger->setName("HomeRunTrigger");
-			pxScene->addActor(*homeRunTrigger);
+			//homeRunTrigger->setName("HomeRunTrigger");
+			//pxScene->addActor(*homeRunTrigger);
 		}
 	}
 
@@ -256,6 +256,7 @@ void stage::initialize()
 			flags[i].Initialize(i, flagColors[i], flagSpacing, flagPosition);
 		}
 	}
+
 }
 
 void stage::UpdateFenceEditor(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
@@ -442,11 +443,11 @@ void stage::update(float elapsedTime)
 
 	//スタンド用
 	//スタンドだけ右手系で描画する
-	DirectX::XMMATRIX C = { -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+	DirectX::XMMATRIX CStand = { -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(standScale.x, standScale.y, standScale.z);
 	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(standAngle.x, standAngle.y, standAngle.z);
 	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(standPosition.x, standPosition.y, standPosition.z);
-	DirectX::XMMATRIX world = C * S * R * T;
+	DirectX::XMMATRIX world = CStand * S * R * T;
 	DirectX::XMStoreFloat4x4(&standTransform, world);
 
 	//グラウンド用
@@ -457,10 +458,11 @@ void stage::update(float elapsedTime)
 	DirectX::XMStoreFloat4x4(&groundTransform, world);
 
 	//ポール用
+	DirectX::XMMATRIX CPole = { -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 	S = DirectX::XMMatrixScaling(poleScale.x, poleScale.y, poleScale.z);
 	R = DirectX::XMMatrixRotationRollPitchYaw(poleAngle.x, poleAngle.y, poleAngle.z);
 	T = DirectX::XMMatrixTranslation(polePosition.x, polePosition.y, polePosition.z);
-	world = S * R * T;
+	world = CPole * S * R * T;
 	DirectX::XMStoreFloat4x4(&poleTransform, world);
 
 	//ボックスの位置とサイズを更新
@@ -494,10 +496,10 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer)
 		lightTower2->render_batched(rc.deviceContext, towerTransform, {});
 	}
 
-	for (Flag& f : flags)
+	/*for (Flag& f : flags)
 	{
 		f.Render(rc, renderer);
-	}
+	}*/
 
 }
 
@@ -652,6 +654,16 @@ void stage::SaveToJson(json& j)
 		j[towerKey]["angle"] = { towerAngle[i].x, towerAngle[i].y, towerAngle[i].z };
 		j[towerKey]["scale"] = { lightScale[i].x, lightScale[i].y, lightScale[i].z };
 	}
+
+	// フェンスラインの頂点を保存
+	j["fenceLinePoints"] = json::array();
+	for (const auto& point : fenceLinePoints)
+	{
+		j["fenceLinePoints"].push_back({ point.x, point.y, point.z });
+	}
+	// フェンスラインの追加高さと厚さを保存
+	j["fenceExtraHeight"] = fenceExtraHeight;
+	j["fenceThickness"] = fenceThickness;
 	
 }
 
@@ -663,9 +675,9 @@ void stage::LoadFromJson(const json& j)
 	groundPosition = { j["groundPosition"][0], j["groundPosition"][1], j["groundPosition"][2] };
 	groundScale = { j["groundScale"][0], j["groundScale"][1], j["groundScale"][2] };
 	groundAngle = { j["groundAngle"][0], j["groundAngle"][1], j["groundAngle"][2] };
-	polePosition = { j["polePosition"][0], j["polePosition"][1], j["polePosition"][2] };
+	/*polePosition = { j["polePosition"][0], j["polePosition"][1], j["polePosition"][2] };
 	poleScale = { j["poleScale"][0], j["poleScale"][1], j["poleScale"][2] };
-	poleAngle = { j["poleAngle"][0], j["poleAngle"][1], j["poleAngle"][2] };
+	poleAngle = { j["poleAngle"][0], j["poleAngle"][1], j["poleAngle"][2] };*/
 	// ホームラン判定用トリガーの位置とサイズを読み込み
 	hrTriggerPos = { j["hrTriggerPos"][0], j["hrTriggerPos"][1], j["hrTriggerPos"][2] };
 	hrTriggerHalfExtents = { j["hrTriggerHalfExtents"][0], j["hrTriggerHalfExtents"][1], j["hrTriggerHalfExtents"][2] };
@@ -688,6 +700,27 @@ void stage::LoadFromJson(const json& j)
 			j[towerKey]["scale"][1],
 			j[towerKey]["scale"][2]
 		};
+	}
+
+	// フェンスラインの頂点を読み込み
+	fenceLinePoints.clear();
+	if (j.contains("fenceLinePoints") && j["fenceLinePoints"].is_array())
+	{
+		for (const auto& point : j["fenceLinePoints"])
+		{
+			fenceLinePoints.push_back({ point[0], point[1], point[2] });
+		}
+	}
+
+	// フェンスラインの追加高さと厚さを読み込み
+	if (j.contains("fenceExtraHeight"))
+	{
+		fenceExtraHeight = j["fenceExtraHeight"];
+	}
+
+	if (j.contains("fenceThickness"))
+	{
+		fenceThickness = j["fenceThickness"];
 	}
 
 }

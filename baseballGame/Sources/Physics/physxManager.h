@@ -6,7 +6,7 @@
 #include <string>
 
 
-// ƒtƒBƒWƒNƒX
+// ãƒ•ã‚£ã‚¸ã‚¯ã‚¹
 class Physics 
 	:public physx::PxSimulationEventCallback
 	
@@ -16,48 +16,54 @@ private:
 	~Physics() = default;
 
 public:
-	// ƒCƒ“ƒXƒ^ƒ“ƒXæ“¾
+	// ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
 	static Physics& Instance()
 	{
 		static Physics instance;
 		return instance;
 	}
 
-	// ‰Šú‰»
+	// åˆæœŸåŒ–
 	void Initialize();
 
-	// I—¹‰»
+	// çµ‚äº†åŒ–
 	void Finalize();
 
-	// XVˆ—
+	// æ›´æ–°å‡¦ç†
 	void Update(float elapsedTime);
 
-	// •`‰æˆ—
+	// æç”»å‡¦ç†
 	void Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection, const DirectX::XMFLOAT3& lightDirection);
 
-	// ƒtƒBƒWƒNƒXæ“¾
+	// æç”»ã‚ªãƒ—ã‚·ãƒ§ãƒ³è¨­å®š
+	void SetRenderSimpleShapesOnly(bool enable) { renderSimpleShapesOnly = enable; }
+	void SetSkipSleepingActors(bool enable) { skipSleepingActors = enable; }
+	bool GetRenderSimpleShapesOnly() const { return renderSimpleShapesOnly; }
+	bool GetSkipSleepingActors() const { return skipSleepingActors; }
+
+	// ãƒ•ã‚£ã‚¸ã‚¯ã‚¹å–å¾—
 	physx::PxPhysics* GetPhysics() { return pxPhysics; }
 
-	// ƒV[ƒ“æ“¾
+	// ã‚·ãƒ¼ãƒ³å–å¾—
 	physx::PxScene* GetScene() { return pxScene; }
 
-	// ƒRƒ“ƒgƒ[ƒ‰[ƒ}ƒl[ƒWƒƒ[æ“¾
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼å–å¾—
 	physx::PxControllerManager* GetControllerManager() { return pxControllerManager; }
 
-	// ƒ}ƒeƒŠƒAƒ‹æ“¾
+	// ãƒãƒ†ãƒªã‚¢ãƒ«å–å¾—
 	physx::PxMaterial* GetMaterial() { return pxMaterial; }
 
 	bool IsBoxCollider(physx::PxActor* actor);
 
 protected:
 	//--------------------------
-	// NOTE:‡BƒtƒBƒ‹ƒ^ƒŠƒ“ƒOƒCƒ“ƒ^[ƒtƒF[ƒXŠÖ”
+	// NOTE:â‘¢ãƒ•ã‚£ãƒ«ã‚¿ãƒªãƒ³ã‚°ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹é–¢æ•°
 	//--------------------------
 	//physx::PxQueryHitType::Enum preFilter(const physx::PxFilterData& filterData, const physx::PxShape* shape, const physx::PxRigidActor* actor, physx::PxHitFlags& queryFlags) override;
 	//physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit, const physx::PxShape* shape, const physx::PxRigidActor* actor) override;
 
 	//--------------------------
-	// NOTE:‡FÕ“ËƒCƒxƒ“ƒgƒCƒ“ƒ^[ƒtƒF[ƒXŠÖ”
+	// NOTE:â‘¦è¡çªã‚¤ãƒ™ãƒ³ãƒˆã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹é–¢æ•°
 	//--------------------------
 	void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) override {};
 	void onWake(physx::PxActor** actors, physx::PxU32 count) override {};
@@ -68,7 +74,7 @@ protected:
 
 private:
 	//--------------------------
-	// NOTE:‡GÕ“ËŒŸoƒtƒBƒ‹ƒ^ƒŠƒ“ƒO
+	// NOTE:â‘§è¡çªæ¤œå‡ºãƒ•ã‚£ãƒ«ã‚¿ãƒªãƒ³ã‚°
 	//--------------------------
 	static physx::PxFilterFlags SimulationFilterShader(
 		physx::PxFilterObjectAttributes	attributes0, physx::PxFilterData filterData0,
@@ -107,8 +113,11 @@ private:
 	std::vector<Line>		lines;
 	std::vector<Capsule>	capsules;
 
+	bool renderSimpleShapesOnly = false;
+	bool skipSleepingActors = false;
+
 public:
-	// ƒRƒ“ƒ\[ƒ‹ƒƒO‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğƒZƒbƒg
+	// ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ãƒ­ã‚°ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’ã‚»ãƒƒãƒˆ
 	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
 
 private:
