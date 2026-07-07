@@ -596,6 +596,17 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					}
 				});
 
+				//ホームラントリガーを通過したうえで地面に着地した場合はホームラン判定
+				if(Ball::Instance().GetHasPassedHomeRunZone() && !Ball::Instance().GetHasCollidedWithFence())
+				{
+					char debugMessage[256];
+					snprintf(debugMessage, sizeof(debugMessage),
+						"ホームラン！：ボールが地面に着地\n");
+					OutputDebugStringA(debugMessage);
+					if(consoleLog)
+						consoleLog->push_back(u8"[Hit] ホームラン！：ボールが地面に着地");
+				}
+
 				//飛距離計算
 				physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 				if (ballCollider && !Ball::Instance().GetHasCollidedWithGround())
@@ -654,7 +665,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					physx::PxVec3 ballPosition = ballCollider->getGlobalPose().p;
 
 					// ===== ホームラン判定 =====
-					if (ballPosition.z < 67.0f || !Ball::Instance().GetHasPassedHomeRunZone())
+					/*if (ballPosition.z < 67.0f || !Ball::Instance().GetHasPassedHomeRunZone())
 					{
 						char debugMessage[256];
 						snprintf(debugMessage, sizeof(debugMessage),
@@ -700,7 +711,28 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 								consoleLog->push_back(logBuf);
 							}
 						}
+					}*/
+
+					//ホームラントリガーを通過した状態でスタンドに衝突した場合はホームラン判定
+					if (Ball::Instance().GetHasPassedHomeRunZone())
+					{
+						char debugMessage[256];
+						snprintf(debugMessage, sizeof(debugMessage),
+							"ホームラン！：スタンドに衝突\n");
+						OutputDebugStringA(debugMessage);
+						if(consoleLog)
+							consoleLog->push_back(u8"[Hit] ホームラン！：スタンドに衝突");
 					}
+					else
+					{
+						char debugMessage[256];
+						snprintf(debugMessage, sizeof(debugMessage),
+							"フェンスに当たったがホームランではない：スタンドに衝突\n");
+						OutputDebugStringA(debugMessage);
+						if(consoleLog)
+							consoleLog->push_back(u8"[Hit] フェンスに当たったがホームランではない：スタンドに衝突");
+					}
+					
 
 					// ===== 飛距離計算 =====
 					physx::PxVec3 ballFencePosition = ballCollider->getGlobalPose().p;
@@ -809,15 +841,40 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 					physx::PxVec3 ballPos = ballCollider->getGlobalPose().p;
 
 					
-					{
-						// トリガー通過でホームラン確定フラグをON
-						Ball::Instance().SetHasPassedHomeRunZone(true);
+					//{
+					//	// トリガー通過でホームラン確定フラグをON
+					//	Ball::Instance().SetHasPassedHomeRunZone(true);
 
+					//	OutputDebugStringA("ホームランゾーン通過！\n");
+					//	if (consoleLog)
+					//		consoleLog->push_back(u8"[Hit] ホームランゾーン通過！");
+					//}
+
+					////グラウンドに当たった後にホームランゾーンを通過した場合はエンタイトルツーベース
+					//if (Ball::Instance().GetHasCollidedWithGround() && Ball::Instance().GetHasPassedHomeRunZone())
+					//{
+					//	OutputDebugStringA("エンタイトルツーベース！\n");
+					//	if (consoleLog)
+					//		consoleLog->push_back(u8"[Hit] エンタイトルツーベース！");
+					//}
+					
+					//ホームランゾーンを通過する前にグラウンドに当たった状態で
+					//ホームランゾーンを通過したらエンタイトルツーベース
+					//通過する前にグラウンドに当たっていない場合はホームラン
+					if (Ball::Instance().GetHasCollidedWithGround())
+					{
+						OutputDebugStringA("エンタイトルツーベース！\n");
+						if (consoleLog)
+							consoleLog->push_back(u8"[Hit] エンタイトルツーベース！");
+					}
+					else
+					{
+						Ball::Instance().SetHasPassedHomeRunZone(true);
 						OutputDebugStringA("ホームランゾーン通過！\n");
 						if (consoleLog)
 							consoleLog->push_back(u8"[Hit] ホームランゾーン通過！");
 					}
-					
+
 				}
 			}
 		}
