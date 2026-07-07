@@ -723,4 +723,5 @@ void stage::LoadFromJson(const json& j)
 		fenceThickness = j["fenceThickness"];
 	}
 
+	RebuildFenceTriggers(); // フェンスラインのトリガーを再構築
 }
