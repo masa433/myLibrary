@@ -300,6 +300,8 @@ void ballSprite::Initialize(ID3D11Device* device)
 		screenWidth, screenHeight,
 		512, 512,
 		&pitchInfoCodepoints);
+
+	trackingData.Initialize(device);
 }
 
 void ballSprite::Uninitialize()
@@ -311,6 +313,7 @@ void ballSprite::Uninitialize()
 	ballBoardSprite.reset();
 	ballBoardSpriteData.reset();
 	pitchInfoFont.Uninitialize();
+	trackingData.Uninitialize();
 }
 
 void ballSprite::Update(float elapsedTime)
@@ -465,6 +468,8 @@ void ballSprite::Update(float elapsedTime)
 			pitcher.IsRightPitcher());
 		ApplyBallSpritePosition(snapPos);
 		ballTrail2D.clear();
+
+		trackingData.Reset();
 	}
 	prevPitchingState = pitchingState;
 
@@ -472,6 +477,8 @@ void ballSprite::Update(float elapsedTime)
 	{
 		ballTrail2D.clear();
 		strikeJudgeDone = false;
+		
+		Ball::Instance().SetHasCollidedWithBat(false);
 	}
 	prevThrown = nowThrown;
 
@@ -534,15 +541,16 @@ void ballSprite::Update(float elapsedTime)
 	}
 
 	// 3Dボールとバットが当たった段階で、2Dボールの動きを当たった位置で止める
-	if (Ball::Instance().GetHasCollided())
+	if (Ball::Instance().GetHasCollidedWithBat())
 	{
 		stopBallOnHit = true;
+		trackingData.Update(elapsedTime);
 	}
 
 	//3Dボールのポジションzが0.0fの時またはボールとバットが当たった時に、BallBoardを表示する
-	if (Ball::Instance().GetWorldPosition().z <= 0.0f || Ball::Instance().GetHasCollided())
+	if (Ball::Instance().GetWorldPosition().z <= 0.0f || Ball::Instance().GetHasCollidedWithBat())
 	{
-		showBallBoard = true;
+		showBallBoard = true;	
 	}
 	else
 	{
@@ -630,7 +638,8 @@ void ballSprite::Render()
 		}
 	}
 
-	
+	trackingData.Render();
+
 	// 後始末（Wind と同じ）
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -675,6 +684,8 @@ void ballSprite::DrawGUI()
 		ImGui::ColorEdit4(u8"速球色", &pitchSpeedFastColor.x);
 		ImGui::DragFloat(u8"速球判定 (km/h)", &pitchSpeedFastThresholdKmh, 1.0f, 0.0f, 300.0f);
 	}
+
+	trackingData.DrawGUI();
 
 	const Pitcher::RealPitcher selectedRP = Pitcher::Instance().GetSelectedRealPitcher();
 	if (selectedRP != Pitcher::RealPitcher::None)
@@ -904,6 +915,9 @@ void ballSprite::SaveToJson(json& j)
 	{
 		j["pitchSpeedOffsets"].push_back({ pitchSpeedOffsets[i].x, pitchSpeedOffsets[i].y });
 	}
+
+	//トラッキングデータの保存
+	trackingData.SaveToJson(j);
 }
 
 void ballSprite::LoadFromJson(const json& j)
@@ -1042,6 +1056,9 @@ void ballSprite::LoadFromJson(const json& j)
 			pitchSpeedOffsets[i].y = speedOffsetsArray[i][1].get<float>();
 		}
 	}
+
+	//トラッキングデータの読み込み
+	trackingData.LoadFromJson(j);
 }
 
 //ストライクゾーン境界のゲッター

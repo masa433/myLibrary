@@ -1,8 +1,3 @@
-//float4 main() : SV_TARGET
-//{
-//	return float4(1.0f, 1.0f, 1.0f, 1.0f);
-//}
-
 #include "sprite.hlsli"
 Texture2D color_map : register(t0);
 SamplerState point_sampler_state : register(s0);
@@ -14,7 +9,7 @@ float4 main(VS_OUT pin) : SV_TARGET
     float alpha = color.a;
 #if 1
     // Inverse gamma process 
-    const float GAMMA = 1.5;
+    const float GAMMA = 1.2;
     color.rgb = pow(color.rgb, GAMMA);
 #endif 
     return float4(color.rgb, alpha) * pin.color;

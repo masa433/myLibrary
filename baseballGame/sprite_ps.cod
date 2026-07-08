@@ -41,21 +41,21 @@ dcl_temps 2
 //   v2.x <- pin.texcoord.x; v2.y <- pin.texcoord.y; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 13 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\sprite_ps.hlsl"
+#line 8 "C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\sprite_ps.hlsl"
 sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v2.xyxx, t0.xyzw, s2  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w <- color.w
 
-#line 14
+#line 9
 mov r0.w, r0.w  // r0.w <- alpha
 
-#line 17
-mov r1.x, l(1.500000)  // r1.x <- GAMMA
+#line 12
+mov r1.x, l(1.200000)  // r1.x <- GAMMA
 
-#line 18
+#line 13
 log r1.yzw, r0.xxyz
 mul r1.xyz, r1.yzwy, r1.xxxx
 exp r0.xyz, r1.xyzx
 
-#line 20
+#line 15
 mul o0.xyzw, r0.xyzw, v1.xyzw
 ret 
 // Approximately 8 instruction slots used

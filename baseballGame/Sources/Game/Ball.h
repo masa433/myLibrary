@@ -121,9 +121,10 @@ private:
 	float trailWidth = 0.05f; // 軌跡の幅
 
 public:
-	bool hasCollided = false; // 衝突フラグ
-	void SetHasCollided(bool collided) { hasCollided = collided; }
-	bool GetHasCollided() const { return hasCollided; }
+	
+	bool hasCollidedWithBat = false;
+	bool GetHasCollidedWithBat() const { return hasCollidedWithBat; }
+	void SetHasCollidedWithBat(bool value) { hasCollidedWithBat = value; }
 
 	// フェンスとの衝突フラグ
 	bool hasCollidedWithFence = false;

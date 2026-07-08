@@ -163,6 +163,9 @@
     <ClCompile Include="Sources\Graphics\FrustumCulling.cpp">
       <Filter>Sources\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\TrackingData.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -344,6 +347,9 @@
     </ClInclude>
     <ClInclude Include="Sources\Graphics\FrustumCulling.h">
       <Filter>Sources\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\TrackingData.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

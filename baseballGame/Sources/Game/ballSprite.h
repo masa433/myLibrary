@@ -9,6 +9,7 @@
 #include "json.hpp"
 #include "Pitcher.h"
 #include "FontRenderer.h"
+#include "TrackingData.h"
 
 using json = nlohmann::json;
 
@@ -256,4 +257,8 @@ public:
 	DirectX::XMFLOAT4 pitchSpeedHighFastColor = { 1.0f, 0.5f, 0.0f, 1.0f }; // オレンジ色
 	float pitchSpeedFastThresholdKmh = 150.0f;
 	float pitchSpeedHighFastThresholdKmh = 160.0f; // これ以上の球速はさらに強調表示
+
+private:
+
+	TrackingData trackingData; // 追跡データの管理
 };

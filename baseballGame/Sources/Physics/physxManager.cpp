@@ -551,7 +551,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 			if (ballIsActor0 || ballIsActor1)
 			{
-				Ball::Instance().SetHasCollided(true);
+				Ball::Instance().SetHasCollidedWithBat(true);
 				Ball::Instance().SetHasCollidedWithFence(true);
 				Ball::Instance().SetHasCollidedWithGround(true);
 
@@ -633,9 +633,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Ground") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Ground"))
 		{
-			Ball::Instance().SetHasCollided(true); // 衝突フラグを設定
-
-
+			
 			// キューに速度変更リクエストを追加
 			{
 				std::lock_guard<std::mutex> lock(queueMutex);
@@ -732,7 +730,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stand") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stand"))
 		{
-			Ball::Instance().SetHasCollided(true);
+			Ball::Instance().SetHasCollidedWithBat(true);
 
 			if (!Ball::Instance().GetHasCollidedWithFence())
 			{
@@ -848,7 +846,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Pole") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Pole"))
 		{
-			Ball::Instance().SetHasCollided(true); // 衝突フラグを設定
+			Ball::Instance().SetHasCollidedWithBat(true); // 衝突フラグを設定
 			Ball::Instance().SetHasCollidedWithGround(true); // 地面衝突フラグを設定
 
 			//ポールに当たったら無条件でホームラン判定
@@ -923,13 +921,13 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 
 			if (!ballAndBat) continue;
 			if (pair.status != physx::PxPairFlag::eNOTIFY_TOUCH_FOUND) continue;
-			if (Ball::Instance().GetHasCollided()) continue;
+			if (Ball::Instance().GetHasCollidedWithBat()) continue;
 
 			HitJudge2DResult result;
 			if (!HitJudge2D::Instance().ConsumePendingResult(result))
 				continue; // 空振り：トリガーなので何も起きない
 
-			Ball::Instance().SetHasCollided(true);
+			Ball::Instance().SetHasCollidedWithBat(true);
 			Ball::Instance().CancelBezier();
 			ballSprite::Instance().SetShowBallBoard(true);
 			ballSprite::Instance().SetStopBallOnHit(true);
@@ -1103,6 +1101,10 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 						logPtr->push_back(logBuf);
 					}
 				});
+
+			outSpeed = newBallVelocity.magnitude() * 3.6f;
+			outAngle = launchAngleDeg;
+			outDirection = hitDirectionAngleDeg;
 		}
 
 

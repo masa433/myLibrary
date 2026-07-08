@@ -237,6 +237,7 @@
     <ClCompile Include="Sources\Game\stage.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Game\TrackingData.cpp" />
     <ClCompile Include="Sources\Game\Wind.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -368,6 +369,7 @@
     <ClInclude Include="Sources\Game\stage.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Game\TrackingData.h" />
     <ClInclude Include="Sources\Game\Wind.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

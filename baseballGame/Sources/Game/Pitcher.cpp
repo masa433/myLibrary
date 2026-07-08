@@ -160,7 +160,7 @@ void Pitcher::Update(float elapsedTime)
 			isBallThrown = false;
 			SelectPitchTypeByAI(); // 球種選択
 			Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
-			Ball::Instance().SetHasCollided(false); // 衝突フラグをリセット
+			Ball::Instance().SetHasCollidedWithBat(false); // 衝突フラグをリセット
 			Ball::Instance().SetHasCollidedWithFence(false); // フェンス衝突フラグをリセット
 			Ball::Instance().SetHasPassedHomeRunZone(false); // ホームランゾーン通過フラグをリセット
 			Ball::Instance().SetHasCollidedWithGround(false); // 地面衝突フラグをリセット
@@ -246,7 +246,7 @@ void Pitcher::Update(float elapsedTime)
 	{
 		isBallThrown = false;
 		Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
-		Ball::Instance().SetHasCollided(false); // 衝突フラグをリセット
+		Ball::Instance().SetHasCollidedWithBat(false); // 衝突フラグをリセット
 		Ball::Instance().SetHasCollidedWithFence(false); // フェンス衝突フラグをリセット
 		Ball::Instance().SetHasPassedHomeRunZone(false); // ホームランゾーン通過フラグをリセット
 		Ball::Instance().SetHasCollidedWithGround(false); // 地面衝突フラグをリセット
@@ -855,7 +855,7 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 		if (Ball::Instance().GetWorldPosition().y < 0.0f)
 		{
 			isBallThrown = false;
-			Ball::Instance().SetHasCollided(false);
+			Ball::Instance().SetHasCollidedWithBat(false);
 			animation_time = 0.0f;
 			Ball::Instance().SetHasCollidedWithFence(false);
 			Ball::Instance().SetHasCollidedWithGround(false);
@@ -893,7 +893,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 
 		if (!isBallThrown)
 		{
-			Ball::Instance().SetHasCollided(false);
+			Ball::Instance().SetHasCollidedWithBat(false);
 			Ball::Instance().SetHasCollidedWithFence(false);
 			Ball::Instance().SetHasPassedHomeRunZone(false);
 			Ball::Instance().SetHasCollidedWithGround(false);

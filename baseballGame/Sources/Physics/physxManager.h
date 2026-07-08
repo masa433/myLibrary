@@ -127,4 +127,13 @@ public:
 	bool ballWasHit = false;
 	bool GetBallWasHit() const { return ballWasHit; }
 	void ClearBallWasHit() { ballWasHit = false; }
+
+	//打球速度・打球角度・打球方向を取得するゲッター
+	float GetBallSpeed() const { return outSpeed; }
+	float GetBallAngle() const { return outAngle; }
+	float GetBallDirection() const { return outDirection; }
+
+	float outSpeed = 0.0f; //打球速度
+	float outAngle = 0.0f; //打球角度
+	float outDirection = 0.0f; //打球方向
 };
