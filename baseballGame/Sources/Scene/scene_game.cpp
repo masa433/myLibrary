@@ -23,11 +23,6 @@
 
 using json = nlohmann::json;
 
-//	シャドウマップサイズ
-static constexpr UINT ShadowmapSize = 4096;
-static constexpr UINT SpotShadowmapSize = 4096;
-static constexpr float ShadowmapDrawRect = 60;
-
 //カメラ管理
 void scene_game::ApplyPresetToController(const CameraPreset& preset, CameraController& controller)
 {
@@ -530,6 +525,8 @@ void scene_game::update(float elapsed_time)
     // 追跡終了条件（例：ボールが止まったら）
     if (cameraControllers[activeCameraIndex].IsTrackingBall())
     {
+        enableShadows = false;
+
         const auto& vel = Ball::Instance().GetVelocity();
         float speed = sqrtf(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
         if (speed < 1.0f)
@@ -540,6 +537,7 @@ void scene_game::update(float elapsed_time)
                 for (auto& cc : cameraControllers)
                     cc.StopTrackingBall();
 				trackingTime = 0.0f;
+				enableShadows = true;
             }
         }
 
@@ -549,6 +547,7 @@ void scene_game::update(float elapsed_time)
             for (auto& cc : cameraControllers)
                 cc.StopTrackingBall();
             trackingTime = 0.0f;
+			enableShadows = true;
         }
     }
 

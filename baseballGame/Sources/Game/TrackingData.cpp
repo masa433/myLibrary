@@ -105,7 +105,7 @@ void TrackingData::Render()
 	const float lineHeight = trackingDataValueFontScale * 50.0f;
 	const float valuePadding = 8.0f;
 
-	const float valueColumnCenterX = trackingDataSpriteData->position.x + trackingDataSpriteData->size.x * 0.78f;
+	const float valueColumnCenterX = trackingDataSpriteData->position.x + trackingDataSpriteData->size.x * 0.7f;
 
 	auto FormatRoundedValue = [](float value) -> float
 		{

@@ -25,14 +25,14 @@ framework::framework(HWND hwnd) : hwnd(hwnd)
 #ifndef _DEBUG
 	// リリースビルド時にボーダーレスフルスクリーンへ変更
 	// ※Graphics初期化前にウィンドウサイズとスタイルを変更し、内部解像度をネイティブに合わせる
-	LONG_PTR style = GetWindowLongPtr(hwnd, GWL_STYLE);
+	/*LONG_PTR style = GetWindowLongPtr(hwnd, GWL_STYLE);
 	style &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
 	SetWindowLongPtr(hwnd, GWL_STYLE, style);
 
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
-	SetWindowPos(hwnd, HWND_TOP, 0, 0, screenWidth, screenHeight, SWP_FRAMECHANGED | SWP_NOZORDER);
+	SetWindowPos(hwnd, HWND_TOP, 0, 0, screenWidth, screenHeight, SWP_FRAMECHANGED | SWP_NOZORDER);*/
 #endif
 
 	//インプット初期化
