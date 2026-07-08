@@ -612,10 +612,14 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 					if (consoleLog)
 					{
+						//グラウンドなら実測飛距離、スタンドなら総飛距離を表示
+
+						bool isGround = (otherName && strcmp(otherName, "Ground") == 0);
+
 						char logBuf[512];
 						snprintf(logBuf, sizeof(logBuf),
 							u8"[Hit] ホームラン！ 飛距離: %.1f m",
-							totalDistance);
+							isGround ? horizontalDistance : totalDistance);
 						consoleLog->push_back(logBuf);
 					}
 				}
@@ -756,75 +760,6 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					}
 					else
 					{
-
-						// ===== ホームラン判定 =====
-						/*if (ballPosition.z < 67.0f || !Ball::Instance().GetHasPassedHomeRunZone())
-						{
-							char debugMessage[256];
-							snprintf(debugMessage, sizeof(debugMessage),
-								"ファウル：x=%.2f y=%.2f z=%.2f\n",
-								ballPosition.x, ballPosition.y, ballPosition.z);
-							OutputDebugStringA(debugMessage);
-
-							if(consoleLog)
-								consoleLog->push_back(u8"[Hit] ファウル");
-						}
-						else
-						{
-							if (ballPosition.y >= 4.0f)
-							{
-								char debugMessage[256];
-								snprintf(debugMessage, sizeof(debugMessage),
-									"ホームラン！：ボールの高さ %.2f m\n",
-									ballPosition.y);
-								OutputDebugStringA(debugMessage);
-								if(consoleLog)
-								{
-
-									char logBuf[512];
-									snprintf(logBuf, sizeof(logBuf),
-										u8"[Hit] ホームラン！：ボールの高さ: %.1f m",
-										ballPosition.y);
-									consoleLog->push_back(logBuf);
-								}
-							}
-							else
-							{
-								char debugMessage[256];
-								snprintf(debugMessage, sizeof(debugMessage),
-									"フェンスに当たったがホームランではない：ボールの高さ %.2f m\n",
-									ballPosition.y);
-								OutputDebugStringA(debugMessage);
-								if(consoleLog)
-								{
-									char logBuf[512];
-									snprintf(logBuf, sizeof(logBuf),
-										u8"[Hit] フェンスに当たったがホームランではない : ボールの高さ: %.1f m",
-										ballPosition.y);
-									consoleLog->push_back(logBuf);
-								}
-							}
-						}*/
-
-						////ホームラントリガーを通過した状態でスタンドに衝突した場合はホームラン判定
-						//if (Ball::Instance().GetHasPassedHomeRunZone())
-						//{
-						//	char debugMessage[256];
-						//	snprintf(debugMessage, sizeof(debugMessage),
-						//		"ホームラン！：スタンドに衝突\n");
-						//	OutputDebugStringA(debugMessage);
-						//	if(consoleLog)
-						//		consoleLog->push_back(u8"[Hit] ホームラン！：スタンドに衝突");
-						//}
-						//else
-						//{
-						//	char debugMessage[256];
-						//	snprintf(debugMessage, sizeof(debugMessage),
-						//		"フェンスに当たったがホームランではない：スタンドに衝突\n");
-						//	OutputDebugStringA(debugMessage);
-						//	if(consoleLog)
-						//		consoleLog->push_back(u8"[Hit] フェンスに当たったがホームランではない：スタンドに衝突");
-						//}
 
 						//グラウンドに当たらずかつホームランゾーンを通過せずにスタンドに当たったらフェンス直撃
 						//グラウンドに当たってかつホームランゾーンを通過していなかったらヒット
@@ -1133,6 +1068,15 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				(launchAngleDeg >= 26.0f && launchAngleDeg <= 30.0f);
 			if (isBarrelZone) hitResult = u8"バレルゾーン！";
 
+			
+			//打球方向が15度～30度の範囲内で打球速度が170キロ以上、打球角度が25度～35度の時は確信ホームランとして仮でログ出力
+			//後で確信ホームラン用のカメラ演出に切り替える
+			if(hitDirectionAngleDeg >= 15.0f && hitDirectionAngleDeg <= 30.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 35.0f && estimatedExitVelocity >= 47.22f)
+			{
+				hitResult = u8"確信ホームラン！";
+			}
+
+		
 			// キューに登録
 			float limitedBallSpeedKmh = ballVelocity.magnitude() * 3.6f;
 			std::lock_guard<std::mutex> lock(queueMutex);
