@@ -14,7 +14,7 @@ using json = nlohmann::json;
 
 class Player : public GameObject
 {
-	//ƒCƒ“ƒXƒ^ƒ“ƒX
+	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 public:
     static Player& Instance()
     {
@@ -30,25 +30,27 @@ public:
 	void RenderBat(const RenderContext& rc, ModelRenderer* renderer);
     void DrawGUI();
 
-    bool IsRightBatter() const { return isRightBatter; } // ‰E‘ÅÒ‚©‚Ç‚¤‚©‚ğ”»’è‚·‚éƒƒ\ƒbƒh
+    bool IsRightBatter() const { return isRightBatter; } // å³æ‰“è€…ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹ãƒ¡ã‚½ãƒƒãƒ‰
+
+    void SetBezierPitching(bool isPitching) { isBezierPitching = isPitching; } // ãƒ™ã‚¸ã‚§æ›²ç·šæŠ•çƒä¸­ãƒ•ãƒ©ã‚°ã‚’è¨­å®š
 
     void SaveToJson(json& j);
     void LoadFromJson(const json& j);
 
 private:
-    // ƒL[“ü—Íˆ—
+    // ã‚­ãƒ¼å…¥åŠ›å‡¦ç†
     void HandleInput(float elapsedTime);
     
-    // ƒAƒ^ƒbƒ`ƒƒ“ƒgˆ—
+    // ã‚¢ã‚¿ãƒƒãƒãƒ¡ãƒ³ãƒˆå‡¦ç†
     void AttachBatToHand();
 
 	void UpdateAnimation(float elapsedTime);
 
 	
 
-    void UpdateLookAt(const DirectX::XMFLOAT3& targetPosition); // “ª‚Ìƒ‹ƒbƒNƒAƒbƒgˆ—
+    void UpdateLookAt(const DirectX::XMFLOAT3& targetPosition); // é ­ã®ãƒ«ãƒƒã‚¯ã‚¢ãƒƒãƒˆå‡¦ç†
 
-    // ƒ{[ƒ“‘€ì—pƒƒ\ƒbƒh
+    // ãƒœãƒ¼ãƒ³æ“ä½œç”¨ãƒ¡ã‚½ãƒƒãƒ‰
     void ModifyArmBones();
     void UpdateNodeTransform(int nodeIndex, const DirectX::XMMATRIX& additionalRotation);
     void UpdateChildrenRecursive(int nodeIndex);
@@ -77,7 +79,7 @@ public:
     void ChangeState(State newState);
 
 private:
-    // ƒ‚ƒfƒ‹ŠÖ˜A
+    // ãƒ¢ãƒ‡ãƒ«é–¢é€£
     std::unique_ptr<Model> bat;
 	std::unique_ptr<gltf_model> batModel;
 
@@ -90,22 +92,26 @@ private:
     std::vector<gltf_model::node> animated_nodes;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_context;
 
-    // ƒAƒjƒ[ƒVƒ‡ƒ“ŠÖ˜A
+    // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–¢é€£
     float animation_time = 0.0f;
     int current_animation_index = 0;
     bool animation_playing = true;
 
-    // ƒXƒe[ƒgƒ}ƒVƒ“ŠÖ˜A
+    // ãƒ™ã‚¸ã‚§æ›²ç·šæŠ•çƒç”¨
+    bool isBezierPitching = false; // ãƒ™ã‚¸ã‚§æ›²ç·šæŠ•çƒä¸­ã‹ã©ã†ã‹
+    float beforeSwingStartTime = 0.0f; // BeforeSwingã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹æ™‚ã®animation_time
+
+    // ã‚¹ãƒ†ãƒ¼ãƒˆãƒã‚·ãƒ³é–¢é€£
     State current_state = State::BattingIdle;
     State previous_state = State::BattingIdle;
 
-    // ƒXƒe[ƒg‚²‚Æ‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒCƒ“ƒfƒbƒNƒXiInitialize“à‚Åİ’èj
+    // ã‚¹ãƒ†ãƒ¼ãƒˆã”ã¨ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ï¼ˆInitializeå†…ã§è¨­å®šï¼‰
     int animation_indices[static_cast<int>(State::Count)] = { 0, 0, 0, 0 };
 
-	//ƒ‹ƒbƒNƒAƒbƒgˆ—ŠÖ˜A
-    DirectX::XMFLOAT3			headLocalForward = { 0, 0, 1 };	// “ª‚Ìƒ[ƒJƒ‹‘O•ûŒü
-    int							headNodeIndex = -1;				// “ªƒm[ƒh‚ÌƒCƒ“ƒfƒbƒNƒX
-    bool						enableLookAt = true;			// ƒ‹ƒbƒNƒAƒbƒg—LŒøƒtƒ‰ƒO
+	//ãƒ«ãƒƒã‚¯ã‚¢ãƒƒãƒˆå‡¦ç†é–¢é€£
+    DirectX::XMFLOAT3			headLocalForward = { 0, 0, 1 };	// é ­ã®ãƒ­ãƒ¼ã‚«ãƒ«å‰æ–¹å‘
+    int							headNodeIndex = -1;				// é ­ãƒãƒ¼ãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
+    bool						enableLookAt = true;			// ãƒ«ãƒƒã‚¯ã‚¢ãƒƒãƒˆæœ‰åŠ¹ãƒ•ãƒ©ã‚°
     DirectX::XMFLOAT3					targetPosition = { 0, 2, 1 };
 
 	float gravity = -9.8f;
@@ -115,28 +121,28 @@ private:
 
 	float swingHeight = 0.0f;
 	float swingWidth = 5.0f;
-    float armAngleOffset = 0.0f; // ˜r‚ÌŠp“xƒIƒtƒZƒbƒgi’Ç‰Áj
-    float swingStartTime = 0.0f; // ƒXƒCƒ“ƒOŠJn‚©‚ç‚ÌŒo‰ßŠÔ
+    float armAngleOffset = 0.0f; // è…•ã®è§’åº¦ã‚ªãƒ•ã‚»ãƒƒãƒˆï¼ˆè¿½åŠ ï¼‰
+    float swingStartTime = 0.0f; // ã‚¹ã‚¤ãƒ³ã‚°é–‹å§‹ã‹ã‚‰ã®çµŒéæ™‚é–“
 
     physx::PxCapsuleController* pxPlayerCapsuleController = nullptr;
     physx::PxConvexMesh* pxBatConvexMesh = nullptr;
     physx::PxRigidDynamic* pxBatRigidBody = nullptr;
-    bool isOnGround = true; // ’n–Ê‚É‚¢‚é‚©‚Ç‚¤‚©
+    bool isOnGround = true; // åœ°é¢ã«ã„ã‚‹ã‹ã©ã†ã‹
 
     DirectX::XMFLOAT3 meshScale = { 0.0f,0.0f,0.0f };
 
-    physx::PxMaterial* pxBatMaterial = nullptr;//ƒoƒbƒgê—p‚Ìƒ}ƒeƒŠƒAƒ‹
+    physx::PxMaterial* pxBatMaterial = nullptr;//ãƒãƒƒãƒˆå°‚ç”¨ã®ãƒãƒ†ãƒªã‚¢ãƒ«
 
     float ThrowingStateTime = 0.0f;
-	bool hasPlayHomeRun = false;
-	bool isRightBatter = false; // ‰E‘ÅÒ‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
+	bool hasPlayBeforeSwing = false;
+	bool isRightBatter = false; // å³æ‰“è€…ã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°
 
 public:
 
-	bool isPurpleBat = false; // ‡F‚Ìƒoƒbƒg‚É“–‚½‚Á‚½‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
+	bool isPurpleBat = false; // ç´«è‰²ã®ãƒãƒƒãƒˆã«å½“ãŸã£ãŸã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°
 
 public:
-    // ƒRƒ“ƒ\[ƒ‹ƒƒO‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğƒZƒbƒg
+    // ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ãƒ­ã‚°ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’ã‚»ãƒƒãƒˆ
     void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
 
 private:
