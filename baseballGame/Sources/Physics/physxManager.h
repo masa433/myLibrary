@@ -136,4 +136,9 @@ public:
 	float outSpeed = 0.0f; //打球速度
 	float outAngle = 0.0f; //打球角度
 	float outDirection = 0.0f; //打球方向
+
+	//確信ホームランかどうかを判定するフラグとゲッター
+	bool isHomeRun = false;
+	bool GetIsHomeRun() const { return isHomeRun; }
+	void SetIsHomeRun(bool value) { isHomeRun = value; }
 };

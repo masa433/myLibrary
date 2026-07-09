@@ -1062,17 +1062,22 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				else if (originalAngleDeg < 0.0f)       hitResult = u8"レフト方向";//-15～-45
 				else                                     hitResult = u8"ライト方向";//+15～+45
 			}
-			bool isBarrelZone = (estimatedExitVelocity >= 43.89f) &&
-				(launchAngleDeg >= 26.0f && launchAngleDeg <= 30.0f);
+
+			float finalExitVelocityKmh = newBallVelocity.magnitude() * 3.6f;
+
+			// バレルゾーン判定（打球速度が158km/h以上かつ打球角度が25～30以内）
+			bool isBarrelZone = (finalExitVelocityKmh >= 158.0f) &&
+				(launchAngleDeg >= 25.0f && launchAngleDeg <= 30.0f);
 			if (isBarrelZone) hitResult = u8"バレルゾーン！";
 
 			
 			//打球方向が15度～30度の範囲内で打球速度が170キロ以上、打球角度が25度～35度の時は確信ホームランとして仮でログ出力
 			//後で確信ホームラン用のカメラ演出に切り替える
 			const char* homeRunResult = nullptr;
-			if(hitDirectionAngleDeg >= 15.0f && hitDirectionAngleDeg <= 30.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 35.0f && estimatedExitVelocity >= 47.22f)
+			if(hitDirectionAngleDeg >= 15.0f && hitDirectionAngleDeg <= 30.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 35.0f && finalExitVelocityKmh >= 170.0f)
 			{
 				homeRunResult = u8"確信ホームラン！";
+				isHomeRun = true;
 			}
 
 		

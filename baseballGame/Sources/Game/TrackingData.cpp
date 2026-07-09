@@ -71,6 +71,7 @@ void TrackingData::Reset()
 {
 	showTrackingData = false;
 	showTrackingDelay = 0.0f;
+	Physics::Instance().SetIsHomeRun(false);
 }
 
 void TrackingData::Render()
@@ -130,20 +131,34 @@ void TrackingData::Render()
 	auto DrawLabelAndValue = [&](const char* label, const char* value, float y,
 		const DirectX::XMFLOAT2& labelOffset, const DirectX::XMFLOAT2& valueOffset)
 		{
-			// ラベルはこれまで通り左揃え
-			trackingDataFont.DrawTextW(dc, label,
-				baseX + labelOffset.x, y + labelOffset.y,
-				trackingDataFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
-
-			// 数値は幅を測って中央ぞろえ
-			float valueWidth = 0.0f, valueHeight = 0.0f;
-			trackingDataFont.MeasureText(value, trackingDataValueFontScale, valueWidth, valueHeight);
-
-			float valueX = valueColumnCenterX - valueWidth * 0.5f;
-
-			trackingDataFont.DrawTextW(dc, value,
-				valueX + valueOffset.x, y + valueOffset.y,
-				trackingDataValueFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+			//打球速度が150キロ以上かつ打球角度が25度から35度の範囲内の場合、両者を金色で表示
+			if(Physics::Instance().GetIsHomeRun())
+			{
+				trackingDataFont.DrawTextW(dc, label,
+					baseX + labelOffset.x, y + labelOffset.y,
+					trackingDataFontScale, 1.0f, 1.0f, 1.0f, 1.0f); // 白色
+				// 数値は幅を測って中央ぞろえ
+				float valueWidth = 0.0f, valueHeight = 0.0f;
+				trackingDataFont.MeasureText(value, trackingDataValueFontScale, valueWidth, valueHeight);
+				float valueX = valueColumnCenterX - valueWidth * 0.5f;
+				trackingDataFont.DrawTextW(dc, value,
+					valueX + valueOffset.x, y + valueOffset.y,
+					trackingDataValueFontScale, 1.0f, 0.843f, 0.0f, 1.0f); // 金色
+			}
+			else
+			{
+				// ラベルはこれまで通り左揃え
+				trackingDataFont.DrawTextW(dc, label,
+					baseX + labelOffset.x, y + labelOffset.y,
+					trackingDataFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+				// 数値は幅を測って中央ぞろえ
+				float valueWidth = 0.0f, valueHeight = 0.0f;
+				trackingDataFont.MeasureText(value, trackingDataValueFontScale, valueWidth, valueHeight);
+				float valueX = valueColumnCenterX - valueWidth * 0.5f;
+				trackingDataFont.DrawTextW(dc, value,
+					valueX + valueOffset.x, y + valueOffset.y,
+					trackingDataValueFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+			}			
 		};
 
 	DrawLabelAndValue(angleLabel, angleValue, lineY, angleLabelOffset, angleValueOffset);
