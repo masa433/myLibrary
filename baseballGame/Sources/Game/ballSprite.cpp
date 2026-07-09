@@ -506,10 +506,25 @@ void ballSprite::Update(float elapsedTime)
 			0.0f, // t=0で開始点を取得
 			pitcher.IsRightPitcher());
 
+		//縦スライダー、フォーク、スプリット、チェンジアップ、シンカー、パーム、ナックルのときに
+		// ターゲットがストライクゾーンの中心より高め(スクリーンY座標が小さい方が上)なら
+		// ballSpriteのY方向の移動量を半分にする
+		float yMoveScale = 1.0f;
+		const float zoneCenterY = strikeZoneSpriteData->position.y + strikeZoneSpriteData->size.y * 0.5f;
+		//落ちる系の球種(マジックナンバーは使わない)
+		if ((currentPitchIndex == 6 || currentPitchIndex == 9 || currentPitchIndex == 5 || currentPitchIndex == 8 ||
+			currentPitchIndex == 7 || currentPitchIndex == 15 || currentPitchIndex == 12) &&
+			(finalScreenPos.y < zoneCenterY || startScreenPos.y < zoneCenterY))
+		{
+			yMoveScale = 0.5f;
+		}
+
+
 		DirectX::XMFLOAT2 currentScreenPos = {
 			startScreenPos.x + (finalScreenPos.x - startScreenPos.x) * t,
-			startScreenPos.y + (finalScreenPos.y - startScreenPos.y) * t
+			startScreenPos.y + (finalScreenPos.y - startScreenPos.y) * t * yMoveScale
 		};
+
 
 		AddTrailPoint(currentScreenPos);
 		ApplyBallSpritePosition(currentScreenPos);
