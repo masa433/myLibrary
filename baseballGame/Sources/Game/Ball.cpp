@@ -375,7 +375,7 @@ void Ball::ApplyPitchPhysics(bool isKnuckleball, const physx::PxVec3& windVeloci
 	constexpr float airDensity = 1.225f;//空気密度(kg/m^3)
 	constexpr float ballRadius = 0.0365f;//野球ボールの半径(m)
 	const float ballArea = DirectX::XM_PI * ballRadius * ballRadius;//ボールの断面積(m^2)
-	constexpr float dragCoeff = 0.4f;//抗力係数
+	constexpr float dragCoeff = 0.38f;//抗力係数
 
 	if (relativeSpeed > 0.0f)
 	{

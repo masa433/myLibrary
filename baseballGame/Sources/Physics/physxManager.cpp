@@ -1058,9 +1058,9 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			const char* hitResult = u8"ファウル";
 			if (hitDirectionAngleDeg <= 45.0f)
 			{
-				if (hitDirectionAngleDeg <= 15.0f) hitResult = u8"センター方向";
-				else if (originalAngleDeg < 0.0f)       hitResult = u8"レフト方向";
-				else                                     hitResult = u8"ライト方向";
+				if (hitDirectionAngleDeg <= 15.0f) hitResult = u8"センター方向";//+15～-15
+				else if (originalAngleDeg < 0.0f)       hitResult = u8"レフト方向";//-15～-45
+				else                                     hitResult = u8"ライト方向";//+15～+45
 			}
 			bool isBarrelZone = (estimatedExitVelocity >= 43.89f) &&
 				(launchAngleDeg >= 26.0f && launchAngleDeg <= 30.0f);
@@ -1069,9 +1069,10 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			
 			//打球方向が15度～30度の範囲内で打球速度が170キロ以上、打球角度が25度～35度の時は確信ホームランとして仮でログ出力
 			//後で確信ホームラン用のカメラ演出に切り替える
+			const char* homeRunResult = nullptr;
 			if(hitDirectionAngleDeg >= 15.0f && hitDirectionAngleDeg <= 30.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 35.0f && estimatedExitVelocity >= 47.22f)
 			{
-				hitResult = u8"確信ホームラン！";
+				homeRunResult = u8"確信ホームラン！";
 			}
 
 		
@@ -1081,7 +1082,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			std::vector<std::string>* logPtr = consoleLog;
 			velocityUpdateQueue.push([ballCollider, newBallVelocity, spinAxis,
 				angularVelocityRadPerSec, limitedBallSpeedKmh, batSpeed,
-				launchAngleDeg, hitDirectionAngleDeg, hitResult, logPtr]()
+				launchAngleDeg, hitDirectionAngleDeg, hitResult, logPtr, homeRunResult]()
 				{
 					ballCollider->setLinearVelocity(newBallVelocity);
 					ballCollider->setAngularVelocity(spinAxis * angularVelocityRadPerSec);
@@ -1095,9 +1096,9 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 					{
 						char logBuf[512];
 						snprintf(logBuf, sizeof(logBuf),
-							u8"[Hit] 初速:%.1fkm/h スイング:%.1fkm/h 打球:%.1fkm/h 角度:%.1f° 方向:%.1f°[%s] 回転:%.0frpm",
+							u8"[Hit] 初速:%.1fkm/h スイング:%.1fkm/h 打球:%.1fkm/h 角度:%.1f° 方向:%.1f°[%s] 回転:%.0frpm  [%s]",
 							limitedBallSpeedKmh, batSpeed * 3.6f, exitVelocityKmh,
-							launchAngleDeg, hitDirectionAngleDeg, hitResult, spinRpm);
+							launchAngleDeg, hitDirectionAngleDeg, hitResult, spinRpm, homeRunResult ? homeRunResult : "");
 						logPtr->push_back(logBuf);
 					}
 				});

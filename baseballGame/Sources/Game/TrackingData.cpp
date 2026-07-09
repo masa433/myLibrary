@@ -123,8 +123,8 @@ void TrackingData::Render()
 	char speedLabel[16];     snprintf(speedLabel, sizeof(speedLabel), u8"速度　");
 	char speedValue[32];     snprintf(speedValue, sizeof(speedValue), u8"%.fkm/h", FormatRoundedValue(Physics::Instance().GetBallSpeed()));
 
-	char directionLabel[16]; snprintf(directionLabel, sizeof(directionLabel), u8"方向　");
-	char directionValue[32]; snprintf(directionValue, sizeof(directionValue), u8"%.f度", FormatRoundedValue(Physics::Instance().GetBallDirection()));
+	/*char directionLabel[16]; snprintf(directionLabel, sizeof(directionLabel), u8"方向　");
+	char directionValue[32]; snprintf(directionValue, sizeof(directionValue), u8"%.f度", FormatRoundedValue(Physics::Instance().GetBallDirection()));*/
 
 	// ラベル＋数値をペアで描画するヘルパー（オフセット付き）
 	auto DrawLabelAndValue = [&](const char* label, const char* value, float y,
@@ -148,7 +148,7 @@ void TrackingData::Render()
 
 	DrawLabelAndValue(angleLabel, angleValue, lineY, angleLabelOffset, angleValueOffset);
 	DrawLabelAndValue(speedLabel, speedValue, lineY + lineHeight, speedLabelOffset, speedValueOffset);
-	DrawLabelAndValue(directionLabel, directionValue, lineY + 2 * lineHeight, directionLabelOffset, directionValueOffset);
+	//DrawLabelAndValue(directionLabel, directionValue, lineY + 2 * lineHeight, directionLabelOffset, directionValueOffset);
 
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -179,9 +179,9 @@ void TrackingData::DrawGUI()
 			ImGui::DragFloat2("Speed Label Offset", &speedLabelOffset.x, 0.5f, -200.0f, 200.0f);
 			ImGui::DragFloat2("Speed Value Offset", &speedValueOffset.x, 0.5f, -200.0f, 200.0f);
 
-			ImGui::Text(u8"方向");
+			/*ImGui::Text(u8"方向");
 			ImGui::DragFloat2("Direction Label Offset", &directionLabelOffset.x, 0.5f, -200.0f, 200.0f);
-			ImGui::DragFloat2("Direction Value Offset", &directionValueOffset.x, 0.5f, -200.0f, 200.0f);
+			ImGui::DragFloat2("Direction Value Offset", &directionValueOffset.x, 0.5f, -200.0f, 200.0f);*/
 
 			ImGui::TreePop();
 		}
