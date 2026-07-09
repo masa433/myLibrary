@@ -33,6 +33,7 @@ void TrackingData::Initialize(ID3D11Device* device)
 		u8"0123456789.km/h-"
 		u8"角度速度方向"
 		u8"0123456789.度"
+		u8"Tracking Data"
 	);
 
 	// フォントレンダラーの初期化
@@ -105,6 +106,7 @@ void TrackingData::Render()
 	float lineY = trackingDataSpriteData->position.y + 10.0f;
 	const float lineHeight = trackingDataValueFontScale * 50.0f;
 	const float valuePadding = 8.0f;
+	const float TrackingDataLabelOffsetY = 20.0f; // "Tracking Data"ラベルのYオフセット
 
 	const float valueColumnCenterX = trackingDataSpriteData->position.x + trackingDataSpriteData->size.x * 0.7f;
 
@@ -124,6 +126,10 @@ void TrackingData::Render()
 	char speedLabel[16];     snprintf(speedLabel, sizeof(speedLabel), u8"速度　");
 	char speedValue[32];     snprintf(speedValue, sizeof(speedValue), u8"%.fkm/h", FormatRoundedValue(Physics::Instance().GetBallSpeed()));
 
+	//画像の左上付近にTrackingDataのラベルを表示する
+	char trackingDataLabel[32]; snprintf(trackingDataLabel, sizeof(trackingDataLabel), "Tracking Data");
+
+	
 	/*char directionLabel[16]; snprintf(directionLabel, sizeof(directionLabel), u8"方向　");
 	char directionValue[32]; snprintf(directionValue, sizeof(directionValue), u8"%.f度", FormatRoundedValue(Physics::Instance().GetBallDirection()));*/
 
@@ -161,6 +167,7 @@ void TrackingData::Render()
 			}			
 		};
 
+	DrawLabelAndValue(trackingDataLabel, "", lineY + TrackingDataLabelOffsetY, { 0.0f, 0.0f }, { 0.0f, 0.0f });
 	DrawLabelAndValue(angleLabel, angleValue, lineY, angleLabelOffset, angleValueOffset);
 	DrawLabelAndValue(speedLabel, speedValue, lineY + lineHeight, speedLabelOffset, speedValueOffset);
 	//DrawLabelAndValue(directionLabel, directionValue, lineY + 2 * lineHeight, directionLabelOffset, directionValueOffset);
