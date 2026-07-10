@@ -36,6 +36,8 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 		screenWidth, screenHeight,
 		512, 512,
 		&homeRunCountCodepoints);
+
+	
 }
 
 void HomeRunCount::Uninitialize()
@@ -47,8 +49,22 @@ void HomeRunCount::Uninitialize()
 
 void HomeRunCount::Update(float elapsedTime)
 {
-	// ホームラン数の更新はここで行う
-	// 例: homeRunCount += 1; // ホームランが出た場合に呼び出す
+	// ホームラン数が増えたら、表示を一旦大きくしてからアニメーションで戻す
+	if (homeRunCount != previousHomeRunCount)
+	{
+		previousHomeRunCount = homeRunCount;
+		numberDisplayScale = numberScale * numberPopScaleMultiplier; // 大きい状態から開始
+	}
+
+	// 現在のスケールを基準サイズへ滑らかに近づける
+	if (numberDisplayScale > numberScale)
+	{
+		numberDisplayScale -= numberScaleAnimSpeed * elapsedTime;
+		if (numberDisplayScale < numberScale)
+		{
+			numberDisplayScale = numberScale;
+		}
+	}
 }
 
 void HomeRunCount::Render()
@@ -83,10 +99,9 @@ void HomeRunCount::Render()
 	char numberBuffer[16];
 	sprintf_s(numberBuffer, sizeof(numberBuffer), "%d", homeRunCount);
 
-	
 	// 中央寄せしたい場合は幅を測ってから位置を調整
 	float numberWidth = 0.0f, numberHeight = 0.0f;
-	homeRunCountFont.MeasureText(numberBuffer, numberScale, numberWidth, numberHeight);
+	homeRunCountFont.MeasureText(numberBuffer, numberDisplayScale, numberWidth, numberHeight);
 	float numberX = homeRunCountSpriteData->position.x
 		+ homeRunCountSpriteData->size.x * 0.5f - numberWidth * 0.5f;
 
@@ -94,7 +109,7 @@ void HomeRunCount::Render()
 		numberBuffer,
 		numberX,
 		numberPositionY,
-		numberScale,
+		numberDisplayScale,
 		numberColor.x, numberColor.y, numberColor.z, numberColor.w); // 金色にして目立たせる例
 
 	// 後始末（Wind と同じ）
@@ -122,6 +137,10 @@ void HomeRunCount::DrawGUI()
 		ImGui::DragFloat2("Number Position", &numberPositionX);
 		ImGui::DragFloat("Number Scale", &numberScale);
 		ImGui::ColorEdit4("Number Color", &numberColor.x);
+
+		ImGui::Separator();
+		ImGui::DragFloat("Pop Scale Multiplier", &numberPopScaleMultiplier, 0.05f, 1.0f, 5.0f);
+		ImGui::DragFloat("Pop Anim Speed", &numberScaleAnimSpeed, 0.1f, 0.5f, 20.0f);
 	}
 }
 
@@ -224,4 +243,6 @@ void HomeRunCount::LoadFromJson(const nlohmann::json& j)
 			}
 		}
 	}
+
+	ResetCount();
 }

@@ -599,6 +599,8 @@ void scene_game::update(float elapsed_time)
 
 	GameTimer::Instance().Update(elapsed_time);
 
+	HomeRunCount::Instance().Update(elapsed_time);
+
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
 
