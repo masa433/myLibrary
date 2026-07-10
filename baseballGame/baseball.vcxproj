@@ -229,6 +229,7 @@
     <ClCompile Include="Sources\Game\game_object.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Game\HomeRunCount.cpp" />
     <ClCompile Include="Sources\Game\Pitcher.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -362,6 +363,7 @@
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Sources\Game\HitJudge2D.h" />
+    <ClInclude Include="Sources\Game\HomeRunCount.h" />
     <ClInclude Include="Sources\Game\Pitcher.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

@@ -47,6 +47,17 @@ void GameTimer::Uninitialize()
 
 void GameTimer::Update(float elapsedTime)
 {
+	// カウントダウンの更新処理
+	if (startCountdown > 0)
+	{
+		startCountdown -= static_cast<int>(elapsedTime);
+		if (startCountdown < 0)
+		{
+			startCountdown = 0;
+		}
+		return; // カウントダウン中はタイマーの更新を行わない
+	}
+
 	// タイマーの更新処理
 	remainingTime -= elapsedTime;
 	if (remainingTime <= 0.0f)
@@ -145,6 +156,8 @@ void GameTimer::DrawGUI()
 			ImGui::ColorEdit4("Font Color", &fontColor.x);
 			ImGui::TreePop();
 		}
+
+		ImGui::DragInt("Start Countdown", &startCountdown, 1.0f, 0, 60);
 	}
 }
 

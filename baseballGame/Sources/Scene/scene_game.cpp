@@ -18,6 +18,7 @@
 #include "ballSprite.h"
 #include "batSprite.h"
 #include "GameTimer.h"
+#include "HomeRunCount.h"
 #include <fstream>
 #include <string>
 
@@ -215,6 +216,8 @@ void scene_game::initialize()
 	BatSprite::Instance().Initialize(device);
 
     GameTimer::Instance().Initialize(device);
+
+	HomeRunCount::Instance().Initialize(device);
 
     // テクスチャマネージャーの初期化
     textureManager.Initialize(device, L"./resources/texture");
@@ -908,6 +911,8 @@ void scene_game::render(float elapsedTime)
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
     GameTimer::Instance().Render();
+
+	HomeRunCount::Instance().Render();
     
 
     // ShapeRenderer の描画実行

@@ -12,6 +12,7 @@
 #include "Wind.h"
 #include "Ball.h"
 #include "ballSprite.h"
+#include "HomeRunCount.h"
 
 // グローバルまたはクラス内にキューを用意
 std::queue<std::function<void()>> velocityUpdateQueue;
@@ -622,6 +623,9 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 							isGround ? horizontalDistance : totalDistance);
 						consoleLog->push_back(logBuf);
 					}
+
+					//ホームランカウントを１増やす
+					HomeRunCount::Instance().IncrementCount();
 				}
 
 				continue; // このペアはホームランとして処理済みなので以降の個別判定はスキップ
@@ -857,6 +861,9 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				OutputDebugStringA("ホームラン！：ポールに衝突");
 				if (consoleLog)
 					consoleLog->push_back(u8"[Hit] ホームラン！：ポールに衝突");
+
+				//ホームランカウントを増やす
+				HomeRunCount::Instance().IncrementCount();
 			}
 		}
 	}
