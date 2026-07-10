@@ -47,16 +47,16 @@ void GameTimer::Uninitialize()
 
 void GameTimer::Update(float elapsedTime)
 {
-	// カウントダウンの更新処理
-	if (startCountdown > 0)
-	{
-		startCountdown -= static_cast<int>(elapsedTime);
-		if (startCountdown < 0)
-		{
-			startCountdown = 0;
-		}
-		return; // カウントダウン中はタイマーの更新を行わない
-	}
+	//// カウントダウンの更新処理
+	//if (startCountdown > 0)
+	//{
+	//	startCountdown -= static_cast<int>(elapsedTime);
+	//	if (startCountdown < 0)
+	//	{
+	//		startCountdown = 0;
+	//	}
+	//	return; // カウントダウン中はタイマーの更新を行わない
+	//}
 
 	// タイマーの更新処理
 	remainingTime -= elapsedTime;

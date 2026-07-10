@@ -1279,6 +1279,13 @@ void scene_game::DrawGUI()
         GameTimer::Instance().DrawGUI();
     }
 
+	ImGui::Separator();
+
+    if(ImGui::CollapsingHeader("Home Run Count"))
+    {
+        HomeRunCount::Instance().DrawGUI();
+	}
+
     ImGui::End();
 
     // ════════════════════════════════════════════════════
@@ -1879,6 +1886,7 @@ void scene_game::SaveSetting()
 	ballSprite::Instance().SaveToJson(j["ball_sprite"]);
 	stage::Instance().SaveToJson(j["stage"]);
 	GameTimer::Instance().SaveToJson(j["gameTimer"]);
+	HomeRunCount::Instance().SaveToJson(j["homeRunCount"]);
 
     // ファイルに保存
     std::ofstream file("settings.json");
@@ -2062,5 +2070,6 @@ void scene_game::LoadSetting()
 	if (j.contains("ball_sprite")) ballSprite::Instance().LoadFromJson(j["ball_sprite"]);
 	if (j.contains("stage")) stage::Instance().LoadFromJson(j["stage"]);
 	if (j.contains("gameTimer")) GameTimer::Instance().LoadFromJson(j["gameTimer"]);
+	if (j.contains("homeRunCount")) HomeRunCount::Instance().LoadFromJson(j["homeRunCount"]);
 	consoleLog.push_back("[Info] Settings loaded.");
 }

@@ -54,4 +54,13 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
+
+	//フォントの位置やサイズ、色などの設定
+	float labelPositionX = 10.0f;
+	float labelPositionY = 10.0f;
+	float labelScale = 1.0f;
+	float numberPositionX = 10.0f;
+	float numberPositionY = 50.0f;
+	float numberScale = 1.0f;
+	DirectX::XMFLOAT4 numberColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 };
