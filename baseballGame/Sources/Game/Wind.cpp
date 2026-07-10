@@ -5,7 +5,7 @@
 #include "imgui.h"
 #include "Ball.h"
 #include <shader.h>
-#include "FontRenderer.h" // ★追加: TTF/OTFを直接読み込めるフォントレンダラー
+#include "FontRenderer.h"
 
 void Wind::Initialize()
 {

@@ -17,6 +17,7 @@
 #include "Wind.h"
 #include "ballSprite.h"
 #include "batSprite.h"
+#include "GameTimer.h"
 #include <fstream>
 #include <string>
 
@@ -212,6 +213,8 @@ void scene_game::initialize()
 	ballSprite::Instance().Initialize(device);
 
 	BatSprite::Instance().Initialize(device);
+
+    GameTimer::Instance().Initialize(device);
 
     // テクスチャマネージャーの初期化
     textureManager.Initialize(device, L"./resources/texture");
@@ -591,6 +594,8 @@ void scene_game::update(float elapsed_time)
     // 物理システムの更新
     Physics::Instance().Update(elapsed_time);
 
+	GameTimer::Instance().Update(elapsed_time);
+
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
 
@@ -902,7 +907,7 @@ void scene_game::render(float elapsedTime)
 
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
-
+    GameTimer::Instance().Render();
     
 
     // ShapeRenderer の描画実行
@@ -1259,6 +1264,14 @@ void scene_game::DrawGUI()
     {
         BatSprite::Instance().DrawGUI();
         
+    }
+
+	ImGui::Separator();
+
+    // ゲームタイマー
+    if (ImGui::CollapsingHeader("Timer"))
+    {
+        GameTimer::Instance().DrawGUI();
     }
 
     ImGui::End();
@@ -1860,6 +1873,7 @@ void scene_game::SaveSetting()
 	skyRenderer.SaveToJson(j["sky"]);
 	ballSprite::Instance().SaveToJson(j["ball_sprite"]);
 	stage::Instance().SaveToJson(j["stage"]);
+	GameTimer::Instance().SaveToJson(j["gameTimer"]);
 
     // ファイルに保存
     std::ofstream file("settings.json");
@@ -2042,5 +2056,6 @@ void scene_game::LoadSetting()
 	if (j.contains("sky")) skyRenderer.LoadFromJson(j["sky"]);
 	if (j.contains("ball_sprite")) ballSprite::Instance().LoadFromJson(j["ball_sprite"]);
 	if (j.contains("stage")) stage::Instance().LoadFromJson(j["stage"]);
+	if (j.contains("gameTimer")) GameTimer::Instance().LoadFromJson(j["gameTimer"]);
 	consoleLog.push_back("[Info] Settings loaded.");
 }

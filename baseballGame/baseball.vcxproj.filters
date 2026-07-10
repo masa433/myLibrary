@@ -166,6 +166,9 @@
     <ClCompile Include="Sources\Game\TrackingData.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\GameTimer.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -349,6 +352,9 @@
       <Filter>Sources\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Game\TrackingData.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\GameTimer.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>
