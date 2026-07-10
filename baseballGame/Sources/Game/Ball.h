@@ -157,6 +157,10 @@ public:
 	bool GetFoulLogged() const { return foulLogged; }
 	void SetFoulLogged(bool value) { foulLogged = value; }
 
+	bool isFoulConfirmed = false;
+	bool GetIsFoulConfirmed() const { return isFoulConfirmed; }
+	void SetIsFoulConfirmed(bool value) { isFoulConfirmed = value; }
+
 	void SetModelRotationSpeed(const DirectX::XMFLOAT3& speed) { modelRotationSpeed = speed; }
 	const DirectX::XMFLOAT3& GetModelAngle() const { return modelAngle; }
 

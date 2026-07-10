@@ -10,6 +10,7 @@
 #include "Wind.h"
 #include "Ball.h"
 #include "ballSprite.h"
+#include "TrackingData.h"
 
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
@@ -151,24 +152,16 @@ void Pitcher::Update(float elapsedTime)
 	{
 	case State::SelectingPitch:
 		stateTime += elapsedTime;
-		if (stateTime > 7.0f) // 3秒後に投球開始
+		ResetPitchFlags(); // pitchFlagsをリセット		
+		isBallThrown = false;
+		TrackingData::Instance().Reset(); // トラッキングデータをリセット
+		if (stateTime > 3.0f) // 3秒後に投球開始
 		{
 			currentState = State::Throwing;
 			stateTime = 0.0f;
 			hasReachedZero = false;
-			throwCounter = 0.0f;
-			isBallThrown = false;
-			SelectPitchTypeByAI(); // 球種選択
-			Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
-			Ball::Instance().SetHasCollidedWithBat(false); // 衝突フラグをリセット
-			Ball::Instance().SetHasCollidedWithFence(false); // フェンス衝突フラグをリセット
-			Ball::Instance().SetHasPassedHomeRunZone(false); // ホームランゾーン通過フラグをリセット
-			Ball::Instance().SetHasCollidedWithGround(false); // 地面衝突フラグをリセット
-			Ball::Instance().SetHasPassedFairFoulTrigger(false); // フェア/ファウル判定トリガー通過フラグをリセット
-			Ball::Instance().SetFoulLogged(false); // ファウルログフラグをリセット
-			ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
-			ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
-
+			throwCounter = 0.0f;		
+			SelectPitchTypeByAI(); // 球種選択		
 			OutputDebugStringA("Judgment reset\n");
 			if(consoleLog)
 			{
@@ -186,9 +179,55 @@ void Pitcher::Update(float elapsedTime)
 		// アニメーションが終了したら球種選択状態に遷移
 		if (animation_time >= pitcher->animations[current_animation_index].duration)
 		{
-			currentState = State::SelectingPitch; // 球種選択状態に戻る
 			animation_time = 0.0f; // アニメーション時間をリセット
-			//Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
+			
+			bool ballWasHit = Ball::Instance().GetHasCollidedWithBat();
+			bool isCompleteFoul = Ball::Instance().GetIsFoulConfirmed();
+
+			
+			if (!ballWasHit || isCompleteFoul)
+			{
+				TrackingData::Instance().Reset(); // トラッキングデータをリセット
+				ResetPitchFlags(); // pitchFlagsをリセット
+				currentState = State::SelectingPitch; // 球種選択状態に戻る
+				stateTime = 0.0f; // 状態時間をリセット
+			}
+			else
+			{
+				// ボールがヒットしてファウル確定の場合、判定待ち状態に遷移
+				currentState = State::WaitingForResult;
+				resultWaitTimer = 0.0f; // 状態時間をリセット
+			}
+
+		}
+		break;
+
+	case State::WaitingForResult:
+		// 判定待ち状態では、ボールが地面またはフェンスに衝突したかどうかを監視
+		bool ballsettled = Ball::Instance().GetHasCollidedWithGround() || Ball::Instance().GetHasCollidedWithFence();
+
+		//途中でファウルになったら、球種選択へ
+		if (Ball::Instance().GetIsFoulConfirmed())
+		{
+			currentState = State::SelectingPitch;
+			stateTime = 0.0f; // 状態時間をリセット
+			TrackingData::Instance().Reset(); // トラッキングデータをリセット
+			ResetPitchFlags(); // pitchFlagsをリセット
+			break;
+		}
+		if (ballsettled)
+		{
+			resultWaitTimer += elapsedTime;
+
+			// トラッキングデータの表示猶予（例：表示開始から3秒見せる）
+			constexpr float RESULT_DISPLAY_DURATION = 1.0f;
+			if (resultWaitTimer >= RESULT_DISPLAY_DURATION)
+			{
+				TrackingData::Instance().Reset();
+				ResetPitchFlags();
+				currentState = State::SelectingPitch;
+				stateTime = 0.0f;
+			}
 		}
 		break;
 	}
@@ -245,13 +284,7 @@ void Pitcher::Update(float elapsedTime)
 	if (Ball::Instance().GetWorldPosition().y < 0.0f)
 	{
 		isBallThrown = false;
-		Ball::Instance().SetHasBeenJudged(false); // 判定フラグをリセット
-		Ball::Instance().SetHasCollidedWithBat(false); // 衝突フラグをリセット
-		Ball::Instance().SetHasCollidedWithFence(false); // フェンス衝突フラグをリセット
-		Ball::Instance().SetHasPassedHomeRunZone(false); // ホームランゾーン通過フラグをリセット
-		Ball::Instance().SetHasCollidedWithGround(false); // 地面衝突フラグをリセット
-		Ball::Instance().SetHasPassedFairFoulTrigger(false); // フェア/ファウル判定トリガー通過フラグをリセット
-		Ball::Instance().SetFoulLogged(false); // ファウルログフラグをリセット
+		ResetPitchFlags(); // pitchFlagsをリセット
 	
 	}
 
@@ -279,6 +312,7 @@ void Pitcher::Update(float elapsedTime)
 					Ball::Instance().SetHasBeenJudged(true);
 
 					Ball::Instance().SetFoulLogged(true); // ファウルログフラグを設定
+					Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
 
 					char debugMessage[256];
 					snprintf(debugMessage, sizeof(debugMessage),
@@ -300,7 +334,22 @@ void Pitcher::UpdateBallCollider()
 	Ball::Instance().UpdateCollider();
 }
 
+void Pitcher::ResetPitchFlags()
+{
+	Ball::Instance().SetHasBeenJudged(false);
+	Ball::Instance().SetHasCollidedWithBat(false);
+	Ball::Instance().SetHasCollidedWithFence(false);
+	Ball::Instance().SetHasPassedHomeRunZone(false);
+	Ball::Instance().SetHasCollidedWithGround(false);
+	Ball::Instance().SetHasPassedFairFoulTrigger(false);
+	Ball::Instance().SetFoulLogged(false);
+	Ball::Instance().SetIsFoulConfirmed(false); // ファウル確定フラグをリセット
 
+	ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
+	ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
+
+	TrackingData::Instance().Reset(); // トラッキングデータをリセット
+}
 
 // 描画
 void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer) 
@@ -855,15 +904,10 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 		if (Ball::Instance().GetWorldPosition().y < 0.0f)
 		{
 			isBallThrown = false;
-			Ball::Instance().SetHasCollidedWithBat(false);
 			animation_time = 0.0f;
-			Ball::Instance().SetHasCollidedWithFence(false);
-			Ball::Instance().SetHasCollidedWithGround(false);
-			Ball::Instance().SetHasPassedFairFoulTrigger(false);
-			Ball::Instance().SetHasPassedHomeRunZone(false);
-			Ball::Instance().SetHasBeenJudged(false);
-			Ball::Instance().SetFoulLogged(false);
+			ResetPitchFlags();			
 			Ball::Instance().ResetMotion();
+
 		}
 	}
 }
@@ -893,13 +937,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 
 		if (!isBallThrown)
 		{
-			Ball::Instance().SetHasCollidedWithBat(false);
-			Ball::Instance().SetHasCollidedWithFence(false);
-			Ball::Instance().SetHasPassedHomeRunZone(false);
-			Ball::Instance().SetHasCollidedWithGround(false);
-			Ball::Instance().SetHasPassedFairFoulTrigger(false);
-			Ball::Instance().SetHasBeenJudged(false);
-			Ball::Instance().SetFoulLogged(false);
+			ResetPitchFlags();
 		}
 
 		if (!isBallThrown && animation_time >= throwTiming * animation_duration)

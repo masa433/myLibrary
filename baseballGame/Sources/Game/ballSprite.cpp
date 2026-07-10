@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include "Pitcher.h"
 #include "Ball.h"
+#include "TrackingData.h"
 #include <algorithm>
 #include <cmath>
 
@@ -301,7 +302,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 		512, 512,
 		&pitchInfoCodepoints);
 
-	trackingData.Initialize(device);
+	TrackingData::Instance().Initialize(device);
 }
 
 void ballSprite::Uninitialize()
@@ -313,7 +314,7 @@ void ballSprite::Uninitialize()
 	ballBoardSprite.reset();
 	ballBoardSpriteData.reset();
 	pitchInfoFont.Uninitialize();
-	trackingData.Uninitialize();
+	TrackingData::Instance().Uninitialize();
 }
 
 void ballSprite::Update(float elapsedTime)
@@ -469,7 +470,7 @@ void ballSprite::Update(float elapsedTime)
 		ApplyBallSpritePosition(snapPos);
 		ballTrail2D.clear();
 
-		trackingData.Reset();
+
 	}
 	prevPitchingState = pitchingState;
 
@@ -559,7 +560,7 @@ void ballSprite::Update(float elapsedTime)
 	if (Ball::Instance().GetHasCollidedWithBat())
 	{
 		stopBallOnHit = true;
-		trackingData.Update(elapsedTime);
+		TrackingData::Instance().Update(elapsedTime);
 	}
 
 	//3Dボールのポジションzが0.0fの時またはボールとバットが当たった時に、BallBoardを表示する
@@ -653,7 +654,7 @@ void ballSprite::Render()
 		}
 	}
 
-	trackingData.Render();
+	TrackingData::Instance().Render();
 
 	// 後始末（Wind と同じ）
 	dc->VSSetShader(nullptr, nullptr, 0);
@@ -700,7 +701,7 @@ void ballSprite::DrawGUI()
 		ImGui::DragFloat(u8"速球判定 (km/h)", &pitchSpeedFastThresholdKmh, 1.0f, 0.0f, 300.0f);
 	}
 
-	trackingData.DrawGUI();
+	TrackingData::Instance().DrawGUI();
 
 	const Pitcher::RealPitcher selectedRP = Pitcher::Instance().GetSelectedRealPitcher();
 	if (selectedRP != Pitcher::RealPitcher::None)
@@ -932,7 +933,7 @@ void ballSprite::SaveToJson(json& j)
 	}
 
 	//トラッキングデータの保存
-	trackingData.SaveToJson(j);
+	TrackingData::Instance().SaveToJson(j);
 }
 
 void ballSprite::LoadFromJson(const json& j)
@@ -1073,7 +1074,7 @@ void ballSprite::LoadFromJson(const json& j)
 	}
 
 	//トラッキングデータの読み込み
-	trackingData.LoadFromJson(j);
+	TrackingData::Instance().LoadFromJson(j);
 }
 
 //ストライクゾーン境界のゲッター

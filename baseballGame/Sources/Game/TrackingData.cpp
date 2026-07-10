@@ -54,11 +54,7 @@ void TrackingData::Uninitialize()
 
 void TrackingData::Update(float elapsedTime)
 {
-	if (!Ball::Instance().GetHasCollidedWithBat())
-	{
-		return; // まだヒットしていないのでタイマーを進めない
-	}
-
+	
 	showTrackingDelay += elapsedTime;
 
 	if (showTrackingDelay > 1.0f)
@@ -185,6 +181,9 @@ void TrackingData::DrawGUI()
 	if (ImGui::CollapsingHeader("Tracking Data"))
 	{
 		ImGui::Checkbox("Show Tracking Data", &showTrackingData);
+		//showtrackingDelayを表示
+		ImGui::Text("Show Tracking Delay: %.2f", showTrackingDelay);
+
 		ImGui::DragFloat2("Position", &trackingDataSpriteData->position.x, 1.0f, 0.0f, Graphics::Instance().GetScreenWidth());
 		ImGui::DragFloat2("Size", &trackingDataSpriteData->size.x, 1.0f, 0.0f, Graphics::Instance().GetScreenWidth());
 		ImGui::ColorEdit4("Color", &trackingDataSpriteData->color.x);

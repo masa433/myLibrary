@@ -13,6 +13,14 @@ using json = nlohmann::json;
 class TrackingData
 {
 public:
+
+	//インスタンス
+	static TrackingData& Instance()
+	{
+		static TrackingData instance;
+		return instance;
+	}
+
 	TrackingData() {}
 	~TrackingData() {}
 

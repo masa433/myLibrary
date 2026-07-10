@@ -702,15 +702,10 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						// ホームベース(z=0)からポール位置(±67, z=67)を結ぶ直線の傾き = 67/67 = 1.0
 						// |x| <= z なら2本の直線の間（フェアゾーン）
 					bool isFair = (ballPosition.z >= 0.0f) && (std::fabs(ballPosition.x) <= ballPosition.z);
-
-					char debugMessage[256];
-					snprintf(debugMessage, sizeof(debugMessage),
-						"=== ボールが地面に着地 ===\n"
-						"判定: %s\n"
-						"水平飛距離: %.2f m\n",
-						isFair ? "フェア" : "ファウル",
-						horizontalDistance);
-					OutputDebugStringA(debugMessage);
+					if (!isFair)
+					{
+						Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
+					}
 
 					if (consoleLog)
 					{
@@ -745,6 +740,10 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					// フェア/ファウル判定（ホームベースから見た角度が±45度以内ならフェア）
 					float standAngleDeg = std::atan2(ballPosition.x, ballPosition.z) * (180.0f / 3.14159265359f);
 					bool isFairAtStand = (ballPosition.z >= 0.0f) && (std::fabs(standAngleDeg) <= 45.0f);
+					if(!isFairAtStand)
+					{
+						Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
+					}
 
 					if (!isFairAtStand)
 					{

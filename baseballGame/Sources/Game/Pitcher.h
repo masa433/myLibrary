@@ -19,6 +19,7 @@ using json = nlohmann::json;
 class Pitcher : public GameObject
 {
 public:
+
 	//インスタンス
 	static Pitcher& Instance()
 	{
@@ -48,6 +49,7 @@ public:
 
 	float GetBallSpeedKmh() const { return ballSpeedKmh; }
 
+	void ResetPitchFlags(); // pitchFlagsをリセットする関数
 
 public:
 
@@ -193,6 +195,7 @@ private:
 
 	float throwCounter = 0.0f; // 投球カウンター
 	bool hasReachedZero = false; // z = 0.0f に到達したかどうか
+	float resultWaitTimer = 0.0f; // 判定待ちタイマー
 
 	bool isRightPitcher = true; // 右投げかどうか
 
@@ -213,6 +216,7 @@ public:
 	{
 		SelectingPitch,// 球種選択中
 		Throwing,// 投球中
+		WaitingForResult,// 判定待ち
 
 	};
 
@@ -326,4 +330,6 @@ public:
 	//outIsRight: 該当投手が右投げかどうかを返す
 	//outName: 該当投手の表示名を返す
 	static bool GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalEntry>& outArsenal, bool& outIsRight, const char*& outName);
+
+
 };
