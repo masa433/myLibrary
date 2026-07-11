@@ -32,6 +32,9 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
+	//トラッキングデータが表示されているかどうかのゲッター
+	bool IsTrackingDataVisible() const { return showTrackingData; }
+
 	void Reset();
 
 private:
@@ -55,6 +58,8 @@ private:
 	float trackingDataFontScale = 1.0f;
 	float trackingDataValueFontScale = 1.5f; // 数値用スケール（大きめ）
 	float showTrackingDelay = 0.0f; // トラッキングデータ表示までの遅延時間
+	//表示開始時間
+	float displayStartTime = 0.7f;
 
 	// 各行のラベル/数値位置を個別に微調整するためのオフセット
 	DirectX::XMFLOAT2 angleLabelOffset = { 0.0f, 0.0f };

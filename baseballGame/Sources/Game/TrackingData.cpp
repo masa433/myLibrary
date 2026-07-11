@@ -57,9 +57,9 @@ void TrackingData::Update(float elapsedTime)
 	
 	showTrackingDelay += elapsedTime;
 
-	if (showTrackingDelay > 1.0f)
+	if (showTrackingDelay > displayStartTime)
 	{
-		showTrackingDelay = 1.0f;
+		showTrackingDelay = displayStartTime;
 		showTrackingData = true;
 	}
 }
@@ -73,7 +73,7 @@ void TrackingData::Reset()
 
 void TrackingData::Render()
 {
-	if (!showTrackingData || showTrackingDelay < 1.0f) return;
+	if (!showTrackingData || showTrackingDelay < displayStartTime) return;
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
@@ -182,7 +182,8 @@ void TrackingData::DrawGUI()
 	{
 		ImGui::Checkbox("Show Tracking Data", &showTrackingData);
 		//showtrackingDelay‚ð•\Ž¦
-		ImGui::Text("Show Tracking Delay: %.2f", showTrackingDelay);
+		ImGui::DragFloat("Display Start Time", &displayStartTime, 0.01f, 0.0f, 5.0f);
+		ImGui::DragFloat("Show Tracking Delay Timer", &showTrackingDelay, 0.01f, 0.0f, 5.0f);
 
 		ImGui::DragFloat2("Position", &trackingDataSpriteData->position.x, 1.0f, 0.0f, Graphics::Instance().GetScreenWidth());
 		ImGui::DragFloat2("Size", &trackingDataSpriteData->size.x, 1.0f, 0.0f, Graphics::Instance().GetScreenWidth());

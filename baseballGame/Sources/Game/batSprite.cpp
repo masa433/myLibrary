@@ -6,6 +6,7 @@
 #include "ballSprite.h"
 #include <algorithm>
 #include "Player.h"
+#include <TrackingData.h>
 
 void BatSprite::Initialize(ID3D11Device* device)
 {
@@ -103,6 +104,9 @@ void BatSprite::Render()
 
 	mouseX = (std::max)(zoneTopLeft.x, (std::min)(zoneBottomRight.x, mouseX));
 	mouseY = (std::max)(zoneTopLeft.y, (std::min)(zoneBottomRight.y, mouseY));
+
+	// トラッキングデータが表示されている場合はバットスプライトを描画しない
+	if (TrackingData::Instance().IsTrackingDataVisible()) return;
 	
 	if (batSprite && batSpriteData)
 	{

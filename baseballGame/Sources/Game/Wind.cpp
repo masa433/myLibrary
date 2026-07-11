@@ -6,6 +6,7 @@
 #include "Ball.h"
 #include <shader.h>
 #include "FontRenderer.h"
+#include "TrackingData.h"
 
 void Wind::Initialize()
 {
@@ -141,6 +142,10 @@ void Wind::Render(const RenderContext& rc)
 		primitiveRenderer->AddVertex(end, color);
 	}
 
+	// トラッキングデータが表示されている場合は、風のスプライトやテキストを描画しない
+	if (TrackingData::Instance().IsTrackingDataVisible()) return;
+
+
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
 	dc->IASetInputLayout(spriteInputLayout.Get());
@@ -148,6 +153,7 @@ void Wind::Render(const RenderContext& rc)
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0); // 書き込みなし
 
+	
 	if (windGroundSprite && windGroundSpriteRenderer)
 	{
 		windGroundSpriteRenderer->render(rc.deviceContext, windGroundSprite->position.x, windGroundSprite->position.y,

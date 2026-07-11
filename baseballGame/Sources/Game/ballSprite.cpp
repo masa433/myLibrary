@@ -587,6 +587,11 @@ void ballSprite::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
+	TrackingData::Instance().Render();
+
+	// 2Dスプライトの描画は、TrackingDataが表示されている場合はスキップする
+	if (TrackingData::Instance().IsTrackingDataVisible())return;
+
 	if (strikeZoneSprite && strikeZoneSpriteData)
 	{
 		strikeZoneSprite->render(dc,
@@ -654,8 +659,7 @@ void ballSprite::Render()
 		}
 	}
 
-	TrackingData::Instance().Render();
-
+	
 	// 後始末（Wind と同じ）
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);

@@ -1,2 +1,32 @@
-﻿  HomeRunCount.cpp
+﻿  Pitcher.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Flag.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.cpp(265,10): warning C4101: 'debugMessage': ローカル変数は 1 度も使われていません。
+  TrackingData.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Game/TrackingData.cpp' をコンパイルしています)
+  
+  Wind.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Game/Wind.cpp' をコンパイルしています)
+  
+  ballSprite.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Game/ballSprite.cpp' をコンパイルしています)
+  
+  batSprite.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Game/batSprite.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Game/batSprite.cpp' をコンパイルしています)
+  
+  コードを生成中...
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

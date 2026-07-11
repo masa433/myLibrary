@@ -552,7 +552,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 			if (ballIsActor0 || ballIsActor1)
 			{
-				Ball::Instance().SetHasCollidedWithBat(true);
+				
 				Ball::Instance().SetHasCollidedWithFence(true);
 				Ball::Instance().SetHasCollidedWithGround(true);
 
@@ -729,8 +729,6 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stand") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stand"))
 		{
-			Ball::Instance().SetHasCollidedWithBat(true);
-
 			if (!Ball::Instance().GetHasCollidedWithFence())
 			{
 				Ball::Instance().SetHasCollidedWithFence(true);
@@ -849,7 +847,6 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Pole") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Pole"))
 		{
-			Ball::Instance().SetHasCollidedWithBat(true); // 衝突フラグを設定
 			Ball::Instance().SetHasCollidedWithGround(true); // 地面衝突フラグを設定
 
 			//ポールに当たったら無条件でホームラン判定
