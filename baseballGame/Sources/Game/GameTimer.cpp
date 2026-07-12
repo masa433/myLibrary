@@ -36,6 +36,8 @@ void GameTimer::Initialize(ID3D11Device* device)
 		screenWidth, screenHeight,
 		512, 512,
 		&timerCodepoints);
+
+	remainingTime = startTime;
 }
 
 void GameTimer::Uninitialize()
@@ -47,23 +49,15 @@ void GameTimer::Uninitialize()
 
 void GameTimer::Update(float elapsedTime)
 {
-	//// カウントダウンの更新処理
-	//if (startCountdown > 0)
-	//{
-	//	startCountdown -= static_cast<int>(elapsedTime);
-	//	if (startCountdown < 0)
-	//	{
-	//		startCountdown = 0;
-	//	}
-	//	return; // カウントダウン中はタイマーの更新を行わない
-	//}
-
-	// タイマーの更新処理
-	remainingTime -= elapsedTime;
-	if (remainingTime <= 0.0f)
+	if (startCountdown > 0.0f)
 	{
-		remainingTime = 0.0f;
+		startCountdown -= elapsedTime;
+		if (startCountdown < 0.0f) startCountdown = 0.0f;
+		return; // カウントダウン中はタイマーを減らさない
 	}
+
+	remainingTime -= elapsedTime;
+	if (remainingTime <= 0.0f) remainingTime = 0.0f;
 }
 
 void GameTimer::Render()

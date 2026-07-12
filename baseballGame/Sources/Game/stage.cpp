@@ -1,15 +1,74 @@
 #include "stage.h"
 #include "Graphics.h"
 
+// ワールド変換済み頂点でPxTriangleMeshを作り、剛体を生成する
+static void CreateStaticMeshActor(
+	physx::PxPhysics* pxPhysics, physx::PxScene* pxScene,
+	const ModelResource::Mesh& mesh, const DirectX::XMMATRIX& NodeTransform,
+	physx::PxMaterial* material, const char* name,
+	std::vector<physx::PxActor*>& actors,
+	std::vector<physx::PxTriangleMesh*>& triangle_meshes)
+{
+	using namespace DirectX;
+
+	//頂点をワールド変換する
+	std::vector<physx::PxVec3> transformedVertices;
+	transformedVertices.reserve(mesh.vertices.size());// 変換後の頂点を格納するベクターを確保
+	for(const auto& vertex : mesh.vertices)
+	{
+		XMVECTOR pos = XMVectorSet(vertex.position.x, vertex.position.y, vertex.position.z, 1.0f);
+		pos = XMVector3TransformCoord(pos, NodeTransform);
+		XMFLOAT3 transformedPos;
+		XMStoreFloat3(&transformedPos, pos);
+		transformedVertices.emplace_back(transformedPos.x, transformedPos.y, transformedPos.z);
+	}
+
+	// 鏡映(負の行列式)があれば三角形の巻き順を反転して法線の向きを正しく戻す
+	float detValue = XMVectorGetX(XMMatrixDeterminant(NodeTransform));
+	std::vector<UINT> fixedIndices(mesh.indices.begin(), mesh.indices.end());
+	if (detValue < 0.0f)
+	{
+		for (size_t i = 0; i + 2 < fixedIndices.size(); i += 3)
+		{
+			std::swap(fixedIndices[i + 1], fixedIndices[i + 2]);
+		}
+	}
+
+	physx::PxTriangleMeshDesc meshDesc;
+	meshDesc.points.count = static_cast<physx::PxU32>(transformedVertices.size());
+	meshDesc.points.data = transformedVertices.data();
+	meshDesc.points.stride = sizeof(physx::PxVec3);
+	meshDesc.triangles.count = static_cast<physx::PxU32>(fixedIndices.size() / 3);
+	meshDesc.triangles.data = fixedIndices.data();
+	meshDesc.triangles.stride = sizeof(UINT) * 3;
+
+	physx::PxTolerancesScale pxTolerances;
+	const physx::PxCookingParams cookingParams(pxTolerances);
+	physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
+	_ASSERT_EXPR(pxTriangleMesh != nullptr, "Failed to cook triangle mesh");
+
+	physx::PxTransform pxTransform(physx::PxIdentity); // 変換は頂点に焼き込み済み
+	physx::PxRigidStatic* pxRigidBody = pxPhysics->createRigidStatic(pxTransform);
+	_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create rigid body");
+
+	physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh); // スケールは等倍
+	physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *material);
+	pxRigidBody->setName(name);
+
+	pxScene->addActor(*pxRigidBody);
+	actors.emplace_back(pxRigidBody);
+	triangle_meshes.emplace_back(pxTriangleMesh);
+}
+
 // 初期化
 void stage::initialize()
 {
 	ID3D11Device* device = Graphics::Instance().GetDevice();
 
 	// モデルの読み込み
-	stand = std::make_unique<Model>(".\\resources\\field\\field.mdl");
+	stand = std::make_unique<Model>(".\\resources\\field\\stand.mdl");
 	ground = std::make_unique<Model>(".\\resources\\field\\ground.mdl");
-	stand2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\field.glb");
+	stand2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\stand.glb");
 	ground2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\ground.glb");
 	pole = std::make_unique<Model>(".\\resources\\field\\pole.mdl");
 	pole2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\pole.glb");
@@ -24,15 +83,15 @@ void stage::initialize()
 	// 位置、スケール、回転の初期化
 	standPosition = { 0.0f, 0.0f, 0.0f };
 	standScale = { 1.0f, 1.0f, 1.0f };
-	standAngle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f };
+	standAngle = { 0.0f, 0.0f, 0.0f };
 
 	groundPosition = { 0.0f, 0.0f, 0.0f };
 	groundScale = { 1.0f, 1.0f, 1.0f };
-	groundAngle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f };
+	groundAngle = { 0.0f, 0.0f, 0.0f };
 
 	polePosition = { 0.0f, 0.0f, 0.0f };
 	poleScale = { 1.0f, 1.0f, 1.0f };
-	poleAngle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f };
+	poleAngle = { 0.0f, 0.0f, 0.0f };
 
 	homerunLineEditor.triggerName = "HomeRunTrigger";
 	homerunLineEditor.raycastTargetName = "Stand";
@@ -66,155 +125,37 @@ void stage::initialize()
 		const ModelResource* standResources = stand->GetResource();
 		for (const ModelResource::Mesh& mesh : standResources->GetMeshes())
 		{
-			physx::PxTriangleMeshDesc meshDesc;
-			meshDesc.points.count = static_cast<physx::PxU32>(mesh.vertices.size());
-			meshDesc.points.data = mesh.vertices.data();
-			meshDesc.points.stride = sizeof(ModelResource::Vertex);
-			meshDesc.triangles.count = static_cast<physx::PxU32>(mesh.indices.size() / 3);
-			meshDesc.triangles.data = mesh.indices.data();
-			meshDesc.triangles.stride = sizeof(UINT) * 3;
-
-			physx::PxTolerancesScale pxTolerances;
-			const physx::PxCookingParams cookingParams(pxTolerances);
-			physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
 
 			const Model::Node& node = stand->GetNodes().at(mesh.nodeIndex);
 			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(standScale.x, standScale.y, standScale.z);
 			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(standAngle.x, standAngle.y, standAngle.z);
 			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * StandTransform;
-			physx::PxVec3 pxScale(
-				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
-				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),
-				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[2]))
-			);
-			NodeTransform.r[0] = DirectX::XMVector3Normalize(NodeTransform.r[0]);
-			NodeTransform.r[1] = DirectX::XMVector3Normalize(NodeTransform.r[1]);
-			NodeTransform.r[2] = DirectX::XMVector3Normalize(NodeTransform.r[2]);
 
-			DirectX::XMFLOAT4X4 nodeTransform;
-			DirectX::XMStoreFloat4x4(&nodeTransform, NodeTransform);
-			physx::PxTransform pxTransform(physx::PxMat44(
-				physx::PxVec3(nodeTransform._11, nodeTransform._12, nodeTransform._13),
-				physx::PxVec3(nodeTransform._21, nodeTransform._22, nodeTransform._23),
-				physx::PxVec3(nodeTransform._31, nodeTransform._32, nodeTransform._33),
-				physx::PxVec3(nodeTransform._41, nodeTransform._42, nodeTransform._43)
-			));
-			physx::PxRigidStatic* pxRigidBody = pxPhysics->createRigidStatic(pxTransform);
-			_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create stand rigid body");
-
-			physx::PxMeshScale pxMeshScale(pxScale);
-			physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
-			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *standMaterial);
-
-			pxRigidBody->setName("Stand");
-
-			pxScene->addActor(*pxRigidBody);
-
-			actors.emplace_back(pxRigidBody);
-			triangle_meshes.emplace_back(pxTriangleMesh);
+			CreateStaticMeshActor(pxPhysics, pxScene, mesh, NodeTransform, standMaterial, "Stand", actors, triangle_meshes);
 		}
 
 		// Ground モデルのメッシュを処理
 		const ModelResource* groundResources = ground->GetResource();
 		for (const ModelResource::Mesh& mesh : groundResources->GetMeshes())
 		{
-			physx::PxTriangleMeshDesc meshDesc;
-			meshDesc.points.count = static_cast<physx::PxU32>(mesh.vertices.size());
-			meshDesc.points.data = mesh.vertices.data();
-			meshDesc.points.stride = sizeof(ModelResource::Vertex);
-			meshDesc.triangles.count = static_cast<physx::PxU32>(mesh.indices.size() / 3);
-			meshDesc.triangles.data = mesh.indices.data();
-			meshDesc.triangles.stride = sizeof(UINT) * 3;
-
-			physx::PxTolerancesScale pxTolerances;
-			const physx::PxCookingParams cookingParams(pxTolerances);
-			physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
-
+			
 			const Model::Node& node = ground->GetNodes().at(mesh.nodeIndex);
 			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(groundScale.x, groundScale.y, groundScale.z);
 			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(groundAngle.x, groundAngle.y, groundAngle.z);
 			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * GroundTransform;
-			physx::PxVec3 pxScale(
-				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
-				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),
-				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[2]))
-			);
-			NodeTransform.r[0] = DirectX::XMVector3Normalize(NodeTransform.r[0]);
-			NodeTransform.r[1] = DirectX::XMVector3Normalize(NodeTransform.r[1]);
-			NodeTransform.r[2] = DirectX::XMVector3Normalize(NodeTransform.r[2]);
-
-			DirectX::XMFLOAT4X4 nodeTransform;
-			DirectX::XMStoreFloat4x4(&nodeTransform, NodeTransform);
-			physx::PxTransform pxTransform(physx::PxMat44(
-				physx::PxVec3(nodeTransform._11, nodeTransform._12, nodeTransform._13),
-				physx::PxVec3(nodeTransform._21, nodeTransform._22, nodeTransform._23),
-				physx::PxVec3(nodeTransform._31, nodeTransform._32, nodeTransform._33),
-				physx::PxVec3(nodeTransform._41, nodeTransform._42, nodeTransform._43)
-			));
-			physx::PxRigidStatic* pxRigidBody = pxPhysics->createRigidStatic(pxTransform);
-			_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create ground rigid body");
-
-			physx::PxMeshScale pxMeshScale(pxScale);
-			physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
-			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *groundMaterial);
-
-			pxRigidBody->setName("Ground");
-
-			pxScene->addActor(*pxRigidBody);
-
-			actors.emplace_back(pxRigidBody);
-			triangle_meshes.emplace_back(pxTriangleMesh);
+			
+			CreateStaticMeshActor(pxPhysics, pxScene, mesh, NodeTransform, groundMaterial, "Ground", actors, triangle_meshes);
 		}
 
 		// Pole モデルのメッシュを処理
 		const ModelResource* poleResources = pole->GetResource();
 		for (const ModelResource::Mesh& mesh : poleResources->GetMeshes())
 		{
-			physx::PxTriangleMeshDesc meshDesc;
-			meshDesc.points.count = static_cast<physx::PxU32>(mesh.vertices.size());
-			meshDesc.points.data = mesh.vertices.data();
-			meshDesc.points.stride = sizeof(ModelResource::Vertex);
-			meshDesc.triangles.count = static_cast<physx::PxU32>(mesh.indices.size() / 3);
-			meshDesc.triangles.data = mesh.indices.data();
-			meshDesc.triangles.stride = sizeof(UINT) * 3;
-
-			physx::PxTolerancesScale pxTolerances;
-			const physx::PxCookingParams cookingParams(pxTolerances);
-			physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
-
 			const Model::Node& node = pole->GetNodes().at(mesh.nodeIndex);
 			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(poleScale.x, poleScale.y, poleScale.z);
 			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(poleAngle.x, poleAngle.y, poleAngle.z);
 			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * PoleTransform;
-			physx::PxVec3 pxScale(
-				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[0])),
-				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[1])),
-				DirectX::XMVectorGetX(DirectX::XMVector3Length(NodeTransform.r[2]))
-			);
-			NodeTransform.r[0] = DirectX::XMVector3Normalize(NodeTransform.r[0]);
-			NodeTransform.r[1] = DirectX::XMVector3Normalize(NodeTransform.r[1]);
-			NodeTransform.r[2] = DirectX::XMVector3Normalize(NodeTransform.r[2]);
-
-			DirectX::XMFLOAT4X4 nodeTransform;
-			DirectX::XMStoreFloat4x4(&nodeTransform, NodeTransform);
-			physx::PxTransform pxTransform(physx::PxMat44(
-				physx::PxVec3(nodeTransform._11, nodeTransform._12, nodeTransform._13),
-				physx::PxVec3(nodeTransform._21, nodeTransform._22, nodeTransform._23),
-				physx::PxVec3(nodeTransform._31, nodeTransform._32, nodeTransform._33),
-				physx::PxVec3(nodeTransform._41, nodeTransform._42, nodeTransform._43)
-			));
-			physx::PxRigidStatic* pxRigidBody = pxPhysics->createRigidStatic(pxTransform);
-			_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create pole rigid body");
-
-			physx::PxMeshScale pxMeshScale(pxScale);
-			physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh, pxMeshScale);
-			physx::PxShape* pxShape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *poleMaterial);
-			pxRigidBody->setName("Pole");
-
-			pxScene->addActor(*pxRigidBody);
-
-			actors.emplace_back(pxRigidBody);
-			triangle_meshes.emplace_back(pxTriangleMesh);
+			CreateStaticMeshActor(pxPhysics, pxScene, mesh, NodeTransform, poleMaterial, "Pole", actors, triangle_meshes);
 		}
 
 	}
@@ -391,11 +332,10 @@ void stage::update(float elapsedTime)
 
 	//スタンド用
 	//スタンドだけ右手系で描画する
-	DirectX::XMMATRIX CStand = { -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(standScale.x, standScale.y, standScale.z);
 	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(standAngle.x, standAngle.y, standAngle.z);
 	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(standPosition.x, standPosition.y, standPosition.z);
-	DirectX::XMMATRIX world = CStand * S * R * T;
+	DirectX::XMMATRIX world = S * R * T;
 	DirectX::XMStoreFloat4x4(&standTransform, world);
 
 	//グラウンド用
@@ -406,11 +346,10 @@ void stage::update(float elapsedTime)
 	DirectX::XMStoreFloat4x4(&groundTransform, world);
 
 	//ポール用
-	DirectX::XMMATRIX CPole = { -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 	S = DirectX::XMMatrixScaling(poleScale.x, poleScale.y, poleScale.z);
 	R = DirectX::XMMatrixRotationRollPitchYaw(poleAngle.x, poleAngle.y, poleAngle.z);
 	T = DirectX::XMMatrixTranslation(polePosition.x, polePosition.y, polePosition.z);
-	world = CPole * S * R * T;
+	world = S * R * T;
 	DirectX::XMStoreFloat4x4(&poleTransform, world);
 
 	//ボックスの位置とサイズを更新
@@ -505,34 +444,27 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 // 終了
 void stage::uninitialize()
 {
-	for(physx::PxTriangleMesh* pxTriangleMesh : triangle_meshes)
+	for (physx::PxTriangleMesh* pxTriangleMesh : triangle_meshes)
 	{
 		pxTriangleMesh->release();
 	}
 	triangle_meshes.clear();
 
-	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
-	physx::PxScene* pxScene = Physics::Instance().GetScene();
-
-	if (actors.size() > 0) 
+	if (actors.size() > 0)
 	{
+		physx::PxScene* pxScene = Physics::Instance().GetScene();
 		pxScene->removeActors(actors.data(), static_cast<physx::PxU32>(actors.size()));
 	}
-
-	actors.clear();
-
-	/*for (auto* boxCollider : boxColliders)
+	for(physx::PxActor* actor : actors)
 	{
-		boxCollider->release();
+		actor->release();
 	}
-	boxColliders.clear();*/
+	actors.clear();
 
 	stand2.reset();
 	ground2.reset();
 	pole2.reset();
 	lightTower2.reset();
-
-
 }
 
 void stage::DrawGUI()
@@ -622,7 +554,7 @@ void stage::DrawGUI()
 
 void stage::SaveToJson(json& j)
 {
-	j["standPosition"] = { standPosition.x, standPosition.y, standPosition.z };
+	/*j["standPosition"] = { standPosition.x, standPosition.y, standPosition.z };
 	j["standScale"] = { standScale.x, standScale.y, standScale.z };
 	j["standAngle"] = { standAngle.x, standAngle.y, standAngle.z };
 	j["groundPosition"] = { groundPosition.x, groundPosition.y, groundPosition.z };
@@ -630,7 +562,7 @@ void stage::SaveToJson(json& j)
 	j["groundAngle"] = { groundAngle.x, groundAngle.y, groundAngle.z };
 	j["polePosition"] = { polePosition.x, polePosition.y, polePosition.z };
 	j["poleScale"] = { poleScale.x, poleScale.y, poleScale.z };
-	j["poleAngle"] = { poleAngle.x, poleAngle.y, poleAngle.z };
+	j["poleAngle"] = { poleAngle.x, poleAngle.y, poleAngle.z };*/
 	// ライトタワーの位置、角度、スケールを保存
 	for (int i = 0; i < TOWER_COUNT; ++i)
 	{
@@ -662,12 +594,12 @@ void stage::SaveToJson(json& j)
 
 void stage::LoadFromJson(const json& j)
 {
-	standPosition = { j["standPosition"][0], j["standPosition"][1], j["standPosition"][2] };
+	/*standPosition = { j["standPosition"][0], j["standPosition"][1], j["standPosition"][2] };
 	standScale = { j["standScale"][0], j["standScale"][1], j["standScale"][2] };
 	standAngle = { j["standAngle"][0], j["standAngle"][1], j["standAngle"][2] };
 	groundPosition = { j["groundPosition"][0], j["groundPosition"][1], j["groundPosition"][2] };
 	groundScale = { j["groundScale"][0], j["groundScale"][1], j["groundScale"][2] };
-	groundAngle = { j["groundAngle"][0], j["groundAngle"][1], j["groundAngle"][2] };
+	groundAngle = { j["groundAngle"][0], j["groundAngle"][1], j["groundAngle"][2] };*/
 	/*polePosition = { j["polePosition"][0], j["polePosition"][1], j["polePosition"][2] };
 	poleScale = { j["poleScale"][0], j["poleScale"][1], j["poleScale"][2] };
 	poleAngle = { j["poleAngle"][0], j["poleAngle"][1], j["poleAngle"][2] };*/

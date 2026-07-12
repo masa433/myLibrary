@@ -54,7 +54,7 @@ framework::framework(HWND hwnd) : hwnd(hwnd)
 
 
 
-	sceneManager::Instance().ChangeScene(new scene_game());
+	sceneManager::Instance().ChangeScene(new SceneTitle());
 
 
 }

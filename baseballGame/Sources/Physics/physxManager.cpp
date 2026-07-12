@@ -745,10 +745,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					if(!isFairAtStand)
 					{
 						Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
-					}
 
-					if (!isFairAtStand)
-					{
 						char debugMessage[256];
 						snprintf(debugMessage, sizeof(debugMessage),
 							"ファウル：スタンドに衝突 x=%.2f y=%.2f z=%.2f 角度=%.1f°\n",
@@ -837,7 +834,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 								totalDistance);
 							consoleLog->push_back(logBuf);
 						}
-					} // isFairAtStand
+					} 
 				}
 			}
 		}
