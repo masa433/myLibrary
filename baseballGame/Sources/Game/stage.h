@@ -8,8 +8,8 @@
 #include "physxManager.h"
 #include "ModelRenderer.h"
 #include "ShaderId.h"
-#include "Flag.h"
 #include "FrustumCulling.h"
+#include "imgui.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -70,8 +70,7 @@ private:
 	DirectX::XMFLOAT4X4 poleTransform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 
 	static constexpr int FLAG_COUNT = 5;
-	std::vector<Flag> flags;
-	
+
 	static constexpr int TOWER_COUNT = 4;
 
 	// ライトタワーの位置（4基分）
@@ -102,22 +101,31 @@ private:
 	};
 
 public:
-	//ホームラン判定用のボックストリガーコライダー
-	physx::PxRigidStatic* homeRunTrigger = nullptr;
-	DirectX::XMFLOAT3 hrTriggerPos = { 0.0f, 10.0f, -80.0f }; // トリガーの初期位置
-	DirectX::XMFLOAT3 hrTriggerHalfExtents = { 60.0f, 20.0f, 10.0f }; // トリガーの半分のサイズ(XYZ)
+	
+	// フェンスラインの編集用
+	struct LineTriggerEditor
+	{
+		std::vector<DirectX::XMFLOAT3> linePoints; // フェンスラインの頂点座標
+		std::vector<physx::PxRigidStatic*> triggers; // フェンスラインのトリガーコライダー
+		bool editMode = false;   // 編集モードのON/OFF
+		float thickness = 0.5f; // フェンスラインの厚み
+		float extraHeight = 40.0f; // フェンス上端からさらに上へ判定を伸ばす高さ
 
-	std::vector<DirectX::XMFLOAT3> fenceLinePoints; // クリックで拾ったフェンス上部の実座標
-	std::vector<physx::PxRigidStatic*> fenceTriggers;
-	bool fenceEditMode = false;   // 編集モードのON/OFF
-	float fenceThickness = 0.5f;// フェンスラインの厚み
-	float fenceExtraHeight = 40.0f; // フェンス上端からさらに上へ判定を伸ばす高さ
+		std::string triggerName;
+		std::string raycastTargetName;
+	};
 
-	void UpdateFenceEditor(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj, 
+	LineTriggerEditor homerunLineEditor; // ホームランラインの編集用データ
+	LineTriggerEditor foulLineEditor; // ファウルラインの編集用データ
+
+	void UpdateLineEditor(LineTriggerEditor& editor,
+		const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
 		float viewportX, float viewportY, float viewportWidth, float viewportHeight);
 
-	void RebuildFenceTriggers(); // フェンスラインのトリガーコライダーを再構築する
+	void RebuildLineTriggers(LineTriggerEditor& editor);
 
-	void DrawFenceOverlay(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
-		float viewportX, float viewportY, float viewportWidth, float viewportHeight);
+	void DrawLineOverlay(const LineTriggerEditor& editor,
+		const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
+		float viewportX, float viewportY, float viewportWidth, float viewportHeight,
+		ImU32 lineColor, ImU32 pointColor);
 };

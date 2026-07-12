@@ -1333,16 +1333,31 @@ void scene_game::DrawGUI()
         DirectX::XMFLOAT4X4 view = camera.GetView();          // ※名称が違う場合は合わせてください
         DirectX::XMFLOAT4X4 proj = camera.GetProjection();    // ※同上
 
-        stage::Instance().UpdateFenceEditor(
+        stage::Instance().UpdateLineEditor(
+            stage::Instance().homerunLineEditor,
             view, proj,
             imageScreenPos.x, imageScreenPos.y,
             dispW, dispH);
+        stage::Instance().UpdateLineEditor(
+            stage::Instance().foulLineEditor,
+            view, proj,
+            imageScreenPos.x, imageScreenPos.y,
+			dispW, dispH);
 
         // ── 打った点をその場でつないで見せる(Rebuildする前のプレビュー) ──
-        stage::Instance().DrawFenceOverlay(
+        // ホームランフェンス：赤系
+        stage::Instance().DrawLineOverlay(
+            stage::Instance().homerunLineEditor,
             view, proj,
             imageScreenPos.x, imageScreenPos.y,
-            dispW, dispH);
+            dispW, dispH, IM_COL32(255, 60, 60, 255), IM_COL32(255, 255, 0, 255)); // 赤線・黄点
+
+        // ファウルライン：青系
+        stage::Instance().DrawLineOverlay(
+            stage::Instance().foulLineEditor,
+            view, proj,
+            imageScreenPos.x, imageScreenPos.y,
+            dispW, dispH, IM_COL32(60, 60, 255, 255), IM_COL32(0, 255, 255, 255)); // 青線・水色点
     }
     ImGui::End();
 

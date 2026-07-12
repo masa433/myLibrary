@@ -209,10 +209,17 @@ void Pitcher::Update(float elapsedTime)
 		//途中でファウルになったら、球種選択へ
 		if (Ball::Instance().GetIsFoulConfirmed())
 		{
-			currentState = State::SelectingPitch;
-			stateTime = 0.0f; // 状態時間をリセット
-			TrackingData::Instance().Reset(); // トラッキングデータをリセット
-			ResetPitchFlags(); // pitchFlagsをリセット
+			currentFoulWaitTime += elapsedTime;
+
+			if(currentFoulWaitTime >= foulWaitTime)
+			{
+				currentFoulWaitTime = 0.0f; // ファウル待機時間をリセット
+				TrackingData::Instance().Reset(); // トラッキングデータをリセット
+				ResetPitchFlags(); // pitchFlagsをリセット
+				currentState = State::SelectingPitch;
+				stateTime = 0.0f; // 状態時間をリセット
+			}
+
 			break;
 		}
 		if (ballsettled)
@@ -1571,8 +1578,8 @@ void Pitcher::ApplyAIBezierTarget()
 	//ストライクゾーン内で目標地点を設定
 	if (throwStrike)
 	{
-		targetX = GenerateRandomFloat(-boxSize.x * 0.5f, boxSize.x * 0.5f);
-		targetY = GenerateRandomFloat(-boxSize.y * 0.5f, boxSize.y * 0.5f);
+		targetX = GenerateRandomFloat(-boxSize.x * 0.4f, boxSize.x * 0.4f);
+		targetY = GenerateRandomFloat(-boxSize.y * 0.4f, boxSize.y * 0.4f);
 	}
 	else
 	{

@@ -913,6 +913,21 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			}
 		}
 
+		//ボールがFoulTriggerに入った瞬間
+		if (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
+		{
+			bool ballIsTriggerActor = (pair.otherActor == Ball::Instance().GetBallCollider());
+			bool triggerIsFoul = (pair.triggerActor->getName() &&
+				std::string(pair.triggerActor->getName()) == "FoulTrigger");
+			if (ballIsTriggerActor && triggerIsFoul)
+			{
+				Ball::Instance().SetIsFoulConfirmed(true);
+				OutputDebugStringA("ファウルゾーン通過！\n");
+				if (consoleLog)
+					consoleLog->push_back(u8"[Hit] ファウルゾーン通過！");
+			}
+		}
+
 		// ボールとバットの組み合わせか確認
 		// onTrigger 内のバット処理ブロックをこれに差し替え
 		{

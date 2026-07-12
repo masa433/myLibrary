@@ -1,5 +1,4 @@
 #include "stage.h"
-#include "imgui.h"
 #include "Graphics.h"
 
 // 初期化
@@ -35,8 +34,15 @@ void stage::initialize()
 	poleScale = { 1.0f, 1.0f, 1.0f };
 	poleAngle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f };
 
-	hrTriggerPos = { 0.0f, 55.0f, 67.5f }; // トリガーの初期位置
-	hrTriggerHalfExtents = { 67.0f, 55.0f, 0.5f }; // トリガーの半分のサイズ(XYZ)
+	homerunLineEditor.triggerName = "HomeRunTrigger";
+	homerunLineEditor.raycastTargetName = "Stand";
+	homerunLineEditor.thickness = 0.5f;
+	homerunLineEditor.extraHeight = 40.0f;
+
+	foulLineEditor.triggerName = "FoulTrigger";
+	foulLineEditor.raycastTargetName = "Stand";  // ※ファウルラインをクリックする対象。地面が"Ground"という名前で登録されているか要確認
+	foulLineEditor.thickness = 0.5f;
+	foulLineEditor.extraHeight = 3.0f;
 
 	//静的剛体の作成
 	{
@@ -211,58 +217,16 @@ void stage::initialize()
 			triangle_meshes.emplace_back(pxTriangleMesh);
 		}
 
-		// ホームラン判定用トリガーの作成
-		{
-			//physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
-			//physx::PxTransform triggerTransform(physx::PxVec3(hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z));
-			//homeRunTrigger = pxPhysics->createRigidStatic(triggerTransform);
-
-			//physx::PxBoxGeometry triggerGeometry(physx::PxVec3(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
-			//physx::PxShape* triggerShape = physx::PxRigidActorExt::createExclusiveShape(*homeRunTrigger, triggerGeometry, *triggerMaterial);
-
-			//// 物理的な衝突を無効にし、トリガー（重なり判定）として設定する
-			//triggerShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
-			//triggerShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
-
-			//homeRunTrigger->setName("HomeRunTrigger");
-			//pxScene->addActor(*homeRunTrigger);
-		}
 	}
 
-	// 旗の初期化
-	{
-		//旗を等間隔で並べる
-		static const Flag::FlagColor flagColors[FLAG_COUNT] =
-		{
-			Flag::FlagColor::Blue,
-			Flag::FlagColor::Green,
-			Flag::FlagColor::Japan,
-			Flag::FlagColor::Red,
-			Flag::FlagColor::Yellow,
-		};
-		const DirectX::XMFLOAT3 flagBasePosition = { 0.0f, 70.0f, 140.0f };
-		const float flagSpacing = 15.0f;
-
-		flags.resize(FLAG_COUNT);
-		for (int i = 0; i < FLAG_COUNT; ++i)
-		{
-			//iが2の時だけpositionを70にして、他の旗はpositionを60にする
-			DirectX::XMFLOAT3 flagPosition = flagBasePosition;
-			if (i != 2)
-			{
-				flagPosition.y = 60.0f;
-			}
-
-			flags[i].Initialize(i, flagColors[i], flagSpacing, flagPosition);
-		}
-	}
-
+	
 }
 
-void stage::UpdateFenceEditor(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
+void stage::UpdateLineEditor(LineTriggerEditor& editor,
+	const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
 	float viewportX, float viewportY, float viewportWidth, float viewportHeight)
 {
-	if (!fenceEditMode)return;
+	if (!editor.editMode)return;
 	if (!ImGui::IsMouseClicked(ImGuiMouseButton_Left)) return;// 左クリックが押されていない場合は何もしない
 
 	ImVec2 mousePos = ImGui::GetMousePos();
@@ -310,28 +274,28 @@ void stage::UpdateFenceEditor(const DirectX::XMFLOAT4X4& view, const DirectX::XM
 	if (hit && hitBuffer.hasBlock)
 	{
 		physx::PxRigidActor* actor = hitBuffer.block.actor;
-		if (actor && actor->getName() && std::string(actor->getName()) == "Stand")
+		if (actor && actor->getName() && std::string(actor->getName()) == editor.raycastTargetName)
 		{
 			physx::PxVec3 p = hitBuffer.block.position;
-			fenceLinePoints.push_back({ p.x, p.y, p.z });
+			editor.linePoints.push_back({ p.x, p.y, p.z });
 		}
 	}
 }
 
-void stage::RebuildFenceTriggers()
+void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 {
 	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 	physx::PxScene* pxScene = Physics::Instance().GetScene();
 
 	// 既存のフェンスラインのトリガーコライダーを削除
-	for (auto* actor : fenceTriggers)
+	for (auto* actor : editor.triggers)
 	{
 		pxScene->removeActor(*actor);
 		actor->release();
 	}
-	fenceTriggers.clear();
+	editor.triggers.clear();
 
-	if(fenceLinePoints.size() < 2)
+	if(editor.linePoints.size() < 2)
 	{
 		return; // フェンスラインの頂点が2つ未満の場合は何もしない
 	}
@@ -339,10 +303,10 @@ void stage::RebuildFenceTriggers()
 	physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
 	
 
-	for(size_t i = 0; i < fenceLinePoints.size() - 1; ++i)
+	for(size_t i = 0; i < editor.linePoints.size() - 1; ++i)
 	{
-		const auto& p1 = fenceLinePoints[i];
-		const auto& p2 = fenceLinePoints[i + 1];
+		const auto& p1 = editor.linePoints[i];
+		const auto& p2 = editor.linePoints[i + 1];
 		
 		// フェンスラインの中点を計算
 		float dx = p2.x - p1.x;
@@ -353,7 +317,7 @@ void stage::RebuildFenceTriggers()
 		float midX = (p1.x + p2.x) * 0.5f;
 		float midZ = (p1.z + p2.z) * 0.5f;
 		float baseY = (std::min)(p1.y, p2.y); // フェンスラインの下端のY座標
-		float height = fenceExtraHeight;// フェンスラインの上端からさらに上へ伸ばす高さ
+		float height = editor.extraHeight;// フェンスラインの上端からさらに上へ伸ばす高さ
 		float midY = baseY + height * 0.5f; // フェンスラインの中点のY座標
 
 		float angle = std::atan2(-dz, dx);// フェンスラインの角度を計算
@@ -363,78 +327,62 @@ void stage::RebuildFenceTriggers()
 			physx::PxQuat(angle, physx::PxVec3(0, 1, 0)) // Y軸回転
 		);
 
-		physx::PxBoxGeometry geometry(length * 0.5f, height * 0.5f, fenceThickness * 0.5f);
+		physx::PxBoxGeometry geometry(length * 0.5f, height * 0.5f, editor.thickness * 0.5f);
 
 		physx::PxRigidStatic* actor = pxPhysics->createRigidStatic(triggerTransform);
 		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, geometry, *triggerMaterial);
 		shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
 		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
 
-		actor->setName("HomeRunTrigger");
+		actor->setName(editor.triggerName.c_str());
 
 		pxScene->addActor(*actor);
-		fenceTriggers.push_back(actor);
+		editor.triggers.push_back(actor);
 	}
 }
 
-void stage::DrawFenceOverlay(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
-	float viewportX, float viewportY, float viewportWidth, float viewportHeight)
+void stage::DrawLineOverlay(const LineTriggerEditor& editor,
+	const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
+	float viewportX, float viewportY, float viewportWidth, float viewportHeight,
+	ImU32 lineColor, ImU32 pointColor)
 {
-	if (fenceLinePoints.empty()) return;
+	if (editor.linePoints.empty()) return;
 
 	DirectX::XMMATRIX View = DirectX::XMLoadFloat4x4(&view);
 	DirectX::XMMATRIX Proj = DirectX::XMLoadFloat4x4(&proj);
 	DirectX::XMMATRIX VP = View * Proj;
 
 	auto worldToScreen = [&](const DirectX::XMFLOAT3& worldPos, ImVec2& outScreen)->bool
-	{
-		DirectX::XMVECTOR clip = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&worldPos), VP);
+		{
+			DirectX::XMFLOAT4 clipCheck;
+			DirectX::XMStoreFloat4(&clipCheck, DirectX::XMVector3Transform(DirectX::XMLoadFloat3(&worldPos), VP));
+			if (clipCheck.w <= 0.0f) return false;
 
-		//画面の裏側にある場合は描画しない
-		DirectX::XMFLOAT4 clipCheck;
-		DirectX::XMStoreFloat4(&clipCheck, DirectX::XMVector3Transform(DirectX::XMLoadFloat3(&worldPos), VP));
-		if (clipCheck.w <= 0.0f) return false;
+			DirectX::XMVECTOR clip = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&worldPos), VP);
+			DirectX::XMFLOAT3 c;
+			DirectX::XMStoreFloat3(&c, clip);
 
-		// NDC座標に変換
-		float ndcX, ndcY;
-		DirectX::XMFLOAT3 c;
-		DirectX::XMStoreFloat3(&c, clip);
-		ndcX = c.x;
-		ndcY = c.y;
-
-		// スクリーン座標に変換
-		outScreen.x = viewportX + (ndcX * 0.5f + 0.5f) * viewportWidth;
-		outScreen.y = viewportY + (1.0f - (ndcY * 0.5f + 0.5f)) * viewportHeight;
-
-		return true;
-	};
+			outScreen.x = viewportX + (c.x * 0.5f + 0.5f) * viewportWidth;
+			outScreen.y = viewportY + (1.0f - (c.y * 0.5f + 0.5f)) * viewportHeight;
+			return true;
+		};
 
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	const ImU32 lineColor = IM_COL32(255, 60, 60, 255);
-	const ImU32 pointColor = IM_COL32(255, 255, 0, 255);
 
 	ImVec2 prevScreen;
 	bool hasPrev = false;
 
-	for (const auto& p : fenceLinePoints)
+	for (const auto& p : editor.linePoints)
 	{
 		ImVec2 screenPos;
-		if (!worldToScreen(p, screenPos))
-		{
-			hasPrev = false;
-			continue;
-		}
+		if (!worldToScreen(p, screenPos)) { hasPrev = false; continue; }
 
-		if (hasPrev)
-		{
-			drawList->AddLine(prevScreen, screenPos, lineColor, 2.0f);
-		}
+		if (hasPrev) drawList->AddLine(prevScreen, screenPos, lineColor, 2.0f);
 		drawList->AddCircleFilled(screenPos, 4.0f, pointColor);
 
 		prevScreen = screenPos;
 		hasPrev = true;
 	}
-
 }
 
 // 更新
@@ -469,10 +417,7 @@ void stage::update(float elapsedTime)
 
 	UpdateTransform();
 
-	for (Flag& f : flags)
-	{
-		f.Update(elapsedTime);
-	}
+	
 }
 
 void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCulling* frustumCulling)
@@ -587,10 +532,7 @@ void stage::uninitialize()
 	pole2.reset();
 	lightTower2.reset();
 
-	for (Flag& f : flags)
-	{
-		f.UnInitialize();
-	}
+
 }
 
 void stage::DrawGUI()
@@ -618,26 +560,6 @@ void stage::DrawGUI()
 		ImGui::DragFloat3("Pole Angle", &poleAngle.x, 0.01f);
 	}
 
-	if (ImGui::CollapsingHeader("Home Run Trigger"))
-	{
-		ImGui::DragFloat3("Trigger Position", &hrTriggerPos.x, 0.5f);
-		ImGui::DragFloat3("Trigger Half Extents (Size)", &hrTriggerHalfExtents.x, 0.5f);
-
-		if (homeRunTrigger)
-		{
-			// 位置の更新
-			physx::PxTransform transform(physx::PxVec3(hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z));
-			homeRunTrigger->setGlobalPose(transform);
-
-			// サイズの更新
-			physx::PxShape* shape = nullptr;
-			homeRunTrigger->getShapes(&shape, 1);
-			if (shape)
-			{
-				shape->setGeometry(physx::PxBoxGeometry(hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z));
-			}
-		}
-	}
 
 	if (ImGui::CollapsingHeader("LightTower"))
 	{
@@ -650,37 +572,49 @@ void stage::DrawGUI()
 		}
 	}
 
-	for (int i = 0; i < FLAG_COUNT; ++i)
-	{
-		std::string flagLabel = "Flag " + std::to_string(i);
-		if (ImGui::CollapsingHeader(flagLabel.c_str()))
-		{
-			flags[i].DrawGUI(i);
-		}
-	}
-
 	if (ImGui::CollapsingHeader("Fence Line Editor"))
 	{
-		ImGui::Checkbox(u8"Edit Mode (Game View上でフェンスをクリック)", &fenceEditMode);
-		ImGui::Text("Points: %d", (int)fenceLinePoints.size());
+		if (ImGui::Checkbox(u8"Edit Mode (Homerun)", &homerunLineEditor.editMode))
+		{
+			if (homerunLineEditor.editMode) foulLineEditor.editMode = false;
+		}
+		ImGui::Text("Points: %d", (int)homerunLineEditor.linePoints.size());
 
-		if (ImGui::Button("Undo Last Point") && !fenceLinePoints.empty())
-			fenceLinePoints.pop_back();
+		if (ImGui::Button("Undo Last Point") && !homerunLineEditor.linePoints.empty())
+			homerunLineEditor.linePoints.pop_back();
 		ImGui::SameLine();
 		if (ImGui::Button("Clear All"))
-			fenceLinePoints.clear();
+			homerunLineEditor.linePoints.clear();
 		ImGui::SameLine();
 		if (ImGui::Button("Rebuild Triggers"))
-			RebuildFenceTriggers();
+		{
+			RebuildLineTriggers(homerunLineEditor);
+			RebuildLineTriggers(foulLineEditor);
+		}
 
-		ImGui::DragFloat("Extra Height", &fenceExtraHeight, 0.5f);
-		ImGui::DragFloat("Thickness", &fenceThickness, 0.1f);
+		ImGui::DragFloat("Extra Height", &homerunLineEditor.extraHeight, 0.5f);
+		ImGui::DragFloat("Thickness", &homerunLineEditor.thickness, 0.1f);
 
-		for (size_t i = 0; i < fenceLinePoints.size(); ++i)
+		for (size_t i = 0; i < homerunLineEditor.linePoints.size(); ++i)
 		{
 			ImGui::Text("[%d] (%.2f, %.2f, %.2f)", (int)i,
-				fenceLinePoints[i].x, fenceLinePoints[i].y, fenceLinePoints[i].z);
+				homerunLineEditor.linePoints[i].x, homerunLineEditor.linePoints[i].y, homerunLineEditor.linePoints[i].z);
 		}
+
+		ImGui::Separator();
+		ImGui::Text("Foul Line");
+
+		if (ImGui::Checkbox(u8"Edit Mode (Foul)", &foulLineEditor.editMode))
+		{
+			if (foulLineEditor.editMode) homerunLineEditor.editMode = false;
+		}
+		ImGui::Text("Points: %d", (int)foulLineEditor.linePoints.size());
+		if (ImGui::Button("Undo Last Point (Foul)") && !foulLineEditor.linePoints.empty())
+			foulLineEditor.linePoints.pop_back();
+		if (ImGui::Button("Clear All (Foul)"))
+			foulLineEditor.linePoints.clear();
+		ImGui::DragFloat("Extra Height (Foul)", &foulLineEditor.extraHeight, 0.5f);
+		ImGui::DragFloat("Thickness (Foul)", &foulLineEditor.thickness, 0.1f);
 	}
 
 #endif //  USE_IMGUI
@@ -697,9 +631,6 @@ void stage::SaveToJson(json& j)
 	j["polePosition"] = { polePosition.x, polePosition.y, polePosition.z };
 	j["poleScale"] = { poleScale.x, poleScale.y, poleScale.z };
 	j["poleAngle"] = { poleAngle.x, poleAngle.y, poleAngle.z };
-	// ホームラン判定用トリガーの位置とサイズを保存
-	j["hrTriggerPos"] = { hrTriggerPos.x, hrTriggerPos.y, hrTriggerPos.z };
-	j["hrTriggerHalfExtents"] = { hrTriggerHalfExtents.x, hrTriggerHalfExtents.y, hrTriggerHalfExtents.z };
 	// ライトタワーの位置、角度、スケールを保存
 	for (int i = 0; i < TOWER_COUNT; ++i)
 	{
@@ -711,13 +642,21 @@ void stage::SaveToJson(json& j)
 
 	// フェンスラインの頂点を保存
 	j["fenceLinePoints"] = json::array();
-	for (const auto& point : fenceLinePoints)
+	for (const auto& point : homerunLineEditor.linePoints)
 	{
 		j["fenceLinePoints"].push_back({ point.x, point.y, point.z });
 	}
-	// フェンスラインの追加高さと厚さを保存
-	j["fenceExtraHeight"] = fenceExtraHeight;
-	j["fenceThickness"] = fenceThickness;
+	j["fenceExtraHeight"] = homerunLineEditor.extraHeight;
+	j["fenceThickness"] = homerunLineEditor.thickness;
+
+	// ファウルライン用も追加保存
+	j["foulLinePoints"] = json::array();
+	for (const auto& point : foulLineEditor.linePoints)
+	{
+		j["foulLinePoints"].push_back({ point.x, point.y, point.z });
+	}
+	j["foulExtraHeight"] = foulLineEditor.extraHeight;
+	j["foulThickness"] = foulLineEditor.thickness;
 	
 }
 
@@ -732,9 +671,7 @@ void stage::LoadFromJson(const json& j)
 	/*polePosition = { j["polePosition"][0], j["polePosition"][1], j["polePosition"][2] };
 	poleScale = { j["poleScale"][0], j["poleScale"][1], j["poleScale"][2] };
 	poleAngle = { j["poleAngle"][0], j["poleAngle"][1], j["poleAngle"][2] };*/
-	// ホームラン判定用トリガーの位置とサイズを読み込み
-	hrTriggerPos = { j["hrTriggerPos"][0], j["hrTriggerPos"][1], j["hrTriggerPos"][2] };
-	hrTriggerHalfExtents = { j["hrTriggerHalfExtents"][0], j["hrTriggerHalfExtents"][1], j["hrTriggerHalfExtents"][2] };
+
 	// ライトタワーの位置、角度、スケールを読み込み
 	for (int i = 0; i < TOWER_COUNT; ++i)
 	{
@@ -757,25 +694,42 @@ void stage::LoadFromJson(const json& j)
 	}
 
 	// フェンスラインの頂点を読み込み
-	fenceLinePoints.clear();
+	homerunLineEditor.linePoints.clear();
 	if (j.contains("fenceLinePoints") && j["fenceLinePoints"].is_array())
 	{
 		for (const auto& point : j["fenceLinePoints"])
 		{
-			fenceLinePoints.push_back({ point[0], point[1], point[2] });
+			homerunLineEditor.linePoints.push_back({ point[0], point[1], point[2] });
 		}
 	}
-
-	// フェンスラインの追加高さと厚さを読み込み
 	if (j.contains("fenceExtraHeight"))
 	{
-		fenceExtraHeight = j["fenceExtraHeight"];
+		homerunLineEditor.extraHeight = j["fenceExtraHeight"];
 	}
-
 	if (j.contains("fenceThickness"))
 	{
-		fenceThickness = j["fenceThickness"];
+		homerunLineEditor.thickness = j["fenceThickness"];
 	}
 
-	RebuildFenceTriggers(); // フェンスラインのトリガーを再構築
+	// ファウルライン用の読み込み
+	foulLineEditor.linePoints.clear();
+	if (j.contains("foulLinePoints") && j["foulLinePoints"].is_array())
+	{
+		for (const auto& point : j["foulLinePoints"])
+		{
+			foulLineEditor.linePoints.push_back({ point[0], point[1], point[2] });
+		}
+	}
+	if (j.contains("foulExtraHeight"))
+	{
+		foulLineEditor.extraHeight = j["foulExtraHeight"];
+	}
+	if (j.contains("foulThickness"))
+	{
+		foulLineEditor.thickness = j["foulThickness"];
+	}
+
+	RebuildLineTriggers(homerunLineEditor);
+	RebuildLineTriggers(foulLineEditor);
+
 }

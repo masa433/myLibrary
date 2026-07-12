@@ -172,9 +172,12 @@ private:
 	PitchType ChooseAIPitchType() const;
 
 	bool usePitchAI = true;
-	float aiStrikeRate = 0.92f;
+	float aiStrikeRate = 1.0f;
 	float aiNearBallMargin = 0.06f;
 
+	//ファウルになった後に、球種選択に戻るまでの時間
+	float foulWaitTime = 1.0f;
+	float currentFoulWaitTime = 0.0f;
 
 public:
 	// 5x5グリッド内でAIが狙う内側3x3のセルインデックス (0〜8、row-major)

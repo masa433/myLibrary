@@ -5,17 +5,13 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
   (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
   
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Flag.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
-  (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.cpp(272,10): warning C4101: 'debugMessage': ローカル変数は 1 度も使われていません。
+  Player.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Game/Player.cpp' をコンパイルしています)
   
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.cpp(265,10): warning C4101: 'debugMessage': ローカル変数は 1 度も使われていません。
-  TrackingData.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
-  (ソース ファイル 'Sources/Game/TrackingData.cpp' をコンパイルしています)
-  
-  Wind.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
-  (ソース ファイル 'Sources/Game/Wind.cpp' をコンパイルしています)
+  (ソース ファイル 'Sources/Game/Player.cpp' をコンパイルしています)
   
   ballSprite.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
@@ -27,6 +23,53 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1
   
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
   (ソース ファイル 'Sources/Game/batSprite.cpp' をコンパイルしています)
+  
+  physxManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Physics/physxManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Physics/physxManager.cpp' をコンパイルしています)
+  
+  ShadowRenderer.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Renderer/ShadowRenderer.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Renderer/ShadowRenderer.cpp' をコンパイルしています)
+  
+  scene_game.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(396,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(397,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(423,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(424,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(700,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+  scene_title.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+  framework.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
+  
+  main.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/System/main.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'Sources/System/main.cpp' をコンパイルしています)
   
   コードを生成中...
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe
