@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Camera.h"
 
 class Ball;
@@ -8,23 +8,23 @@ class CameraController
 public:
 	
 
-	// ƒRƒ“ƒgƒ[ƒ‰[‚©‚çƒJƒƒ‰‚Öƒpƒ‰ƒ[ƒ^‚ğ“¯Šú‚·‚é
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã‹ã‚‰ã‚«ãƒ¡ãƒ©ã¸ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’åŒæœŸã™ã‚‹
 	void SyncControllerToCamera(Camera& camera);
 
-	// XVˆ—
+	// æ›´æ–°å‡¦ç†
 	void Update(float elapsedTime);
 
-	//ƒ{[ƒ‹’ÇÕƒJƒƒ‰
-	//ƒoƒbƒg‚Éƒ{[ƒ‹‚ª“–‚½‚Á‚½uŠÔ‚ÉŒÄ‚Ño‚³‚ê‚é
-	// ball        : ’ÇÕ‘ÎÛ‚ÌBallƒCƒ“ƒXƒ^ƒ“ƒX
-	// offsetBack  : ƒ{[ƒ‹Œã•û‚Ö‚Ì‹——£iƒfƒtƒHƒ‹ƒg 3.0mj
-	// offsetUp    : ƒ{[ƒ‹ã•û‚Ö‚ÌƒIƒtƒZƒbƒgiƒfƒtƒHƒ‹ƒg 0.5mj
+	//ãƒœãƒ¼ãƒ«è¿½è·¡ã‚«ãƒ¡ãƒ©
+	//ãƒãƒƒãƒˆã«ãƒœãƒ¼ãƒ«ãŒå½“ãŸã£ãŸç¬é–“ã«å‘¼ã³å‡ºã•ã‚Œã‚‹
+	// ball        : è¿½è·¡å¯¾è±¡ã®Ballã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+	// offsetBack  : ãƒœãƒ¼ãƒ«å¾Œæ–¹ã¸ã®è·é›¢ï¼ˆãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ 3.0mï¼‰
+	// offsetUp    : ãƒœãƒ¼ãƒ«ä¸Šæ–¹ã¸ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆï¼ˆãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ 0.5mï¼‰
 	void StartTrackingBall(const Ball* ball, float offsetTracking = 3.0f, float offsetUp = 0.5f);
 
-	//ƒ{[ƒ‹’ÇÕƒJƒƒ‰‚ğ’â~‚·‚é
+	//ãƒœãƒ¼ãƒ«è¿½è·¡ã‚«ãƒ¡ãƒ©ã‚’åœæ­¢ã™ã‚‹
 	void StopTrackingBall();
 
-	//ƒ{[ƒ‹’ÇÕƒJƒƒ‰‚ª—LŒø‚©‚Ç‚¤‚©
+	//ãƒœãƒ¼ãƒ«è¿½è·¡ã‚«ãƒ¡ãƒ©ãŒæœ‰åŠ¹ã‹ã©ã†ã‹
 	bool IsTrackingBall() const { return trackingState != TrackState::None; }
 
 	float GetCurrentFov() const { return currentFov; }
@@ -47,34 +47,34 @@ private:
 	float					distance;
 
 
-	// ƒ{[ƒ‹’ÇÕƒJƒƒ‰‚Ìó‘Ô
+	// ãƒœãƒ¼ãƒ«è¿½è·¡ã‚«ãƒ¡ãƒ©ã®çŠ¶æ…‹
 	enum class TrackState
 	{
-		None,       // ’ÇÕ‚È‚µ
-		Transition,  // Œ»İˆÊ’u ¨ ’ÇÕŠJnˆÊ’u‚Ö•âŠÔ’†
-		Tracking,   // ’ÇÕ’†
+		None,       // è¿½è·¡ãªã—
+		Transition,  // ç¾åœ¨ä½ç½® â†’ è¿½è·¡é–‹å§‹ä½ç½®ã¸è£œé–“ä¸­
+		Tracking,   // è¿½è·¡ä¸­
 	};
 	TrackState trackingState = TrackState::None;
 	const Ball* trackedBall = nullptr;
 	float trackOffsetBack = 3.0f;
 	float trackOffsetUp = 0.5f;
 
-	// ’ÇÕŠJnˆÊ’u‚Ö‚Ì•âŠÔ—p
+	// è¿½è·¡é–‹å§‹ä½ç½®ã¸ã®è£œé–“ç”¨
 	DirectX::XMFLOAT3 transitionStartEye = {};
 	DirectX::XMFLOAT3 transitionStartFocus = {};
 
-	// ƒXƒ€[ƒY’Ç]—piŒ»İ‚Ì eye/focus ‚ğ•Û‚µ‚Ä lerp ‚·‚éj
+	// ã‚¹ãƒ ãƒ¼ã‚ºè¿½å¾“ç”¨ï¼ˆç¾åœ¨ã® eye/focus ã‚’ä¿æŒã—ã¦ lerp ã™ã‚‹ï¼‰
 	DirectX::XMFLOAT3   smoothEye = {};
 	DirectX::XMFLOAT3   smoothFocus = {};
 
 	float transitionTime = 0.0f;
-	static constexpr float transitionDuration = 1.0f; // ’ÇÕŠJnˆÊ’u‚Ö‚Ì•âŠÔŠÔi•bj
+	static constexpr float transitionDuration = 1.0f; // è¿½è·¡é–‹å§‹ä½ç½®ã¸ã®è£œé–“æ™‚é–“ï¼ˆç§’ï¼‰
 
-	//’ÇÕ’†‚Ì’Ç]‘¬“x
+	//è¿½è·¡ä¸­ã®è¿½å¾“é€Ÿåº¦
 	static constexpr float TrackEyeSpeed = 5.0f;
 	static constexpr float TrackFocusSpeed = 8.0f;
 
-	// ƒ{[ƒ‹‚Ì‘¬“x•ûŒü‚©‚çƒJƒƒ‰‚Ì—‘z eye ‚ğŒvZ‚·‚é
+	// ãƒœãƒ¼ãƒ«ã®é€Ÿåº¦æ–¹å‘ã‹ã‚‰ã‚«ãƒ¡ãƒ©ã®ç†æƒ³ eye ã‚’è¨ˆç®—ã™ã‚‹
 	DirectX::XMFLOAT3 CalcIdealEye(const DirectX::XMFLOAT3& ballPos,
 		const DirectX::XMFLOAT3& ballVel) const;
 
@@ -82,25 +82,25 @@ private:
 		const DirectX::XMFLOAT3& b,
 		float t);
 
-	// Smoothstep ƒC[ƒWƒ“ƒOi0¨1 ‚ğŠŠ‚ç‚©‚Éj
+	// Smoothstep ã‚¤ãƒ¼ã‚¸ãƒ³ã‚°ï¼ˆ0â†’1 ã‚’æ»‘ã‚‰ã‹ã«ï¼‰
 	static float Smoothstep(float t);
 
 	
 
 private:
-	// ’ÇÕŠJn‘O‚ÌƒJƒƒ‰ˆÊ’u‚ğ•Û‘¶
+	// è¿½è·¡é–‹å§‹å‰ã®ã‚«ãƒ¡ãƒ©ä½ç½®ã‚’ä¿å­˜
 	DirectX::XMFLOAT3 savedEye = {};
 	DirectX::XMFLOAT3 savedFocus = {};
 
 	float currentFov = DirectX::XMConvertToRadians(45.0f);
 	float defaultFov = DirectX::XMConvertToRadians(45.0f);
-	float zoomedFov = DirectX::XMConvertToRadians(10.0f); // ’ÇÕ’†‚ÌƒY[ƒ€‰æŠp
+	float zoomedFov = DirectX::XMConvertToRadians(10.0f); // è¿½è·¡ä¸­ã®ã‚ºãƒ¼ãƒ ç”»è§’
 
 	float zoomTime = 0.0f;
 	float zoomSpeed = 5.0f;
 
-	float minEyeY = 0.5f; // ƒJƒƒ‰‚ÌÅ’á‚‚³
-	float maxEyeY = 10.0f; // ƒJƒƒ‰‚ÌÅ‚‚‚³
+	float minEyeY = 0.5f; // ã‚«ãƒ¡ãƒ©ã®æœ€ä½é«˜ã•
+	float maxEyeY = 10.0f; // ã‚«ãƒ¡ãƒ©ã®æœ€é«˜é«˜ã•
 
 public:
 	void SetTrackingZoomOut(bool enable,
@@ -117,13 +117,13 @@ public:
 	}
 private:
 	bool  enableTrackingZoom = false;
-	float fovNear = DirectX::XMConvertToRadians(5.0f);  // ƒ{[ƒ‹‚ª‹ß‚¢‚Æ‚«‚ÌFOV
-	float fovFar = DirectX::XMConvertToRadians(15.0f); // ƒ{[ƒ‹‚ª‰“‚¢‚Æ‚«‚ÌFOV
-	float zoomNearDist = 10.0f;  // ‚±‚Ì‹——£ˆÈ‰º‚ÅfovNear
-	float zoomFarDist = 130.0f; // ‚±‚Ì‹——£ˆÈã‚ÅfovFar
-	float fovSmoothSpeed = 3.0f; // FOV•âŠÔ‘¬“x
+	float fovNear = DirectX::XMConvertToRadians(5.0f);  // ãƒœãƒ¼ãƒ«ãŒè¿‘ã„ã¨ãã®FOV
+	float fovFar = DirectX::XMConvertToRadians(15.0f); // ãƒœãƒ¼ãƒ«ãŒé ã„ã¨ãã®FOV
+	float zoomNearDist = 10.0f;  // ã“ã®è·é›¢ä»¥ä¸‹ã§fovNear
+	float zoomFarDist = 130.0f; // ã“ã®è·é›¢ä»¥ä¸Šã§fovFar
+	float fovSmoothSpeed = 3.0f; // FOVè£œé–“é€Ÿåº¦
 private:
-		float trackingBlendTime = 0.0f;                    // TrackingŠJn‚©‚ç‚ÌŒo‰ßŠÔ
-		static constexpr float trackingBlendDuration = 0.5f; // ‚±‚Ì•b”‚©‚¯‚Ä–{‘¬“x‚ÉˆÚs
+		float trackingBlendTime = 0.0f;                    // Trackingé–‹å§‹ã‹ã‚‰ã®çµŒéæ™‚é–“
+		static constexpr float trackingBlendDuration = 0.5f; // ã“ã®ç§’æ•°ã‹ã‘ã¦æœ¬é€Ÿåº¦ã«ç§»è¡Œ
 
 };

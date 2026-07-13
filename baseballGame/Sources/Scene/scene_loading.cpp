@@ -1,35 +1,35 @@
-#include "Graphics.h"
+ï»¿#include "Graphics.h"
 #include "input.h"
 #include "scene_loading.h"
 #include "sceneManager.h"
 
 void scene_loading::initialize()
 {
-	// ƒ[ƒh‰æ–Ê‚Ì‰Šú‰»ˆ—
+	// ãƒ­ãƒ¼ãƒ‰ç”»é¢ã®åˆæœŸåŒ–å‡¦ç†
 
-	//ƒXƒŒƒbƒhŠJn
+	//ã‚¹ãƒ¬ãƒƒãƒ‰é–‹å§‹
 	thread = std::make_unique<std::thread>(LoadingThread, this);
 }
 
 void scene_loading::uninitialize()
 {
-	// ƒ[ƒh‰æ–Ê‚ÌI—¹ˆ—
+	// ãƒ­ãƒ¼ãƒ‰ç”»é¢ã®çµ‚äº†å‡¦ç†
 
 	if (thread != nullptr)
 	{
-		thread->join(); // ƒXƒŒƒbƒh‚ÌI—¹‚ğ‘Ò‹@
+		thread->join(); // ã‚¹ãƒ¬ãƒƒãƒ‰ã®çµ‚äº†ã‚’å¾…æ©Ÿ
 		thread = nullptr;
 	}
 }
 
 void scene_loading::update(float elapsed_time)
 {
-	// ƒ[ƒh‰æ–Ê‚ÌXVˆ—
-	// ‚±‚±‚ÅƒŠƒ\[ƒX‚Ìƒ[ƒh‚â‰Šú‰»‚ğs‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚·
-	// —á: ƒ[ƒh‚ªŠ®—¹‚µ‚½‚çŸ‚ÌƒV[ƒ“‚ÉØ‚è‘Ö‚¦‚é
+	// ãƒ­ãƒ¼ãƒ‰ç”»é¢ã®æ›´æ–°å‡¦ç†
+	// ã“ã“ã§ãƒªã‚½ãƒ¼ã‚¹ã®ãƒ­ãƒ¼ãƒ‰ã‚„åˆæœŸåŒ–ã‚’è¡Œã†ã“ã¨ãŒã§ãã¾ã™
+	// ä¾‹: ãƒ­ãƒ¼ãƒ‰ãŒå®Œäº†ã—ãŸã‚‰æ¬¡ã®ã‚·ãƒ¼ãƒ³ã«åˆ‡ã‚Šæ›¿ãˆã‚‹
 	// sceneManager::Instance().ChangeScene(new scene_main());
 
-	//Ÿ‚ÌƒV[ƒ“‚Ì€”õ‚ªŠ®—¹‚µ‚½‚çƒV[ƒ“‚ğØ‚è‘Ö‚¦‚é
+	//æ¬¡ã®ã‚·ãƒ¼ãƒ³ã®æº–å‚™ãŒå®Œäº†ã—ãŸã‚‰ã‚·ãƒ¼ãƒ³ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹
 	if (nextScene != nullptr && nextScene->IsReady())
 	{
 		sceneManager::Instance().ChangeScene(nextScene.release());
@@ -39,25 +39,25 @@ void scene_loading::update(float elapsed_time)
 
 void scene_loading::render(float elapsed_time)
 {
-	// ƒ[ƒh‰æ–Ê‚Ì•`‰æˆ—
+	// ãƒ­ãƒ¼ãƒ‰ç”»é¢ã®æç”»å‡¦ç†
 }
 
 void scene_loading::DrawGUI()
 {
-	// ƒ[ƒh‰æ–Ê‚ÌGUI•`‰æˆ—
+	// ãƒ­ãƒ¼ãƒ‰ç”»é¢ã®GUIæç”»å‡¦ç†
 }
 
 void scene_loading::LoadingThread(scene_loading* scene)
 {
-	//COMŠÖ˜A‚Ì‰Šú‰»‚ÅƒXƒŒƒbƒh–ˆ‚ÉŒÄ‚Ô•K—v‚ª‚ ‚é
+	//COMé–¢é€£ã®åˆæœŸåŒ–ã§ã‚¹ãƒ¬ãƒƒãƒ‰æ¯ã«å‘¼ã¶å¿…è¦ãŒã‚ã‚‹
 	CoInitialize(nullptr);
 
-	//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»
+	//æ¬¡ã®ã‚·ãƒ¼ãƒ³ã®åˆæœŸåŒ–
 	scene->nextScene->initialize();
 
-	//ƒXƒŒƒbƒh‚ªI‚í‚é‘O‚ÉCOMŠÖ˜A‚ÌI—¹ˆ—
+	//ã‚¹ãƒ¬ãƒƒãƒ‰ãŒçµ‚ã‚ã‚‹å‰ã«COMé–¢é€£ã®çµ‚äº†å‡¦ç†
 	CoUninitialize();
 
-	//Ÿ‚ÌƒV[ƒ“‚Ì€”õŠ®—¹İ’è
+	//æ¬¡ã®ã‚·ãƒ¼ãƒ³ã®æº–å‚™å®Œäº†è¨­å®š
 	scene->nextScene->SetReady();
 }

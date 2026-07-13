@@ -1,9 +1,9 @@
-#include "camera_controller.h"
+ï»¿#include "camera_controller.h"
 #include "imgui.h"
 #include "Ball.h"
 #include <cmath>
 
-//ƒ‰[ƒvŠÖ”
+//ãƒ©ãƒ¼ãƒ—é–¢æ•°
 DirectX::XMFLOAT3 CameraController::Lerp3(const DirectX::XMFLOAT3& a,
 	const DirectX::XMFLOAT3& b,
 	float t)
@@ -15,36 +15,36 @@ DirectX::XMFLOAT3 CameraController::Lerp3(const DirectX::XMFLOAT3& a,
 	};
 }
 
-// Smoothstep ƒC[ƒWƒ“ƒOŠÖ”
+// Smoothstep ã‚¤ãƒ¼ã‚¸ãƒ³ã‚°é–¢æ•°
 float CameraController::Smoothstep(float t)
 {
-	t = (std::max)(0.0f, (std::min)(1.0f, t));// 0¨1 ‚ğŠŠ‚ç‚©‚É‚·‚éƒC[ƒWƒ“ƒOŠÖ”
+	t = (std::max)(0.0f, (std::min)(1.0f, t));// 0â†’1 ã‚’æ»‘ã‚‰ã‹ã«ã™ã‚‹ã‚¤ãƒ¼ã‚¸ãƒ³ã‚°é–¢æ•°
 	return t * t * (3.0f - 2.0f * t);
 }
 
-// ƒ{[ƒ‹‚Ì‘¬“x•ûŒü‚©‚çƒJƒƒ‰‚Ì—‘z eye ‚ğŒvZ‚·‚é
+// ãƒœãƒ¼ãƒ«ã®é€Ÿåº¦æ–¹å‘ã‹ã‚‰ã‚«ãƒ¡ãƒ©ã®ç†æƒ³ eye ã‚’è¨ˆç®—ã™ã‚‹
 DirectX::XMFLOAT3 CameraController::CalcIdealEye(const DirectX::XMFLOAT3& ballPos,
 	const DirectX::XMFLOAT3& ballVel) const
 {
-	//‘¬“xƒxƒNƒgƒ‹‚ğ³‹K‰»‚µ‚ÄŒã•ûƒIƒtƒZƒbƒg‚ğ‹‚ß‚é
+	//é€Ÿåº¦ãƒ™ã‚¯ãƒˆãƒ«ã‚’æ­£è¦åŒ–ã—ã¦å¾Œæ–¹ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’æ±‚ã‚ã‚‹
 	float vx = ballVel.x, vy = ballVel.y, vz = ballVel.z;
 	float len = sqrtf(vx * vx + vy * vy + vz * vz);
 
-	DirectX::XMFLOAT3 backDir = { 0.0f,0.0f,-1.0f };//ƒfƒtƒHƒ‹ƒg
+	DirectX::XMFLOAT3 backDir = { 0.0f,0.0f,-1.0f };//ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ
 	if(len>0.01f)
 	{
-		backDir = { -vx / len, -vy / len, -vz / len };//‘¬“xƒxƒNƒgƒ‹‚Ì‹t•ûŒü
+		backDir = { -vx / len, -vy / len, -vz / len };//é€Ÿåº¦ãƒ™ã‚¯ãƒˆãƒ«ã®é€†æ–¹å‘
 	}
 
 	return {
 		ballPos.x + backDir.x * trackOffsetBack,
 		ballPos.y + backDir.y * trackOffsetBack + trackOffsetUp,
 		ballPos.z + backDir.z * trackOffsetBack,
-	};//ƒ{[ƒ‹‚ÌˆÊ’u‚©‚çŒã•ûƒIƒtƒZƒbƒg‚Æã•ûƒIƒtƒZƒbƒg‚ğ‰ÁZ‚µ‚Ä—‘z“I‚ÈƒJƒƒ‰ˆÊ’u‚ğŒvZ
+	};//ãƒœãƒ¼ãƒ«ã®ä½ç½®ã‹ã‚‰å¾Œæ–¹ã‚ªãƒ•ã‚»ãƒƒãƒˆã¨ä¸Šæ–¹ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’åŠ ç®—ã—ã¦ç†æƒ³çš„ãªã‚«ãƒ¡ãƒ©ä½ç½®ã‚’è¨ˆç®—
 }
 
 
-// ƒRƒ“ƒgƒ[ƒ‰[‚©‚çƒJƒƒ‰‚Öƒpƒ‰ƒ[ƒ^‚ğ“¯Šú‚·‚é
+// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã‹ã‚‰ã‚«ãƒ¡ãƒ©ã¸ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’åŒæœŸã™ã‚‹
 void CameraController::SyncControllerToCamera(Camera& camera)
 {
 	camera.SetLookAt(eye, focus, up);
@@ -52,13 +52,13 @@ void CameraController::SyncControllerToCamera(Camera& camera)
 }
 
 
-// ƒ{[ƒ‹’ÇÕƒJƒƒ‰‚ğŠJn‚·‚é
+// ãƒœãƒ¼ãƒ«è¿½è·¡ã‚«ãƒ¡ãƒ©ã‚’é–‹å§‹ã™ã‚‹
 void CameraController::StartTrackingBall(const Ball* ball, float offsetTracking, float offsetUp)
 {
 	
 	if (!ball) return;
 
-	// ’ÇÕ‘O‚ÌˆÊ’u‚ğ•Û‘¶
+	// è¿½è·¡å‰ã®ä½ç½®ã‚’ä¿å­˜
 	savedEye = eye;
 	savedFocus = focus;
 
@@ -66,11 +66,11 @@ void CameraController::StartTrackingBall(const Ball* ball, float offsetTracking,
 	/*trackOffsetBack = offsetTracking;
 	trackOffsetUp = offsetUp;*/
 
-	//Œ»İ‚ÌƒJƒƒ‰ˆÊ’u‚ğ•âŠÔŠJnˆÊ’u‚Æ‚µ‚Ä•Û‘¶
+	//ç¾åœ¨ã®ã‚«ãƒ¡ãƒ©ä½ç½®ã‚’è£œé–“é–‹å§‹ä½ç½®ã¨ã—ã¦ä¿å­˜
 	//transitionStartEye = eye;
 	transitionStartFocus = focus;
 
-	//ƒXƒ€[ƒY’Ç]‚Ì‰Šú’l‚àŒ»İˆÊ’u‚É•Û‘¶
+	//ã‚¹ãƒ ãƒ¼ã‚ºè¿½å¾“ã®åˆæœŸå€¤ã‚‚ç¾åœ¨ä½ç½®ã«ä¿å­˜
 	//smoothEye = eye;
 	smoothFocus = focus;
 
@@ -83,7 +83,7 @@ void CameraController::StartTrackingBall(const Ball* ball, float offsetTracking,
 	trackingState = TrackState::Transition;
 }
 
-// ƒ{[ƒ‹’ÇÕƒJƒƒ‰‚ğ’â~‚·‚é
+// ãƒœãƒ¼ãƒ«è¿½è·¡ã‚«ãƒ¡ãƒ©ã‚’åœæ­¢ã™ã‚‹
 void CameraController::StopTrackingBall()
 {
 	trackedBall = nullptr;
@@ -95,30 +95,30 @@ void CameraController::StopTrackingBall()
 	currentFov = defaultFov;
 }
 
-// XVˆ—
+// æ›´æ–°å‡¦ç†
 void CameraController::Update(float elapsedTime)
 {
-	//’ÇÕó‘Ô‚ÌƒJƒƒ‰
+	//è¿½è·¡çŠ¶æ…‹ã®ã‚«ãƒ¡ãƒ©
 	if (trackingState != TrackState::None && trackedBall)
 	{
-		//ƒ{[ƒ‹‚ÌˆÊ’u‚Æ‘¬“x‚ğ•Û‘¶
+		//ãƒœãƒ¼ãƒ«ã®ä½ç½®ã¨é€Ÿåº¦ã‚’ä¿å­˜
 		const DirectX::XMFLOAT3& ballPos = trackedBall->GetWorldPosition();
 		
 		
 		if (trackingState == TrackState::Transition)
 		{
-			//Œ»İˆÊ’u‚©‚ç—‘z‚ÌˆÊ’u‚Ö‚Ì•âŠÔ
+			//ç¾åœ¨ä½ç½®ã‹ã‚‰ç†æƒ³ã®ä½ç½®ã¸ã®è£œé–“
 			transitionTime += elapsedTime;
 			float t = Smoothstep(transitionTime / transitionDuration);
 
 			
 			focus = Lerp3(transitionStartFocus, ballPos, t);
 
-			// ƒXƒ€[ƒY’Ç]ƒoƒbƒtƒ@‚à“¯Šú‚µ‚Ä‚¨‚­
+			// ã‚¹ãƒ ãƒ¼ã‚ºè¿½å¾“ãƒãƒƒãƒ•ã‚¡ã‚‚åŒæœŸã—ã¦ãŠã
 			
 			smoothFocus = focus;
 
-			//’ÇÕŠJn‚Ü‚Å‚ÌŠÔ‚ğ’´‚¦‚½‚çŸ‚ÌƒXƒe[ƒg‚É‘JˆÚ
+			//è¿½è·¡é–‹å§‹ã¾ã§ã®æ™‚é–“ã‚’è¶…ãˆãŸã‚‰æ¬¡ã®ã‚¹ãƒ†ãƒ¼ãƒˆã«é·ç§»
 			if (transitionTime >= transitionDuration)
 			{
 				trackingState = TrackState::Tracking;
@@ -126,7 +126,7 @@ void CameraController::Update(float elapsedTime)
 		}
 		else// TrackingState::Tracking
 		{
-			// TrackingŠJn’¼Œã‚Í’Ç]‘¬“x‚ğ—}‚¦‚Ä™X‚É–{‘¬“x‚Ö
+			// Trackingé–‹å§‹ç›´å¾Œã¯è¿½å¾“é€Ÿåº¦ã‚’æŠ‘ãˆã¦å¾ã€…ã«æœ¬é€Ÿåº¦ã¸
 			trackingBlendTime += elapsedTime;
 			float speedBlend = Smoothstep(trackingBlendTime / trackingBlendDuration);
 			float blendedFocusSpeed = TrackFocusSpeed * speedBlend;
@@ -136,34 +136,34 @@ void CameraController::Update(float elapsedTime)
 			focus = smoothFocus;
 
 			
-			// ƒY[ƒ€ƒAƒEƒgˆ—iƒJƒƒ‰3—pj
+			// ã‚ºãƒ¼ãƒ ã‚¢ã‚¦ãƒˆå‡¦ç†ï¼ˆã‚«ãƒ¡ãƒ©3ç”¨ï¼‰
 			if (enableTrackingZoom)
 			{
-				//ƒJƒƒ‰‚©‚çƒ{[ƒ‹‚Ü‚Å‚Ì‹——£‚ğŒvZ
+				//ã‚«ãƒ¡ãƒ©ã‹ã‚‰ãƒœãƒ¼ãƒ«ã¾ã§ã®è·é›¢ã‚’è¨ˆç®—
 				float dx = ballPos.x - eye.x;
 				float dy = ballPos.y - eye.y;
 				float dz = ballPos.z - eye.z;
 				float dist = sqrtf(dx * dx + dy * dy + dz * dz);
 
-				//‹——£‚É‰‚¶‚ÄƒY[ƒ€ƒAƒEƒg‚·‚é
+				//è·é›¢ã«å¿œã˜ã¦ã‚ºãƒ¼ãƒ ã‚¢ã‚¦ãƒˆã™ã‚‹
 				float t = (dist - zoomNearDist) / (zoomFarDist - zoomNearDist);
-				t = (std::max)(0.0f, (std::min)(1.0f, t));// 0¨1 ‚ÉƒNƒ‰ƒ“ƒv
+				t = (std::max)(0.0f, (std::min)(1.0f, t));// 0â†’1 ã«ã‚¯ãƒ©ãƒ³ãƒ—
 
-				//FOV‚ğƒ}ƒbƒsƒ“ƒO(‰“‚¢‚Ù‚ÇLŠp)
+				//FOVã‚’ãƒãƒƒãƒ”ãƒ³ã‚°(é ã„ã»ã©åºƒè§’)
 				float targetFov = fovNear + (fovFar - fovNear) * t;
 
-				// ‹}•Ï‚ğ–h‚®‚½‚ßw”•âŠÔ‚ÅƒXƒ€[ƒY‚É’Ç]
+				// æ€¥å¤‰ã‚’é˜²ããŸã‚æŒ‡æ•°è£œé–“ã§ã‚¹ãƒ ãƒ¼ã‚ºã«è¿½å¾“
 				float fovLerp = 1.0f - expf(-fovSmoothSpeed * elapsedTime);
 				currentFov += (targetFov - currentFov) * fovLerp;
 			}
 			
 		}
 
-		// up ƒxƒNƒgƒ‹‚Íí‚Éƒ[ƒ‹ƒh Y ²•ûŒü‚ÅŒÅ’è
+		// up ãƒ™ã‚¯ãƒˆãƒ«ã¯å¸¸ã«ãƒ¯ãƒ¼ãƒ«ãƒ‰ Y è»¸æ–¹å‘ã§å›ºå®š
 		up = { 0.0f, 1.0f, 0.0f };
 
-		// ƒJƒƒ‰‚Ö”½‰f
-		// iŒÄ‚Ño‚µŒ³‚ª SyncControllerToCamera ‚ğ–ˆƒtƒŒ[ƒ€ŒÄ‚Ô‘O’ñj
+		// ã‚«ãƒ¡ãƒ©ã¸åæ˜ 
+		// ï¼ˆå‘¼ã³å‡ºã—å…ƒãŒ SyncControllerToCamera ã‚’æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶å‰æï¼‰
 
 		return;
 	}
@@ -173,7 +173,7 @@ void CameraController::Update(float elapsedTime)
 
 void CameraController::DrawGUI()
 {
-	//FOV‚Ì•ÏX
+	//FOVã®å¤‰æ›´
 	if (ImGui::CollapsingHeader("camera"))
 	{
 		ImGui::DragFloat("fov", &currentFov, 0.1f, 1.0f, 180.0f);

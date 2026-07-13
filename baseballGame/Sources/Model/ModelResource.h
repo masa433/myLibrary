@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <string>
 #include <vector>
@@ -116,23 +116,23 @@ public:
 		void serialize(Archive& archive, int version);
 	};
 
-	// Šeíƒf[ƒ^æ“¾
+	// å„ç¨®ãƒ‡ãƒ¼ã‚¿å–å¾—
 	const std::vector<Mesh>& GetMeshes() const { return meshes; }
 	const std::vector<Node>& GetNodes() const { return nodes; }
 	const std::vector<Animation>& GetAnimations() const { return animations; }
 	const std::vector<Material>& GetMaterials() const { return materials; }
 
-	// “Ç‚İ‚İ
+	// èª­ã¿è¾¼ã¿
 	void Load(ID3D11Device* device, const char* filename);
 
 protected:
-	// ƒ‚ƒfƒ‹ƒZƒbƒgƒAƒbƒv
+	// ãƒ¢ãƒ‡ãƒ«ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—
 	void BuildModel(ID3D11Device* device, const char* dirname);
 
-	// ƒVƒŠƒAƒ‰ƒCƒY
+	// ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚º
 	void Serialize(const char* filename);
 
-	// ƒfƒVƒŠƒAƒ‰ƒCƒY
+	// ãƒ‡ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚º
 	void Deserialize(const char* filename);
 
 protected:

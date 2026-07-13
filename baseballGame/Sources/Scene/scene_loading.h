@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "scene.h"
 #include <thread>
 
@@ -15,7 +15,7 @@ public:
 	void DrawGUI() override;
 
 private:
-	//ƒ[ƒfƒBƒ“ƒOƒXƒŒƒbƒh
+	//ãƒ­ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ã‚¹ãƒ¬ãƒƒãƒ‰
 	static void LoadingThread(scene_loading* scene);
 
 private:

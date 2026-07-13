@@ -1,4 +1,4 @@
-#include "sprite.h"
+ï»¿#include "sprite.h"
 #include "misc.h"
 #include <sstream>
 //#include <WICTextureLoader.h>
@@ -6,7 +6,7 @@
 #include "shader.h"
 
 
-//ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+//ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 sprite::sprite(ID3D11Device* device, const wchar_t* filename)
 {
 	HRESULT hr{ S_OK };
@@ -95,18 +95,18 @@ void sprite::render(ID3D11DeviceContext* immediate_context,
 	float angle,
 	float sx, float sy, float sw, float sh)
 {
-	// ƒrƒ…[ƒ|[ƒgæ“¾
+	// ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆå–å¾—
 	D3D11_VIEWPORT viewport{};
 	UINT num_viewports{ 1 };
 	immediate_context->RSGetViewports(&num_viewports, &viewport);
 
-	// ‹éŒ`‚Ì’¸“_À•W
+	// çŸ©å½¢ã®é ‚ç‚¹åº§æ¨™
 	float x0{ dx }, y0{ dy };
 	float x1{ dx + dw }, y1{ dy };
 	float x2{ dx }, y2{ dy + dh };
 	float x3{ dx + dw }, y3{ dy + dh };
 
-	// ‰ñ“]ˆ—
+	// å›è»¢å‡¦ç†
 	auto rotate = [](float& x, float& y, float cx, float cy, float angle)
 		{
 			x -= cx; y -= cy;
@@ -125,7 +125,7 @@ void sprite::render(ID3D11DeviceContext* immediate_context,
 	rotate(x2, y2, cx, cy, angle);
 	rotate(x3, y3, cx, cy, angle);
 
-	// ƒXƒNƒŠ[ƒ“À•W -> NDC
+	// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ -> NDC
 	x0 = 2.0f * x0 / viewport.Width - 1.0f;
 	y0 = 1.0f - 2.0f * y0 / viewport.Height;
 	x1 = 2.0f * x1 / viewport.Width - 1.0f;
@@ -135,16 +135,16 @@ void sprite::render(ID3D11DeviceContext* immediate_context,
 	x3 = 2.0f * x3 / viewport.Width - 1.0f;
 	y3 = 1.0f - 2.0f * y3 / viewport.Height;
 
-	// UVÀ•W•ÏŠ· (ƒeƒNƒZƒ‹ -> ³‹K‰»UV)
-	float tex_width = static_cast<float>(texture2d_desc.Width);   // ƒeƒNƒXƒ`ƒƒ‚Ì‰¡•
-	float tex_height = static_cast<float>(texture2d_desc.Height); // ƒeƒNƒXƒ`ƒƒ‚Ìc•
+	// UVåº§æ¨™å¤‰æ› (ãƒ†ã‚¯ã‚»ãƒ« -> æ­£è¦åŒ–UV)
+	float tex_width = static_cast<float>(texture2d_desc.Width);   // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®æ¨ªå¹…
+	float tex_height = static_cast<float>(texture2d_desc.Height); // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ç¸¦å¹…
 
 	float u0 = sx / tex_width;
 	float v0 = sy / tex_height;
 	float u1 = (sx + sw) / tex_width;
 	float v1 = (sy + sh) / tex_height;
 
-	// ’¸“_ƒf[ƒ^XV
+	// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿æ›´æ–°
 	D3D11_MAPPED_SUBRESOURCE mapped{};
 	HRESULT hr = immediate_context->Map(vertex_buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));

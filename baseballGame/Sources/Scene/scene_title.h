@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "scene.h"
 #include "camera_controller.h"
 #include <DirectXMath.h>
@@ -32,15 +32,15 @@ public:
 	void LoadSetting();
 
 private:
-	//	ƒJƒƒ‰‚ÌZÀ•W‚Ì•`‰æ”ÍˆÍ
+	//	ã‚«ãƒ¡ãƒ©ã®Zåº§æ¨™ã®æç”»ç¯„å›²
 	float camera_near_z = 1.0f;
 	float camera_far_z = 1000.0f;
 
-	//	ƒ^ƒCƒgƒ‹—pƒJƒƒ‰i1‘ä‚¾‚¯‚ÅOKj
+	//	ã‚¿ã‚¤ãƒˆãƒ«ç”¨ã‚«ãƒ¡ãƒ©ï¼ˆ1å°ã ã‘ã§OKï¼‰
 	CameraController cameraController;
 
 private:
-	//	ƒV[ƒ“—p’è”ƒoƒbƒtƒ@\‘¢‘Ìistage‚ÌƒVƒF[ƒ_[‚ª—v‹‚·‚éƒŒƒCƒAƒEƒg‚É‡‚í‚¹‚éj
+	//	ã‚·ãƒ¼ãƒ³ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡æ§‹é€ ä½“ï¼ˆstageã®ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãŒè¦æ±‚ã™ã‚‹ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆã«åˆã‚ã›ã‚‹ï¼‰
 	struct scene_constants
 	{
 		DirectX::XMFLOAT4X4 view_projection;
@@ -96,14 +96,14 @@ private:
 
 	struct shadow_quality_constants
 	{
-		int   soft_shadow_enabled = 0;	//	ƒ^ƒCƒgƒ‹‚Å‚Íí‚É0‚Å‚¢‚¢
+		int   soft_shadow_enabled = 0;	//	ã‚¿ã‚¤ãƒˆãƒ«ã§ã¯å¸¸ã«0ã§ã„ã„
 		int   soft_shadow_samples = 9;
 		float soft_shadow_radius = 1.5f;
 		float shadow_map_texel_size = 1.0f / 4096.0f;
 	};
 
 private:
-	//	’è”ƒoƒbƒtƒ@–{‘Ì
+	//	å®šæ•°ãƒãƒƒãƒ•ã‚¡æœ¬ä½“
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constant_buffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> light_constant_buffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> hemisphere_light_constant_buffer;
@@ -111,7 +111,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> post_effect_constant_buffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> shadow_quality_constant_buffer;
 
-	//	’l
+	//	å€¤
 	DirectX::XMFLOAT3 cameraPosition = {};
 	DirectX::XMFLOAT4 ambient_color{ 1.0f, 1.0f, 1.0f, 1.0f };
 	DirectX::XMFLOAT4 directional_light_direction{ 0.3f, -0.7f, 0.5f, 0.0f };
@@ -123,7 +123,7 @@ private:
 	float hemisphere_weight = 0.5f;
 
 	DirectX::XMFLOAT4 fog_color{ 0.5f, 0.5f, 0.5f, 1.0f };
-	DirectX::XMFLOAT4 fog_range{ 100.0f, 1000.0f, 0.0f, 0.0f }; // ‰“‚­‚ÉƒtƒHƒOŠJn“_‚ğ’u‚¢‚ÄÀ¿–³Œø‰»
+	DirectX::XMFLOAT4 fog_range{ 100.0f, 1000.0f, 0.0f, 0.0f }; // é ãã«ãƒ•ã‚©ã‚°é–‹å§‹ç‚¹ã‚’ç½®ã„ã¦å®Ÿè³ªç„¡åŠ¹åŒ–
 
 	post_effect_constants post_effect_constant;
 	shadow_quality_constants shadow_quality_constant;

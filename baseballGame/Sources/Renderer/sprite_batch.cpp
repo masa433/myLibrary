@@ -1,11 +1,11 @@
-#include "sprite_batch.h"
+ï»¿#include "sprite_batch.h"
 #include "misc.h"
 #include <sstream>
 //#include <WICTextureLoader.h>
 #include "texture.h"
 #include "shader.h"
 
-//ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+//ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 sprite_batch::sprite_batch(ID3D11Device* device, const wchar_t* filename, size_t max_sprites)
 	:max_vertices(max_sprites * 6)
 {
@@ -14,7 +14,7 @@ sprite_batch::sprite_batch(ID3D11Device* device, const wchar_t* filename, size_t
 	std::unique_ptr<vertex[]> vertices{ std::make_unique<vertex[]>(max_vertices) };
 
 
-		//’¸“_ƒoƒbƒtƒ@ƒIƒuƒWƒFƒNƒg‚Ì¶¬
+		//é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ç”Ÿæˆ
 	D3D11_BUFFER_DESC buffer_desc{};
 	buffer_desc.ByteWidth = static_cast<UINT>(sizeof(vertex) * max_vertices);
 	buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
@@ -57,18 +57,18 @@ void sprite_batch::render(ID3D11DeviceContext* immediate_context,
 	float angle,
 	float sx, float sy, float sw, float sh)
 {
-	// ƒrƒ…[ƒ|[ƒgæ“¾
+	// ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆå–å¾—
 	D3D11_VIEWPORT viewport{};
 	UINT num_viewports{ 1 };
 	immediate_context->RSGetViewports(&num_viewports, &viewport);
 
-	// ‹éŒ`‚Ì’¸“_À•W
+	// çŸ©å½¢ã®é ‚ç‚¹åº§æ¨™
 	float x0{ dx }, y0{ dy };
 	float x1{ dx + dw }, y1{ dy };
 	float x2{ dx }, y2{ dy + dh };
 	float x3{ dx + dw }, y3{ dy + dh };
 
-	// ‰ñ“]ˆ—
+	// å›è»¢å‡¦ç†
 	auto rotate = [](float& x, float& y, float cx, float cy, float angle)
 		{
 			x -= cx; y -= cy;
@@ -87,7 +87,7 @@ void sprite_batch::render(ID3D11DeviceContext* immediate_context,
 	rotate(x2, y2, cx, cy, angle);
 	rotate(x3, y3, cx, cy, angle);
 
-	// ƒXƒNƒŠ[ƒ“À•W -> NDC
+	// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ -> NDC
 	x0 = 2.0f * x0 / viewport.Width - 1.0f;
 	y0 = 1.0f - 2.0f * y0 / viewport.Height;
 	x1 = 2.0f * x1 / viewport.Width - 1.0f;
@@ -97,9 +97,9 @@ void sprite_batch::render(ID3D11DeviceContext* immediate_context,
 	x3 = 2.0f * x3 / viewport.Width - 1.0f;
 	y3 = 1.0f - 2.0f * y3 / viewport.Height;
 
-	// UVÀ•W•ÏŠ· (ƒeƒNƒZƒ‹ -> ³‹K‰»UV)
-	float tex_width = texture2d_desc.Width;   // ƒeƒNƒXƒ`ƒƒ‚Ì‰¡•
-	float tex_height = texture2d_desc.Height; // ƒeƒNƒXƒ`ƒƒ‚Ìc•
+	// UVåº§æ¨™å¤‰æ› (ãƒ†ã‚¯ã‚»ãƒ« -> æ­£è¦åŒ–UV)
+	float tex_width = texture2d_desc.Width;   // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®æ¨ªå¹…
+	float tex_height = texture2d_desc.Height; // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ç¸¦å¹…
 
 	float u0 = sx / tex_width;
 	float v0 = sy / tex_height;
@@ -120,11 +120,11 @@ void sprite_batch::render(ID3D11DeviceContext* immediate_context, float dx, floa
 {
 
 	render(immediate_context,
-		dx, dy,         // •`‰æˆÊ’u
-		dw, dh,         // •`‰æƒTƒCƒY
-		1.0f, 1.0f, 1.0f, 1.0f,  // F
-		0.0f,           // ‰ñ“]Šp
-		0.0f, 0.0f,     // ƒeƒNƒXƒ`ƒƒ¶ã (sx, sy)
+		dx, dy,         // æç”»ä½ç½®
+		dw, dh,         // æç”»ã‚µã‚¤ã‚º
+		1.0f, 1.0f, 1.0f, 1.0f,  // è‰²
+		0.0f,           // å›è»¢è§’
+		0.0f, 0.0f,     // ãƒ†ã‚¯ã‚¹ãƒãƒ£å·¦ä¸Š (sx, sy)
 		static_cast<float>(texture2d_desc.Width),   // sw
 		static_cast<float>(texture2d_desc.Height)); // sh
 

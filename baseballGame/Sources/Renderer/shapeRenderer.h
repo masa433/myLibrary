@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <vector>
 #include <wrl.h>
@@ -11,7 +11,7 @@ public:
 	ShapeRenderer(ID3D11Device* device);
 	~ShapeRenderer() {}
 
-	// ” •`‰æ
+	// ç®±æç”»
 	void DrawBox(
 		const DirectX::XMFLOAT3& position,
 		const DirectX::XMFLOAT3& angle,
@@ -23,7 +23,7 @@ public:
 		const DirectX::XMFLOAT3& size,
 		const DirectX::XMFLOAT4& color);
 
-	// ‹…•`‰æ
+	// çƒæç”»
 	void DrawSphere(
 		const DirectX::XMFLOAT3& position,
 		float radius,
@@ -34,29 +34,29 @@ public:
 		float radius,
 		const DirectX::XMFLOAT4& color);
 
-	// ƒJƒvƒZƒ‹•`‰æ
+	// ã‚«ãƒ—ã‚»ãƒ«æç”»
 	void DrawCapsule(
 		const DirectX::XMFLOAT4X4& transform,
 		float radius,
 		float height,
 		const DirectX::XMFLOAT4& color);
 
-	// ƒ|ƒCƒ“ƒgƒ‰ƒCƒg‰Â‹‰»i‹…‘Ìj
+	// ãƒã‚¤ãƒ³ãƒˆãƒ©ã‚¤ãƒˆå¯è¦–åŒ–ï¼ˆçƒä½“ï¼‰
 	void DrawPointLight(
 		const DirectX::XMFLOAT3& position,
 		float radius,
 		const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 0.0f, 1.0f });
 
-	// ƒXƒ|ƒbƒgƒ‰ƒCƒg‰Â‹‰»i•ûŒüü + ‰~j
+	// ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆå¯è¦–åŒ–ï¼ˆæ–¹å‘ç·š + å††éŒï¼‰
 	void DrawSpotLight(
 		const DirectX::XMFLOAT3& position,
 		const DirectX::XMFLOAT3& direction,
 		float range,
-		float innerAngle,   // “à‘¤ƒR[ƒ“Šp“xiƒ‰ƒWƒAƒ“j
-		float outerAngle,   // ŠO‘¤ƒR[ƒ“Šp“xiƒ‰ƒWƒAƒ“j
+		float innerAngle,   // å†…å´ã‚³ãƒ¼ãƒ³è§’åº¦ï¼ˆãƒ©ã‚¸ã‚¢ãƒ³ï¼‰
+		float outerAngle,   // å¤–å´ã‚³ãƒ¼ãƒ³è§’åº¦ï¼ˆãƒ©ã‚¸ã‚¢ãƒ³ï¼‰
 		const DirectX::XMFLOAT4& color = { 1.0f, 0.8f, 0.0f, 1.0f });
 
-	// •`‰æÀs
+	// æç”»å®Ÿè¡Œ
 	void Render(
 		ID3D11DeviceContext* dc,
 		const DirectX::XMFLOAT4X4& view,
@@ -103,23 +103,23 @@ private:
 		DirectX::XMFLOAT4		color;
 	};
 
-	// ƒƒbƒVƒ…¶¬
+	// ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	void CreateWiredMesh(ID3D11Device* device, const std::vector<DirectX::XMFLOAT3>& vertices, WiredMesh& mesh);
 	void CreateSolidMesh(ID3D11Device* device, const std::vector<Vertex>& vertices, const std::vector<uint16_t>& indices, SolidMesh& mesh);
 
-	// ” ƒƒbƒVƒ…ì¬
+	// ç®±ãƒ¡ãƒƒã‚·ãƒ¥ä½œæˆ
 	void CreateWiredBoxMesh(ID3D11Device* device, float width, float height, float depth);
 	void CreateSolidBoxMesh(ID3D11Device* device, float width, float height, float depth);
 
-	// ‹…ƒƒbƒVƒ…ì¬
+	// çƒãƒ¡ãƒƒã‚·ãƒ¥ä½œæˆ
 	void CreateWiredSphereMesh(ID3D11Device* device, float radius, int subdivisions);
 	void CreateSolidSphereMesh(ID3D11Device* device, float radius, int subdivisions);
 
-	// ”¼‹…ƒƒbƒVƒ…ì¬
+	// åŠçƒãƒ¡ãƒƒã‚·ãƒ¥ä½œæˆ
 	void CreateWiredHalfSphereMesh(ID3D11Device* device, float radius, int subdivisions);
 	void CreateSolidHalfSphereMesh(ID3D11Device* device, float radius, int subdivisions);
 
-	// ‰~’Œ
+	// å††æŸ±
 	void CreateWiredCylinderMesh(ID3D11Device* device, float radius1, float radius2, float start, float height, int subdivisions);
 	void CreateSolidCylinderMesh(ID3D11Device* device, float radius1, float radius2, float start, float height, int subdivisions, bool cap);
 

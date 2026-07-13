@@ -1,13 +1,74 @@
-﻿  scene_game.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
-  (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
-  (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(413,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(414,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(440,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(441,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(717,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+﻿  FreeCameraController.cpp
+  camera.cpp
+  camera_controller.cpp
+  collision.cpp
+  Ball.cpp
+  FoulSprite.cpp
+  GameTimer.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\GameTimer.cpp(54,21): warning C4244: '-=': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\GameTimer.cpp(55,47): warning C4244: '=': 'float' から 'int' への変換です。データが失われる可能性があります。
+  HomeRunCount.cpp
+  Pitcher.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.cpp(276,10): warning C4101: 'debugMessage': ローカル変数は 1 度も使われていません。
+  Player.cpp
+  TrackingData.cpp
+  Wind.cpp
+  ballSprite.cpp
+  batSprite.cpp
+  game_object.cpp
+  stage.cpp
+  FrustumCulling.cpp
+  GpuResourceUtils.cpp
+  Graphics.cpp
+  RenderState.cpp
+  コードを生成中...
+  コンパイル中...
+  TextureManager.cpp
+  texture.cpp
+  game_pad.cpp
+  input.cpp
+  mouse.cpp
+  Model.cpp
+  ModelResource.cpp
+  gltf_model.cpp
+  physxManager.cpp
+  FontRenderer.cpp
+  ModelRenderer.cpp
+  PrimitiveRenderer.cpp
+  ShadowRenderer.cpp
+  SkyRenderer.cpp
+  shapeRenderer.cpp
+  sprite.cpp
+  sprite_batch.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\sprite_batch.cpp(101,18): warning C4244: '初期化中': 'UINT' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\sprite_batch.cpp(102,19): warning C4244: '初期化中': 'UINT' から 'float' への変換です。データが失われる可能性があります。
+  sceneManager.cpp
+  scene_game.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(414,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(415,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(441,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(442,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(718,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+  scene_loading.cpp
+  コードを生成中...
+  コンパイル中...
+  scene_title.cpp
+  BasicShader.cpp
+  LambertShader.cpp
+  shader.cpp
+  framebuffer.cpp
+  framework.cpp
+  fullscreen_quad.cpp
+  main.cpp
+  コードを生成中...
+     ライブラリ C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.lib とオブジェクト C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exp を作成中
+LINK : warning LNK4217: シンボル 'PxGetPhysics' ('PhysX_static_64.lib(NpPhysics.obj)' で定義) が 'Pitcher.obj' によって関数 '"public: static class physx::PxShape * __cdecl physx::PxRigidActorExt::createExclusiveShape(class physx::PxRigidActor &,class physx::PxGeometry const &,class physx::PxMaterial * const *,unsigned short,class physx::PxFlags<enum physx::PxShapeFlag::Enum,unsigned char>)" (?createExclusiveShape@PxRigidActorExt@physx@@SAPEAVPxShape@2@AEAVPxRigidActor@2@AEBVPxGeometry@2@PEBQEAVPxMaterial@2@GV?$PxFlags@W4Enum@PxShapeFlag@physx@@E@2@@Z)' 内でインポートされています
+LINK : warning LNK4286: シンボル 'PxGetPhysics' ('PhysX_static_64.lib(NpPhysics.obj)' で定義) が 'Player.obj' によってインポートされています
+LINK : warning LNK4286: シンボル 'PxGetPhysics' ('PhysX_static_64.lib(NpPhysics.obj)' で定義) が 'stage.obj' によってインポートされています
+LINK : warning LNK4217: シンボル 'PxGetStandaloneInsertionCallback' ('PhysXCooking_static_64.lib(Cooking.obj)' で定義) が 'Player.obj' によって関数 '"class physx::PxConvexMesh * __cdecl PxCreateConvexMesh(struct physx::PxCookingParams const &,class physx::PxConvexMeshDesc const &)" (?PxCreateConvexMesh@@YAPEAVPxConvexMesh@physx@@AEBUPxCookingParams@2@AEBVPxConvexMeshDesc@2@@Z)' 内でインポートされています
+LINK : warning LNK4217: シンボル 'PxGetStandaloneInsertionCallback' ('PhysXCooking_static_64.lib(Cooking.obj)' で定義) が 'stage.obj' によって関数 '"public: __cdecl nlohmann::basic_json<class std::map,class std::vector,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,bool,__int64,unsigned __int64,double,class std::allocator,struct nlohmann::adl_serializer,class std::vector<unsigned char,class std::allocator<unsigned char> > >::basic_json<class std::map,class std::vector,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,bool,__int64,unsigned __int64,double,class std::allocator,struct nlohmann::adl_serializer,class std::vector<unsigned char,class std::allocator<unsigned char> > >(class std::initializer_list<class nlohmann::detail::json_ref<class nlohmann::basic_json<class std::map,class std::vector,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,bool,__int64,unsigned __int64,double,class std::allocator,struct nlohmann::adl_serializer,class std::vector<unsigned char,class std::allocator<unsigned char> > > > >,bool,enum nlohmann::detail::value_t)" (??0?$basic_json@Vmap@std@@Vvector@2@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@_N_J_KNVallocator@2@Uadl_serializer@nlohmann@@V?$vector@EV?$allocator@E@std@@@2@@nlohmann@@QEAA@V?$initializer_list@V?$json_ref@V?$basic_json@Vmap@std@@Vvector@2@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@_N_J_KNVallocator@2@Uadl_serializer@nlohmann@@V?$vector@EV?$allocator@E@std@@@2@@nlohmann@@@detail@nlohmann@@@std@@_NW4value_t@detail@1@@Z)' 内でインポートされています
+LINK : warning LNK4217: シンボル 'PxCreateConvexMesh' ('PhysXCooking_static_64.lib(Cooking.obj)' で定義) が 'Player.obj' によって関数 '"class physx::PxConvexMesh * __cdecl PxCreateConvexMesh(struct physx::PxCookingParams const &,class physx::PxConvexMeshDesc const &)" (?PxCreateConvexMesh@@YAPEAVPxConvexMesh@physx@@AEBUPxCookingParams@2@AEBVPxConvexMeshDesc@2@@Z)' 内でインポートされています
+LINK : warning LNK4217: シンボル 'PxCreateTriangleMesh' ('PhysXCooking_static_64.lib(Cooking.obj)' で定義) が 'stage.obj' によって関数 '"class physx::PxTriangleMesh * __cdecl PxCreateTriangleMesh(struct physx::PxCookingParams const &,class physx::PxTriangleMeshDesc const &)" (?PxCreateTriangleMesh@@YAPEAVPxTriangleMesh@physx@@AEBUPxCookingParams@2@AEBVPxTriangleMeshDesc@2@@Z)' 内でインポートされています
+LINK : warning LNK4217: シンボル 'PxCreateFoundation' ('PhysXFoundation_static_64.lib(FdFoundation.obj)' で定義) が 'physxManager.obj' によって関数 '"public: void __cdecl Physics::Initialize(void)" (?Initialize@Physics@@QEAAXXZ)' 内でインポートされています
+LINK : warning LNK4217: シンボル 'PxCreatePhysics' ('PhysX_static_64.lib(NpPhysics.obj)' で定義) が 'physxManager.obj' によって関数 '"public: void __cdecl Physics::Initialize(void)" (?Initialize@Physics@@QEAAXXZ)' 内でインポートされています
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

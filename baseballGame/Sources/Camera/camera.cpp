@@ -1,16 +1,16 @@
-#include "Camera.h"
+ï»¿#include "Camera.h"
 
-//w’è•ûŒü‚ğŒü‚­
+//æŒ‡å®šæ–¹å‘ã‚’å‘ã
 void Camera::SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up)
 {
     DirectX::XMVECTOR Eye = DirectX::XMLoadFloat3(&eye);
     DirectX::XMVECTOR Focus = DirectX::XMLoadFloat3(&focus);
     DirectX::XMVECTOR Up = DirectX::XMLoadFloat3(&up);
     DirectX::XMMATRIX View = DirectX::XMMatrixLookAtLH(Eye, Focus, Up);
-    //LH=Left Hand(¶èŒn—p)
+    //LH=Left Hand(å·¦æ‰‹ç³»ç”¨)
     DirectX::XMStoreFloat4x4(&view, View);
 
-    // ƒJƒƒ‰‚Ì•ûŒü‚ğæ‚èo‚·
+    // ã‚«ãƒ¡ãƒ©ã®æ–¹å‘ã‚’å–ã‚Šå‡ºã™
     this->right.x = view._11;
     this->right.y = view._21;
     this->right.z = view._31;
@@ -23,15 +23,15 @@ void Camera::SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& fo
     this->front.y = view._23;
     this->front.z = view._33;
 
-    // ‹“_A’‹“_‚ğ•Û‘¶
+    // è¦–ç‚¹ã€æ³¨è¦–ç‚¹ã‚’ä¿å­˜
     this->eye = eye;
     this->focus = focus;
 }
 
-//ƒp[ƒXƒyƒNƒeƒBƒuİ’è
+//ãƒ‘ãƒ¼ã‚¹ãƒšã‚¯ãƒ†ã‚£ãƒ–è¨­å®š
 void Camera::SetPerspectiveFov(float fovY, float aspect, float nearZ, float farZ)
 {
-    //‰æŠpA‰æ–Ê”ä—¦AƒNƒŠƒbƒv‹——£‚©‚çƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚ğì¬
+    //ç”»è§’ã€ç”»é¢æ¯”ç‡ã€ã‚¯ãƒªãƒƒãƒ—è·é›¢ã‹ã‚‰ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã‚’ä½œæˆ
     DirectX::XMMATRIX Projection = DirectX::XMMatrixPerspectiveFovLH(fovY, aspect, nearZ, farZ);
 
     DirectX::XMStoreFloat4x4(&projection, Projection);

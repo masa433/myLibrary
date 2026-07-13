@@ -1,14 +1,14 @@
-#include "Graphics.h"
+ï»¿#include "Graphics.h"
 #include "Model.h"
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 Model::Model(const char* filename)
 {
-	// ƒŠƒ\[ƒX“Ç‚İ‚İ
+	// ãƒªã‚½ãƒ¼ã‚¹èª­ã¿è¾¼ã¿
 	resource = std::make_shared<ModelResource>();
 	resource->Load(Graphics::Instance().GetDevice(), filename);
 
-	// ƒm[ƒh
+	// ãƒãƒ¼ãƒ‰
 	const std::vector<ModelResource::Node>& resNodes = resource->GetNodes();
 
 	nodes.resize(resNodes.size());
@@ -29,23 +29,23 @@ Model::Model(const char* filename)
 		}
 	}
 
-	// s—ñŒvZ
+	// è¡Œåˆ—è¨ˆç®—
 	UpdateTransform();
 }
 
-// •ÏŠ·s—ñŒvZ
+// å¤‰æ›è¡Œåˆ—è¨ˆç®—
 void Model::UpdateTransform()
 {
 	for (Node& node : nodes)
 	{
-		// ƒ[ƒJƒ‹s—ñZo
+		// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ç®—å‡º
 		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale.x, node.scale.y, node.scale.z);
 		DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&node.rotate));
 		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.translate.x, node.translate.y, node.translate.z);
 		DirectX::XMMATRIX LocalTransform = S * R * T;
 		DirectX::XMStoreFloat4x4(&node.localTransform, LocalTransform);
 
-		// ƒOƒ[ƒoƒ‹s—ñZo
+		// ã‚°ãƒ­ãƒ¼ãƒãƒ«è¡Œåˆ—ç®—å‡º
 		if (node.parent != nullptr)
 		{
 			DirectX::XMMATRIX ParentGlobalTransform = DirectX::XMLoadFloat4x4(&node.parent->globalTransform);

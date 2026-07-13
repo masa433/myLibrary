@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 #include <wrl.h>
 #include <cstdint>
@@ -21,7 +21,7 @@ public:
 
 private:
 	UINT viewport_count{ D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE };
-		//Direct3D 11 ‚ÌƒpƒCƒvƒ‰ƒCƒ“‚É“¯‚Éİ’è‚Å‚«‚éÅ‘å‚Ìƒrƒ…[ƒ|[ƒg‚ÆƒVƒU[‹éŒ`iScissor Rectj‚Ì”
+		//Direct3D 11 ã®ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã«åŒæ™‚ã«è¨­å®šã§ãã‚‹æœ€å¤§ã®ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã¨ã‚·ã‚¶ãƒ¼çŸ©å½¢ï¼ˆScissor Rectï¼‰ã®æ•°
 	D3D11_VIEWPORT cached_viewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> cached_render_target_view;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> cached_depth_stencil_view;

@@ -19,6 +19,7 @@
 #include "batSprite.h"
 #include "GameTimer.h"
 #include "HomeRunCount.h"
+#include "FoulSprite.h"
 #include <fstream>
 #include <string>
 
@@ -932,7 +933,8 @@ void scene_game::render(float elapsedTime)
     GameTimer::Instance().Render();
 
 	HomeRunCount::Instance().Render();
-    
+
+    FoulSprite::Instance().Render();    
 
     // ShapeRenderer の描画実行
 

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 #include <wrl.h>
 #include <DirectXMath.h>
@@ -11,15 +11,15 @@
 
 class ShadowRenderer
 {
-	// ƒVƒƒƒhƒEƒ}ƒbƒv‚ÌƒTƒCƒY’è”
+	// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã®ã‚µã‚¤ã‚ºå®šæ•°
 	static constexpr UINT ShadowmapSize = 2048;
 	static constexpr UINT SpotShadowmapSize = 2048;
 	static constexpr float ShadowmapDrawRect = 60.0f;
-	static constexpr int ShadowBufferSize = 4; // ƒJƒXƒP[ƒhƒVƒƒƒhƒEƒ}ƒbƒv‚Ì”
-	static constexpr int SpotShadowCount = 4; // ƒXƒ|ƒbƒgƒVƒƒƒhƒEƒ}ƒbƒv‚Ì”
+	static constexpr int ShadowBufferSize = 4; // ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã®æ•°
+	static constexpr int SpotShadowCount = 4; // ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã®æ•°
 
 public:
-	//’è”ƒoƒbƒtƒ@\‘¢‘Ì
+	//å®šæ•°ãƒãƒƒãƒ•ã‚¡æ§‹é€ ä½“
     struct scene_constants
     {
         DirectX::XMFLOAT4X4 view_projection;
@@ -28,10 +28,10 @@ public:
         DirectX::XMFLOAT4    camera_up;
     };
 
-    //ƒVƒƒƒhƒEƒ}ƒbƒv
+    //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—
     struct shadowmap_constants
     {
-        DirectX::XMFLOAT4X4 light_view_projection; // ƒ‰ƒCƒg‚Ìƒrƒ…[Ë‰es—ñ
+        DirectX::XMFLOAT4X4 light_view_projection; // ãƒ©ã‚¤ãƒˆã®ãƒ“ãƒ¥ãƒ¼å°„å½±è¡Œåˆ—
         float				shadow_attenuation{ 0.5f };
         float				shadow_bias{ 0.0001f };
         bool 				use_cascade;
@@ -39,17 +39,17 @@ public:
     };
 
 
-    //	ƒJƒXƒP[ƒhƒVƒƒƒhƒEƒ}ƒbƒv—p’è”ƒoƒbƒtƒ@
+    //	ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
     struct cascade_shadowmap_constants
     {
-        DirectX::XMFLOAT4X4 light_view_projection[ShadowBufferSize];		//	ƒ‰ƒCƒg‚ÌˆÊ’u‚©‚çŒ©‚½Ë‰es—ñ
-        DirectX::XMFLOAT4	shadow_bias{ 0.001f, 0.002f, 0.003f, 0.004f };	//	[“x”äŠr—p‚ÌƒIƒtƒZƒbƒg’l
-        float				shadow_attenuation{ 0.5f };	//	‰eF
+        DirectX::XMFLOAT4X4 light_view_projection[ShadowBufferSize];		//	ãƒ©ã‚¤ãƒˆã®ä½ç½®ã‹ã‚‰è¦‹ãŸå°„å½±è¡Œåˆ—
+        DirectX::XMFLOAT4	shadow_bias{ 0.001f, 0.002f, 0.003f, 0.004f };	//	æ·±åº¦æ¯”è¼ƒç”¨ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆå€¤
+        float				shadow_attenuation{ 0.5f };	//	å½±è‰²
         bool				display_cascade_area;
         DirectX::XMFLOAT2	shadow_dummy;
     };
 
-    //ƒXƒ|ƒbƒgƒVƒƒƒhƒEƒ}ƒbƒv—p’è”ƒoƒbƒtƒ@
+    //ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
     struct spot_shadowmap_constants
     {
         DirectX::XMFLOAT4X4 light_view_projection[SpotShadowCount];
@@ -58,17 +58,17 @@ public:
         DirectX::XMFLOAT2 dummy;
     };
 
-    //ƒ|ƒCƒ“ƒgƒ‰ƒCƒg‚Ì\‘¢‘Ì
+    //ãƒã‚¤ãƒ³ãƒˆãƒ©ã‚¤ãƒˆã®æ§‹é€ ä½“
     struct point_lights
     {
         DirectX::XMFLOAT4 position;
         DirectX::XMFLOAT4 color;
         float intensity;
         float range;
-        DirectX::XMFLOAT2 dummy; // 4‚Ì”{”‚É‚·‚é‚½‚ß‚Ìƒ_ƒ~[
+        DirectX::XMFLOAT2 dummy; // 4ã®å€æ•°ã«ã™ã‚‹ãŸã‚ã®ãƒ€ãƒŸãƒ¼
     };
 
-    //ƒXƒ|ƒbƒgƒ‰ƒCƒg‚Ì\‘¢‘Ì
+    //ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆã®æ§‹é€ ä½“
     struct spot_lights
     {
         DirectX::XMFLOAT4 position;
@@ -85,7 +85,7 @@ public:
 	void Initialize();
 	void Uninitialize();
 
-	//ƒVƒƒƒhƒEƒ}ƒbƒv‚Ì•`‰æ
+	//ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã®æç”»
     void RenderShadowMap(float elapsedTime);
 	void RenderCascadeShadowMap(float elapsedTime);
 	void RenderSpotShadowMap(float elapsedTime);
@@ -93,19 +93,19 @@ public:
 	void SetDirectionalLight(const DirectX::XMFLOAT4& direction, const DirectX::XMFLOAT4& color, float intensity);
 	void SetCameraPosition(const DirectX::XMFLOAT3& position);
 
-    //ƒVƒF[ƒ_[‚ÉƒoƒCƒ“ƒhE‰ğœ
+    //ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã«ãƒã‚¤ãƒ³ãƒ‰ãƒ»è§£é™¤
 	void BindShadowResources(ID3D11DeviceContext* dc) const;
 	void UnbindShadowResources(ID3D11DeviceContext* dc) const;
 
-    //ImGui/SaveSetting—p‚ÌƒQƒbƒ^[
+    //ImGui/SaveSettingç”¨ã®ã‚²ãƒƒã‚¿ãƒ¼
     ID3D11ShaderResourceView* GetShadowmapSRV() const;
 	ID3D11ShaderResourceView* GetCascadeShadowmapSRV(int index) const;
 
-    //ƒ‰ƒCƒg”z—ñ‚Ö‚ÌƒAƒNƒZƒX
+    //ãƒ©ã‚¤ãƒˆé…åˆ—ã¸ã®ã‚¢ã‚¯ã‚»ã‚¹
 	std::vector<point_lights>& GetPointLights() { return pointLights; }
 	std::vector<spot_lights>& GetSpotLights() { return spotLights; }
 
-    // scene_game ‚©‚ç’¼ÚG‚éŒöŠJƒpƒ‰ƒ[ƒ^
+    // scene_game ã‹ã‚‰ç›´æ¥è§¦ã‚‹å…¬é–‹ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
     bool   use_cascade_shadow_map = true;
     float  shadow_bias = 0.008f;
     float  shadow_attenuation = 0.5f;
@@ -116,10 +116,10 @@ public:
     
 
 private:
-        //GPU ƒŠƒ\[ƒX
+        //GPU ãƒªã‚½ãƒ¼ã‚¹
         Microsoft::WRL::ComPtr<ID3D11VertexShader>        shadowmap_caster_vertex_shader;
         Microsoft::WRL::ComPtr<ID3D11InputLayout>         shadowmap_caster_input_layout;
-        Microsoft::WRL::ComPtr<ID3D11Buffer>              constant_buffer;   // b1‘‚«‚İ—p
+        Microsoft::WRL::ComPtr<ID3D11Buffer>              constant_buffer;   // b1æ›¸ãè¾¼ã¿ç”¨
         Microsoft::WRL::ComPtr<ID3D11Buffer>              shadowmap_constant_buffer;
         Microsoft::WRL::ComPtr<ID3D11DepthStencilView>    shadowmap_depth_stencil_view;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>  shadowmap_shader_resource_view;
@@ -135,7 +135,7 @@ private:
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>  spot_shadowmap_shader_resource_views[SpotShadowCount];
         spot_shadowmap_constants                          spot_shadow_constant{};
 
-        // ƒ‰ƒCƒgƒf[ƒ^
+        // ãƒ©ã‚¤ãƒˆãƒ‡ãƒ¼ã‚¿
         DirectX::XMFLOAT4         directional_light_direction{ 0,-1,0,1 };
         DirectX::XMFLOAT4         directional_light_color{ 1, 1,1,1 };
         float                     directional_light_intensity = 0.7f;

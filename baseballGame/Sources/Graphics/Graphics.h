@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <wrl.h>
 #include <d3d11.h>
 #include <memory>
@@ -16,64 +16,64 @@ private:
 	~Graphics() = default;
 
 public:
-	// ƒVƒ“ƒOƒ‹ƒgƒ“ƒCƒ“ƒXƒ^ƒ“ƒX‚Ìæ“¾
+	// ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã®å–å¾—
 	static Graphics& Instance()
 	{
 		static Graphics instance;
 		return instance;
 	}
 
-	// ƒŒƒ“ƒ_[ƒXƒe[ƒg‚Ì‰Šú‰»
+	// ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆã®åˆæœŸåŒ–
 	void Initialize(HWND hwnd);
 
-	//ƒNƒŠƒA
+	//ã‚¯ãƒªã‚¢
 	void Clear(float r, float g, float b, float a);
 
-	//ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚Ìİ’è
+	//ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®è¨­å®š
 	void SetRenderTarget();
 
-	//‰æ–Ê•\¦
+	//ç”»é¢è¡¨ç¤º
 	void Present(UINT syncInterval);
 
-	//ƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹æ“¾
+	//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«å–å¾—
 	HWND GetHwnd() const { return hWnd; }
 
-	// ƒfƒoƒCƒX‚Ìæ“¾
+	// ãƒ‡ãƒã‚¤ã‚¹ã®å–å¾—
 	ID3D11Device* GetDevice() const { return device.Get(); }
 
-	// ƒfƒoƒCƒXƒRƒ“ƒeƒLƒXƒgæ“¾
+	// ãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆå–å¾—
 	ID3D11DeviceContext* GetDeviceContext() { return immediateContext.Get(); }
 
-	// ƒXƒNƒŠ[ƒ“•æ“¾
+	// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³å¹…å–å¾—
 	float GetScreenWidth() const { return screenWidth; }
 
-	// ƒXƒNƒŠ[ƒ“‚‚³æ“¾
+	// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³é«˜ã•å–å¾—
 	float GetScreenHeight() const { return screenHeight; }
 
-	// ƒŒƒ“ƒ_[ƒXƒe[ƒgæ“¾
+	// ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆå–å¾—
 	RenderState* GetRenderState() { return renderState.get(); }
 
 	IDXGISwapChain* GetSwapChain() const { return swapchain.Get(); }
 
-	// ƒVƒFƒCƒvƒŒƒ“ƒ_ƒ‰æ“¾
+	// ã‚·ã‚§ã‚¤ãƒ—ãƒ¬ãƒ³ãƒ€ãƒ©å–å¾—
 	ShapeRenderer* GetShapeRenderer() const { return shapeRenderer.get(); }
 
-	// ƒvƒŠƒ~ƒeƒBƒuƒŒƒ“ƒ_ƒ‰æ“¾
+	// ãƒ—ãƒªãƒŸãƒ†ã‚£ãƒ–ãƒ¬ãƒ³ãƒ€ãƒ©å–å¾—
 	PrimitiveRenderer* GetPrimitiveRenderer() const { return primitiveRenderer.get(); }
 
-	// ƒ‰ƒCƒgƒ}ƒl[ƒWƒƒ[æ“¾
+	// ãƒ©ã‚¤ãƒˆãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼å–å¾—
 	Light& GetLightManager() { return lightManager; }
 
-	// ƒ‚ƒfƒ‹ƒŒƒ“ƒ_ƒ‰æ“¾
+	// ãƒ¢ãƒ‡ãƒ«ãƒ¬ãƒ³ãƒ€ãƒ©å–å¾—
 	ModelRenderer* GetModelRenderer() const { return modelRenderer.get(); }
 
-	//[“xƒXƒeƒ“ƒVƒ‹ƒrƒ…[æ“¾
+	//æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒ“ãƒ¥ãƒ¼å–å¾—
 	ID3D11DepthStencilView* GetDepthStencilView() const { return depthStencilView.Get(); }
 
-	//ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[æ“¾
+	//ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼å–å¾—
 	ID3D11RenderTargetView* GetRenderTargetView() const { return renderTargetView.Get(); }
 
-	//ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[‚ÌƒAƒhƒŒƒX‚ğæ“¾
+	//ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å–å¾—
 	ID3D11RenderTargetView** GetRenderTargetViewAddress() { return renderTargetView.GetAddressOf(); }
 private:
 	HWND											hWnd = nullptr;

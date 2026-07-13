@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 #include <wrl.h>
 #include <DirectXMath.h>
@@ -15,7 +15,7 @@ using json = nlohmann::json;
 class GameTimer
 {
 public:
-	//ƒCƒ“ƒXƒ^ƒ“ƒX
+	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	static GameTimer& Instance()
 	{
 		static GameTimer instance;
@@ -30,7 +30,7 @@ public:
 	void LoadFromJson(const nlohmann::json& j);
 
 private:
-	//ƒXƒvƒ‰ƒCƒgƒf[ƒ^
+	//ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒ‡ãƒ¼ã‚¿
 	struct Sprite
 	{
 		std::wstring texturePath;
@@ -43,21 +43,21 @@ private:
 	std::unique_ptr<sprite> timerSprite;
 	std::unique_ptr<Sprite> timerSpriteData;
 
-	// ƒVƒF[ƒ_[ŠÖ˜A
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼é–¢é€£
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
 
 	FontRenderer timerFont;
 
-	//ƒtƒHƒ“ƒg‚ÌˆÊ’uAƒTƒCƒYAF‚ğ•Ï‚¦‚é‚½‚ß‚Ì•Ï”
+	//ãƒ•ã‚©ãƒ³ãƒˆã®ä½ç½®ã€ã‚µã‚¤ã‚ºã€è‰²ã‚’å¤‰ãˆã‚‹ãŸã‚ã®å¤‰æ•°
 	DirectX::XMFLOAT2 fontPosition;
 	float fontSize;
 	DirectX::XMFLOAT4 fontColor;
 
-	//ƒ^ƒCƒ}[‚Ì’l
-	float startTime = 120.0f; // 120•b‚©‚çƒXƒ^[ƒg(2•ª)
+	//ã‚¿ã‚¤ãƒãƒ¼ã®å€¤
+	float startTime = 120.0f; // 120ç§’ã‹ã‚‰ã‚¹ã‚¿ãƒ¼ãƒˆ(2åˆ†)
 	float remainingTime = 120.0f;
 
-	int startCountdown = 10; // ƒJƒEƒ“ƒgƒ_ƒEƒ“‚Ì‰Šú’l
+	int startCountdown = 10; // ã‚«ã‚¦ãƒ³ãƒˆãƒ€ã‚¦ãƒ³ã®åˆæœŸå€¤
 };

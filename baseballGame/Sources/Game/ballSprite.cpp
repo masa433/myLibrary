@@ -1,4 +1,4 @@
-#include "ballSprite.h"
+ï»¿#include "ballSprite.h"
 #include "Graphics.h"
 #include <shader.h>
 #include <imgui.h>
@@ -48,131 +48,131 @@ namespace
 		float t,
 		bool isRightPitcher)
 	{
-		// ¶“Šè‚Ìê‡‚Í‰¡•Ï‰»‚ğ¶‰E”½“]‚·‚é
+		// å·¦æŠ•æ‰‹ã®å ´åˆã¯æ¨ªå¤‰åŒ–ã‚’å·¦å³åè»¢ã™ã‚‹
 		float effectiveBreakX = isRightPitcher ? breakData.breakX : -breakData.breakX;
 
-		// •Ï‰»—Ê(Àƒf[ƒ^)‚ğƒXƒgƒ‰ƒCƒNƒ][ƒ“‚Ì‰æ–ÊƒTƒCƒY‚É‡‚í‚¹‚½ƒsƒNƒZƒ‹—Ê‚Ö•ÏŠ·
+		// å¤‰åŒ–é‡(å®Ÿãƒ‡ãƒ¼ã‚¿)ã‚’ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³ã®ç”»é¢ã‚µã‚¤ã‚ºã«åˆã‚ã›ãŸãƒ”ã‚¯ã‚»ãƒ«é‡ã¸å¤‰æ›
 		const float breakOffsetX = (effectiveBreakX / 43.0f) * zoneScreenSize.x;
 		const float breakOffsetY = (breakData.breakY / 60.0f) * zoneScreenSize.y;
 
-		// ƒ{[ƒ‹‚ÌƒŠƒŠ[ƒXˆÊ’u(P0)
-		// ÅI“’BˆÊ’u(targetScreenPos)‚©‚ç•Ï‰»—Ê•ª‚¾‚¯—£‚ê‚½ˆÊ’u‚ğn“_‚Æ‚·‚é
+		// ãƒœãƒ¼ãƒ«ã®ãƒªãƒªãƒ¼ã‚¹ä½ç½®(P0)
+		// æœ€çµ‚åˆ°é”ä½ç½®(targetScreenPos)ã‹ã‚‰å¤‰åŒ–é‡åˆ†ã ã‘é›¢ã‚ŒãŸä½ç½®ã‚’å§‹ç‚¹ã¨ã™ã‚‹
 		DirectX::XMFLOAT2 p0 = {
 			targetScreenPos.x - breakOffsetX,
 			targetScreenPos.y + breakOffsetY
 		};
 
-		// ƒŠƒŠ[ƒXˆÊ’u‚©‚ç“’BˆÊ’u‚Ü‚Å‚ÌˆÚ“®—Ê
+		// ãƒªãƒªãƒ¼ã‚¹ä½ç½®ã‹ã‚‰åˆ°é”ä½ç½®ã¾ã§ã®ç§»å‹•é‡
 		DirectX::XMFLOAT2 travel = {
 			targetScreenPos.x - p0.x,
 			targetScreenPos.y - p0.y
 		};
 
-		// ƒxƒWƒF‹Èü‚Ì‘æ1§Œä“_(P1)
-		// ƒŠƒŠ[ƒX’¼Œã‚Ì‹O“¹‚ğŒˆ‚ß‚é
+		// ãƒ™ã‚¸ã‚§æ›²ç·šã®ç¬¬1åˆ¶å¾¡ç‚¹(P1)
+		// ãƒªãƒªãƒ¼ã‚¹ç›´å¾Œã®è»Œé“ã‚’æ±ºã‚ã‚‹
 		DirectX::XMFLOAT2 p1 = {
 			p0.x + travel.x * 0.08f,
 			p0.y + travel.y * 0.08f
 		};
 
-		// ƒxƒWƒF‹Èü‚Ì‘æ2§Œä“_(P2)
-		// ƒz[ƒ€ƒx[ƒX•t‹ß‚Å‚Ì•Ï‰»—Ê‚ğŒˆ‚ß‚é
+		// ãƒ™ã‚¸ã‚§æ›²ç·šã®ç¬¬2åˆ¶å¾¡ç‚¹(P2)
+		// ãƒ›ãƒ¼ãƒ ãƒ™ãƒ¼ã‚¹ä»˜è¿‘ã§ã®å¤‰åŒ–é‡ã‚’æ±ºã‚ã‚‹
 		DirectX::XMFLOAT2 p2 = {
 			targetScreenPos.x - travel.x * 0.30f,
 			targetScreenPos.y - travel.y * 0.10f
 		};
 
-		// ‹…í‚²‚Æ‚É§Œä“_‚ğ•ÏX‚µ‚Ä‹O“¹‚ğ’²®‚·‚é
+		// çƒç¨®ã”ã¨ã«åˆ¶å¾¡ç‚¹ã‚’å¤‰æ›´ã—ã¦è»Œé“ã‚’èª¿æ•´ã™ã‚‹
 		switch (pitchBreakIndex)
 		{
-		case 3:  // ƒXƒ‰ƒCƒ_[
-		case 2:  // ƒJƒbƒgƒ{[ƒ‹
-		case 11: // ƒVƒ…[ƒg
-		case 1:  // ƒc[ƒV[ƒ€
-		case 14: // ƒXƒC[ƒp[
-			// ‰¡•Ï‰»Œn
-			// P1EP2‚ÌYÀ•W‚ğ’²®‚µ‚Ä‰¡•ûŒü‚ÖŠŠ‚é‚æ‚¤‚È‹O“¹‚É‚·‚é
+		case 3:  // ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼
+		case 2:  // ã‚«ãƒƒãƒˆãƒœãƒ¼ãƒ«
+		case 11: // ã‚·ãƒ¥ãƒ¼ãƒˆ
+		case 1:  // ãƒ„ãƒ¼ã‚·ãƒ¼ãƒ 
+		case 14: // ã‚¹ã‚¤ãƒ¼ãƒ‘ãƒ¼
+			// æ¨ªå¤‰åŒ–ç³»
+			// P1ãƒ»P2ã®Yåº§æ¨™ã‚’èª¿æ•´ã—ã¦æ¨ªæ–¹å‘ã¸æ»‘ã‚‹ã‚ˆã†ãªè»Œé“ã«ã™ã‚‹
 			p1.y = p0.y + travel.y * 0.03f;
 			p2.y = targetScreenPos.y + travel.y * 0.04f;
 			break;
 
-		case 4:  // ƒJ[ƒu
-		case 10: // ƒXƒ[ƒJ[ƒu
-			// R‚È‚è‚É‘å‚«‚­‹È‚ª‚é‹O“¹‚É‚·‚é
+		case 4:  // ã‚«ãƒ¼ãƒ–
+		case 10: // ã‚¹ãƒ­ãƒ¼ã‚«ãƒ¼ãƒ–
+			// å±±ãªã‚Šã«å¤§ããæ›²ãŒã‚‹è»Œé“ã«ã™ã‚‹
 			p1.x = p0.x + travel.x * 0.04f;
 			p1.y = p0.y + travel.y * 0.02f;
 			p2.x = targetScreenPos.x - travel.x * 0.42f;
 			p2.y = targetScreenPos.y - travel.y * 0.22f;
 			break;
 
-		case 8:  // cƒXƒ‰ƒCƒ_[
-		case 6:  // ƒtƒH[ƒNƒ{[ƒ‹
-		case 9:  // ƒXƒvƒŠƒbƒg
-			// §Œä“_‚ğI“_‘¤‚ÖŠñ‚¹‚é‚±‚Æ‚ÅA
-			// ÅŒã‚Éˆê‹C‚É—‚¿‚é‚æ‚¤‚È‹O“¹‚ğì‚é
+		case 8:  // ç¸¦ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼
+		case 6:  // ãƒ•ã‚©ãƒ¼ã‚¯ãƒœãƒ¼ãƒ«
+		case 9:  // ã‚¹ãƒ—ãƒªãƒƒãƒˆ
+			// åˆ¶å¾¡ç‚¹ã‚’çµ‚ç‚¹å´ã¸å¯„ã›ã‚‹ã“ã¨ã§ã€
+			// æœ€å¾Œã«ä¸€æ°—ã«è½ã¡ã‚‹ã‚ˆã†ãªè»Œé“ã‚’ä½œã‚‹
 			p1.x = p0.x + travel.x * 0.9f;
 			p2.x = targetScreenPos.x - travel.x * 0.02f;
 			break;
 
 		default:
-			// ‚»‚Ì‘¼‚Ì‹…í‚Í‰Šúİ’è‚Ì§Œä“_‚ğg—p
+			// ãã®ä»–ã®çƒç¨®ã¯åˆæœŸè¨­å®šã®åˆ¶å¾¡ç‚¹ã‚’ä½¿ç”¨
 			break;
 		}
 
-		// t(0`1)‚ÌˆÊ’u‚É‘Î‰‚·‚éƒxƒWƒF‹Èüã‚ÌÀ•W‚ğ•Ô‚·
+		// t(0ï½1)ã®ä½ç½®ã«å¯¾å¿œã™ã‚‹ãƒ™ã‚¸ã‚§æ›²ç·šä¸Šã®åº§æ¨™ã‚’è¿”ã™
 		return EvalCubicBezier2D(p0, p1, p2, targetScreenPos, Clamp01(t));
 	}
 
 }
 static DirectX::XMFLOAT2 WorldToZoneScreen(
 	float worldX, float worldY,
-	const DirectX::XMFLOAT2& zoneScreenPos,  // ƒ][ƒ“ƒXƒvƒ‰ƒCƒg¶ã
-	const DirectX::XMFLOAT2& zoneScreenSize, // ƒ][ƒ“ƒXƒvƒ‰ƒCƒgƒTƒCƒY(px)
-	const DirectX::XMFLOAT2& zone3DCenter,   // 3Dƒ][ƒ“’†S(x,y)
-	const DirectX::XMFLOAT2& zone3DSize    // 3Dƒ][ƒ“ƒTƒCƒY(m)
+	const DirectX::XMFLOAT2& zoneScreenPos,  // ã‚¾ãƒ¼ãƒ³ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆå·¦ä¸Š
+	const DirectX::XMFLOAT2& zoneScreenSize, // ã‚¾ãƒ¼ãƒ³ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚µã‚¤ã‚º(px)
+	const DirectX::XMFLOAT2& zone3DCenter,   // 3Dã‚¾ãƒ¼ãƒ³ä¸­å¿ƒ(x,y)
+	const DirectX::XMFLOAT2& zone3DSize    // 3Dã‚¾ãƒ¼ãƒ³ã‚µã‚¤ã‚º(m)
 	)     
 {
-	// 3DÀ•W‚ğƒ][ƒ““à‚Ì³‹K‰»À•W(0~1)‚É•ÏŠ·
+	// 3Dåº§æ¨™ã‚’ã‚¾ãƒ¼ãƒ³å†…ã®æ­£è¦åŒ–åº§æ¨™(0~1)ã«å¤‰æ›
 	float normalX = (worldX - (zone3DCenter.x - zone3DSize.x * 0.5f)) / zone3DSize.x;
 
-	//// ¶“Šè‚È‚ç³‹K‰»À•W‚ğ”½“]‚³‚¹‚é
+	//// å·¦æŠ•æ‰‹ãªã‚‰æ­£è¦åŒ–åº§æ¨™ã‚’åè»¢ã•ã›ã‚‹
 	//if (!isRightPitcher) {
 	//	normalX = 1.0f - normalX;
 	//}
 
 	float normalY = (worldY - (zone3DCenter.y - zone3DSize.y * 0.5f)) / zone3DSize.y;
 
-	// Y²”½“]i3D‚ÍYã‚ª³A2D‚ÍY‰º‚ª³j
+	// Yè»¸åè»¢ï¼ˆ3Dã¯Yä¸ŠãŒæ­£ã€2Dã¯Yä¸‹ãŒæ­£ï¼‰
 	normalY = 1.0f - normalY;
 
-	// ƒXƒNƒŠ[ƒ“À•W‚É•ÏŠ·iƒ{[ƒ‹‰æ‘œ‚Ì’†S‚ğŠî€j
+	// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã«å¤‰æ›ï¼ˆãƒœãƒ¼ãƒ«ç”»åƒã®ä¸­å¿ƒã‚’åŸºæº–ï¼‰
 	float screenX = zoneScreenPos.x + normalX * zoneScreenSize.x;
 	float screenY = zoneScreenPos.y + normalY * zoneScreenSize.y;
 
 	return { screenX, screenY };
 }
 
-// 3DÀ•W‚©‚ç2DƒXƒNƒŠ[ƒ“À•W‚Ö‚Ì•ÏŠ·
+// 3Dåº§æ¨™ã‹ã‚‰2Dã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã¸ã®å¤‰æ›
 static DirectX::XMFLOAT2 ZoneScreenToWorld(
 	float screenX, float screenY,
-	const DirectX::XMFLOAT2& zoneScreenPos,  // ƒ][ƒ“ƒXƒvƒ‰ƒCƒg¶ã
-	const DirectX::XMFLOAT2& zoneScreenSize, // ƒ][ƒ“ƒXƒvƒ‰ƒCƒgƒTƒCƒY(px)
-	const DirectX::XMFLOAT2& zone3DCenter,   // 3Dƒ][ƒ“’†S(x,y)
-	const DirectX::XMFLOAT2& zone3DSize,     // 3Dƒ][ƒ“ƒTƒCƒY(m)
+	const DirectX::XMFLOAT2& zoneScreenPos,  // ã‚¾ãƒ¼ãƒ³ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆå·¦ä¸Š
+	const DirectX::XMFLOAT2& zoneScreenSize, // ã‚¾ãƒ¼ãƒ³ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚µã‚¤ã‚º(px)
+	const DirectX::XMFLOAT2& zone3DCenter,   // 3Dã‚¾ãƒ¼ãƒ³ä¸­å¿ƒ(x,y)
+	const DirectX::XMFLOAT2& zone3DSize,     // 3Dã‚¾ãƒ¼ãƒ³ã‚µã‚¤ã‚º(m)
 	bool isRightPitcher)     
 {
-	// ƒXƒNƒŠ[ƒ“À•W‚ğ³‹K‰»À•W(0~1)‚É•ÏŠ·
+	// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’æ­£è¦åŒ–åº§æ¨™(0~1)ã«å¤‰æ›
 	float normalX = (screenX - zoneScreenPos.x) / zoneScreenSize.x;
 
-	// ¶“Šè‚È‚ç³‹K‰»À•W‚ğ”½“]‚³‚¹‚é
+	// å·¦æŠ•æ‰‹ãªã‚‰æ­£è¦åŒ–åº§æ¨™ã‚’åè»¢ã•ã›ã‚‹
 	if (!isRightPitcher) {
 		normalX = 1.0f - normalX;
 	}
 
 	float normalY = (screenY - zoneScreenPos.y) / zoneScreenSize.y;
-	// Y²”½“]i3D‚ÍYã‚ª³A2D‚ÍY‰º‚ª³j
+	// Yè»¸åè»¢ï¼ˆ3Dã¯Yä¸ŠãŒæ­£ã€2Dã¯Yä¸‹ãŒæ­£ï¼‰
 	normalY = 1.0f - normalY;
-	// ³‹K‰»À•W‚ğ3DÀ•W‚É•ÏŠ·
+	// æ­£è¦åŒ–åº§æ¨™ã‚’3Dåº§æ¨™ã«å¤‰æ›
 	float worldX = (zone3DCenter.x - zone3DSize.x * 0.5f) + normalX * zone3DSize.x;
 	float worldY = (zone3DCenter.y - zone3DSize.y * 0.5f) + normalY * zone3DSize.y;
 	return { worldX, worldY };
@@ -180,7 +180,7 @@ static DirectX::XMFLOAT2 ZoneScreenToWorld(
 
 DirectX::XMFLOAT2 ballSprite::GetAITarget3D() const
 {
-	// “Šè‚Ì¶‰E‚É‡‚í‚¹‚Ä•ÏŠ·‚·‚é
+	// æŠ•æ‰‹ã®å·¦å³ã«åˆã‚ã›ã¦å¤‰æ›ã™ã‚‹
 	bool isRight = Pitcher::Instance().IsRightPitcher();
 	return ZoneScreenToWorld(
 		aiTargetScreen.x, aiTargetScreen.y,
@@ -208,7 +208,7 @@ void ballSprite::GetBallZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX:
 {
 	if (!strikeZoneSpriteData)
 	{
-		//‰Šú‰»
+		//åˆæœŸåŒ–
 		outTopLeft = { 0.0f,0.0f };
 		outBottomRight = { 0.0f,0.0f };
 		return;
@@ -252,7 +252,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 		input_element_desc, _countof(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
 
-	//ƒXƒgƒ‰ƒCƒNƒ][ƒ“‚Ì‰Šú‰»
+	//ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³ã®åˆæœŸåŒ–
 	strikeZoneSpriteData = std::make_unique<Sprite>();
 	strikeZoneSpriteData->texturePath = L".\\resources\\textures\\strikeZone.png";
 	strikeZoneSpriteData->position = { 1100.0f, 400.0f };
@@ -261,7 +261,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 	strikeZoneSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	strikeZoneSprite = std::make_unique<sprite>(device, strikeZoneSpriteData->texturePath.c_str());
 
-	//ƒ{[ƒ‹‚Ì‰Šú‰»
+	//ãƒœãƒ¼ãƒ«ã®åˆæœŸåŒ–
 	ballDebugSpriteData = std::make_unique<Sprite>();
 	ballDebugSpriteData->texturePath = L".\\resources\\textures\\ball.png";
 	ballDebugSpriteData->position = { 1100.0f, 400.0f };
@@ -270,7 +270,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 	ballDebugSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	ballDebugSprite = std::make_unique<sprite>(device, ballDebugSpriteData->texturePath.c_str());
 
-	//ƒ{[ƒ‹ƒ{[ƒh‚Ì‰Šú‰»
+	//ãƒœãƒ¼ãƒ«ãƒœãƒ¼ãƒ‰ã®åˆæœŸåŒ–
 	ballBoardSpriteData = std::make_unique<Sprite>();
 	ballBoardSpriteData->texturePath = L".\\resources\\textures\\ballBoard.png";
 	ballBoardSpriteData->position = { 1100.0f, 400.0f };
@@ -279,22 +279,22 @@ void ballSprite::Initialize(ID3D11Device* device)
 	ballBoardSpriteData->color = { 1.0f, 1.0f, 1.0f, 0.7f };
 	ballBoardSprite = std::make_unique<sprite>(device, ballBoardSpriteData->texturePath.c_str());
 
-	// added: pitch info font init (“ú–{Œê‘Î‰”Å)
+	// added: pitch info font init (æ—¥æœ¬èªå¯¾å¿œç‰ˆ)
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
-	// ‹…í–¼‚Æ‹…‘¬•\¦‚É•K—v‚È•¶š‚¾‚¯‚ğƒxƒCƒN‚·‚é
+	// çƒç¨®åã¨çƒé€Ÿè¡¨ç¤ºã«å¿…è¦ãªæ–‡å­—ã ã‘ã‚’ãƒ™ã‚¤ã‚¯ã™ã‚‹
 	std::vector<int> pitchInfoCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789.km/h"
-		u8"¸“ŠƒXƒgƒŒ[ƒgƒXƒ‰ƒCƒ_["
-		u8"ƒJ[ƒuƒ`ƒFƒ“ƒWƒAƒbƒvƒtƒH[ƒN"
-		u8"ƒc[ƒV[ƒ€ƒJƒbƒgƒ{[ƒ‹ƒVƒ“ƒJ["
-		u8"ƒXƒNƒŠƒ…[cƒXƒvƒŠƒbƒgƒXƒ[ƒJ[ƒu"
-		u8"ƒVƒ…[ƒgƒiƒbƒNƒ‹ƒ{[ƒ‹ƒXƒC[ƒp[ƒp[ƒ€"
-		u8"ƒiƒ`ƒ…ƒ‰ƒ‹ƒVƒ…[ƒg^‚ÁƒXƒ‰‰Î‚Ì‹ÊƒXƒgƒŒ[ƒg"
+		u8"å¤±æŠ•ã‚¹ãƒˆãƒ¬ãƒ¼ãƒˆã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼"
+		u8"ã‚«ãƒ¼ãƒ–ãƒã‚§ãƒ³ã‚¸ã‚¢ãƒƒãƒ—ãƒ•ã‚©ãƒ¼ã‚¯"
+		u8"ãƒ„ãƒ¼ã‚·ãƒ¼ãƒ ã‚«ãƒƒãƒˆãƒœãƒ¼ãƒ«ã‚·ãƒ³ã‚«ãƒ¼"
+		u8"ã‚¹ã‚¯ãƒªãƒ¥ãƒ¼ç¸¦ã‚¹ãƒ—ãƒªãƒƒãƒˆã‚¹ãƒ­ãƒ¼ã‚«ãƒ¼ãƒ–"
+		u8"ã‚·ãƒ¥ãƒ¼ãƒˆãƒŠãƒƒã‚¯ãƒ«ãƒœãƒ¼ãƒ«ã‚¹ã‚¤ãƒ¼ãƒ‘ãƒ¼ãƒ‘ãƒ¼ãƒ "
+		u8"ãƒŠãƒãƒ¥ãƒ©ãƒ«ã‚·ãƒ¥ãƒ¼ãƒˆçœŸã£ã‚¹ãƒ©ç«ã®ç‰ã‚¹ãƒˆãƒ¬ãƒ¼ãƒˆ"
 	);
 
-	// “ú–{ŒêƒOƒŠƒt‚ğ‚ÂƒtƒHƒ“ƒg‚ğ—pˆÓ‚µ‚Ä”z’u‚·‚é
+	// æ—¥æœ¬èªã‚°ãƒªãƒ•ã‚’æŒã¤ãƒ•ã‚©ãƒ³ãƒˆã‚’ç”¨æ„ã—ã¦é…ç½®ã™ã‚‹
 	pitchInfoFont.Initialize(device,
 		L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf",
 		28.0f,
@@ -319,7 +319,7 @@ void ballSprite::Uninitialize()
 
 void ballSprite::Update(float elapsedTime)
 {
-	//Àİ“Šè‚ÌØ‚è‘Ö‚¦‚ğŒŸ’m‚µA‚»‚Ì“Šè‚Ì‹…í‚É‰‚¶‚½•Ï‰»—Ê‚ğİ’è‚·‚é
+	//å®Ÿåœ¨æŠ•æ‰‹ã®åˆ‡ã‚Šæ›¿ãˆã‚’æ¤œçŸ¥ã—ã€ãã®æŠ•æ‰‹ã®çƒç¨®ã«å¿œã˜ãŸå¤‰åŒ–é‡ã‚’è¨­å®šã™ã‚‹
 	SyncRealPitcherBreaks();
 
 	Pitcher& pitcher = Pitcher::Instance();
@@ -356,24 +356,24 @@ void ballSprite::Update(float elapsedTime)
 
 	auto GetPitchProgress = [&]()
 		{
-			// –{•¨‚Ìis“x‚ğæ‚ÉŒvZ‚µ‚Ä‚¨‚­i–¢‘Î‰‚Ì‹…í‚Í‚±‚ê‚ğ‚»‚Ì‚Ü‚Üg‚¤j
+			// æœ¬ç‰©ã®é€²è¡Œåº¦ã‚’å…ˆã«è¨ˆç®—ã—ã¦ãŠãï¼ˆæœªå¯¾å¿œã®çƒç¨®ã¯ã“ã‚Œã‚’ãã®ã¾ã¾ä½¿ã†ï¼‰
 			float t = Clamp01(ball.GetBezierT());
 
 			if (nowThrown)
 			{
 
-				//‹…í‚²‚Æ‚ÉƒxƒWƒF‹Èü‚Ìis“x‚ğ’²®‚·‚é
+				//çƒç¨®ã”ã¨ã«ãƒ™ã‚¸ã‚§æ›²ç·šã®é€²è¡Œåº¦ã‚’èª¿æ•´ã™ã‚‹
 				switch (currentPitchIndex)
 				{
-				case 3:  // ƒXƒ‰ƒCƒ_[
-				case 2:  // ƒJƒbƒgƒ{[ƒ‹
-				case 11: // ƒVƒ…[ƒg
-				case 1:  // ƒc[ƒV[ƒ€
-				case 8:  // cƒXƒ‰ƒCƒ_[
-				case 5:  // ƒ`ƒFƒ“ƒWƒAƒbƒv
-				case 14: // ƒXƒC[ƒp[
+				case 3:  // ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼
+				case 2:  // ã‚«ãƒƒãƒˆãƒœãƒ¼ãƒ«
+				case 11: // ã‚·ãƒ¥ãƒ¼ãƒˆ
+				case 1:  // ãƒ„ãƒ¼ã‚·ãƒ¼ãƒ 
+				case 8:  // ç¸¦ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼
+				case 5:  // ãƒã‚§ãƒ³ã‚¸ã‚¢ãƒƒãƒ—
+				case 14: // ã‚¹ã‚¤ãƒ¼ãƒ‘ãƒ¼
 				{
-					// ‰¡•Ï‰»Œn‚ÍP1‚ÆP3‚ÌŠÔ‚Å‚Ìis“x‚ğ•Ô‚·
+					// æ¨ªå¤‰åŒ–ç³»ã¯P1ã¨P3ã®é–“ã§ã®é€²è¡Œåº¦ã‚’è¿”ã™
 					static constexpr float P1T = 0.15f;
 					static constexpr float P3T = 1.0f;
 					if (t < P1T)
@@ -392,17 +392,17 @@ void ballSprite::Update(float elapsedTime)
 				}
 				break;
 
-				case 4:  // ƒJ[ƒu
-				case 10: // ƒXƒ[ƒJ[ƒu
-				case 7:  // ƒVƒ“ƒJ[
-				case 12: // ƒiƒbƒNƒ‹ƒ{[ƒ‹
-				case 13: // ƒXƒ[ƒ{[ƒ‹
-				case 15: // ƒp[ƒ€
-				case 16: // ƒiƒ`ƒ…ƒ‰ƒ‹ƒVƒ…[ƒg
-				case 17: // ^‚ÁƒXƒ‰
-				case 18: // ‰Î‚Ì‹ÊƒXƒgƒŒ[ƒg
+				case 4:  // ã‚«ãƒ¼ãƒ–
+				case 10: // ã‚¹ãƒ­ãƒ¼ã‚«ãƒ¼ãƒ–
+				case 7:  // ã‚·ãƒ³ã‚«ãƒ¼
+				case 12: // ãƒŠãƒƒã‚¯ãƒ«ãƒœãƒ¼ãƒ«
+				case 13: // ã‚¹ãƒ­ãƒ¼ãƒœãƒ¼ãƒ«
+				case 15: // ãƒ‘ãƒ¼ãƒ 
+				case 16: // ãƒŠãƒãƒ¥ãƒ©ãƒ«ã‚·ãƒ¥ãƒ¼ãƒˆ
+				case 17: // çœŸã£ã‚¹ãƒ©
+				case 18: // ç«ã®ç‰ã‚¹ãƒˆãƒ¬ãƒ¼ãƒˆ
 				{
-					// R‚È‚è‚É‘å‚«‚­‹È‚ª‚é‹O“¹‚ÍP1‚ÆP3‚ÌŠÔ‚Å‚Ìis“x‚ğ•Ô‚·
+					// å±±ãªã‚Šã«å¤§ããæ›²ãŒã‚‹è»Œé“ã¯P1ã¨P3ã®é–“ã§ã®é€²è¡Œåº¦ã‚’è¿”ã™
 					static constexpr float P1T_Curve = 0.1f;
 					static constexpr float P3T_Curve = 1.0f;
 					if (t < P1T_Curve)
@@ -422,10 +422,10 @@ void ballSprite::Update(float elapsedTime)
 				break;
 
 
-				case 6:  // ƒtƒH[ƒNƒ{[ƒ‹
-				case 9:  // ƒXƒvƒŠƒbƒg
+				case 6:  // ãƒ•ã‚©ãƒ¼ã‚¯ãƒœãƒ¼ãƒ«
+				case 9:  // ã‚¹ãƒ—ãƒªãƒƒãƒˆ
 				{
-					// ÅŒã‚Éˆê‹C‚É—‚¿‚é‹O“¹‚ÍP1‚ÆP3‚ÌŠÔ‚Å‚Ìis“x‚ğ•Ô‚·
+					// æœ€å¾Œã«ä¸€æ°—ã«è½ã¡ã‚‹è»Œé“ã¯P1ã¨P3ã®é–“ã§ã®é€²è¡Œåº¦ã‚’è¿”ã™
 					static constexpr float P1T_Fall = 0.5f;
 					static constexpr float P3T_Fall = 1.0f;
 					if (t < P1T_Fall)
@@ -445,7 +445,7 @@ void ballSprite::Update(float elapsedTime)
 				break;
 
 				default:
-					// ƒXƒgƒŒ[ƒg‚È‚ÇA“Á•Ê‚ÈƒŠƒ}ƒbƒv‘ÎÛŠO‚Ì‹…í‚Í–{•¨‚Ìis“x‚ğ‚»‚Ì‚Ü‚Üg‚¤
+					// ã‚¹ãƒˆãƒ¬ãƒ¼ãƒˆãªã©ã€ç‰¹åˆ¥ãªãƒªãƒãƒƒãƒ—å¯¾è±¡å¤–ã®çƒç¨®ã¯æœ¬ç‰©ã®é€²è¡Œåº¦ã‚’ãã®ã¾ã¾ä½¿ã†
 					return t;
 				}
 
@@ -455,11 +455,11 @@ void ballSprite::Update(float elapsedTime)
 			return 0.0f;
 		};
 
-	// ƒƒCƒ“ƒhƒAƒbƒvŠJn‚Ì—§‚¿ã‚ª‚è‚ğŒŸ’m
+	// ãƒ¯ã‚¤ãƒ³ãƒ‰ã‚¢ãƒƒãƒ—é–‹å§‹ã®ç«‹ã¡ä¸ŠãŒã‚Šã‚’æ¤œçŸ¥
 	if (pitchingState && !prevPitchingState)
 	{
-		// –Ú•W’n“_(¶‚ÌaiTargetScreen)‚Å‚Í‚È‚­AbreakX/breakY‚ğl—¶‚µ‚½Œ©‚©‚¯ã‚ÌƒXƒ^[ƒg’n“_(p0)‚ÖƒXƒiƒbƒv‚·‚é
-		// hasAITargetƒuƒƒbƒN‚ª!nowThrown‚ÉŒvZ‚·‚ép0‚Æ‘S‚­“¯‚¶®E“¯‚¶ˆø”‚É‚·‚é‚±‚Æ‚ÅA’¼Œã‚ÌƒWƒƒƒ“ƒv‚ğ–h‚®
+		// ç›®æ¨™åœ°ç‚¹(ç”Ÿã®aiTargetScreen)ã§ã¯ãªãã€breakX/breakYã‚’è€ƒæ…®ã—ãŸè¦‹ã‹ã‘ä¸Šã®ã‚¹ã‚¿ãƒ¼ãƒˆåœ°ç‚¹(p0)ã¸ã‚¹ãƒŠãƒƒãƒ—ã™ã‚‹
+		// hasAITargetãƒ–ãƒ­ãƒƒã‚¯ãŒ!nowThrownæ™‚ã«è¨ˆç®—ã™ã‚‹p0ã¨å…¨ãåŒã˜å¼ãƒ»åŒã˜å¼•æ•°ã«ã™ã‚‹ã“ã¨ã§ã€ç›´å¾Œã®ã‚¸ãƒ£ãƒ³ãƒ—ã‚’é˜²ã
 		DirectX::XMFLOAT2 snapPos = EvalPitchBreakScreenPath(
 			aiTargetScreen,
 			pitchBreaks[currentPitchIndex],
@@ -485,10 +485,10 @@ void ballSprite::Update(float elapsedTime)
 
 	if (nowThrown && hasAITarget)
 	{
-		// –{•¨‚ÌƒxƒWƒFis“x‚ğ‚»‚Ì‚Ü‚Üg‚¤iremapˆêØ‚È‚µj
+		// æœ¬ç‰©ã®ãƒ™ã‚¸ã‚§é€²è¡Œåº¦ã‚’ãã®ã¾ã¾ä½¿ã†ï¼ˆremapä¸€åˆ‡ãªã—ï¼‰
 		float t = ball.IsBezierFlying() ? Clamp01(ball.GetBezierT()) : 1.0f;
 
-		// ÅI“’B“_ip3j‚ğƒ][ƒ“‰æ–ÊÀ•W‚Ö
+		// æœ€çµ‚åˆ°é”ç‚¹ï¼ˆp3ï¼‰ã‚’ã‚¾ãƒ¼ãƒ³ç”»é¢åº§æ¨™ã¸
 		bool isRight = Pitcher::Instance().IsRightPitcher();
 		DirectX::XMFLOAT2 finalScreenPos = WorldToZoneScreen(
 			ball.GetBezierP3().x, ball.GetBezierP3().y,
@@ -498,21 +498,21 @@ void ballSprite::Update(float elapsedTime)
 			zone3DSize
 			);
 
-		// ŠJn“_‚Íƒ][ƒ“’†SiŒ©‚½–Úãu‚Ü‚Á‚·‚®—ˆ‚½ê‡v‚ÌŠî€“_j
+		// é–‹å§‹ç‚¹ã¯ã‚¾ãƒ¼ãƒ³ä¸­å¿ƒï¼ˆè¦‹ãŸç›®ä¸Šã€Œã¾ã£ã™ãæ¥ãŸå ´åˆã€ã®åŸºæº–ç‚¹ï¼‰
 		DirectX::XMFLOAT2 startScreenPos = EvalPitchBreakScreenPath(
 			finalScreenPos,
 			pitchBreaks[currentPitchIndex],
 			strikeZoneSpriteData->size,
 			currentPitchIndex,
-			0.0f, // t=0‚ÅŠJn“_‚ğæ“¾
+			0.0f, // t=0ã§é–‹å§‹ç‚¹ã‚’å–å¾—
 			pitcher.IsRightPitcher());
 
-		//cƒXƒ‰ƒCƒ_[AƒtƒH[ƒNAƒXƒvƒŠƒbƒgAƒ`ƒFƒ“ƒWƒAƒbƒvAƒVƒ“ƒJ[Aƒp[ƒ€AƒiƒbƒNƒ‹‚Ì‚Æ‚«‚É
-		// ƒ^[ƒQƒbƒg‚ªƒXƒgƒ‰ƒCƒNƒ][ƒ“‚Ì’†S‚æ‚è‚‚ß(ƒXƒNƒŠ[ƒ“YÀ•W‚ª¬‚³‚¢•û‚ªã)‚È‚ç
-		// ballSprite‚ÌY•ûŒü‚ÌˆÚ“®—Ê‚ğ”¼•ª‚É‚·‚é
+		//ç¸¦ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã€ãƒ•ã‚©ãƒ¼ã‚¯ã€ã‚¹ãƒ—ãƒªãƒƒãƒˆã€ãƒã‚§ãƒ³ã‚¸ã‚¢ãƒƒãƒ—ã€ã‚·ãƒ³ã‚«ãƒ¼ã€ãƒ‘ãƒ¼ãƒ ã€ãƒŠãƒƒã‚¯ãƒ«ã®ã¨ãã«
+		// ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³ã®ä¸­å¿ƒã‚ˆã‚Šé«˜ã‚(ã‚¹ã‚¯ãƒªãƒ¼ãƒ³Yåº§æ¨™ãŒå°ã•ã„æ–¹ãŒä¸Š)ãªã‚‰
+		// ballSpriteã®Yæ–¹å‘ã®ç§»å‹•é‡ã‚’åŠåˆ†ã«ã™ã‚‹
 		float yMoveScale = 1.0f;
 		const float zoneCenterY = strikeZoneSpriteData->position.y + strikeZoneSpriteData->size.y * 0.5f;
-		//—‚¿‚éŒn‚Ì‹…í(ƒ}ƒWƒbƒNƒiƒ“ƒo[‚Íg‚í‚È‚¢)
+		//è½ã¡ã‚‹ç³»ã®çƒç¨®(ãƒã‚¸ãƒƒã‚¯ãƒŠãƒ³ãƒãƒ¼ã¯ä½¿ã‚ãªã„)
 		if ((currentPitchIndex == 6 || currentPitchIndex == 9 || currentPitchIndex == 5 || currentPitchIndex == 8 ||
 			currentPitchIndex == 7 || currentPitchIndex == 15 || currentPitchIndex == 12) &&
 			(finalScreenPos.y < zoneCenterY || startScreenPos.y < zoneCenterY))
@@ -549,21 +549,21 @@ void ballSprite::Update(float elapsedTime)
 		{
 			char buf[256];
 			if (isStrike)
-				snprintf(buf, sizeof(buf), u8"[Info] ƒXƒgƒ‰ƒCƒNI");
+				snprintf(buf, sizeof(buf), u8"[Info] ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ï¼");
 			else
-				snprintf(buf, sizeof(buf), u8"[Info] ƒ{[ƒ‹I");
+				snprintf(buf, sizeof(buf), u8"[Info] ãƒœãƒ¼ãƒ«ï¼");
 			consoleLog->push_back(buf);
 		}
 	}
 
-	// 3Dƒ{[ƒ‹‚Æƒoƒbƒg‚ª“–‚½‚Á‚½’iŠK‚ÅA2Dƒ{[ƒ‹‚Ì“®‚«‚ğ“–‚½‚Á‚½ˆÊ’u‚Å~‚ß‚é
+	// 3Dãƒœãƒ¼ãƒ«ã¨ãƒãƒƒãƒˆãŒå½“ãŸã£ãŸæ®µéšã§ã€2Dãƒœãƒ¼ãƒ«ã®å‹•ãã‚’å½“ãŸã£ãŸä½ç½®ã§æ­¢ã‚ã‚‹
 	if (Ball::Instance().GetHasCollidedWithBat())
 	{
 		stopBallOnHit = true;
 		TrackingData::Instance().Update(elapsedTime);
 	}
 
-	//3Dƒ{[ƒ‹‚Ìƒ|ƒWƒVƒ‡ƒ“z‚ª0.0f‚Ì‚Ü‚½‚Íƒ{[ƒ‹‚Æƒoƒbƒg‚ª“–‚½‚Á‚½‚ÉABallBoard‚ğ•\¦‚·‚é
+	//3Dãƒœãƒ¼ãƒ«ã®ãƒã‚¸ã‚·ãƒ§ãƒ³zãŒ0.0fã®æ™‚ã¾ãŸã¯ãƒœãƒ¼ãƒ«ã¨ãƒãƒƒãƒˆãŒå½“ãŸã£ãŸæ™‚ã«ã€BallBoardã‚’è¡¨ç¤ºã™ã‚‹
 	if (Ball::Instance().GetWorldPosition().z <= 0.0f || Ball::Instance().GetHasCollidedWithBat())
 	{
 		showBallBoard = true;	
@@ -579,7 +579,7 @@ void ballSprite::Render()
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
-	// Wind ‚Æ“¯‚¶‚æ‚¤‚ÉƒVƒF[ƒ_[‚ğƒZƒbƒg
+	// Wind ã¨åŒã˜ã‚ˆã†ã«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã‚’ã‚»ãƒƒãƒˆ
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
 	dc->IASetInputLayout(spriteInputLayout.Get());
@@ -589,7 +589,7 @@ void ballSprite::Render()
 
 	TrackingData::Instance().Render();
 
-	// 2DƒXƒvƒ‰ƒCƒg‚Ì•`‰æ‚ÍATrackingData‚ª•\¦‚³‚ê‚Ä‚¢‚éê‡‚ÍƒXƒLƒbƒv‚·‚é
+	// 2Dã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®æç”»ã¯ã€TrackingDataãŒè¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹å ´åˆã¯ã‚¹ã‚­ãƒƒãƒ—ã™ã‚‹
 	if (TrackingData::Instance().IsTrackingDataVisible())return;
 
 	if (strikeZoneSprite && strikeZoneSpriteData)
@@ -642,14 +642,14 @@ void ballSprite::Render()
 			float speedTextWidth = 0.0f, speedTextHeight = 0.0f;
 			pitchInfoFont.MeasureText(speedText, 1.0f, speedTextWidth, speedTextHeight);
 
-			// ¶‘¤: ‹…íi”’ŒÅ’èj
+			// å·¦å´: çƒç¨®ï¼ˆç™½å›ºå®šï¼‰
 			const float pitchTextX = ballBoardSpriteData->position.x + nameOffset.x;
 			const float pitchTextY = boardCenterY + nameOffset.y;
 			pitchInfoFont.DrawTextW(dc, pitchTypeName, pitchTextX, pitchTextY, pitchInfoFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
 
-			// ‰E‘¤: ‹…‘¬i150km/h’´‚Å‰©FA160km/h’´‚ÅƒIƒŒƒ“ƒWFj
-			//¬”“_ˆÈ‰º‚ğlÌŒÜ“ü‚µ‚Ä®”•\¦‚·‚é‚½‚ßA‹…‘¬‚Ìè‡’l‚àlÌŒÜ“ü‚µ‚Ä”»’è‚·‚é
-			const float roundedSpeed = std::roundf(ballSpeedKmh);//lÌŒÜ“ü
+			// å³å´: çƒé€Ÿï¼ˆ150km/hè¶…ã§é»„è‰²ã€160km/hè¶…ã§ã‚ªãƒ¬ãƒ³ã‚¸è‰²ï¼‰
+			//å°æ•°ç‚¹ä»¥ä¸‹ã‚’å››æ¨äº”å…¥ã—ã¦æ•´æ•°è¡¨ç¤ºã™ã‚‹ãŸã‚ã€çƒé€Ÿã®é–¾å€¤ã‚‚å››æ¨äº”å…¥ã—ã¦åˆ¤å®šã™ã‚‹
+			const float roundedSpeed = std::roundf(ballSpeedKmh);//å››æ¨äº”å…¥
 
 			const DirectX::XMFLOAT4& speedColor = (roundedSpeed >= std::roundf(pitchSpeedHighFastThresholdKmh)) ? pitchSpeedHighFastColor :
 				(roundedSpeed >= std::roundf(pitchSpeedFastThresholdKmh)) ? pitchSpeedFastColor : pitchSpeedNormalColor;
@@ -660,7 +660,7 @@ void ballSprite::Render()
 	}
 
 	
-	// Œãn––iWind ‚Æ“¯‚¶j
+	// å¾Œå§‹æœ«ï¼ˆWind ã¨åŒã˜ï¼‰
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
 	dc->IASetInputLayout(nullptr);
@@ -674,35 +674,35 @@ void ballSprite::Render()
 void ballSprite::DrawGUI()
 {
 	// GUI drawing logic for ball sprite if needed
-	if (ImGui::CollapsingHeader(u8"2D ƒXƒvƒ‰ƒCƒg"))
+	if (ImGui::CollapsingHeader(u8"2D ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ"))
 	{
-		ImGui::DragFloat2(u8"ƒ][ƒ“ ˆÊ’u(px)", &strikeZoneSpriteData->position.x, 1.0f);
-		ImGui::DragFloat2(u8"ƒ][ƒ“ ƒTƒCƒY(px)", &strikeZoneSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
-		ImGui::ColorEdit4(u8"ƒ][ƒ“ “§–¾“x", &strikeZoneSpriteData->color.x);
+		ImGui::DragFloat2(u8"ã‚¾ãƒ¼ãƒ³ ä½ç½®(px)", &strikeZoneSpriteData->position.x, 1.0f);
+		ImGui::DragFloat2(u8"ã‚¾ãƒ¼ãƒ³ ã‚µã‚¤ã‚º(px)", &strikeZoneSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
+		ImGui::ColorEdit4(u8"ã‚¾ãƒ¼ãƒ³ é€æ˜åº¦", &strikeZoneSpriteData->color.x);
 
 		ImGui::Separator();
 
-		ImGui::DragFloat2(u8"ƒ{[ƒ‹ ˆÊ’u(px)", &ballDebugSpriteData->position.x, 1.0f);
-		ImGui::DragFloat2(u8"ƒ{[ƒ‹ ƒTƒCƒY(px)", &ballDebugSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
-		ImGui::ColorEdit4(u8"ƒ{[ƒ‹ “§–¾“x", &ballDebugSpriteData->color.x);
+		ImGui::DragFloat2(u8"ãƒœãƒ¼ãƒ« ä½ç½®(px)", &ballDebugSpriteData->position.x, 1.0f);
+		ImGui::DragFloat2(u8"ãƒœãƒ¼ãƒ« ã‚µã‚¤ã‚º(px)", &ballDebugSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
+		ImGui::ColorEdit4(u8"ãƒœãƒ¼ãƒ« é€æ˜åº¦", &ballDebugSpriteData->color.x);
 
 		ImGui::Separator();
 
-		ImGui::DragFloat2(u8"ƒ{[ƒ‹ƒ{[ƒh ˆÊ’u(px)", &ballBoardSpriteData->position.x, 1.0f);
-		ImGui::DragFloat2(u8"ƒ{[ƒ‹ƒ{[ƒh ƒTƒCƒY(px)", &ballBoardSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
-		ImGui::ColorEdit4(u8"ƒ{[ƒ‹ƒ{[ƒh “§–¾“x", &ballBoardSpriteData->color.x);
-		ImGui::Checkbox(u8"ƒ{[ƒ‹ƒ{[ƒh•\¦", &showBallBoard);
+		ImGui::DragFloat2(u8"ãƒœãƒ¼ãƒ«ãƒœãƒ¼ãƒ‰ ä½ç½®(px)", &ballBoardSpriteData->position.x, 1.0f);
+		ImGui::DragFloat2(u8"ãƒœãƒ¼ãƒ«ãƒœãƒ¼ãƒ‰ ã‚µã‚¤ã‚º(px)", &ballBoardSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
+		ImGui::ColorEdit4(u8"ãƒœãƒ¼ãƒ«ãƒœãƒ¼ãƒ‰ é€æ˜åº¦", &ballBoardSpriteData->color.x);
+		ImGui::Checkbox(u8"ãƒœãƒ¼ãƒ«ãƒœãƒ¼ãƒ‰è¡¨ç¤º", &showBallBoard);
 	}
 
-	if (ImGui::CollapsingHeader(u8"‹…íî•ñƒtƒHƒ“ƒg"))
+	if (ImGui::CollapsingHeader(u8"çƒç¨®æƒ…å ±ãƒ•ã‚©ãƒ³ãƒˆ"))
 	{
-		ImGui::DragFloat(u8"ƒtƒHƒ“ƒgƒTƒCƒY", &pitchInfoFontScale, 0.1f, 1.0f, 100.0f);
+		ImGui::DragFloat(u8"ãƒ•ã‚©ãƒ³ãƒˆã‚µã‚¤ã‚º", &pitchInfoFontScale, 0.1f, 1.0f, 100.0f);
 
 		ImGui::Separator();
-		ImGui::Text(u8"‹…‘¬ Fİ’è");
-		ImGui::ColorEdit4(u8"’ÊíF", &pitchSpeedNormalColor.x);
-		ImGui::ColorEdit4(u8"‘¬‹…F", &pitchSpeedFastColor.x);
-		ImGui::DragFloat(u8"‘¬‹…”»’è (km/h)", &pitchSpeedFastThresholdKmh, 1.0f, 0.0f, 300.0f);
+		ImGui::Text(u8"çƒé€Ÿ è‰²è¨­å®š");
+		ImGui::ColorEdit4(u8"é€šå¸¸è‰²", &pitchSpeedNormalColor.x);
+		ImGui::ColorEdit4(u8"é€Ÿçƒè‰²", &pitchSpeedFastColor.x);
+		ImGui::DragFloat(u8"é€Ÿçƒåˆ¤å®š (km/h)", &pitchSpeedFastThresholdKmh, 1.0f, 0.0f, 300.0f);
 	}
 
 	TrackingData::Instance().DrawGUI();
@@ -710,26 +710,26 @@ void ballSprite::DrawGUI()
 	const Pitcher::RealPitcher selectedRP = Pitcher::Instance().GetSelectedRealPitcher();
 	if (selectedRP != Pitcher::RealPitcher::None)
 	{
-		ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.2f, 1.0f), u8"¦u%svê—p‚Ì•Ï‰»—Êƒf[ƒ^‚ğ•ÒW’†i‘¼‚Ì“Šè‚É‚Í‰e‹¿‚µ‚Ü‚¹‚ñj",
+		ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.2f, 1.0f), u8"â€»ã€Œ%sã€å°‚ç”¨ã®å¤‰åŒ–é‡ãƒ‡ãƒ¼ã‚¿ã‚’ç·¨é›†ä¸­ï¼ˆä»–ã®æŠ•æ‰‹ã«ã¯å½±éŸ¿ã—ã¾ã›ã‚“ï¼‰",
 			Pitcher::GetRealPitcherName(selectedRP));
 	}
 	else
 	{
-		ImGui::Text(u8"¦Œ»İ‚Í‹¤’ÊƒGƒfƒBƒ^[’l‚ğ•ÒW’†iÀİ“ŠèƒvƒŠƒZƒbƒg–¢‘I‘ğj");
+		ImGui::Text(u8"â€»ç¾åœ¨ã¯å…±é€šã‚¨ãƒ‡ã‚£ã‚¿ãƒ¼å€¤ã‚’ç·¨é›†ä¸­ï¼ˆå®Ÿåœ¨æŠ•æ‰‹ãƒ—ãƒªã‚»ãƒƒãƒˆæœªé¸æŠï¼‰");
 	}
 
 	const char* names[] = {
-		u8"ƒXƒgƒŒ[ƒg", u8"ƒXƒ‰ƒCƒ_[", u8"ƒJ[ƒu", u8"ƒ`ƒFƒ“ƒWƒAƒbƒv", u8"ƒtƒH[ƒN",
-		u8"ƒc[ƒV[ƒ€", u8"ƒJƒbƒgƒ{[ƒ‹", Pitcher::Instance().IsRightPitcher() ? u8"ƒVƒ“ƒJ[" : u8"ƒXƒNƒŠƒ…[", u8"cƒXƒ‰ƒCƒ_[", u8"ƒXƒvƒŠƒbƒg",
-		u8"ƒXƒ[ƒJ[ƒu", u8"ƒVƒ…[ƒg", u8"ƒiƒbƒNƒ‹ƒ{[ƒ‹", u8"ƒXƒ[ƒ{[ƒ‹", u8"ƒXƒC[ƒp[", u8"ƒp[ƒ€",
-		u8"ƒiƒ`ƒ…ƒ‰ƒ‹ƒVƒ…[ƒg", u8"^‚ÁƒXƒ‰", u8"‰Î‚Ì‹ÊƒXƒgƒŒ[ƒg"
+		u8"ã‚¹ãƒˆãƒ¬ãƒ¼ãƒˆ", u8"ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼", u8"ã‚«ãƒ¼ãƒ–", u8"ãƒã‚§ãƒ³ã‚¸ã‚¢ãƒƒãƒ—", u8"ãƒ•ã‚©ãƒ¼ã‚¯",
+		u8"ãƒ„ãƒ¼ã‚·ãƒ¼ãƒ ", u8"ã‚«ãƒƒãƒˆãƒœãƒ¼ãƒ«", Pitcher::Instance().IsRightPitcher() ? u8"ã‚·ãƒ³ã‚«ãƒ¼" : u8"ã‚¹ã‚¯ãƒªãƒ¥ãƒ¼", u8"ç¸¦ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼", u8"ã‚¹ãƒ—ãƒªãƒƒãƒˆ",
+		u8"ã‚¹ãƒ­ãƒ¼ã‚«ãƒ¼ãƒ–", u8"ã‚·ãƒ¥ãƒ¼ãƒˆ", u8"ãƒŠãƒƒã‚¯ãƒ«ãƒœãƒ¼ãƒ«", u8"ã‚¹ãƒ­ãƒ¼ãƒœãƒ¼ãƒ«", u8"ã‚¹ã‚¤ãƒ¼ãƒ‘ãƒ¼", u8"ãƒ‘ãƒ¼ãƒ ",
+		u8"ãƒŠãƒãƒ¥ãƒ©ãƒ«ã‚·ãƒ¥ãƒ¼ãƒˆ", u8"çœŸã£ã‚¹ãƒ©", u8"ç«ã®ç‰ã‚¹ãƒˆãƒ¬ãƒ¼ãƒˆ"
 	};
 
-	ImGui::Combo(u8"•ÒW‚·‚é‹…í", reinterpret_cast<int*>(&Pitcher::Instance().selectedPitchType), names, PITCH_TYPE_COUNT);
+	ImGui::Combo(u8"ç·¨é›†ã™ã‚‹çƒç¨®", reinterpret_cast<int*>(&Pitcher::Instance().selectedPitchType), names, PITCH_TYPE_COUNT);
 
 	const int editIndex = Pitcher::PitchTypeToBreakIndex(Pitcher::Instance().GetSelectedPitchType());
 
-	// Àİ“Šè‘I‘ğ’†‚È‚çA‚»‚Ì“Šèê—p‚Ì•Ï‰»—ÊƒZƒbƒg‚ğ’¼Ú•ÒW‚·‚é
+	// å®Ÿåœ¨æŠ•æ‰‹é¸æŠä¸­ãªã‚‰ã€ãã®æŠ•æ‰‹å°‚ç”¨ã®å¤‰åŒ–é‡ã‚»ãƒƒãƒˆã‚’ç›´æ¥ç·¨é›†ã™ã‚‹
 	PitchBreakSet* activeSet = nullptr;
 	if (selectedRP != Pitcher::RealPitcher::None)
 	{
@@ -738,16 +738,16 @@ void ballSprite::DrawGUI()
 
 	ballBreak2D& brk = pitchBreaks[editIndex];
 
-	// ----- ƒOƒŒ[ƒhi’iŠKj‚ÅˆêŠ‡w’è -----
+	// ----- ã‚°ãƒ¬ãƒ¼ãƒ‰ï¼ˆæ®µéšï¼‰ã§ä¸€æ‹¬æŒ‡å®š -----
 	if (activeSet != nullptr)
 	{
 		int gradeIndex = static_cast<int>(activeSet->grades[editIndex]); // E=0 ... S=5
 		static const char* gradeNames[] = { u8"E", u8"D", u8"C", u8"B", u8"A", u8"S" };
-		ImGui::TextColored(ImVec4(0.3f, 0.9f, 1.0f, 1.0f), u8"‹È‚ª‚èƒOƒŒ[ƒh : %s", GetBreakGradeLabel(activeSet->grades[editIndex]));
-		if (ImGui::Combo(u8"ƒOƒŒ[ƒh•ÏX", &gradeIndex, gradeNames, IM_ARRAYSIZE(gradeNames)))
+		ImGui::TextColored(ImVec4(0.3f, 0.9f, 1.0f, 1.0f), u8"æ›²ãŒã‚Šã‚°ãƒ¬ãƒ¼ãƒ‰ : %s", GetBreakGradeLabel(activeSet->grades[editIndex]));
+		if (ImGui::Combo(u8"ã‚°ãƒ¬ãƒ¼ãƒ‰å¤‰æ›´", &gradeIndex, gradeNames, IM_ARRAYSIZE(gradeNames)))
 		{
 			activeSet->grades[editIndex] = static_cast<Pitcher::BreakGrade>(gradeIndex);
-			// ƒOƒŒ[ƒhŠî€‚ÌŒ`ói=C‘Š“–‚ÌŒü‚«j‚É‘Î‚µ‚Ä”{—¦‚ğ‚©‚¯’¼‚·
+			// ã‚°ãƒ¬ãƒ¼ãƒ‰åŸºæº–ã®å½¢çŠ¶ï¼ˆ=Cç›¸å½“ã®å‘ãï¼‰ã«å¯¾ã—ã¦å€ç‡ã‚’ã‹ã‘ç›´ã™
 			const float baseScale = GetBreakGradeScale(Pitcher::BreakGrade::C);
 			const float newScale = GetBreakGradeScale(activeSet->grades[editIndex]);
 			const float ratio = newScale / baseScale;
@@ -758,30 +758,30 @@ void ballSprite::DrawGUI()
 		ImGui::Spacing();
 	}
 
-	// ----- ”’l‚Å‚Ì”÷’²®i]—ˆ’Ê‚èj -----
+	// ----- æ•°å€¤ã§ã®å¾®èª¿æ•´ï¼ˆå¾“æ¥é€šã‚Šï¼‰ -----
 	float displayBreakX = Pitcher::Instance().IsRightPitcher() ? brk.breakX : -brk.breakX;
-	if (ImGui::SliderFloat(u8"‰¡•Ï‰» (+ ƒAƒEƒg / - ƒCƒ“)", &displayBreakX, -20.0f, 20.0f, "%.1f cm"))
+	if (ImGui::SliderFloat(u8"æ¨ªå¤‰åŒ– (+ ã‚¢ã‚¦ãƒˆ / - ã‚¤ãƒ³)", &displayBreakX, -20.0f, 20.0f, "%.1f cm"))
 	{
 		brk.breakX = Pitcher::Instance().IsRightPitcher() ? displayBreakX : -displayBreakX;
 		if (activeSet != nullptr)
 		{
-			activeSet->breaks[editIndex] = brk; // “Šèê—pƒf[ƒ^‚É‚à”½‰f
+			activeSet->breaks[editIndex] = brk; // æŠ•æ‰‹å°‚ç”¨ãƒ‡ãƒ¼ã‚¿ã«ã‚‚åæ˜ 
 		}
 	}
-	if (ImGui::SliderFloat(u8"c•Ï‰» (+ —‚¿ / - ã‚°)", &brk.breakY, -25.0f, 10.0f, "%.1f cm"))
+	if (ImGui::SliderFloat(u8"ç¸¦å¤‰åŒ– (+ è½ã¡ / - ä¸Šã’)", &brk.breakY, -25.0f, 10.0f, "%.1f cm"))
 	{
 		if (activeSet != nullptr)
 		{
-			activeSet->breaks[editIndex] = brk; // “Šèê—pƒf[ƒ^‚É‚à”½‰f
+			activeSet->breaks[editIndex] = brk; // æŠ•æ‰‹å°‚ç”¨ãƒ‡ãƒ¼ã‚¿ã«ã‚‚åæ˜ 
 		}
 	}
 
-	ImGui::Checkbox(u8"•Ï‰»—Ê‚ğ”½‰f", &useBallBreak);
+	ImGui::Checkbox(u8"å¤‰åŒ–é‡ã‚’åæ˜ ", &useBallBreak);
 
 	ImGui::Separator();
-	ImGui::Text(u8"‹…í–¼/‹…‘¬ •\¦ˆÊ’u (%s)", names[editIndex]);
-	ImGui::DragFloat2(u8"‹…í–¼ ƒIƒtƒZƒbƒg(¶‰E, Y)##pitchName", &pitchNameOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
-	ImGui::DragFloat2(u8"‹…‘¬ ƒIƒtƒZƒbƒg(‰EŠñ‚¹, Y)##pitchSpeed", &pitchSpeedOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
+	ImGui::Text(u8"çƒç¨®å/çƒé€Ÿ è¡¨ç¤ºä½ç½® (%s)", names[editIndex]);
+	ImGui::DragFloat2(u8"çƒç¨®å ã‚ªãƒ•ã‚»ãƒƒãƒˆ(å·¦å³, Y)##pitchName", &pitchNameOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
+	ImGui::DragFloat2(u8"çƒé€Ÿ ã‚ªãƒ•ã‚»ãƒƒãƒˆ(å³å¯„ã›, Y)##pitchSpeed", &pitchSpeedOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
 }
 
 void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
@@ -789,22 +789,22 @@ void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
 	int index = static_cast<int>(rp);
 	if(index < 0 || index >= static_cast<int>(Pitcher::RealPitcher::Count))
 	{
-		return;// –³Œø‚È“Šè
+		return;// ç„¡åŠ¹ãªæŠ•æ‰‹
 	}
 
 	PitchBreakSet& breakSet = realPitcherBreaks[index];
 	if(breakSet.initialized)
 	{
-		return; // ‚·‚Å‚É‰Šú‰»Ï‚İ
+		return; // ã™ã§ã«åˆæœŸåŒ–æ¸ˆã¿
 	}
 
-	// ‚±‚Ì“_‚ÌpitchBreaks[16]‚ğuƒOƒŒ[ƒhC‚ÌŠî€Œ`óv‚Æ‚µ‚Äg—p‚·‚é
+	// ã“ã®æ™‚ç‚¹ã®pitchBreaks[16]ã‚’ã€Œã‚°ãƒ¬ãƒ¼ãƒ‰Cã®åŸºæº–å½¢çŠ¶ã€ã¨ã—ã¦ä½¿ç”¨ã™ã‚‹
 	ballBreak2D baseShape[16];
 	for(int i = 0; i < 16; ++i)
 	{
 		baseShape[i] = pitchBreaks[i];
 		breakSet.breaks[i] = pitchBreaks[i];
-		breakSet.grades[i] = Pitcher::BreakGrade::C; // ƒfƒtƒHƒ‹ƒg‚ÍƒOƒŒ[ƒhC
+		breakSet.grades[i] = Pitcher::BreakGrade::C; // ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã¯ã‚°ãƒ¬ãƒ¼ãƒ‰C
 	}
 
 	std::vector<Pitcher::RealArsenalEntry> arsenal;
@@ -816,16 +816,16 @@ void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
 		return;
 	}
 
-	// arsenal‚ÌŠe‹…í‚É‚Â‚¢‚ÄAƒOƒŒ[ƒh‚É‰‚¶‚ÄpitchBreaks‚ğ’²®‚·‚é
+	// arsenalã®å„çƒç¨®ã«ã¤ã„ã¦ã€ã‚°ãƒ¬ãƒ¼ãƒ‰ã«å¿œã˜ã¦pitchBreaksã‚’èª¿æ•´ã™ã‚‹
 	for(const Pitcher::RealArsenalEntry& entry : arsenal)
 	{
 		int breakIndex = Pitcher::PitchTypeToBreakIndex(entry.pitchType);
 		if(breakIndex < 0 || breakIndex >= 16)
 		{
-			continue; // –³Œø‚È‹…í
+			continue; // ç„¡åŠ¹ãªçƒç¨®
 		}
 
-		// ƒOƒŒ[ƒh‚É‰‚¶‚Ä•Ï‰»—Ê‚ğ’²®‚·‚é
+		// ã‚°ãƒ¬ãƒ¼ãƒ‰ã«å¿œã˜ã¦å¤‰åŒ–é‡ã‚’èª¿æ•´ã™ã‚‹
 		const float scale = GetBreakGradeScale(entry.breakGrade);
 		breakSet.breaks[breakIndex].breakX = baseShape[breakIndex].breakX * scale;
 		breakSet.breaks[breakIndex].breakY = baseShape[breakIndex].breakY * scale;
@@ -840,13 +840,13 @@ void ballSprite::SyncRealPitcherBreaks()
 	const Pitcher::RealPitcher currentRealPitcher = Pitcher::Instance().GetSelectedRealPitcher();
 	if (currentRealPitcher == lastAppliedPitcher)
 	{
-		return; // •ÏX‚È‚µ
+		return; // å¤‰æ›´ãªã—
 	}
 	lastAppliedPitcher = currentRealPitcher;
 
 	if(currentRealPitcher == Pitcher::RealPitcher::None)
 	{
-		return; // Àİ“Šè‚È‚µ
+		return; // å®Ÿåœ¨æŠ•æ‰‹ãªã—
 	}
 
 	BuildRealPitcherBreakSet(currentRealPitcher);
@@ -889,11 +889,11 @@ void ballSprite::SaveToJson(json& j)
 		{"pitchSpeedFastColor", {pitchSpeedFastColor.x, pitchSpeedFastColor.y, pitchSpeedFastColor.z, pitchSpeedFastColor.w}},
 		{"pitchSpeedFastThresholdKmh", pitchSpeedFastThresholdKmh}
 	};
-	// •Ï‰»—ÊƒGƒfƒBƒ^‚Ì—LŒøƒtƒ‰ƒO‚ğ•Û‘¶
+	// å¤‰åŒ–é‡ã‚¨ãƒ‡ã‚£ã‚¿ã®æœ‰åŠ¹ãƒ•ãƒ©ã‚°ã‚’ä¿å­˜
 	j["useBallBreak"] = useBallBreak;
 
 	json realPitcherBreaksJson = json::array();
-	for (size_t rp = 1; rp < realPitcherBreaks.size(); ++rp) // 0=None‚ÍƒXƒLƒbƒv
+	for (size_t rp = 1; rp < realPitcherBreaks.size(); ++rp) // 0=Noneã¯ã‚¹ã‚­ãƒƒãƒ—
 	{
 		if (!realPitcherBreaks[rp].initialized) continue;
 
@@ -913,7 +913,7 @@ void ballSprite::SaveToJson(json& j)
 	}
 	j["realPitcherBreaks"] = realPitcherBreaksJson;
 
-	// ‘S19‹…í‚Ì•Ï‰»—Ê‚ğJSON‚Ì”z—ñƒIƒuƒWƒFƒNƒg‚Æ‚µ‚Ä‚Ü‚Æ‚ß‚Ä•Û‘¶
+	// å…¨19çƒç¨®ã®å¤‰åŒ–é‡ã‚’JSONã®é…åˆ—ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¨ã—ã¦ã¾ã¨ã‚ã¦ä¿å­˜
 	json breaksArray = json::array();
 	for (int i = 0; i < PITCH_TYPE_COUNT; ++i)
 	{
@@ -936,7 +936,7 @@ void ballSprite::SaveToJson(json& j)
 		j["pitchSpeedOffsets"].push_back({ pitchSpeedOffsets[i].x, pitchSpeedOffsets[i].y });
 	}
 
-	//ƒgƒ‰ƒbƒLƒ“ƒOƒf[ƒ^‚Ì•Û‘¶
+	//ãƒˆãƒ©ãƒƒã‚­ãƒ³ã‚°ãƒ‡ãƒ¼ã‚¿ã®ä¿å­˜
 	TrackingData::Instance().SaveToJson(j);
 }
 
@@ -1002,13 +1002,13 @@ void ballSprite::LoadFromJson(const json& j)
 		pitchSpeedFastThresholdKmh = pf.value("pitchSpeedFastThresholdKmh", 150.0f);
 	}
 
-	// •Ï‰»—ÊƒGƒfƒBƒ^‚Ì—LŒøƒtƒ‰ƒO‚ğ“Ç‚İ‚İ
+	// å¤‰åŒ–é‡ã‚¨ãƒ‡ã‚£ã‚¿ã®æœ‰åŠ¹ãƒ•ãƒ©ã‚°ã‚’èª­ã¿è¾¼ã¿
 	if (j.contains("useBallBreak"))
 	{
 		useBallBreak = j["useBallBreak"].get<bool>();
 	}
 
-	// LoadFromJson “à‚Ì––”ö‚ ‚½‚è‚É’Ç‰Á
+	// LoadFromJson å†…ã®æœ«å°¾ã‚ãŸã‚Šã«è¿½åŠ 
 	if (j.contains("realPitcherBreaks") && j["realPitcherBreaks"].is_array())
 	{
 		for (const auto& entry : j["realPitcherBreaks"])
@@ -1031,16 +1031,16 @@ void ballSprite::LoadFromJson(const json& j)
 		}
 	}
 
-	// Œ»İ‘I‘ğ’†‚ÌÀİ“Šè‚Ìƒf[ƒ^‚ğ‹­§Ä”½‰f
+	// ç¾åœ¨é¸æŠä¸­ã®å®Ÿåœ¨æŠ•æ‰‹ã®ãƒ‡ãƒ¼ã‚¿ã‚’å¼·åˆ¶å†åæ˜ 
 	lastAppliedPitcher = Pitcher::RealPitcher::None;
 	SyncRealPitcherBreaks();
 
-	// ‘S14‹…í‚Ì•Ï‰»—Ê‚ğ”z—ñ‚©‚ç•œŒ³
+	// å…¨14çƒç¨®ã®å¤‰åŒ–é‡ã‚’é…åˆ—ã‹ã‚‰å¾©å…ƒ
 	if (j.contains("pitchBreaks") && j["pitchBreaks"].is_array())
 	{
 		const auto& breaksArray = j["pitchBreaks"];
 
-		// ƒNƒ‰ƒbƒVƒ…–h~‚Ì‚½‚ßA•Û‘¶‚³‚ê‚½ƒf[ƒ^‚Ì”‚ÆA”z—ñƒTƒCƒY(16)‚Ì¬‚³‚¢•û‚É‡‚í‚¹‚Äƒ‹[ƒv
+		// ã‚¯ãƒ©ãƒƒã‚·ãƒ¥é˜²æ­¢ã®ãŸã‚ã€ä¿å­˜ã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã®æ•°ã¨ã€é…åˆ—ã‚µã‚¤ã‚º(16)ã®å°ã•ã„æ–¹ã«åˆã‚ã›ã¦ãƒ«ãƒ¼ãƒ—
 		int size = (std::min)(PITCH_TYPE_COUNT, (int)breaksArray.size());
 		for (int i = 0; i < size; ++i)
 		{
@@ -1054,7 +1054,7 @@ void ballSprite::LoadFromJson(const json& j)
 	}
 
 	
-	// ‹…í–¼/‹…‘¬‚Ì•\¦ˆÊ’uƒIƒtƒZƒbƒg‚ğ•œŒ³
+	// çƒç¨®å/çƒé€Ÿã®è¡¨ç¤ºä½ç½®ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’å¾©å…ƒ
 	if (j.contains("pitchNameOffsets") && j["pitchNameOffsets"].is_array())
 	{
 		const auto& nameOffsetsArray = j["pitchNameOffsets"];
@@ -1077,11 +1077,11 @@ void ballSprite::LoadFromJson(const json& j)
 		}
 	}
 
-	//ƒgƒ‰ƒbƒLƒ“ƒOƒf[ƒ^‚Ì“Ç‚İ‚İ
+	//ãƒˆãƒ©ãƒƒã‚­ãƒ³ã‚°ãƒ‡ãƒ¼ã‚¿ã®èª­ã¿è¾¼ã¿
 	TrackingData::Instance().LoadFromJson(j);
 }
 
-//ƒXƒgƒ‰ƒCƒNƒ][ƒ“‹«ŠE‚ÌƒQƒbƒ^[
+//ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³å¢ƒç•Œã®ã‚²ãƒƒã‚¿ãƒ¼
 void ballSprite::GetStrikeZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX::XMFLOAT2& outBottomRight) const
 {
 	if (!strikeZoneSpriteData)
@@ -1090,7 +1090,7 @@ void ballSprite::GetStrikeZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, Direct
 		outBottomRight = { 0.0f, 0.0f };
 		return;
 	}
-	// strikeZoneGrid[0][0]?[2][2] ‚Ì3~3ƒOƒŠƒbƒh‚ÌŠOÚ‹éŒ`
+	// strikeZoneGrid[0][0]?[2][2] ã®3Ã—3ã‚°ãƒªãƒƒãƒ‰ã®å¤–æ¥çŸ©å½¢
 	const DirectX::XMFLOAT2& worldTL = strikeZoneGrid[0][0];
 	const DirectX::XMFLOAT2& worldBR = strikeZoneGrid[2][2];
 

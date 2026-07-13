@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "physxManager.h"
 #include "Misc.h"
 #include "sprite.h"
@@ -8,13 +8,13 @@
 
 using json = nlohmann::json;
 
-// physxManagerƒNƒ‰ƒX‚ÅZo‚µ‚½ƒgƒ‰ƒbƒLƒ“ƒOƒf[ƒ^(‘Å‹…Šp“x‚Æ‘Å‹…‘¬“x)‚ğƒXƒvƒ‰ƒCƒg‚Å•\¦‚·‚éƒNƒ‰ƒX
+// physxManagerã‚¯ãƒ©ã‚¹ã§ç®—å‡ºã—ãŸãƒˆãƒ©ãƒƒã‚­ãƒ³ã‚°ãƒ‡ãƒ¼ã‚¿(æ‰“çƒè§’åº¦ã¨æ‰“çƒé€Ÿåº¦)ã‚’ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã§è¡¨ç¤ºã™ã‚‹ã‚¯ãƒ©ã‚¹
 
 class TrackingData
 {
 public:
 
-	//ƒCƒ“ƒXƒ^ƒ“ƒX
+	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	static TrackingData& Instance()
 	{
 		static TrackingData instance;
@@ -32,8 +32,9 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
-	//ƒgƒ‰ƒbƒLƒ“ƒOƒf[ƒ^‚ª•\¦‚³‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ÌƒQƒbƒ^[
+	//ãƒˆãƒ©ãƒƒã‚­ãƒ³ã‚°ãƒ‡ãƒ¼ã‚¿ãŒè¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹ã‹ã©ã†ã‹ã®ã‚²ãƒƒã‚¿ãƒ¼
 	bool IsTrackingDataVisible() const { return showTrackingData; }
+	void SetTrackingDataVisible(bool visible) { showTrackingData = visible; }
 
 	void Reset();
 
@@ -49,19 +50,19 @@ private:
 	std::unique_ptr<sprite> trackingDataSprite;
 	std::unique_ptr<Sprite> trackingDataSpriteData;
 	bool showTrackingData = false;
-	// ƒVƒF[ƒ_[ŠÖ˜A
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼é–¢é€£
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
 
 	FontRenderer trackingDataFont;
 	float trackingDataFontScale = 1.0f;
-	float trackingDataValueFontScale = 1.5f; // ”’l—pƒXƒP[ƒ‹i‘å‚«‚ßj
-	float showTrackingDelay = 0.0f; // ƒgƒ‰ƒbƒLƒ“ƒOƒf[ƒ^•\¦‚Ü‚Å‚Ì’x‰„ŠÔ
-	//•\¦ŠJnŠÔ
+	float trackingDataValueFontScale = 1.5f; // æ•°å€¤ç”¨ã‚¹ã‚±ãƒ¼ãƒ«ï¼ˆå¤§ãã‚ï¼‰
+	float showTrackingDelay = 0.0f; // ãƒˆãƒ©ãƒƒã‚­ãƒ³ã‚°ãƒ‡ãƒ¼ã‚¿è¡¨ç¤ºã¾ã§ã®é…å»¶æ™‚é–“
+	//è¡¨ç¤ºé–‹å§‹æ™‚é–“
 	float displayStartTime = 0.7f;
 
-	// Šes‚Ìƒ‰ƒxƒ‹/”’lˆÊ’u‚ğŒÂ•Ê‚É”÷’²®‚·‚é‚½‚ß‚ÌƒIƒtƒZƒbƒg
+	// å„è¡Œã®ãƒ©ãƒ™ãƒ«/æ•°å€¤ä½ç½®ã‚’å€‹åˆ¥ã«å¾®èª¿æ•´ã™ã‚‹ãŸã‚ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆ
 	DirectX::XMFLOAT2 angleLabelOffset = { 0.0f, 0.0f };
 	DirectX::XMFLOAT2 angleValueOffset = { 0.0f, 0.0f };
 	DirectX::XMFLOAT2 speedLabelOffset = { 0.0f, 0.0f };

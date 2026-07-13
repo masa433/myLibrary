@@ -1,4 +1,4 @@
-#include "scene_title.h"
+ï»¿#include "scene_title.h"
 #include "camera.h"
 #include "Graphics.h"
 #include "RenderContext.h"
@@ -14,7 +14,7 @@ void SceneTitle::initialize()
 	HRESULT hr = S_OK;
 	ID3D11Device* device = Graphics::Instance().GetDevice();
 
-    // ƒJƒƒ‰İ’è‚ğ‚±‚±‚ÉˆÚ“®
+    // ã‚«ãƒ¡ãƒ©è¨­å®šã‚’ã“ã“ã«ç§»å‹•
     float screenWidth = Graphics::Instance().GetScreenWidth();
     float screenHeight = Graphics::Instance().GetScreenHeight();
 
@@ -28,12 +28,12 @@ void SceneTitle::initialize()
 
     cameraController.SetEyeAndFocus(
         { 0.0f, 5.0f, -15.0f },   // eye
-        { 0.0f, 1.0f, 10.0f }     // focusiƒXƒe[ƒW‚Ì‚Ç‚±‚ğŒ©‚¹‚½‚¢‚©j
+        { 0.0f, 1.0f, 10.0f }     // focusï¼ˆã‚¹ãƒ†ãƒ¼ã‚¸ã®ã©ã“ã‚’è¦‹ã›ãŸã„ã‹ï¼‰
     );
     cameraController.SetFov(DirectX::XMConvertToRadians(45.0f));
     cameraController.SyncControllerToCamera(camera);
 
-	//	’è”ƒoƒbƒtƒ@ì¬
+	//	å®šæ•°ãƒãƒƒãƒ•ã‚¡ä½œæˆ
 	{
 		D3D11_BUFFER_DESC buffer_desc{};
 		buffer_desc.Usage = D3D11_USAGE_DEFAULT;
@@ -64,7 +64,7 @@ void SceneTitle::initialize()
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
-	//	ƒXƒe[ƒW‰Šú‰»iPhysX‚ğg‚¤ì‚è‚È‚çæ‚ÉInitialize‚µ‚Ä‚¨‚­j
+	//	ã‚¹ãƒ†ãƒ¼ã‚¸åˆæœŸåŒ–ï¼ˆPhysXã‚’ä½¿ã†ä½œã‚Šãªã‚‰å…ˆã«Initializeã—ã¦ãŠãï¼‰
 	Physics::Instance().Initialize();
 	stage::Instance().initialize();
 }
@@ -88,7 +88,7 @@ void SceneTitle::update(float elapsed_time)
 
 	stage::Instance().update(elapsed_time);
 
-	//‚Æ‚è‚ ‚¦‚¸‚È‚É‚©ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚çƒQ[ƒ€ƒV[ƒ“‚É‘JˆÚ‚·‚é
+	//ã¨ã‚Šã‚ãˆãšãªã«ã‹ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸã‚‰ã‚²ãƒ¼ãƒ ã‚·ãƒ¼ãƒ³ã«é·ç§»ã™ã‚‹
 	GamePad& pad = Input::Instance().GetGamePad();
 	
 	const GamePadButton anyButton =
@@ -117,7 +117,7 @@ void SceneTitle::render(float elapsed_time)
 
 	Camera& camera = Camera::Instance();
 
-	//	ƒoƒbƒNƒoƒbƒtƒ@‚É’¼Ú•`‰æ
+	//	ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã«ç›´æ¥æç”»
 	float clear_color[4] = { 0.2f, 0.4f, 0.6f, 1.0f };
 	ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
 	dc->ClearRenderTargetView(backBufferRTV, clear_color);
@@ -152,7 +152,7 @@ void SceneTitle::render(float elapsed_time)
 	dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 	dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
-	//	light_constantsiƒ|ƒCƒ“ƒgEƒXƒ|ƒbƒg‚Í0Œ‚Ì‚Ü‚Üj
+	//	light_constantsï¼ˆãƒã‚¤ãƒ³ãƒˆãƒ»ã‚¹ãƒãƒƒãƒˆã¯0ä»¶ã®ã¾ã¾ï¼‰
 	light_constants lightConstants{};
 	lightConstants.ambient_color = ambient_color;
 	lightConstants.directional_light_direction = directional_light_direction;
@@ -171,7 +171,7 @@ void SceneTitle::render(float elapsed_time)
 	dc->VSSetConstantBuffers(4, 1, hemisphere_light_constant_buffer.GetAddressOf());
 	dc->PSSetConstantBuffers(4, 1, hemisphere_light_constant_buffer.GetAddressOf());
 
-	//	fogi‰“‚­‚Éİ’è‚µ‚ÄÀ¿Œ©‚¦‚È‚­‚µ‚Ä‚ ‚éj
+	//	fogï¼ˆé ãã«è¨­å®šã—ã¦å®Ÿè³ªè¦‹ãˆãªãã—ã¦ã‚ã‚‹ï¼‰
 	fog_constants fog{};
 	fog.fog_color = fog_color;
 	fog.fog_range = fog_range;
@@ -179,7 +179,7 @@ void SceneTitle::render(float elapsed_time)
 	dc->VSSetConstantBuffers(5, 1, fog_constant_buffer.GetAddressOf());
 	dc->PSSetConstantBuffers(5, 1, fog_constant_buffer.GetAddressOf());
 
-	//	post effect / shadow qualityi‚Ç‚¿‚ç‚à–³Œø’l‚Ì‚Ü‚Üj
+	//	post effect / shadow qualityï¼ˆã©ã¡ã‚‰ã‚‚ç„¡åŠ¹å€¤ã®ã¾ã¾ï¼‰
 	dc->UpdateSubresource(post_effect_constant_buffer.Get(), 0, 0, &post_effect_constant, 0, 0);
 	dc->VSSetConstantBuffers(10, 1, post_effect_constant_buffer.GetAddressOf());
 	dc->PSSetConstantBuffers(10, 1, post_effect_constant_buffer.GetAddressOf());
@@ -187,7 +187,7 @@ void SceneTitle::render(float elapsed_time)
 	dc->UpdateSubresource(shadow_quality_constant_buffer.Get(), 0, 0, &shadow_quality_constant, 0, 0);
 	dc->PSSetConstantBuffers(11, 1, shadow_quality_constant_buffer.GetAddressOf());
 
-	//	ƒTƒ“ƒvƒ‰[
+	//	ã‚µãƒ³ãƒ—ãƒ©ãƒ¼
 	ID3D11SamplerState* sampler_states[] =
 	{
 		renderState->GetSamplerState(SamplerState::PointClamp),
@@ -197,7 +197,7 @@ void SceneTitle::render(float elapsed_time)
 	dc->PSSetSamplers(0, ARRAYSIZE(sampler_states), sampler_states);
 	dc->VSSetSamplers(0, ARRAYSIZE(sampler_states), sampler_states);
 
-	//	ƒXƒe[ƒW•`‰æ
+	//	ã‚¹ãƒ†ãƒ¼ã‚¸æç”»
 	stage::Instance().render(rc, modelRenderer);
 }
 

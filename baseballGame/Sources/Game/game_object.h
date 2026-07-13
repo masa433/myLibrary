@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "DirectXMath.h"
 #include "../Model/gltf_model.h"
 #include <vector>
@@ -23,55 +23,55 @@ public:
 
 	virtual ~GameObject() {}
 
-	//ˆÊ’u‚ğİ’è
+	//ä½ç½®ã‚’è¨­å®š
 	DirectX::XMFLOAT3 GetPosition() const { return position; }
 
-	//ˆÊ’u‚ğæ“¾
+	//ä½ç½®ã‚’å–å¾—
 	void SetPosition(DirectX::XMFLOAT3& position) { this->position = position; }
 
-	//Œü‚«‚ğæ“¾
+	//å‘ãã‚’å–å¾—
 	DirectX::XMFLOAT3 GetAngle() const { return angle; }
 
-	//Œü‚«‚ğİ’è
+	//å‘ãã‚’è¨­å®š
 	void SetAngle(DirectX::XMFLOAT3& angle) { this->angle = angle; }
 
-	//ƒXƒP[ƒ‹‚ğæ“¾
+	//ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å–å¾—
 	DirectX::XMFLOAT3 GetScale() const { return scale; }
 
-	//ƒXƒP[ƒ‹‚ğİ’è
+	//ã‚¹ã‚±ãƒ¼ãƒ«ã‚’è¨­å®š
 	void SetScale(DirectX::XMFLOAT3& scale) { this->scale = scale; }
 
-	//‰¡•ûŒüƒxƒNƒgƒ‹æ“¾
+	//æ¨ªæ–¹å‘ãƒ™ã‚¯ãƒˆãƒ«å–å¾—
 	DirectX::XMFLOAT3 GetRight() const { return right; }
 
-	//ã•ûŒüƒxƒNƒgƒ‹æ“¾
+	//ä¸Šæ–¹å‘ãƒ™ã‚¯ãƒˆãƒ«å–å¾—
 	DirectX::XMFLOAT3 GetUp() const { return up; }
 
-	//‘O•ûŒüƒxƒNƒgƒ‹æ“¾
+	//å‰æ–¹å‘ãƒ™ã‚¯ãƒˆãƒ«å–å¾—
 	DirectX::XMFLOAT3 GetFront() const { return front; }
 
-	//ˆÊ’us—ñæ“¾
+	//ä½ç½®è¡Œåˆ—å–å¾—
 	DirectX::XMFLOAT4X4 GetTransform() const { return transform; }
 
-	//ˆÊ’uXV
+	//ä½ç½®æ›´æ–°
 	void UpdateTransform();
 
-	//ƒ‚ƒfƒ‹İ’è
+	//ãƒ¢ãƒ‡ãƒ«è¨­å®š
 	void SetModel(std::shared_ptr<gltf_model> model) { this->model = model; }
 
-	//ƒ‚ƒfƒ‹æ“¾
+	//ãƒ¢ãƒ‡ãƒ«å–å¾—
 	std::shared_ptr<gltf_model> GetModel() const { return model; }
 
-	//“–‚½‚è”»’è—p‚Ì”¼Œaİ’è
+	//å½“ãŸã‚Šåˆ¤å®šç”¨ã®åŠå¾„è¨­å®š
 	void SetRadius(float radius) { this->radius = radius; }
 
-	//“–‚½‚è”»’è—p‚Ì‚‚³İ’è
+	//å½“ãŸã‚Šåˆ¤å®šç”¨ã®é«˜ã•è¨­å®š
 	void SetHeight(float height) { this->height = height; }
 
-	// ”¼Œaæ“¾
+	// åŠå¾„å–å¾—
 	float GetRadius() const { return radius; }
 
-	// ‚‚³æ“¾
+	// é«˜ã•å–å¾—
 	float GetHeight() const { return height; }
 
 };

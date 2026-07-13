@@ -1,7 +1,7 @@
-#pragma once
+ï»¿#pragma once
 #include <DirectXMath.h>
 
-//ƒJƒƒ‰
+//ã‚«ãƒ¡ãƒ©
 class Camera {
 
 public:
@@ -9,44 +9,44 @@ public:
 	~Camera() {};
 
 public:
-	//—Bˆê‚ÌƒCƒ“ƒXƒ^ƒ“ƒXæ“¾
+	//å”¯ä¸€ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
 	static Camera& Instance()
 	{
 		static Camera camera;
 		return camera;
 	}
 
-	//w’è•ûŒü‚ğŒü‚­
+	//æŒ‡å®šæ–¹å‘ã‚’å‘ã
 	void SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up);
 
-	//ƒp[ƒXƒyƒNƒeƒBƒuİ’è
+	//ãƒ‘ãƒ¼ã‚¹ãƒšã‚¯ãƒ†ã‚£ãƒ–è¨­å®š
 	void SetPerspectiveFov(float fovY, float aspect, float nearZ, float farZ);
 
-	//ƒrƒ…[s—ñæ“¾
+	//ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—å–å¾—
 	const DirectX::XMFLOAT4X4& GetView() const { return view; }
 
-	//ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñæ“¾
+	//ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—å–å¾—
 	const DirectX::XMFLOAT4X4& GetProjection() const { return projection; }
 
-	//’‹“_æ“¾
+	//æ³¨è¦–ç‚¹å–å¾—
 	const DirectX::XMFLOAT3& GetFocus() const { return focus; }
 
-	//ã•ûŒüæ“¾
+	//ä¸Šæ–¹å‘å–å¾—
 	const DirectX::XMFLOAT3& GetUp() const { return up; }
 
-	//‘O•ûŒüæ“¾
+	//å‰æ–¹å‘å–å¾—
 	const DirectX::XMFLOAT3& GetFront() const { return front; }
 
-	//‰E•ûŒüæ“¾
+	//å³æ–¹å‘å–å¾—
 	const DirectX::XMFLOAT3& GetRight() const { return right; }
 
-	//‹“_æ“¾
+	//è¦–ç‚¹å–å¾—
 	const DirectX::XMFLOAT3& GetEye() const { return eye; }
 
-	//‰æŠpİ’è
+	//ç”»è§’è¨­å®š
 	void SetFov(float f) { fovY = f; }
 
-	//‰æŠpæ“¾
+	//ç”»è§’å–å¾—
 	float GetFov() const { return fovY; }
 
 private:

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 #include <directXmath.h>
 #include <vector>
@@ -9,7 +9,7 @@ class sprite_batch
 {
 public:
 
-	//’¸“_ƒtƒH[ƒ}ƒbƒg
+	//é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ
 	struct vertex
 	{
 		DirectX::XMFLOAT3 position;
@@ -29,14 +29,14 @@ public:
 	std::vector<vertex> vertices;
 
 	void render(ID3D11DeviceContext* immediate_context,
-		float dx, float dy,//‹éŒ`‚Ì¶ã‚ÌÀ•W
-		float dw, float dh,//‹éŒ`‚ÌƒTƒCƒY
+		float dx, float dy,//çŸ©å½¢ã®å·¦ä¸Šã®åº§æ¨™
+		float dw, float dh,//çŸ©å½¢ã®ã‚µã‚¤ã‚º
 		float r, float g, float b, float a,
 		float angle/*degree*/);
 
 	void render(ID3D11DeviceContext* immediate_context,
-		float dx, float dy,//‹éŒ`‚Ì¶ã‚ÌÀ•W
-		float dw, float dh,//‹éŒ`‚ÌƒTƒCƒY
+		float dx, float dy,//çŸ©å½¢ã®å·¦ä¸Šã®åº§æ¨™
+		float dw, float dh,//çŸ©å½¢ã®ã‚µã‚¤ã‚º
 		float r, float g, float b, float a,
 		float angle/*degree*/,
 		float sx, float sy, float sw, float sh);

@@ -1,24 +1,24 @@
-#pragma once
+ï»¿#pragma once
 
 #include <vector>
 #include <DirectXMath.h>
 #include "../Model/gltf_model.h"
 #include "RenderContext.h"
 
-// ƒqƒbƒgŒ‹‰Ê
+// ãƒ’ãƒƒãƒˆçµæœ
 struct HitResult
 {
-	DirectX::XMFLOAT3	position = { 0, 0, 0 };// ƒŒƒC‚Æƒ|ƒŠƒSƒ“‚ÌŒğ“_
-	DirectX::XMFLOAT3	normal = { 0, 0, 0 };	// Õ“Ë‚µ‚½ƒ|ƒŠƒSƒ“‚Ì–@üƒxƒNƒgƒ‹
-	DirectX::XMFLOAT3	rotation = { 0, 0, 0 };	// ‰ñ“]—Ê
-	float				distance = 0.0f; 		// ƒŒƒC‚Ìn“_‚©‚çŒğ“_‚Ü‚Å‚Ì‹——£
-	int					materialIndex = -1; 	// Õ“Ë‚µ‚½ƒ|ƒŠƒSƒ“‚Ìƒ}ƒeƒŠƒAƒ‹”Ô†
+	DirectX::XMFLOAT3	position = { 0, 0, 0 };// ãƒ¬ã‚¤ã¨ãƒãƒªã‚´ãƒ³ã®äº¤ç‚¹
+	DirectX::XMFLOAT3	normal = { 0, 0, 0 };	// è¡çªã—ãŸãƒãƒªã‚´ãƒ³ã®æ³•ç·šãƒ™ã‚¯ãƒˆãƒ«
+	DirectX::XMFLOAT3	rotation = { 0, 0, 0 };	// å›è»¢é‡
+	float				distance = 0.0f; 		// ãƒ¬ã‚¤ã®å§‹ç‚¹ã‹ã‚‰äº¤ç‚¹ã¾ã§ã®è·é›¢
+	int					materialIndex = -1; 	// è¡çªã—ãŸãƒãƒªã‚´ãƒ³ã®ãƒãƒ†ãƒªã‚¢ãƒ«ç•ªå·
 };
 
 class collision 
 {
 public:
-	// ‹…‘Î‹…‚Ì“–‚½‚è”»’è
+	// çƒå¯¾çƒã®å½“ãŸã‚Šåˆ¤å®š
 	static bool IntersectSphereVsSphere(
 		const DirectX::XMFLOAT3& positionA,
 		float radiusA,
@@ -27,7 +27,7 @@ public:
 		DirectX::XMFLOAT3& outPositionB
 	);
 
-	//‰~’Œ‘Î‰~’Œ‚Ì“–‚½‚è”»’è
+	//å††æŸ±å¯¾å††æŸ±ã®å½“ãŸã‚Šåˆ¤å®š
 	static bool IntersectCylinderVsCylinder(
 		const DirectX::XMFLOAT3& positionA,
 		float radiusA,
@@ -38,7 +38,7 @@ public:
 		DirectX::XMFLOAT3& outPositionB
 	);
 
-	// ‹…‘Î‰~’Œ‚Ì“–‚½‚è”»’è
+	// çƒå¯¾å††æŸ±ã®å½“ãŸã‚Šåˆ¤å®š
 	static bool IntersectSphereVsCylinder(
 		const DirectX::XMFLOAT3& spherePosition,
 		float sphereRadius,
@@ -48,7 +48,7 @@ public:
 		DirectX::XMFLOAT3& outcylinderPosition
 	);
 
-	// AABB‘ÎAABB‚Ì“–‚½‚è”»’è
+	// AABBå¯¾AABBã®å½“ãŸã‚Šåˆ¤å®š
 	static bool IntersectAABBVsAABB(
 		const DirectX::XMFLOAT3& minA,
 		const DirectX::XMFLOAT3& maxA,

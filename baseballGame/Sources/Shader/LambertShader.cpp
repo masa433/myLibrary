@@ -1,11 +1,11 @@
-#include "Misc.h"
+ï»¿#include "Misc.h"
 #include "GpuResourceUtils.h"
 #include "LambertShader.h"
 #include "../Model/ModelResource.h"
 
 LambertShader::LambertShader(ID3D11Device* device)
 {
-	// ’¸“_ƒVƒF[ƒ_[
+	// é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 	GpuResourceUtils::LoadVertexShader(
 		device,
 		".\\resources\\shader\\LambertVS.cso",
@@ -14,30 +14,30 @@ LambertShader::LambertShader(ID3D11Device* device)
 		inputLayout.GetAddressOf(),
 		vertexShader.GetAddressOf());
 
-	// ƒsƒNƒZƒ‹ƒVƒF[ƒ_[
+	// ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 	GpuResourceUtils::LoadPixelShader(
 		device,
 		".\\resources\\shader\\LambertPS.cso",
 		pixelShader.GetAddressOf());
 
-	// ƒ}ƒeƒŠƒAƒ‹—p’è”ƒoƒbƒtƒ@
+	// ãƒžãƒ†ãƒªã‚¢ãƒ«ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	GpuResourceUtils::CreateConstantBuffer(
 		device,
 		sizeof(CbMaterial),
 		constantBuffer.GetAddressOf());
 }
 
-// ŠJŽnˆ—
+// é–‹å§‹å‡¦ç†
 void LambertShader::Begin(const RenderContext& rc)
 {
 	ID3D11DeviceContext* dc = rc.deviceContext;
 
-	// ƒVƒF[ƒ_[Ý’è
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼è¨­å®š
 	dc->IASetInputLayout(inputLayout.Get());
 	dc->VSSetShader(vertexShader.Get(), nullptr, 0);
 	dc->PSSetShader(pixelShader.Get(), nullptr, 0);
 
-	// ’è”ƒoƒbƒtƒ@Ý’è
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡è¨­å®š
 	ID3D11Buffer* cbs[] =
 	{
 		constantBuffer.Get(),
@@ -45,17 +45,17 @@ void LambertShader::Begin(const RenderContext& rc)
 	dc->PSSetConstantBuffers(1, _countof(cbs), cbs);
 }
 
-// XVˆ—
+// æ›´æ–°å‡¦ç†
 void LambertShader::Update(const RenderContext& rc, const ModelResource::Material& material)
 {
 	ID3D11DeviceContext* dc = rc.deviceContext;
 
-	// ƒ}ƒeƒŠƒAƒ‹—p’è”ƒoƒbƒtƒ@XV
+	// ãƒžãƒ†ãƒªã‚¢ãƒ«ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–°
 	CbMaterial cbMaterial{};
 	cbMaterial.materialColor = material.color;
 	dc->UpdateSubresource(constantBuffer.Get(), 0, 0, &cbMaterial, 0, 0);
 
-	// ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[Ý’è
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼è¨­å®š
 	ID3D11ShaderResourceView* srvs[] =
 	{
 		material.shaderResourceView.Get(),
@@ -63,21 +63,21 @@ void LambertShader::Update(const RenderContext& rc, const ModelResource::Materia
 	dc->PSSetShaderResources(0, _countof(srvs), srvs);
 }
 
-// •`‰æI—¹
+// æç”»çµ‚äº†
 void LambertShader::End(const RenderContext& rc)
 {
 	ID3D11DeviceContext* dc = rc.deviceContext;
 
-	// ƒVƒF[ƒ_[Ý’è‰ðœ
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼è¨­å®šè§£é™¤
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
 	dc->IASetInputLayout(nullptr);
 
-	// ’è”ƒoƒbƒtƒ@Ý’è‰ðœ
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡è¨­å®šè§£é™¤
 	ID3D11Buffer* cbs[] = { nullptr };
 	dc->PSSetConstantBuffers(1, _countof(cbs), cbs);
 
-	// ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[Ý’è‰ðœ
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼è¨­å®šè§£é™¤
 	ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr };
 	dc->PSSetShaderResources(0, _countof(srvs), srvs);
 }

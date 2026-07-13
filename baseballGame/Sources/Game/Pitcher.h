@@ -179,6 +179,8 @@ private:
 	float foulWaitTime = 1.0f;
 	float currentFoulWaitTime = 0.0f;
 
+	bool foulSpriteTriggered = false; // ファウル判定がトリガーされたかどうか
+
 public:
 	// 5x5グリッド内でAIが狙う内側3x3のセルインデックス (0〜8、row-major)
 	

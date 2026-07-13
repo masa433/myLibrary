@@ -502,9 +502,7 @@ void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4&
 	primitiveRenderer->Render(dc, view, projection, D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 }
 
-//--------------------------
-// NOTE:⑧衝突検出フィルタリング
-//--------------------------
+//衝突検出フィルタリング
 physx::PxFilterFlags Physics::SimulationFilterShader(
 	physx::PxFilterObjectAttributes	attributes0, physx::PxFilterData filterData0,
 	physx::PxFilterObjectAttributes	attributes1, physx::PxFilterData	filterData1,
@@ -539,12 +537,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 	{
 		const physx::PxContactPair& pair = pairs[i];
 
-		//----------------------------------------------------------------
 		// エンタイトルツーベース以外でホームラントリガーをダイレクトで通過した場合、
 		// 以降どのオブジェクトに衝突しても無条件でホームランにする
-		//（GetHasPassedHomeRunZone() はグラウンドに触れる前にトリガーを
-		//  通過した場合のみ true になるため、エンタイトルツーベースは含まれない）
-		//----------------------------------------------------------------
 		if (Ball::Instance().GetHasPassedHomeRunZone() && !Ball::Instance().GetHasCollidedWithFence())
 		{
 			bool ballIsActor0 = (pairHeader.actors[0] == Ball::Instance().GetBallCollider());

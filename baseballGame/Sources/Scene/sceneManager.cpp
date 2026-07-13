@@ -1,24 +1,24 @@
-#include "sceneManager.h"
+ï»¿#include "sceneManager.h"
 
 void sceneManager::Update(float elapsedTime)
 {
 	if (nextScene != nullptr)
 	{
-		//ŒÃ‚¢ƒV[ƒ“‚ğI—¹
+		//å¤ã„ã‚·ãƒ¼ãƒ³ã‚’çµ‚äº†
 		Clear();
 
-		//V‚µ‚¢ƒV[ƒ“‚ğİ’è
+		//æ–°ã—ã„ã‚·ãƒ¼ãƒ³ã‚’è¨­å®š
 		currentScene = std::move(nextScene);
 		nextScene = nullptr;
 
-		//ƒV[ƒ“‰Šú‰»ˆ—
+		//ã‚·ãƒ¼ãƒ³åˆæœŸåŒ–å‡¦ç†
 		if(!currentScene->IsReady())
 		{
 			currentScene->initialize();
 		}
 	}
 
-	//ƒV[ƒ“XVˆ—
+	//ã‚·ãƒ¼ãƒ³æ›´æ–°å‡¦ç†
 	if(currentScene != nullptr)
 	{
 		currentScene->update(elapsedTime);
@@ -41,7 +41,7 @@ void sceneManager::DrawGUI()
 	}
 }
 
-//ƒV[ƒ“ƒNƒŠƒA
+//ã‚·ãƒ¼ãƒ³ã‚¯ãƒªã‚¢
 void sceneManager::Clear()
 {
 	if(currentScene != nullptr)
@@ -51,7 +51,7 @@ void sceneManager::Clear()
 	}
 }
 
-//ƒV[ƒ“Ø‚è‘Ö‚¦
+//ã‚·ãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆ
 void sceneManager::ChangeScene(scene* scene)
 {
 	nextScene.reset(scene);

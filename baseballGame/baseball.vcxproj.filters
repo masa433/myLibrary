@@ -169,6 +169,9 @@
     <ClCompile Include="Sources\Game\HomeRunCount.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\FoulSprite.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -355,6 +358,9 @@
       <Filter>Sources\Game</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Game\HomeRunCount.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\FoulSprite.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>

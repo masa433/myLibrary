@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <DirectXMath.h>
 
@@ -29,12 +29,12 @@ struct SpotLight
 class Light
 {
 public:
-	// ƒfƒBƒŒƒNƒVƒ‡ƒiƒ‹ƒ‰ƒCƒgİ’è
+	// ãƒ‡ã‚£ãƒ¬ã‚¯ã‚·ãƒ§ãƒŠãƒ«ãƒ©ã‚¤ãƒˆè¨­å®š
 	void SetDirectionalLight(DirectionalLight& light) { directionalLight = light; }
 	void SetPointLight(PointLight& light) { pointLight = light; }
 	void SetSpotLight(SpotLight& light) { spotLight = light; }
 
-	// ƒfƒBƒŒƒNƒVƒ‡ƒiƒ‹ƒ‰ƒCƒgæ“¾
+	// ãƒ‡ã‚£ãƒ¬ã‚¯ã‚·ãƒ§ãƒŠãƒ«ãƒ©ã‚¤ãƒˆå–å¾—
 	const DirectionalLight& GetDirectionalLight() const { return directionalLight; }
 	const PointLight& GetPointLight() const { return pointLight; }
 	const SpotLight& GetSpotLight() const { return spotLight; }

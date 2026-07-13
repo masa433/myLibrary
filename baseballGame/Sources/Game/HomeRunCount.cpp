@@ -1,10 +1,10 @@
-#include "HomeRunCount.h"
+ï»¿#include "HomeRunCount.h"
 #include "Graphics.h"
 #include "imgui.h"
 
 void HomeRunCount::Initialize(ID3D11Device* device)
 {
-	// ƒVƒF[ƒ_[‚Ì“Ç‚İ‚İ
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®èª­ã¿è¾¼ã¿
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -16,7 +16,7 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
 
 
-	// ƒXƒvƒ‰ƒCƒg‚Ì‰Šú‰»
+	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®åˆæœŸåŒ–
 	homeRunCountSpriteData = std::make_unique<Sprite>();
 	homeRunCountSpriteData->texturePath = L".\\resources\\textures\\homeRunCountBoard.png";
 	homeRunCountSpriteData->position = { 10.0f, 10.0f };
@@ -26,10 +26,10 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 	homeRunCountSprite = std::make_unique<sprite>(device, homeRunCountSpriteData->texturePath.c_str());
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
-	// ƒz[ƒ€ƒ‰ƒ“”•\¦‚É•K—v‚È•¶š‚¾‚¯‚ğƒxƒCƒN‚·‚é
+	// ãƒ›ãƒ¼ãƒ ãƒ©ãƒ³æ•°è¡¨ç¤ºã«å¿…è¦ãªæ–‡å­—ã ã‘ã‚’ãƒ™ã‚¤ã‚¯ã™ã‚‹
 	std::vector<int> homeRunCountCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789HOMERUN");
-	// ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒ‰[‚Ì‰Šú‰»
+	// ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ã®åˆæœŸåŒ–
 	homeRunCountFont.Initialize(device,
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
 		28.0f,
@@ -49,14 +49,14 @@ void HomeRunCount::Uninitialize()
 
 void HomeRunCount::Update(float elapsedTime)
 {
-	// ƒz[ƒ€ƒ‰ƒ“”‚ª‘‚¦‚½‚çA•\¦‚ğˆê’U‘å‚«‚­‚µ‚Ä‚©‚çƒAƒjƒ[ƒVƒ‡ƒ“‚Å–ß‚·
+	// ãƒ›ãƒ¼ãƒ ãƒ©ãƒ³æ•°ãŒå¢—ãˆãŸã‚‰ã€è¡¨ç¤ºã‚’ä¸€æ—¦å¤§ããã—ã¦ã‹ã‚‰ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã§æˆ»ã™
 	if (homeRunCount != previousHomeRunCount)
 	{
 		previousHomeRunCount = homeRunCount;
-		numberDisplayScale = numberScale * numberPopScaleMultiplier; // ‘å‚«‚¢ó‘Ô‚©‚çŠJn
+		numberDisplayScale = numberScale * numberPopScaleMultiplier; // å¤§ãã„çŠ¶æ…‹ã‹ã‚‰é–‹å§‹
 	}
 
-	// Œ»İ‚ÌƒXƒP[ƒ‹‚ğŠî€ƒTƒCƒY‚ÖŠŠ‚ç‚©‚É‹ß‚Ã‚¯‚é
+	// ç¾åœ¨ã®ã‚¹ã‚±ãƒ¼ãƒ«ã‚’åŸºæº–ã‚µã‚¤ã‚ºã¸æ»‘ã‚‰ã‹ã«è¿‘ã¥ã‘ã‚‹
 	if (numberDisplayScale > numberScale)
 	{
 		numberDisplayScale -= numberScaleAnimSpeed * elapsedTime;
@@ -79,7 +79,7 @@ void HomeRunCount::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	// ƒz[ƒ€ƒ‰ƒ“”‚Ì•`‰æ
+	// ãƒ›ãƒ¼ãƒ ãƒ©ãƒ³æ•°ã®æç”»
 	homeRunCountSprite->render(Graphics::Instance().GetDeviceContext(),
 		homeRunCountSpriteData->position.x, homeRunCountSpriteData->position.y,
 		homeRunCountSpriteData->size.x, homeRunCountSpriteData->size.y,
@@ -87,19 +87,19 @@ void HomeRunCount::Render()
 		homeRunCountSpriteData->color.z, homeRunCountSpriteData->color.w,
 		homeRunCountSpriteData->rotation);
 	
-	// "HOMERUN" ƒ‰ƒxƒ‹‚ğ‚»‚Ì‚Ü‚Ü•`‰æ
+	// "HOMERUN" ãƒ©ãƒ™ãƒ«ã‚’ãã®ã¾ã¾æç”»
 	homeRunCountFont.DrawTextW(dc,
 		"HOMERUN",
 		labelPositionX,
 		labelPositionY,
 		labelScale,
-		1.0f, 1.0f, 1.0f, 1.0f); // ”’F
+		1.0f, 1.0f, 1.0f, 1.0f); // ç™½è‰²
 
-	// ”š‚¾‚¯‘å‚«‚­Aƒ‰ƒxƒ‹‚Ì‰º‚É•`‰æ
+	// æ•°å­—ã ã‘å¤§ããã€ãƒ©ãƒ™ãƒ«ã®ä¸‹ã«æç”»
 	char numberBuffer[16];
 	sprintf_s(numberBuffer, sizeof(numberBuffer), "%d", homeRunCount);
 
-	// ’†‰›Šñ‚¹‚µ‚½‚¢ê‡‚Í•‚ğ‘ª‚Á‚Ä‚©‚çˆÊ’u‚ğ’²®
+	// ä¸­å¤®å¯„ã›ã—ãŸã„å ´åˆã¯å¹…ã‚’æ¸¬ã£ã¦ã‹ã‚‰ä½ç½®ã‚’èª¿æ•´
 	float numberWidth = 0.0f, numberHeight = 0.0f;
 	homeRunCountFont.MeasureText(numberBuffer, numberDisplayScale, numberWidth, numberHeight);
 	float numberX = homeRunCountSpriteData->position.x
@@ -110,9 +110,9 @@ void HomeRunCount::Render()
 		numberX,
 		numberPositionY,
 		numberDisplayScale,
-		numberColor.x, numberColor.y, numberColor.z, numberColor.w); // ‹àF‚É‚µ‚Ä–Ú—§‚½‚¹‚é—á
+		numberColor.x, numberColor.y, numberColor.z, numberColor.w); // é‡‘è‰²ã«ã—ã¦ç›®ç«‹ãŸã›ã‚‹ä¾‹
 
-	// Œãn––iWind ‚Æ“¯‚¶j
+	// å¾Œå§‹æœ«ï¼ˆWind ã¨åŒã˜ï¼‰
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
 	dc->IASetInputLayout(nullptr);

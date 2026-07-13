@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <memory>
 #include <vector>
@@ -26,7 +26,7 @@ public:
 	ModelRenderer(ID3D11Device* device);
 	~ModelRenderer() {}
 
-	// •`‰æÀs
+	// æç”»å®Ÿè¡Œ
 	void Render(const RenderContext& rc, const DirectX::XMFLOAT4X4& worldTransform, const Model* model, ShaderId shaderId);
 
 private:
@@ -37,13 +37,13 @@ private:
 		DirectX::XMFLOAT4		lightColor;
 		DirectX::XMFLOAT4		ambientColor;
 
-		//ƒ|ƒCƒ“ƒgƒ‰ƒCƒg
+		//ãƒã‚¤ãƒ³ãƒˆãƒ©ã‚¤ãƒˆ
 		DirectX::XMFLOAT3 	 pointLightPosition;
 		float pointLightRange;
 		DirectX::XMFLOAT3 	 pointLightColor;
 		float pad0;
 
-		//ƒXƒ|ƒbƒgƒ‰ƒCƒg
+		//ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆ
 		DirectX::XMFLOAT3 	 spotLightPosition;
 		DirectX::XMFLOAT3 	 spotLightDirection;
 		DirectX::XMFLOAT3 	 spotLightColor;

@@ -1,4 +1,4 @@
-#include "batSprite.h"
+ï»¿#include "batSprite.h"
 #include "Graphics.h"
 #include <shader.h>
 #include <imgui.h>
@@ -35,38 +35,48 @@ void BatSprite::Initialize(ID3D11Device* device)
 	batCursorSpriteData->rotation = 0.0f;
 	batCursorSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	batCursorSprite = std::make_unique<sprite>(device, batCursorSpriteData->texturePath.c_str());
+
+#ifndef _DEBUG
 	ShowCursor(FALSE);
+#endif // !_DEBUG
+
+	
 
 }
 
 void BatSprite::Uninitialize()
 {
-	ClipCursor(nullptr); // •K‚¸‰ðœ‚µ‚Ä‚©‚çI—¹
+	ClipCursor(nullptr); // å¿…ãšè§£é™¤ã—ã¦ã‹ã‚‰çµ‚äº†
 	batSprite.reset();
 	batSpriteData.reset();
+
+#ifndef _DEBUG
 	ShowCursor(TRUE);
+#endif // !_DEBUG
+
+	
 }
 
 void BatSprite::Update(float elapsedTime)
 {
-	// ¶ƒRƒ“ƒgƒ[ƒ‹ƒL[‚ÅƒJ[ƒ\ƒ‹§ŒÀ‚ðƒgƒOƒ‹
+	// å·¦ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚­ãƒ¼ã§ã‚«ãƒ¼ã‚½ãƒ«åˆ¶é™ã‚’ãƒˆã‚°ãƒ«
 	//static bool prevCtrl = false;
 	//bool ctrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
 	//if (ctrl && !prevCtrl)
 	//{
 	//	cursorClipped = !cursorClipped;
 	//	if (!cursorClipped)
-	//		ClipCursor(nullptr); // ‰ðœ
+	//		ClipCursor(nullptr); // è§£é™¤
 	//}
 	//prevCtrl = ctrl;
 	//
 	//if (cursorClipped)
 	//{
-	//	// ƒXƒgƒ‰ƒCƒNƒ][ƒ“‚ÌƒXƒNƒŠ[ƒ“‹«ŠE‚ðŽæ“¾
+	//	// ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³å¢ƒç•Œã‚’å–å¾—
 	//	DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
 	//	ballSprite::Instance().GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
 
-	//	// ƒNƒ‰ƒCƒAƒ“ƒgÀ•W ¨ ƒXƒNƒŠ[ƒ“À•W‚É•ÏŠ·
+	//	// ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆåº§æ¨™ â†’ ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã«å¤‰æ›
 	//	HWND hwnd = GetForegroundWindow();
 	//	POINT tl = { (LONG)zoneTopLeft.x,     (LONG)zoneTopLeft.y };
 	//	POINT br = { (LONG)zoneBottomRight.x,  (LONG)zoneBottomRight.y };
@@ -90,7 +100,7 @@ void BatSprite::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	// Win32 API‚Å’¼ÚƒNƒ‰ƒCƒAƒ“ƒgÀ•W‚ðŽæ“¾
+	// Win32 APIã§ç›´æŽ¥ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆåº§æ¨™ã‚’å–å¾—
 	POINT pt;
 	GetCursorPos(&pt);
 	ScreenToClient(GetForegroundWindow(), &pt);
@@ -105,25 +115,25 @@ void BatSprite::Render()
 	mouseX = (std::max)(zoneTopLeft.x, (std::min)(zoneBottomRight.x, mouseX));
 	mouseY = (std::max)(zoneTopLeft.y, (std::min)(zoneBottomRight.y, mouseY));
 
-	// ƒgƒ‰ƒbƒLƒ“ƒOƒf[ƒ^‚ª•\Ž¦‚³‚ê‚Ä‚¢‚éê‡‚ÍƒoƒbƒgƒXƒvƒ‰ƒCƒg‚ð•`‰æ‚µ‚È‚¢
+	// ãƒˆãƒ©ãƒƒã‚­ãƒ³ã‚°ãƒ‡ãƒ¼ã‚¿ãŒè¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹å ´åˆã¯ãƒãƒƒãƒˆã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚’æç”»ã—ãªã„
 	if (TrackingData::Instance().IsTrackingDataVisible()) return;
 	
 	if (batSprite && batSpriteData)
 	{
-		// ‰æ‘œ‚Ì’†S‚ðƒ}ƒEƒXˆÊ’u‚É‡‚í‚¹‚é
+		// ç”»åƒã®ä¸­å¿ƒã‚’ãƒžã‚¦ã‚¹ä½ç½®ã«åˆã‚ã›ã‚‹
 		float drawX = mouseX - batSpriteData->size.x * 0.7f;
 		float drawY = mouseY - batSpriteData->size.y;
 
-		//¶ƒoƒbƒ^[‚ÌŽž‚Í”½“]‚³‚¹‚é
+		//å·¦ãƒãƒƒã‚¿ãƒ¼ã®æ™‚ã¯åè»¢ã•ã›ã‚‹
 		Player& player = Player::Instance();
 		if (player.IsRightBatter())
 		{
-			batSpriteData->rotation = 25.0f; // ‰Eƒoƒbƒ^[‚Ìê‡‚Í‰ñ“]‚³‚¹‚È‚¢
+			batSpriteData->rotation = 25.0f; // å³ãƒãƒƒã‚¿ãƒ¼ã®å ´åˆã¯å›žè»¢ã•ã›ãªã„
 		}
 		else
 		{
-			batSpriteData->rotation = 155.0f; // ¶ƒoƒbƒ^[‚Ìê‡‚Í180“x‰ñ“]‚³‚¹‚é
-			drawX = mouseX - batSpriteData->size.x * 0.3f; // ¶ƒoƒbƒ^[‚Ìê‡‚ÍˆÊ’u‚ð’²®
+			batSpriteData->rotation = 155.0f; // å·¦ãƒãƒƒã‚¿ãƒ¼ã®å ´åˆã¯180åº¦å›žè»¢ã•ã›ã‚‹
+			drawX = mouseX - batSpriteData->size.x * 0.3f; // å·¦ãƒãƒƒã‚¿ãƒ¼ã®å ´åˆã¯ä½ç½®ã‚’èª¿æ•´
 		}
 
 
@@ -137,7 +147,7 @@ void BatSprite::Render()
 
 	if(batCursorSprite && batCursorSpriteData)
 	{
-		// ‰æ‘œ‚Ì’†S‚ðƒ}ƒEƒXˆÊ’u‚É‡‚í‚¹‚é
+		// ç”»åƒã®ä¸­å¿ƒã‚’ãƒžã‚¦ã‚¹ä½ç½®ã«åˆã‚ã›ã‚‹
 		float drawX = mouseX - batCursorSpriteData->size.x * 0.5f;
 		float drawY = mouseY - batCursorSpriteData->size.y * 0.5f;
 		batCursorSprite->render(dc,
@@ -148,7 +158,7 @@ void BatSprite::Render()
 			batCursorSpriteData->rotation);
 	}
 
-	// ŒãŽn––iWind ‚Æ“¯‚¶j
+	// å¾Œå§‹æœ«ï¼ˆWind ã¨åŒã˜ï¼‰
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
 	dc->IASetInputLayout(nullptr);
@@ -161,11 +171,11 @@ void BatSprite::DrawGUI()
 {
 	if (batSpriteData)
 	{
-		if (ImGui::CollapsingHeader(u8"2D ƒXƒvƒ‰ƒCƒg"))
+		if (ImGui::CollapsingHeader(u8"2D ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ"))
 		{
-			ImGui::DragFloat2(u8"ƒ][ƒ“ ˆÊ’u(px)", &batSpriteData->position.x, 1.0f);
-			ImGui::DragFloat2(u8"ƒ][ƒ“ ƒTƒCƒY(px)", &batSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
-			ImGui::ColorEdit4(u8"ƒ][ƒ“ “§–¾“x", &batSpriteData->color.x);
+			ImGui::DragFloat2(u8"ã‚¾ãƒ¼ãƒ³ ä½ç½®(px)", &batSpriteData->position.x, 1.0f);
+			ImGui::DragFloat2(u8"ã‚¾ãƒ¼ãƒ³ ã‚µã‚¤ã‚º(px)", &batSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
+			ImGui::ColorEdit4(u8"ã‚¾ãƒ¼ãƒ³ é€æ˜Žåº¦", &batSpriteData->color.x);
 
 		
 		}

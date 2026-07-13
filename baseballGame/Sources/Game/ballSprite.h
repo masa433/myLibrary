@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 #include <directXmath.h>
 #include <memory>
@@ -16,7 +16,7 @@ using json = nlohmann::json;
 class ballSprite
 {
 public:
-	//ƒCƒ“ƒXƒ^ƒ“ƒX
+	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	static ballSprite& Instance()
 	{
 		static ballSprite instance;
@@ -35,7 +35,7 @@ public:
 	void SetShowBallBoard(bool value) { showBallBoard = value; }
 
 private:
-	//ƒXƒvƒ‰ƒCƒgƒf[ƒ^
+	//ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒ‡ãƒ¼ã‚¿
 	struct Sprite
 	{
 		std::wstring texturePath;
@@ -55,22 +55,22 @@ private:
 	bool showBallBoard = false;
 	
 
-	// ƒVƒF[ƒ_[ŠÖ˜A
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼é–¢é€£
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
 
 public:
-	//2DƒXƒNƒŠ[ƒ“À•Wã‚ÌƒXƒgƒ‰ƒCƒNƒ][ƒ“‚Ì’†S‚ÆƒTƒCƒY
+	//2Dã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ä¸Šã®ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³ã®ä¸­å¿ƒã¨ã‚µã‚¤ã‚º
 	DirectX::XMFLOAT2 zone3DCenter = { 0.0f, 0.8f };
 	DirectX::XMFLOAT2 zone3DSize = { 0.43f,0.6f };
 
-	//ƒ{[ƒ‹‚Ì‹OÕ
+	//ãƒœãƒ¼ãƒ«ã®è»Œè·¡
 	std::deque<DirectX::XMFLOAT2> ballTrail2D;
 	static constexpr int MAX_TRAIL = 60;
 	bool showTrail = true;
 
-	//‘O‰ñ‚Ì“Š‹…ó‘Ô
+	//å‰å›ã®æŠ•çƒçŠ¶æ…‹
 	bool prevThrown = false;
 
 	struct ballBreak2D
@@ -79,7 +79,7 @@ public:
 		float breakY;
 	};
 
-	//Še‹…í‚Ì•Ï‰»—Ê
+	//å„çƒç¨®ã®å¤‰åŒ–é‡
 	ballBreak2D pitchBreaks[19] =
 	{
 		{  0.0f,  0.0f },  // Fastball
@@ -103,11 +103,11 @@ public:
 		{  0.0f,  0.0f }   // BlazingFastball
 	};
 
-	const int PITCH_TYPE_COUNT = 19;  // ‹…í‚Ì”
+	const int PITCH_TYPE_COUNT = 19;  // çƒç¨®ã®æ•°
 
-	int currentPitchIndex = 0;  // Œ»İ‚Ì‹…íƒCƒ“ƒfƒbƒNƒX
+	int currentPitchIndex = 0;  // ç¾åœ¨ã®çƒç¨®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 
-	//ƒXƒgƒ‰ƒCƒNƒ][ƒ“‚ÌƒOƒŠƒbƒhi3x3j
+	//ã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³ã®ã‚°ãƒªãƒƒãƒ‰ï¼ˆ3x3ï¼‰
 	DirectX::XMFLOAT2 strikeZoneGrid[3][3] =
 	{
 		{{ -0.2f,  0.52f }, {  0.0f,  0.52f }, {  0.2f,  0.52f } },
@@ -115,7 +115,7 @@ public:
 		{ { -0.2f, 1.08f }, {  0.0f, 1.08f }, {  0.2f, 1.08f }},
 	};
 
-	//ƒ{[ƒ‹ƒ][ƒ“‚ÌƒOƒŠƒbƒhi5x5j
+	//ãƒœãƒ¼ãƒ«ã‚¾ãƒ¼ãƒ³ã®ã‚°ãƒªãƒƒãƒ‰ï¼ˆ5x5ï¼‰
 	DirectX::XMFLOAT2 ballZoneGrid[5][5] =
 	{
 		{ { -0.21f,  0.5f }, { -0.143f,  0.5f }, {  0.0f,  0.5f }, {  0.143f,  0.5f }, { 0.21f, 0.5f } },
@@ -127,7 +127,7 @@ public:
 
 	bool useBallBreak = false;
 
-	// ƒOƒŒ[ƒh(F`S)‚ğ•\¦—p•¶š—ñ‚É•ÏŠ·
+	// ã‚°ãƒ¬ãƒ¼ãƒ‰(Fï½S)ã‚’è¡¨ç¤ºç”¨æ–‡å­—åˆ—ã«å¤‰æ›
 	static const char* GetBreakGradeLabel(Pitcher::BreakGrade grade)
 	{
 		switch (grade)
@@ -145,7 +145,7 @@ public:
 		return "C";
 	}
 
-	//ƒOƒŒ[ƒh‚ğŠî€•Ï‰»—Ê‚ÌC‚É‘Î‚·‚é”{—¦‚É•ÏŠ·
+	//ã‚°ãƒ¬ãƒ¼ãƒ‰ã‚’åŸºæº–å¤‰åŒ–é‡ã®Cã«å¯¾ã™ã‚‹å€ç‡ã«å¤‰æ›
 	static float GetBreakGradeScale(Pitcher::BreakGrade grade)
 	{
 		switch (grade)
@@ -163,7 +163,7 @@ public:
 		return 1.0f;
 	}
 
-	//“Šè1l•ªE‹…í16ŒÂ•ª‚Ì•Ï‰»—Ê‚ğİ’è‚·‚é
+	//æŠ•æ‰‹1äººåˆ†ãƒ»çƒç¨®16å€‹åˆ†ã®å¤‰åŒ–é‡ã‚’è¨­å®šã™ã‚‹
 	struct PitchBreakSet
 	{
 		ballBreak2D breaks[19];
@@ -177,23 +177,23 @@ public:
 		bool initialized = false;
 	};
 
-	// ƒCƒ“ƒfƒbƒNƒX‚Í Pitcher::RealPitcher ‚Ì’liNone‚Í–¢g—pj
-	// “Šè‚²‚Æ‚ÉŠ®‘S‚É“Æ—§‚µ‚½ƒf[ƒ^‚ğ‚Â‚½‚ßA‘¼‚Ì“Šè‚Ì’l‚ğ‘‚«Š·‚¦‚é‚±‚Æ‚Í‚È‚¢
+	// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã¯ Pitcher::RealPitcher ã®å€¤ï¼ˆNoneã¯æœªä½¿ç”¨ï¼‰
+	// æŠ•æ‰‹ã”ã¨ã«å®Œå…¨ã«ç‹¬ç«‹ã—ãŸãƒ‡ãƒ¼ã‚¿ã‚’æŒã¤ãŸã‚ã€ä»–ã®æŠ•æ‰‹ã®å€¤ã‚’æ›¸ãæ›ãˆã‚‹ã“ã¨ã¯ãªã„
 	std::array<PitchBreakSet, static_cast<size_t>(Pitcher::RealPitcher::Count)> realPitcherBreaks;
 
-	Pitcher::RealPitcher lastAppliedPitcher = Pitcher::RealPitcher::None; // ÅŒã‚É“K—p‚µ‚½“Šè‚Ìí—Ş
+	Pitcher::RealPitcher lastAppliedPitcher = Pitcher::RealPitcher::None; // æœ€å¾Œã«é©ç”¨ã—ãŸæŠ•æ‰‹ã®ç¨®é¡
 
-	// Àİ“Šè‚Ì‘I‘ğ‚ª•Ï‚í‚Á‚½‚±‚Æ‚ğŒŸ’m‚µA‚»‚Ì“Šèê—p‚Ì•Ï‰»—Ê‚ğpitchBreaks‚Ö”½‰f‚·‚é
+	// å®Ÿåœ¨æŠ•æ‰‹ã®é¸æŠãŒå¤‰ã‚ã£ãŸã“ã¨ã‚’æ¤œçŸ¥ã—ã€ãã®æŠ•æ‰‹å°‚ç”¨ã®å¤‰åŒ–é‡ã‚’pitchBreaksã¸åæ˜ ã™ã‚‹
 	void SyncRealPitcherBreaks();
 
-	// w’è“Šè‚Ì•Ï‰»—ÊƒZƒbƒg‚ği‰‰ñ‚Ì‚İjPitcher‚Ì‚¿‹…ƒf[ƒ^‚©‚ç¶¬‚·‚é
+	// æŒ‡å®šæŠ•æ‰‹ã®å¤‰åŒ–é‡ã‚»ãƒƒãƒˆã‚’ï¼ˆåˆå›ã®ã¿ï¼‰Pitcherã®æŒã¡çƒãƒ‡ãƒ¼ã‚¿ã‹ã‚‰ç”Ÿæˆã™ã‚‹
 	void BuildRealPitcherBreakSet(Pitcher::RealPitcher rp);
 
 public:
-	DirectX::XMFLOAT2 aiTargetScreen = { 0.0f, 0.0f }; // AI‚ª‘_‚¤ƒ^[ƒQƒbƒgˆÊ’uiƒXƒNƒŠ[ƒ“À•Wj
-	bool hasAITarget = false; // AI‚ªƒ^[ƒQƒbƒgˆÊ’u‚ğİ’è‚µ‚½‚©‚Ç‚¤‚©
+	DirectX::XMFLOAT2 aiTargetScreen = { 0.0f, 0.0f }; // AIãŒç‹™ã†ã‚¿ãƒ¼ã‚²ãƒƒãƒˆä½ç½®ï¼ˆã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ï¼‰
+	bool hasAITarget = false; // AIãŒã‚¿ãƒ¼ã‚²ãƒƒãƒˆä½ç½®ã‚’è¨­å®šã—ãŸã‹ã©ã†ã‹
 
-	//ŠO•”‚©‚ç3DÀ•W‚É•ÏŠ·‚µ‚Äæ“¾‚·‚é
+	//å¤–éƒ¨ã‹ã‚‰3Dåº§æ¨™ã«å¤‰æ›ã—ã¦å–å¾—ã™ã‚‹
 	DirectX::XMFLOAT2 GetAITarget3D() const;
 	void SetAITargetFromWorld(float worldX, float worldY);
 
@@ -214,13 +214,13 @@ public:
 
 	void GetStrikeZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX::XMFLOAT2& outBottomRight) const;
 
-	bool strikeJudgeDone = false;// ƒXƒgƒ‰ƒCƒN”»’è‚ªŠ®—¹‚µ‚½‚©‚Ç‚¤‚©
+	bool strikeJudgeDone = false;// ã‚¹ãƒˆãƒ©ã‚¤ã‚¯åˆ¤å®šãŒå®Œäº†ã—ãŸã‹ã©ã†ã‹
 
-	DirectX::XMFLOAT2 aiTargetFinalScreen = { 0.0f, 0.0f }; // AI‚ªÅI“I‚É‘_‚¤ƒ^[ƒQƒbƒgˆÊ’uiƒXƒNƒŠ[ƒ“À•Wj
-	bool aiTargetLocked = false; // AI‚ªƒ^[ƒQƒbƒgˆÊ’u‚ğƒƒbƒN‚µ‚½‚©‚Ç‚¤‚©
+	DirectX::XMFLOAT2 aiTargetFinalScreen = { 0.0f, 0.0f }; // AIãŒæœ€çµ‚çš„ã«ç‹™ã†ã‚¿ãƒ¼ã‚²ãƒƒãƒˆä½ç½®ï¼ˆã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ï¼‰
+	bool aiTargetLocked = false; // AIãŒã‚¿ãƒ¼ã‚²ãƒƒãƒˆä½ç½®ã‚’ãƒ­ãƒƒã‚¯ã—ãŸã‹ã©ã†ã‹
 
-	//3D‚Ìƒ{[ƒ‹‚Æƒoƒbƒg‚ª“–‚½‚Á‚½’iŠK‚ÅA2Dƒ{[ƒ‹‚Ì“®‚«‚ğ~‚ß‚é
-	// ‚±‚ê‚ğtrue‚É‚·‚é‚ÆA2Dƒ{[ƒ‹‚Í“–‚½‚Á‚½ˆÊ’u‚Å~‚Ü‚é
+	//3Dã®ãƒœãƒ¼ãƒ«ã¨ãƒãƒƒãƒˆãŒå½“ãŸã£ãŸæ®µéšã§ã€2Dãƒœãƒ¼ãƒ«ã®å‹•ãã‚’æ­¢ã‚ã‚‹
+	// ã“ã‚Œã‚’trueã«ã™ã‚‹ã¨ã€2Dãƒœãƒ¼ãƒ«ã¯å½“ãŸã£ãŸä½ç½®ã§æ­¢ã¾ã‚‹
 	bool stopBallOnHit = false;
 	bool SetStopBallOnHit(bool value) { stopBallOnHit = value; return stopBallOnHit; }
 
@@ -229,7 +229,7 @@ public:
 	int activePitchIndex = 0;
 
 public:
-	// ƒRƒ“ƒ\[ƒ‹ƒƒO‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğƒZƒbƒg
+	// ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ãƒ­ã‚°ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’ã‚»ãƒƒãƒˆ
 	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
 
 private:
@@ -239,7 +239,7 @@ public:
 	FontRenderer pitchInfoFont;
 	float pitchInfoFontScale = 1.0f;
 
-	// ‹…í‚²‚Æ‚Ì•\¦ˆÊ’uƒIƒtƒZƒbƒgi19‹…í•ªj
+	// çƒç¨®ã”ã¨ã®è¡¨ç¤ºä½ç½®ã‚ªãƒ•ã‚»ãƒƒãƒˆï¼ˆ19çƒç¨®åˆ†ï¼‰
 	DirectX::XMFLOAT2 pitchNameOffsets[19] = {
 		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},
 		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},
@@ -251,11 +251,11 @@ public:
 		{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f},{0.0f,10.0f}
 	};
 
-	// •\¦Fi‹…í–¼‚ÍŒÅ’è‚È‚Ì‚Å‚±‚±‚Å‚Í‹…‘¬‚Ì’ÊíF‚Ì‚İg‚¤j
+	// è¡¨ç¤ºè‰²ï¼ˆçƒç¨®åã¯å›ºå®šãªã®ã§ã“ã“ã§ã¯çƒé€Ÿã®é€šå¸¸è‰²ã®ã¿ä½¿ã†ï¼‰
 	DirectX::XMFLOAT4 pitchSpeedNormalColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-	DirectX::XMFLOAT4 pitchSpeedFastColor = { 1.0f, 0.9f, 0.0f, 1.0f }; // ‰©F
-	DirectX::XMFLOAT4 pitchSpeedHighFastColor = { 1.0f, 0.5f, 0.0f, 1.0f }; // ƒIƒŒƒ“ƒWF
+	DirectX::XMFLOAT4 pitchSpeedFastColor = { 1.0f, 0.9f, 0.0f, 1.0f }; // é»„è‰²
+	DirectX::XMFLOAT4 pitchSpeedHighFastColor = { 1.0f, 0.5f, 0.0f, 1.0f }; // ã‚ªãƒ¬ãƒ³ã‚¸è‰²
 	float pitchSpeedFastThresholdKmh = 150.0f;
-	float pitchSpeedHighFastThresholdKmh = 160.0f; // ‚±‚êˆÈã‚Ì‹…‘¬‚Í‚³‚ç‚É‹­’²•\¦
+	float pitchSpeedHighFastThresholdKmh = 160.0f; // ã“ã‚Œä»¥ä¸Šã®çƒé€Ÿã¯ã•ã‚‰ã«å¼·èª¿è¡¨ç¤º
 
 };

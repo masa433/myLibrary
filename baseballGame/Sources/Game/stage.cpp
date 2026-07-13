@@ -1,7 +1,7 @@
-#include "stage.h"
+ï»¿#include "stage.h"
 #include "Graphics.h"
 
-// ƒ[ƒ‹ƒh•ÏŠ·Ï‚İ’¸“_‚ÅPxTriangleMesh‚ğì‚èA„‘Ì‚ğ¶¬‚·‚é
+// ãƒ¯ãƒ¼ãƒ«ãƒ‰å¤‰æ›æ¸ˆã¿é ‚ç‚¹ã§PxTriangleMeshã‚’ä½œã‚Šã€å‰›ä½“ã‚’ç”Ÿæˆã™ã‚‹
 static void CreateStaticMeshActor(
 	physx::PxPhysics* pxPhysics, physx::PxScene* pxScene,
 	const ModelResource::Mesh& mesh, const DirectX::XMMATRIX& NodeTransform,
@@ -11,9 +11,9 @@ static void CreateStaticMeshActor(
 {
 	using namespace DirectX;
 
-	//’¸“_‚ğƒ[ƒ‹ƒh•ÏŠ·‚·‚é
+	//é ‚ç‚¹ã‚’ãƒ¯ãƒ¼ãƒ«ãƒ‰å¤‰æ›ã™ã‚‹
 	std::vector<physx::PxVec3> transformedVertices;
-	transformedVertices.reserve(mesh.vertices.size());// •ÏŠ·Œã‚Ì’¸“_‚ğŠi”[‚·‚éƒxƒNƒ^[‚ğŠm•Û
+	transformedVertices.reserve(mesh.vertices.size());// å¤‰æ›å¾Œã®é ‚ç‚¹ã‚’æ ¼ç´ã™ã‚‹ãƒ™ã‚¯ã‚¿ãƒ¼ã‚’ç¢ºä¿
 	for(const auto& vertex : mesh.vertices)
 	{
 		XMVECTOR pos = XMVectorSet(vertex.position.x, vertex.position.y, vertex.position.z, 1.0f);
@@ -23,7 +23,7 @@ static void CreateStaticMeshActor(
 		transformedVertices.emplace_back(transformedPos.x, transformedPos.y, transformedPos.z);
 	}
 
-	// ‹¾‰f(•‰‚Ìs—ñ®)‚ª‚ ‚ê‚ÎOŠpŒ`‚ÌŠª‚«‡‚ğ”½“]‚µ‚Ä–@ü‚ÌŒü‚«‚ğ³‚µ‚­–ß‚·
+	// é¡æ˜ (è² ã®è¡Œåˆ—å¼)ãŒã‚ã‚Œã°ä¸‰è§’å½¢ã®å·»ãé †ã‚’åè»¢ã—ã¦æ³•ç·šã®å‘ãã‚’æ­£ã—ãæˆ»ã™
 	float detValue = XMVectorGetX(XMMatrixDeterminant(NodeTransform));
 	std::vector<UINT> fixedIndices(mesh.indices.begin(), mesh.indices.end());
 	if (detValue < 0.0f)
@@ -47,11 +47,11 @@ static void CreateStaticMeshActor(
 	physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
 	_ASSERT_EXPR(pxTriangleMesh != nullptr, "Failed to cook triangle mesh");
 
-	physx::PxTransform pxTransform(physx::PxIdentity); // •ÏŠ·‚Í’¸“_‚ÉÄ‚«‚İÏ‚İ
+	physx::PxTransform pxTransform(physx::PxIdentity); // å¤‰æ›ã¯é ‚ç‚¹ã«ç„¼ãè¾¼ã¿æ¸ˆã¿
 	physx::PxRigidStatic* pxRigidBody = pxPhysics->createRigidStatic(pxTransform);
 	_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create rigid body");
 
-	physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh); // ƒXƒP[ƒ‹‚Í“™”{
+	physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh); // ã‚¹ã‚±ãƒ¼ãƒ«ã¯ç­‰å€
 	physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *material);
 	pxRigidBody->setName(name);
 
@@ -60,12 +60,12 @@ static void CreateStaticMeshActor(
 	triangle_meshes.emplace_back(pxTriangleMesh);
 }
 
-// ‰Šú‰»
+// åˆæœŸåŒ–
 void stage::initialize()
 {
 	ID3D11Device* device = Graphics::Instance().GetDevice();
 
-	// ƒ‚ƒfƒ‹‚Ì“Ç‚İ‚İ
+	// ãƒ¢ãƒ‡ãƒ«ã®èª­ã¿è¾¼ã¿
 	stand = std::make_unique<Model>(".\\resources\\field\\stand.mdl");
 	ground = std::make_unique<Model>(".\\resources\\field\\ground.mdl");
 	stand2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\stand.glb");
@@ -80,7 +80,7 @@ void stage::initialize()
 	pole2->build_static_batches(device);
 	lightTower2->build_static_batches(device);
 
-	// ˆÊ’uAƒXƒP[ƒ‹A‰ñ“]‚Ì‰Šú‰»
+	// ä½ç½®ã€ã‚¹ã‚±ãƒ¼ãƒ«ã€å›è»¢ã®åˆæœŸåŒ–
 	standPosition = { 0.0f, 0.0f, 0.0f };
 	standScale = { 1.0f, 1.0f, 1.0f };
 	standAngle = { 0.0f, 0.0f, 0.0f };
@@ -99,29 +99,29 @@ void stage::initialize()
 	homerunLineEditor.extraHeight = 40.0f;
 
 	foulLineEditor.triggerName = "FoulTrigger";
-	foulLineEditor.raycastTargetName = "Stand";  // ¦ƒtƒ@ƒEƒ‹ƒ‰ƒCƒ“‚ğƒNƒŠƒbƒN‚·‚é‘ÎÛB’n–Ê‚ª"Ground"‚Æ‚¢‚¤–¼‘O‚Å“o˜^‚³‚ê‚Ä‚¢‚é‚©—vŠm”F
+	foulLineEditor.raycastTargetName = "Stand";  // â€»ãƒ•ã‚¡ã‚¦ãƒ«ãƒ©ã‚¤ãƒ³ã‚’ã‚¯ãƒªãƒƒã‚¯ã™ã‚‹å¯¾è±¡ã€‚åœ°é¢ãŒ"Ground"ã¨ã„ã†åå‰ã§ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ã‹è¦ç¢ºèª
 	foulLineEditor.thickness = 0.5f;
 	foulLineEditor.extraHeight = 3.0f;
 
-	//Ã“I„‘Ì‚Ìì¬
+	//é™çš„å‰›ä½“ã®ä½œæˆ
 	{
 		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-		// Ground—p‚Ìƒ}ƒeƒŠƒAƒ‹i‚æ‚­’µ‚Ë‚éj
+		// Groundç”¨ã®ãƒãƒ†ãƒªã‚¢ãƒ«ï¼ˆã‚ˆãè·³ã­ã‚‹ï¼‰
 		physx::PxMaterial* groundMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.3f);
 
-		// Stand—p‚Ìƒ}ƒeƒŠƒAƒ‹i‚Ù‚Ú’µ‚Ë‚È‚¢j
+		// Standç”¨ã®ãƒãƒ†ãƒªã‚¢ãƒ«ï¼ˆã»ã¼è·³ã­ãªã„ï¼‰
 		physx::PxMaterial* standMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.0f);
 
-		//Pole—p‚Ìƒ}ƒeƒŠƒAƒ‹i‚ ‚Ü‚è’µ‚Ë‚È‚¢j
+		//Poleç”¨ã®ãƒãƒ†ãƒªã‚¢ãƒ«ï¼ˆã‚ã¾ã‚Šè·³ã­ãªã„ï¼‰
 		physx::PxMaterial* poleMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.2f);
 
 		DirectX::XMMATRIX StandTransform = DirectX::XMLoadFloat4x4(&standTransform);
 		DirectX::XMMATRIX GroundTransform = DirectX::XMLoadFloat4x4(&groundTransform);
 		DirectX::XMMATRIX PoleTransform = DirectX::XMLoadFloat4x4(&poleTransform);
 
-		// Stand ƒ‚ƒfƒ‹‚ÌƒƒbƒVƒ…‚ğˆ—
+		// Stand ãƒ¢ãƒ‡ãƒ«ã®ãƒ¡ãƒƒã‚·ãƒ¥ã‚’å‡¦ç†
 		const ModelResource* standResources = stand->GetResource();
 		for (const ModelResource::Mesh& mesh : standResources->GetMeshes())
 		{
@@ -134,7 +134,7 @@ void stage::initialize()
 			CreateStaticMeshActor(pxPhysics, pxScene, mesh, NodeTransform, standMaterial, "Stand", actors, triangle_meshes);
 		}
 
-		// Ground ƒ‚ƒfƒ‹‚ÌƒƒbƒVƒ…‚ğˆ—
+		// Ground ãƒ¢ãƒ‡ãƒ«ã®ãƒ¡ãƒƒã‚·ãƒ¥ã‚’å‡¦ç†
 		const ModelResource* groundResources = ground->GetResource();
 		for (const ModelResource::Mesh& mesh : groundResources->GetMeshes())
 		{
@@ -147,7 +147,7 @@ void stage::initialize()
 			CreateStaticMeshActor(pxPhysics, pxScene, mesh, NodeTransform, groundMaterial, "Ground", actors, triangle_meshes);
 		}
 
-		// Pole ƒ‚ƒfƒ‹‚ÌƒƒbƒVƒ…‚ğˆ—
+		// Pole ãƒ¢ãƒ‡ãƒ«ã®ãƒ¡ãƒƒã‚·ãƒ¥ã‚’å‡¦ç†
 		const ModelResource* poleResources = pole->GetResource();
 		for (const ModelResource::Mesh& mesh : poleResources->GetMeshes())
 		{
@@ -168,21 +168,21 @@ void stage::UpdateLineEditor(LineTriggerEditor& editor,
 	float viewportX, float viewportY, float viewportWidth, float viewportHeight)
 {
 	if (!editor.editMode)return;
-	if (!ImGui::IsMouseClicked(ImGuiMouseButton_Left)) return;// ¶ƒNƒŠƒbƒN‚ª‰Ÿ‚³‚ê‚Ä‚¢‚È‚¢ê‡‚Í‰½‚à‚µ‚È‚¢
+	if (!ImGui::IsMouseClicked(ImGuiMouseButton_Left)) return;// å·¦ã‚¯ãƒªãƒƒã‚¯ãŒæŠ¼ã•ã‚Œã¦ã„ãªã„å ´åˆã¯ä½•ã‚‚ã—ãªã„
 
 	ImVec2 mousePos = ImGui::GetMousePos();
 
-	//GameViewƒEƒBƒ“ƒhƒE“à‚©‚Ç‚¤‚©”»’è
+	//GameViewã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…ã‹ã©ã†ã‹åˆ¤å®š
 	float localX = mousePos.x - viewportX;
 	float localY = mousePos.y - viewportY;
 	if(localX < 0 || localX > viewportWidth || localY < 0 || localY > viewportHeight)
 	{
-		return; // GameViewƒEƒBƒ“ƒhƒEŠO‚È‚ç‰½‚à‚µ‚È‚¢
+		return; // GameViewã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å¤–ãªã‚‰ä½•ã‚‚ã—ãªã„
 	}
 
-	//ƒXƒNƒŠ[ƒ“À•W‚ğ³‹K‰»ƒfƒoƒCƒXÀ•W‚É•ÏŠ·
+	//ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’æ­£è¦åŒ–ãƒ‡ãƒã‚¤ã‚¹åº§æ¨™ã«å¤‰æ›
 	float ndcX = (localX / viewportWidth) * 2.0f - 1.0f;
-	float ndcY = 1.0f - (localY / viewportHeight) * 2.0f; // Y²”½“]
+	float ndcY = 1.0f - (localY / viewportHeight) * 2.0f; // Yè»¸åè»¢
 
 	DirectX::XMMATRIX View = DirectX::XMLoadFloat4x4(&view);
 	DirectX::XMMATRIX Proj = DirectX::XMLoadFloat4x4(&proj);
@@ -200,18 +200,18 @@ void stage::UpdateLineEditor(LineTriggerEditor& editor,
 	physx::PxScene* pxScene = Physics::Instance().GetScene();
 	physx::PxRaycastBuffer hitBuffer;
 	physx::PxQueryFilterData filterData;
-	filterData.flags |= physx::PxQueryFlag::eSTATIC; // Ã“IƒIƒuƒWƒFƒNƒg‚Ì‚İ‚ğ‘ÎÛ
+	filterData.flags |= physx::PxQueryFlag::eSTATIC; // é™çš„ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ã¿ã‚’å¯¾è±¡
 
 	bool hit = pxScene->raycast(
-		physx::PxVec3(rayOrigin.x, rayOrigin.y, rayOrigin.z),// ƒŒƒC‚ÌŒ´“_
-		physx::PxVec3(rayDir.x, rayDir.y, rayDir.z),// ƒŒƒC‚Ì•ûŒü
-		1000.0f, // Å‘å‹——£
-		hitBuffer,// ƒqƒbƒgî•ñ‚ğŠi”[‚·‚éƒoƒbƒtƒ@
-		physx::PxHitFlag::eDEFAULT,// ƒqƒbƒgî•ñ‚Ìæ“¾ƒtƒ‰ƒO
-		filterData// ƒtƒBƒ‹ƒ^ƒŠƒ“ƒOî•ñ
+		physx::PxVec3(rayOrigin.x, rayOrigin.y, rayOrigin.z),// ãƒ¬ã‚¤ã®åŸç‚¹
+		physx::PxVec3(rayDir.x, rayDir.y, rayDir.z),// ãƒ¬ã‚¤ã®æ–¹å‘
+		1000.0f, // æœ€å¤§è·é›¢
+		hitBuffer,// ãƒ’ãƒƒãƒˆæƒ…å ±ã‚’æ ¼ç´ã™ã‚‹ãƒãƒƒãƒ•ã‚¡
+		physx::PxHitFlag::eDEFAULT,// ãƒ’ãƒƒãƒˆæƒ…å ±ã®å–å¾—ãƒ•ãƒ©ã‚°
+		filterData// ãƒ•ã‚£ãƒ«ã‚¿ãƒªãƒ³ã‚°æƒ…å ±
 	);
 
-	// ƒqƒbƒg‚µ‚½ê‡Aƒqƒbƒg‚µ‚½ˆÊ’u‚ğƒtƒFƒ“ƒXƒ‰ƒCƒ“‚Ì’¸“_‚Æ‚µ‚Ä’Ç‰Á
+	// ãƒ’ãƒƒãƒˆã—ãŸå ´åˆã€ãƒ’ãƒƒãƒˆã—ãŸä½ç½®ã‚’ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®é ‚ç‚¹ã¨ã—ã¦è¿½åŠ 
 	if (hit && hitBuffer.hasBlock)
 	{
 		physx::PxRigidActor* actor = hitBuffer.block.actor;
@@ -228,7 +228,7 @@ void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 	physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-	// Šù‘¶‚ÌƒtƒFƒ“ƒXƒ‰ƒCƒ“‚ÌƒgƒŠƒK[ƒRƒ‰ƒCƒ_[‚ğíœ
+	// æ—¢å­˜ã®ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®ãƒˆãƒªã‚¬ãƒ¼ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’å‰Šé™¤
 	for (auto* actor : editor.triggers)
 	{
 		pxScene->removeActor(*actor);
@@ -238,7 +238,7 @@ void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 
 	if(editor.linePoints.size() < 2)
 	{
-		return; // ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚Ì’¸“_‚ª2‚Â–¢–‚Ìê‡‚Í‰½‚à‚µ‚È‚¢
+		return; // ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®é ‚ç‚¹ãŒ2ã¤æœªæº€ã®å ´åˆã¯ä½•ã‚‚ã—ãªã„
 	}
 
 	physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
@@ -249,23 +249,23 @@ void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 		const auto& p1 = editor.linePoints[i];
 		const auto& p2 = editor.linePoints[i + 1];
 		
-		// ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚Ì’†“_‚ğŒvZ
+		// ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®ä¸­ç‚¹ã‚’è¨ˆç®—
 		float dx = p2.x - p1.x;
 		float dz = p2.z - p1.z;
 		float length = std::sqrt(dx * dx + dz * dz);
-		if (length < 1e-3f) continue; // ’·‚³‚ª‚Ù‚Úƒ[ƒ‚Ìê‡‚ÍƒXƒLƒbƒv
+		if (length < 1e-3f) continue; // é•·ã•ãŒã»ã¼ã‚¼ãƒ­ã®å ´åˆã¯ã‚¹ã‚­ãƒƒãƒ—
 
 		float midX = (p1.x + p2.x) * 0.5f;
 		float midZ = (p1.z + p2.z) * 0.5f;
-		float baseY = (std::min)(p1.y, p2.y); // ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚Ì‰º’[‚ÌYÀ•W
-		float height = editor.extraHeight;// ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚Ìã’[‚©‚ç‚³‚ç‚Éã‚ÖL‚Î‚·‚‚³
-		float midY = baseY + height * 0.5f; // ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚Ì’†“_‚ÌYÀ•W
+		float baseY = (std::min)(p1.y, p2.y); // ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®ä¸‹ç«¯ã®Yåº§æ¨™
+		float height = editor.extraHeight;// ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®ä¸Šç«¯ã‹ã‚‰ã•ã‚‰ã«ä¸Šã¸ä¼¸ã°ã™é«˜ã•
+		float midY = baseY + height * 0.5f; // ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®ä¸­ç‚¹ã®Yåº§æ¨™
 
-		float angle = std::atan2(-dz, dx);// ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚ÌŠp“x‚ğŒvZ
+		float angle = std::atan2(-dz, dx);// ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®è§’åº¦ã‚’è¨ˆç®—
 
 		physx::PxTransform triggerTransform(
 			physx::PxVec3(midX, midY, midZ),
-			physx::PxQuat(angle, physx::PxVec3(0, 1, 0)) // Y²‰ñ“]
+			physx::PxQuat(angle, physx::PxVec3(0, 1, 0)) // Yè»¸å›è»¢
 		);
 
 		physx::PxBoxGeometry geometry(length * 0.5f, height * 0.5f, editor.thickness * 0.5f);
@@ -326,33 +326,33 @@ void stage::DrawLineOverlay(const LineTriggerEditor& editor,
 	}
 }
 
-// XV
+// æ›´æ–°
 void stage::update(float elapsedTime)
 {
 
-	//ƒXƒ^ƒ“ƒh—p
-	//ƒXƒ^ƒ“ƒh‚¾‚¯‰EèŒn‚Å•`‰æ‚·‚é
+	//ã‚¹ã‚¿ãƒ³ãƒ‰ç”¨
+	//ã‚¹ã‚¿ãƒ³ãƒ‰ã ã‘å³æ‰‹ç³»ã§æç”»ã™ã‚‹
 	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(standScale.x, standScale.y, standScale.z);
 	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(standAngle.x, standAngle.y, standAngle.z);
 	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(standPosition.x, standPosition.y, standPosition.z);
 	DirectX::XMMATRIX world = S * R * T;
 	DirectX::XMStoreFloat4x4(&standTransform, world);
 
-	//ƒOƒ‰ƒEƒ“ƒh—p
+	//ã‚°ãƒ©ã‚¦ãƒ³ãƒ‰ç”¨
 	S = DirectX::XMMatrixScaling(groundScale.x, groundScale.y, groundScale.z);
 	R = DirectX::XMMatrixRotationRollPitchYaw(groundAngle.x, groundAngle.y, groundAngle.z);
 	T = DirectX::XMMatrixTranslation(groundPosition.x, groundPosition.y, groundPosition.z);
 	world = S * R * T;
 	DirectX::XMStoreFloat4x4(&groundTransform, world);
 
-	//ƒ|[ƒ‹—p
+	//ãƒãƒ¼ãƒ«ç”¨
 	S = DirectX::XMMatrixScaling(poleScale.x, poleScale.y, poleScale.z);
 	R = DirectX::XMMatrixRotationRollPitchYaw(poleAngle.x, poleAngle.y, poleAngle.z);
 	T = DirectX::XMMatrixTranslation(polePosition.x, polePosition.y, polePosition.z);
 	world = S * R * T;
 	DirectX::XMStoreFloat4x4(&poleTransform, world);
 
-	//ƒ{ƒbƒNƒX‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğXV
+	//ãƒœãƒƒã‚¯ã‚¹ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’æ›´æ–°
 
 	UpdateTransform();
 
@@ -366,53 +366,53 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 
 	if (stand2)
 	{
-		bool isVisibled = true;//ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO‚Ì”»’è
+		bool isVisibled = true;//ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ã®åˆ¤å®š
 		if (frustumCulling)
 		{
-			const auto& sphere = stand2->GetBoundingSphere();//ƒoƒEƒ“ƒfƒBƒ“ƒOƒXƒtƒBƒA‚ğæ“¾
-			//ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO‚Ì”»’è
+			const auto& sphere = stand2->GetBoundingSphere();//ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚¹ãƒ•ã‚£ã‚¢ã‚’å–å¾—
+			//ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ã®åˆ¤å®š
 			isVisibled = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, standTransform);
 		}
 		if(isVisibled)
 		{
-			//ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO‚É“ü‚Á‚Ä‚¢‚éê‡‚Ì‚İ•`‰æ‚·‚é
+			//ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ã«å…¥ã£ã¦ã„ã‚‹å ´åˆã®ã¿æç”»ã™ã‚‹
 			stand2->render_batched(rc.deviceContext, standTransform, {});
 		}
 	}
 
 	if(ground2)
 	{
-		bool isVisibled = true;//ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO‚Ì”»’è
+		bool isVisibled = true;//ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ã®åˆ¤å®š
 		if (frustumCulling)
 		{
-			const auto& sphere = ground2->GetBoundingSphere();//ƒoƒEƒ“ƒfƒBƒ“ƒOƒXƒtƒBƒA‚ğæ“¾
-			//ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO‚Ì”»’è
+			const auto& sphere = ground2->GetBoundingSphere();//ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚¹ãƒ•ã‚£ã‚¢ã‚’å–å¾—
+			//ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ã®åˆ¤å®š
 			isVisibled = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, groundTransform);
 		}
 		if(isVisibled)
 		{
-			//ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO‚É“ü‚Á‚Ä‚¢‚éê‡‚Ì‚İ•`‰æ‚·‚é
+			//ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ã«å…¥ã£ã¦ã„ã‚‹å ´åˆã®ã¿æç”»ã™ã‚‹
 			ground2->render_batched(rc.deviceContext, groundTransform, {});
 		}
 	}
 
 	if(pole2)
 	{
-		bool isVisibled = true;//ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO‚Ì”»’è
+		bool isVisibled = true;//ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ã®åˆ¤å®š
 		if (frustumCulling)
 		{
-			const auto& sphere = pole2->GetBoundingSphere();//ƒoƒEƒ“ƒfƒBƒ“ƒOƒXƒtƒBƒA‚ğæ“¾
-			//ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO‚Ì”»’è
+			const auto& sphere = pole2->GetBoundingSphere();//ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚¹ãƒ•ã‚£ã‚¢ã‚’å–å¾—
+			//ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ã®åˆ¤å®š
 			isVisibled = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, poleTransform);
 		}
 		if(isVisibled)
 		{
-			//ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO‚É“ü‚Á‚Ä‚¢‚éê‡‚Ì‚İ•`‰æ‚·‚é
+			//ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ã«å…¥ã£ã¦ã„ã‚‹å ´åˆã®ã¿æç”»ã™ã‚‹
 			pole2->render_batched(rc.deviceContext, poleTransform, {});
 		}
 	}
 
-	// ƒ‰ƒCƒgƒ^ƒ[‚ğƒXƒ|ƒbƒgƒ‰ƒCƒg‚ÌˆÊ’u‚É4‰ÓŠ”z’u
+	// ãƒ©ã‚¤ãƒˆã‚¿ãƒ¯ãƒ¼ã‚’ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆã®ä½ç½®ã«4ç®‡æ‰€é…ç½®
 	for (int i = 0; i < TOWER_COUNT; i++)
 	{
 		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(lightScale[i].x, lightScale[i].y, lightScale[i].z);
@@ -441,7 +441,7 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 
 }
 
-// I—¹
+// çµ‚äº†
 void stage::uninitialize()
 {
 	for (physx::PxTriangleMesh* pxTriangleMesh : triangle_meshes)
@@ -472,21 +472,21 @@ void stage::DrawGUI()
 #ifdef  USE_IMGUI
 	if (ImGui::CollapsingHeader("Stage Info"))
 	{
-		// ƒXƒ^ƒ“ƒh‚ÌˆÊ’uAƒXƒP[ƒ‹A‰ñ“]‚ğ•\¦
+		// ã‚¹ã‚¿ãƒ³ãƒ‰ã®ä½ç½®ã€ã‚¹ã‚±ãƒ¼ãƒ«ã€å›è»¢ã‚’è¡¨ç¤º
 		ImGui::DragFloat3("Stand Position", &standPosition.x, 0.5f);
 		ImGui::DragFloat3("Stand Scale", &standScale.x, 0.1f);
 		ImGui::DragFloat3("Stand Angle", &standAngle.x, 0.01f);
 
 		ImGui::Separator();
 
-		// ƒOƒ‰ƒEƒ“ƒh‚ÌˆÊ’uAƒXƒP[ƒ‹A‰ñ“]‚ğ•\¦
+		// ã‚°ãƒ©ã‚¦ãƒ³ãƒ‰ã®ä½ç½®ã€ã‚¹ã‚±ãƒ¼ãƒ«ã€å›è»¢ã‚’è¡¨ç¤º
 		ImGui::DragFloat3("Ground Position", &groundPosition.x, 0.5f);
 		ImGui::DragFloat3("Ground Scale", &groundScale.x, 0.1f);
 		ImGui::DragFloat3("Ground Angle", &groundAngle.x, 0.01f);
 
 		ImGui::Separator();
 
-		// ƒ|[ƒ‹‚ÌˆÊ’uAƒXƒP[ƒ‹A‰ñ“]‚ğ•\¦
+		// ãƒãƒ¼ãƒ«ã®ä½ç½®ã€ã‚¹ã‚±ãƒ¼ãƒ«ã€å›è»¢ã‚’è¡¨ç¤º
 		ImGui::DragFloat3("Pole Position", &polePosition.x, 0.5f);
 		ImGui::DragFloat3("Pole Scale", &poleScale.x, 0.1f);
 		ImGui::DragFloat3("Pole Angle", &poleAngle.x, 0.01f);
@@ -563,7 +563,7 @@ void stage::SaveToJson(json& j)
 	j["polePosition"] = { polePosition.x, polePosition.y, polePosition.z };
 	j["poleScale"] = { poleScale.x, poleScale.y, poleScale.z };
 	j["poleAngle"] = { poleAngle.x, poleAngle.y, poleAngle.z };*/
-	// ƒ‰ƒCƒgƒ^ƒ[‚ÌˆÊ’uAŠp“xAƒXƒP[ƒ‹‚ğ•Û‘¶
+	// ãƒ©ã‚¤ãƒˆã‚¿ãƒ¯ãƒ¼ã®ä½ç½®ã€è§’åº¦ã€ã‚¹ã‚±ãƒ¼ãƒ«ã‚’ä¿å­˜
 	for (int i = 0; i < TOWER_COUNT; ++i)
 	{
 		std::string towerKey = "tower" + std::to_string(i);
@@ -572,7 +572,7 @@ void stage::SaveToJson(json& j)
 		j[towerKey]["scale"] = { lightScale[i].x, lightScale[i].y, lightScale[i].z };
 	}
 
-	// ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚Ì’¸“_‚ğ•Û‘¶
+	// ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®é ‚ç‚¹ã‚’ä¿å­˜
 	j["fenceLinePoints"] = json::array();
 	for (const auto& point : homerunLineEditor.linePoints)
 	{
@@ -581,7 +581,7 @@ void stage::SaveToJson(json& j)
 	j["fenceExtraHeight"] = homerunLineEditor.extraHeight;
 	j["fenceThickness"] = homerunLineEditor.thickness;
 
-	// ƒtƒ@ƒEƒ‹ƒ‰ƒCƒ“—p‚à’Ç‰Á•Û‘¶
+	// ãƒ•ã‚¡ã‚¦ãƒ«ãƒ©ã‚¤ãƒ³ç”¨ã‚‚è¿½åŠ ä¿å­˜
 	j["foulLinePoints"] = json::array();
 	for (const auto& point : foulLineEditor.linePoints)
 	{
@@ -604,7 +604,7 @@ void stage::LoadFromJson(const json& j)
 	poleScale = { j["poleScale"][0], j["poleScale"][1], j["poleScale"][2] };
 	poleAngle = { j["poleAngle"][0], j["poleAngle"][1], j["poleAngle"][2] };*/
 
-	// ƒ‰ƒCƒgƒ^ƒ[‚ÌˆÊ’uAŠp“xAƒXƒP[ƒ‹‚ğ“Ç‚İ‚İ
+	// ãƒ©ã‚¤ãƒˆã‚¿ãƒ¯ãƒ¼ã®ä½ç½®ã€è§’åº¦ã€ã‚¹ã‚±ãƒ¼ãƒ«ã‚’èª­ã¿è¾¼ã¿
 	for (int i = 0; i < TOWER_COUNT; ++i)
 	{
 		std::string towerKey = "tower" + std::to_string(i);
@@ -625,7 +625,7 @@ void stage::LoadFromJson(const json& j)
 		};
 	}
 
-	// ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚Ì’¸“_‚ğ“Ç‚İ‚İ
+	// ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®é ‚ç‚¹ã‚’èª­ã¿è¾¼ã¿
 	homerunLineEditor.linePoints.clear();
 	if (j.contains("fenceLinePoints") && j["fenceLinePoints"].is_array())
 	{
@@ -643,7 +643,7 @@ void stage::LoadFromJson(const json& j)
 		homerunLineEditor.thickness = j["fenceThickness"];
 	}
 
-	// ƒtƒ@ƒEƒ‹ƒ‰ƒCƒ“—p‚Ì“Ç‚İ‚İ
+	// ãƒ•ã‚¡ã‚¦ãƒ«ãƒ©ã‚¤ãƒ³ç”¨ã®èª­ã¿è¾¼ã¿
 	foulLineEditor.linePoints.clear();
 	if (j.contains("foulLinePoints") && j["foulLinePoints"].is_array())
 	{

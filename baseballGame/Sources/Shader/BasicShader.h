@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "ShaderId.h"
 #include "../Model/ModelResource.h"
@@ -9,13 +9,13 @@ public:
 	BasicShader(ID3D11Device* device);
 	~BasicShader() override = default;
 
-	// ŠJnˆ—
+	// é–‹å§‹å‡¦ç†
 	void Begin(const RenderContext& rc) override;
 
-	// XVˆ—
+	// æ›´æ–°å‡¦ç†
 	void Update(const RenderContext& rc, const ModelResource::Material& material) override;
 
-	// I—¹ˆ—
+	// çµ‚äº†å‡¦ç†
 	void End(const RenderContext& rc) override;
 
 private:

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "scene.h"
 #include <memory>
 
@@ -9,7 +9,7 @@ private:
 	~sceneManager() {}
 
 public:
-	//ƒCƒ“ƒXƒ^ƒ“ƒX
+	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	static sceneManager& Instance()
 	{
 		static sceneManager instance;
@@ -21,10 +21,10 @@ public:
 
 	void DrawGUI();
 
-	//ƒV[ƒ“ƒNƒŠƒA
+	//ã‚·ãƒ¼ãƒ³ã‚¯ãƒªã‚¢
 	void Clear();
 
-	//ƒV[ƒ“Ø‚è‘Ö‚¦
+	//ã‚·ãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆ
 	void ChangeScene(scene* scene);
 
 private:

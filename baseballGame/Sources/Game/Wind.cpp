@@ -1,4 +1,4 @@
-#include "Wind.h"
+ï»¿#include "Wind.h"
 #include "Graphics.h"
 #include <cmath>
 #include "physxManager.h"
@@ -22,7 +22,7 @@ void Wind::Initialize()
 		input_element_desc, _countof(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
 
-	// ƒXƒvƒ‰ƒCƒg‚Ì‰Šú‰»
+	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®åˆæœŸåŒ–
 	windDirectionSprite = std::make_unique<Sprite>();
 	windDirectionSprite->texturePath = L".\\resources\\textures\\windDirection.png";
 	windDirectionSprite->position = { 1150.0f, 100.0f };
@@ -61,7 +61,7 @@ void Wind::Initialize()
 		/*atlasWidth*/ 256, /*atlasHeight*/ 256,
 		&windStrengthCodepoints);
 
-	// •—•\Œ»—p‚Ì—¬ü‚ğ¶¬
+	// é¢¨è¡¨ç¾ç”¨ã®æµç·šã‚’ç”Ÿæˆ
 	windLines.clear();
 	windLines.reserve(100);
 	for (int i = 0; i < 100; ++i)
@@ -73,7 +73,7 @@ void Wind::Initialize()
 			0.0f,
 			-5.0f + std::fmod(t * 5.1f, 100.0f)
 		};
-		// Y²‚Ì‘Š‘Î“I‚ÈˆÊ’uŠ„‡(0.0 ` 1.0)‚ğŒˆ’è‚µ‚Ä•Û‘¶‚·‚é
+		// Yè»¸ã®ç›¸å¯¾çš„ãªä½ç½®å‰²åˆ(0.0 ï½ 1.0)ã‚’æ±ºå®šã—ã¦ä¿å­˜ã™ã‚‹
 		line.baseYOffset = std::fmod(t * 1.7f, 1.0f);
 
 		line.speed = windStrength * (0.6f + std::fmod(t * 0.37f, 1.0f));
@@ -82,20 +82,20 @@ void Wind::Initialize()
 		windLines.push_back(line);
 	}
 
-	windHeight = 20.0f; // •—‚Ì—¬ü‚Ì‚‚³
-	windThickness = 50.0f; // •—‚Ì—¬ü‚ÌŒú‚İ
+	windHeight = 20.0f; // é¢¨ã®æµç·šã®é«˜ã•
+	windThickness = 50.0f; // é¢¨ã®æµç·šã®åšã¿
 }
 
 void Wind::Uninitialize()
 {
 	windDirectionSpriteRenderer.reset();
 	windGroundSpriteRenderer.reset();
-	windStrengthFont.Uninitialize(); // š•ÏX
+	windStrengthFont.Uninitialize(); // â˜…å¤‰æ›´
 }
 
 void Wind::Update(float elapsedTime)
 {
-	// •—‚Ì—¬ü‚ÌƒAƒjƒ[ƒVƒ‡ƒ“
+	// é¢¨ã®æµç·šã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
 	for (auto& line : windLines)
 	{
 		line.position.x += windDirection.x * line.speed * elapsedTime;
@@ -103,18 +103,18 @@ void Wind::Update(float elapsedTime)
 		line.position.z += windDirection.z * line.speed * elapsedTime;
 		line.phase += elapsedTime * 4.0f;
 
-		// ‰æ–ÊŠO‚Éo‚½‚çƒ‹[ƒv‚³‚¹‚é (X²‚ÆZ²)
+		// ç”»é¢å¤–ã«å‡ºãŸã‚‰ãƒ«ãƒ¼ãƒ—ã•ã›ã‚‹ (Xè»¸ã¨Zè»¸)
 		if (line.position.x > 100.0f) line.position.x -= 200.0f;
 		else if (line.position.x < -100.0f) line.position.x += 200.0f;
 
 		if (line.position.z > 100.0f) line.position.z -= 105.0f;
 		else if (line.position.z < -5.0f) line.position.z += 105.0f;
 
-		// Y²(ã‰º)‚Ì‘Š‘Î”ÍˆÍƒ‹[ƒv (0.0 ` 1.0)
+		// Yè»¸(ä¸Šä¸‹)ã®ç›¸å¯¾ç¯„å›²ãƒ«ãƒ¼ãƒ— (0.0 ï½ 1.0)
 		if (line.baseYOffset > 1.0f) line.baseYOffset -= 1.0f;
 		else if (line.baseYOffset < 0.0f) line.baseYOffset += 1.0f;
 
-		// ÀÛ‚ÌYÀ•W‚ğŒvZ‚µ‚ÄXV
+		// å®Ÿéš›ã®Yåº§æ¨™ã‚’è¨ˆç®—ã—ã¦æ›´æ–°
 		line.position.y = line.baseYOffset * windThickness;
 	}
 }
@@ -125,11 +125,11 @@ void Wind::Render(const RenderContext& rc)
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 
-	// •—‚Ì—¬ü‚ğ•`‰æ
+	// é¢¨ã®æµç·šã‚’æç”»
 	for (const auto& line : windLines)
 	{
 		DirectX::XMFLOAT3 start = line.position;
-		start.y += windHeight; // •—‚Ì‚‚³‚ğ‰ÁZ
+		start.y += windHeight; // é¢¨ã®é«˜ã•ã‚’åŠ ç®—
 		DirectX::XMFLOAT3 end = {
 			line.position.x - windDirection.x * line.length,
 			(line.position.y + windHeight) - windDirection.y * line.length,
@@ -142,7 +142,7 @@ void Wind::Render(const RenderContext& rc)
 		primitiveRenderer->AddVertex(end, color);
 	}
 
-	// ƒgƒ‰ƒbƒLƒ“ƒOƒf[ƒ^‚ª•\¦‚³‚ê‚Ä‚¢‚éê‡‚ÍA•—‚ÌƒXƒvƒ‰ƒCƒg‚âƒeƒLƒXƒg‚ğ•`‰æ‚µ‚È‚¢
+	// ãƒˆãƒ©ãƒƒã‚­ãƒ³ã‚°ãƒ‡ãƒ¼ã‚¿ãŒè¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹å ´åˆã¯ã€é¢¨ã®ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚„ãƒ†ã‚­ã‚¹ãƒˆã‚’æç”»ã—ãªã„
 	if (TrackingData::Instance().IsTrackingDataVisible()) return;
 
 
@@ -151,7 +151,7 @@ void Wind::Render(const RenderContext& rc)
 	dc->IASetInputLayout(spriteInputLayout.Get());
 
 	dc->OMSetDepthStencilState(
-		renderState->GetDepthStencilState(DepthState::TestOnly), 0); // ‘‚«‚İ‚È‚µ
+		renderState->GetDepthStencilState(DepthState::TestOnly), 0); // æ›¸ãè¾¼ã¿ãªã—
 
 	
 	if (windGroundSprite && windGroundSpriteRenderer)
@@ -162,10 +162,10 @@ void Wind::Render(const RenderContext& rc)
 			0.0f);
 	}
 
-	// •—Œü‚«ƒXƒvƒ‰ƒCƒg‚Ì•`‰æ
+	// é¢¨å‘ãã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®æç”»
 	if (windDirectionSprite && windDirectionSpriteRenderer)
 	{
-		windDirectionSprite->rotation = atan2f(windDirection.x, windDirection.z); // •—Œü‚«‚É‡‚í‚¹‚Ä‰ñ“]
+		windDirectionSprite->rotation = atan2f(windDirection.x, windDirection.z); // é¢¨å‘ãã«åˆã‚ã›ã¦å›è»¢
 		windDirectionSpriteRenderer->render(rc.deviceContext, windDirectionSprite->position.x, windDirectionSprite->position.y,
 			windDirectionSprite->size.x, windDirectionSprite->size.y,
 			windDirectionSprite->color.x, windDirectionSprite->color.y, windDirectionSprite->color.z, windDirectionSprite->color.w,
@@ -174,7 +174,7 @@ void Wind::Render(const RenderContext& rc)
 
 	}
 
-	// •—‚Ì‹­‚³‚ğ¦‚·ƒ{[ƒhƒXƒvƒ‰ƒCƒg‚Ì•`‰æ
+	// é¢¨ã®å¼·ã•ã‚’ç¤ºã™ãƒœãƒ¼ãƒ‰ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®æç”»
 	if (windBoardSprite && windBoardSpriteRenderer)
 	{
 		windBoardSpriteRenderer->render(rc.deviceContext, windBoardSprite->position.x, windBoardSprite->position.y,
@@ -183,7 +183,7 @@ void Wind::Render(const RenderContext& rc)
 			0.0f);
 	}
 
-	// •—‚Ì‹­‚³ƒeƒLƒXƒg‚ğFontRenderer(TTF’¼“Ç‚İ)‚Å•`‰æ
+	// é¢¨ã®å¼·ã•ãƒ†ã‚­ã‚¹ãƒˆã‚’FontRenderer(TTFç›´èª­ã¿)ã§æç”»
 	if (windStrengthFont.IsValid())
 	{
 		physx::PxVec3 windVec(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength);
@@ -192,19 +192,19 @@ void Wind::Render(const RenderContext& rc)
 		char speedText[64];
 		snprintf(speedText, sizeof(speedText), "%.f m", currentWindSpeed);
 
-		// ƒAƒCƒRƒ“‚ÌÀ•W‚ÉŠî‚Ã‚¢‚ÄƒeƒLƒXƒgˆÊ’u‚ğŒˆ’è
+		// ã‚¢ã‚¤ã‚³ãƒ³ã®åº§æ¨™ã«åŸºã¥ã„ã¦ãƒ†ã‚­ã‚¹ãƒˆä½ç½®ã‚’æ±ºå®š
 		float textX = windDirectionSprite->position.x + 80.0f;
 		float textY = windDirectionSprite->position.y + 100.0f;
 
-		// scale=1.0‚ÅInitialize‚ÌpixelHeight(32px)‘Š“–‚Ì‘å‚«‚³‚É‚È‚éB
-		// ‘å‚«‚³‚ğ•Ï‚¦‚½‚¢ê‡‚Íscale‚ğ’²®‚·‚é(—á: 1.5f‚Å1.5”{)B
+		// scale=1.0ã§Initializeæ™‚ã®pixelHeight(32px)ç›¸å½“ã®å¤§ãã•ã«ãªã‚‹ã€‚
+		// å¤§ãã•ã‚’å¤‰ãˆãŸã„å ´åˆã¯scaleã‚’èª¿æ•´ã™ã‚‹(ä¾‹: 1.5fã§1.5å€)ã€‚
 		windStrengthFont.DrawTextW(dc, speedText,
 			textX, textY,
 			1.0f,
 			1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
-	// •`‰æŒã‚ÉŒ³‚É–ß‚·
+	// æç”»å¾Œã«å…ƒã«æˆ»ã™
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
 	dc->IASetInputLayout(nullptr);
@@ -220,12 +220,12 @@ void Wind::DrawGUI()
 
 	if (ImGui::CollapsingHeader("Wind Settings"))
 	{
-		// •—Œü‚Ì‘€ì
+		// é¢¨å‘ã®æ“ä½œ
 		ImGui::DragFloat3("Wind Direction", &windDirection.x, 0.01f, -1.0f, 1.0f);
 		if (ImGui::Button("Normalize Wind Direction"))
 		{
 			DirectX::XMVECTOR dir = DirectX::XMLoadFloat3(&windDirection);
-			// ƒ[ƒƒxƒNƒgƒ‹‚Ìê‡‚Í³‹K‰»‚µ‚È‚¢
+			// ã‚¼ãƒ­ãƒ™ã‚¯ãƒˆãƒ«ã®å ´åˆã¯æ­£è¦åŒ–ã—ãªã„
 			if (DirectX::XMVector3NotEqual(dir, DirectX::XMVectorZero()))
 			{
 				dir = DirectX::XMVector3Normalize(dir);
@@ -233,23 +233,23 @@ void Wind::DrawGUI()
 			}
 		}
 
-		// •—‚Ì‹­‚³‚Ì‘€ì
+		// é¢¨ã®å¼·ã•ã®æ“ä½œ
 		ImGui::DragFloat("Wind Strength", &windStrength, 0.1f, 0.0f, 50.0f);
 
-		// •—‚ÌŠî–{‚‚³‚Ì‘€ì
+		// é¢¨ã®åŸºæœ¬é«˜ã•ã®æ“ä½œ
 		ImGui::DragFloat("Wind Height", &windHeight, 0.1f, -10.0f, 50.0f);
 
-		// •—‚ÌŒú‚İ‚Ì‘€ì
+		// é¢¨ã®åšã¿ã®æ“ä½œ
 		ImGui::DragFloat("Wind Thickness", &windThickness, 0.1f, 0.1f, 100.0f);
 
-		// —¬ü‚Ì•`‰æ‚È‚Ç‚É‹­‚³‚Ì•ÏX‚ğ‘¦”½‰f‚³‚¹‚é‚½‚ßA•\¦—p‚ÉŒ»İ‚Ì•—ƒxƒNƒgƒ‹‚à•\¦‚·‚é
+		// æµç·šã®æç”»ãªã©ã«å¼·ã•ã®å¤‰æ›´ã‚’å³æ™‚åæ˜ ã•ã›ã‚‹ãŸã‚ã€è¡¨ç¤ºç”¨ã«ç¾åœ¨ã®é¢¨ãƒ™ã‚¯ãƒˆãƒ«ã‚‚è¡¨ç¤ºã™ã‚‹
 		ImGui::Text("Current Wind Velocity: (%.2f, %.2f, %.2f)",
 			windDirection.x * windStrength,
 			windDirection.y * windStrength,
 			windDirection.z * windStrength);
 	}
 
-	//ƒXƒvƒ‰ƒCƒg‚ÌƒfƒoƒbƒO•\¦
+	//ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®ãƒ‡ãƒãƒƒã‚°è¡¨ç¤º
 	if (ImGui::CollapsingHeader("Sprite Debug"))
 	{
 		if (windDirectionSprite)
@@ -279,7 +279,7 @@ void Wind::DrawGUI()
 
 bool Wind::IsBallInWindArea() const
 {
-	// —¬ü‚Ì•`‰æ”ÍˆÍ‚É‡‚í‚¹‚Ä•—‚Ì—LŒø”ÍˆÍ‚ğ’è‹`
+	// æµç·šã®æç”»ç¯„å›²ã«åˆã‚ã›ã¦é¢¨ã®æœ‰åŠ¹ç¯„å›²ã‚’å®šç¾©
 	if (Ball::Instance().GetWorldPosition().x < -100.0f || Ball::Instance().GetWorldPosition().x > 100.0f) return false;
 	if (Ball::Instance().GetWorldPosition().y < windHeight || Ball::Instance().GetWorldPosition().y > windHeight + windThickness) return false;
 	if (Ball::Instance().GetWorldPosition().z < -5.0f || Ball::Instance().GetWorldPosition().z > 95.0f) return false;

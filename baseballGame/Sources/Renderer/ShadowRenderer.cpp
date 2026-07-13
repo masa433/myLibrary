@@ -1,4 +1,4 @@
-#include "ShadowRenderer.h"
+ï»¿#include "ShadowRenderer.h"
 #include "misc.h"
 #include "shader.h"
 #include "Graphics.h"
@@ -10,7 +10,7 @@ void ShadowRenderer::Initialize()
 
     ID3D11Device* device = Graphics::Instance().GetDevice();
 
-    //’è”ƒoƒbƒtƒ@‚Ìì¬
+    //å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
     {
         D3D11_BUFFER_DESC buffer_desc{};
         buffer_desc.Usage = D3D11_USAGE_DEFAULT;
@@ -19,28 +19,28 @@ void ShadowRenderer::Initialize()
         buffer_desc.MiscFlags = 0;
         buffer_desc.StructureByteStride = 0;
 
-        // ƒV[ƒ“’è”ƒoƒbƒtƒ@‚Ìì¬
+        // ã‚·ãƒ¼ãƒ³å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
         buffer_desc.ByteWidth = sizeof(scene_constants);
         HRESULT hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, constant_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-        //ƒVƒƒƒhƒEƒ}ƒbƒv‚Ì’è”ƒoƒbƒtƒ@‚Ìì¬
+        //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã®å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
         buffer_desc.ByteWidth = sizeof(shadowmap_constants);
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, shadowmap_constant_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-        //ƒJƒXƒP[ƒhƒVƒƒƒhƒE—p’è”ƒoƒbƒtƒ@
+        //ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
         buffer_desc.ByteWidth = sizeof(cascade_shadowmap_constants);
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, cascade_shadowmap_constant_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-        //ƒXƒ|ƒbƒgƒVƒƒƒhƒE—p’è”ƒoƒbƒtƒ@
+        //ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
         buffer_desc.ByteWidth = sizeof(spot_shadowmap_constants);
         hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, spot_shadowmap_constant_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
 
-    // ƒ‰ƒCƒg‚©‚çŒ©‚½ƒV[ƒ“‚Ì[“x•`‰æ—pƒoƒbƒtƒ@
+    // ãƒ©ã‚¤ãƒˆã‹ã‚‰è¦‹ãŸã‚·ãƒ¼ãƒ³ã®æ·±åº¦æç”»ç”¨ãƒãƒƒãƒ•ã‚¡
     {
 
         Microsoft::WRL::ComPtr<ID3D11Texture2D> depth_buffer{};
@@ -59,7 +59,7 @@ void ShadowRenderer::Initialize()
         HRESULT hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-        //	[“xƒXƒeƒ“ƒVƒ‹ƒrƒ…[¶¬
+        //	æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
         D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc{};
         depth_stencil_view_desc.Format = DXGI_FORMAT_D32_FLOAT;
         depth_stencil_view_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -69,7 +69,7 @@ void ShadowRenderer::Initialize()
             shadowmap_depth_stencil_view.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-        //	ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[¶¬
+        //	ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
         D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc{};
         shader_resource_view_desc.Format = DXGI_FORMAT_R32_FLOAT;
         shader_resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -80,7 +80,7 @@ void ShadowRenderer::Initialize()
             shadowmap_shader_resource_view.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-        // ƒTƒ“ƒvƒ‰ƒXƒe[ƒg‚Ì¶¬
+        // ã‚µãƒ³ãƒ—ãƒ©ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆ
         {
             D3D11_SAMPLER_DESC sampler_desc{};
             sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
@@ -102,7 +102,7 @@ void ShadowRenderer::Initialize()
 
     }
 
-    //ƒJƒXƒP[ƒhƒVƒƒƒhƒEƒ}ƒbƒv¶¬
+    //ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”Ÿæˆ
     {
         D3D11_TEXTURE2D_DESC texture2d_desc{};
         texture2d_desc.Width = ShadowmapSize;
@@ -123,7 +123,7 @@ void ShadowRenderer::Initialize()
             hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.GetAddressOf());
             _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-            //	[“xƒXƒeƒ“ƒVƒ‹ƒrƒ…[¶¬
+            //	æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
             D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc{};
             depth_stencil_view_desc.Format = DXGI_FORMAT_D32_FLOAT;
             depth_stencil_view_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -133,7 +133,7 @@ void ShadowRenderer::Initialize()
                 cascade_shadowmap_depth_stencil_views[index].GetAddressOf());
             _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-            //	ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[¶¬
+            //	ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ç”Ÿæˆ
             D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc{};
             shader_resource_view_desc.Format = DXGI_FORMAT_R32_FLOAT;
             shader_resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -147,7 +147,7 @@ void ShadowRenderer::Initialize()
         }
     }
 
-    //ƒXƒ|ƒbƒgƒVƒƒƒhƒEƒ}ƒbƒv¶¬
+    //ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”Ÿæˆ
     {
         D3D11_TEXTURE2D_DESC texture2d_desc{};
         texture2d_desc.Width = SpotShadowmapSize;
@@ -189,7 +189,7 @@ void ShadowRenderer::Initialize()
 
     }
     
-    //ƒVƒƒƒhƒEƒ}ƒbƒv¶¬—pƒVƒF[ƒ_[
+    //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”Ÿæˆç”¨ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
     {
         D3D11_INPUT_ELEMENT_DESC input_element_desc[]
         {
@@ -215,7 +215,7 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
     rc.deviceContext = dc;
     rc.renderState = renderState;
 
-    // ƒrƒ…[ƒ|[ƒg‚ÍƒVƒƒƒhƒEƒ}ƒbƒvƒTƒCƒY‚ÉŒÅ’è
+    // ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã¯ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã‚µã‚¤ã‚ºã«å›ºå®š
     D3D11_VIEWPORT viewport{};
     viewport.Width = static_cast<float>(SpotShadowmapSize);
     viewport.Height = static_cast<float>(SpotShadowmapSize);
@@ -233,12 +233,12 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
     const int count = static_cast<int>(spotLights.size());
     for (int i = 0; i < count && i < SpotShadowCount; ++i)
     {
-        // DSVƒNƒŠƒA & ƒoƒCƒ“ƒh
+        // DSVã‚¯ãƒªã‚¢ & ãƒã‚¤ãƒ³ãƒ‰
         dc->ClearDepthStencilView(spot_shadowmap_depth_stencil_views[i].Get(),
             D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
         dc->OMSetRenderTargets(0, nullptr, spot_shadowmap_depth_stencil_views[i].Get());
 
-        // ƒ‰ƒCƒgƒrƒ…[s—ñiˆÊ’u ¨ ÆË•ûŒüj
+        // ãƒ©ã‚¤ãƒˆãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ï¼ˆä½ç½® â†’ ç…§å°„æ–¹å‘ï¼‰
         using namespace DirectX;
 
         XMFLOAT3 posF3 = { spotLights[i].position.x, spotLights[i].position.y, spotLights[i].position.z };
@@ -251,13 +251,13 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
             up = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
         XMMATRIX V = XMMatrixLookToLH(pos, dir, up);
 
-        // ƒ‰ƒCƒgƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñiouterCorn ‚Ì2”{‚ğFovY‚Éj
-        float fovY = spotLights[i].outerCorn * 2.0f; // outerCorn ‚Íƒ‰ƒWƒAƒ“”¼Šp
+        // ãƒ©ã‚¤ãƒˆãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ï¼ˆouterCorn ã®2å€ã‚’FovYã«ï¼‰
+        float fovY = spotLights[i].outerCorn * 2.0f; // outerCorn ã¯ãƒ©ã‚¸ã‚¢ãƒ³åŠè§’
         XMMATRIX P = XMMatrixPerspectiveFovLH(fovY, 1.0f, 1.0f, spotLights[i].range);
 
         XMStoreFloat4x4(&spot_shadow_constant.light_view_projection[i], V * P);
 
-        // ’è”ƒoƒbƒtƒ@‚ğXV‚µ‚ÄVS‚ÉƒZƒbƒgib1‚Ìview_projection‚ğã‘‚«j
+        // å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚’æ›´æ–°ã—ã¦VSã«ã‚»ãƒƒãƒˆï¼ˆb1ã®view_projectionã‚’ä¸Šæ›¸ãï¼‰
         scene_constants scene{};
         scene.camera_position = { posF3.x,posF3.y,posF3.z, 1.0f };
         scene.view_projection = spot_shadow_constant.light_view_projection[i];
@@ -276,18 +276,18 @@ void ShadowRenderer::RenderShadowMap(float elapsedTime)
     RenderState* renderState = Graphics::Instance().GetRenderState();
     ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
 
-    // •`‰æƒRƒ“ƒeƒLƒXƒgİ’è
+    // æç”»ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆè¨­å®š
     RenderContext rc;
     rc.deviceContext = dc;
     rc.renderState = renderState;
 
     HRESULT hr = S_OK;
-    //ƒVƒƒƒhƒEƒ}ƒbƒv¶¬ˆ—
+    //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”Ÿæˆå‡¦ç†
     {
-        //ƒVƒƒƒhƒEƒ}ƒbƒv—p‚Ì[“xƒoƒbƒtƒ@‚Éİ’è
+        //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”¨ã®æ·±åº¦ãƒãƒƒãƒ•ã‚¡ã«è¨­å®š
         dc->ClearDepthStencilView(shadowmap_depth_stencil_view.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
         dc->OMSetRenderTargets(0, nullptr, shadowmap_depth_stencil_view.Get());
-        //ƒrƒ…[ƒ|[ƒg‚Ìİ’è
+        //ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã®è¨­å®š
         D3D11_VIEWPORT viewport{};
         viewport.TopLeftX = 0;
         viewport.TopLeftY = 0;
@@ -297,20 +297,20 @@ void ShadowRenderer::RenderShadowMap(float elapsedTime)
         viewport.MaxDepth = 1.0f;
         dc->RSSetViewports(1, &viewport);
 
-        //ƒuƒŒƒ“ƒhƒXƒe[ƒg‚Ìİ’è
+        //ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆã®è¨­å®š
         dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
-        //[“xƒXƒeƒ“ƒVƒ‹ƒXƒe[ƒg‚Ìİ’è
+        //æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã‚¹ãƒ†ãƒ¼ãƒˆã®è¨­å®š
         dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
-        //ƒ‰ƒXƒ^ƒ‰ƒCƒU[ƒXƒe[ƒg‚Ìİ’è
+        //ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆã®è¨­å®š
         dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
-        //ƒVƒF[ƒ_[‚Ìİ’è
+        //ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®è¨­å®š
         dc->IASetInputLayout(shadowmap_caster_input_layout.Get());
         dc->VSSetShader(shadowmap_caster_vertex_shader.Get(), nullptr, 0);
         dc->PSSetShader(nullptr, nullptr, 0);
 
         Camera& camera = Camera::Instance();
 
-        //ƒ‰ƒCƒg‚Ìƒrƒ…[Ë‰es—ñ‚ÌŒvZ
+        //ãƒ©ã‚¤ãƒˆã®ãƒ“ãƒ¥ãƒ¼å°„å½±è¡Œåˆ—ã®è¨ˆç®—
         DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat4(&directional_light_direction);
         LightPosition = DirectX::XMVectorScale(LightPosition, -50);
 
@@ -318,17 +318,17 @@ void ShadowRenderer::RenderShadowMap(float elapsedTime)
             DirectX::XMVectorSet(camera.GetFocus().x, camera.GetFocus().y, camera.GetFocus().z, 1.0f),
             DirectX::XMVectorSet(camera.GetUp().x, camera.GetUp().y, camera.GetUp().z, 0.0f));
 
-        // ƒVƒƒƒhƒEƒ}ƒbƒv‚É•`‰æ‚µ‚½‚¢”ÍˆÍ‚ÌË‰es—ñ‚ğ¶¬
+        // ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã«æç”»ã—ãŸã„ç¯„å›²ã®å°„å½±è¡Œåˆ—ã‚’ç”Ÿæˆ
         DirectX::XMMATRIX P = DirectX::XMMatrixOrthographicLH(ShadowmapDrawRect, ShadowmapDrawRect,
             0.1f, 200.0f);
 
-        // ƒ‰ƒCƒgƒrƒ…[s—ñ‚ğ•Û‘¶
+        // ãƒ©ã‚¤ãƒˆãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã‚’ä¿å­˜
 
         DirectX::XMStoreFloat4x4(&light_view_projection, V * P);
 
-        //’è”ƒoƒbƒtƒ@‚ÌXV
+        //å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®æ›´æ–°
         {
-            //ƒ‰ƒCƒg‚©‚çŒ©‚½ƒV[ƒ“‚Ìƒrƒ…[Ë‰es—ñ‚ğŒvZ‚µ‚Ä’è”ƒoƒbƒtƒ@‚É“]‘—
+            //ãƒ©ã‚¤ãƒˆã‹ã‚‰è¦‹ãŸã‚·ãƒ¼ãƒ³ã®ãƒ“ãƒ¥ãƒ¼å°„å½±è¡Œåˆ—ã‚’è¨ˆç®—ã—ã¦å®šæ•°ãƒãƒƒãƒ•ã‚¡ã«è»¢é€
             scene_constants scene{};
             scene.camera_position.x = cameraPosition.x;
             scene.camera_position.y = cameraPosition.y;
@@ -341,25 +341,25 @@ void ShadowRenderer::RenderShadowMap(float elapsedTime)
 
         }
 
-        //ƒ‚ƒfƒ‹‚Ì•`‰æ
+        //ãƒ¢ãƒ‡ãƒ«ã®æç”»
         stage::Instance().render(rc, modelRenderer);
 
-        // ƒvƒŒƒCƒ„[Eƒsƒbƒ`ƒƒ[‚Ì•`‰æ(ƒJƒŠƒ“ƒO‚È‚µ‚Å—¼–Ê•`‰æ)
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ»ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®æç”»(ã‚«ãƒªãƒ³ã‚°ãªã—ã§ä¸¡é¢æç”»)
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
-        // ƒsƒbƒ`ƒƒ[‚Ì•`‰æ
+        // ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®æç”»
         Pitcher::Instance().Render(rc, modelRenderer);
 
-        // ƒvƒŒƒCƒ„[‚Ì•`‰æ
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æç”»
         Player::Instance().Render(rc, modelRenderer);
 
 
-        // ƒvƒŒƒCƒ„[•`‰æŒãAŒ³‚ÌƒJƒŠƒ“ƒOó‘Ô‚É–ß‚µ‚Ä‚¨‚­
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æç”»å¾Œã€å…ƒã®ã‚«ãƒªãƒ³ã‚°çŠ¶æ…‹ã«æˆ»ã—ã¦ãŠã
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
     }
 }
 
-//ƒJƒXƒP[ƒhƒVƒƒƒhƒEƒ}ƒbƒv¶¬ŠÖ”
+//ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”Ÿæˆé–¢æ•°
 void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
 {
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
@@ -372,7 +372,7 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
 
     Camera& camera = Camera::Instance();
 
-    //ƒrƒ…[ƒ|[ƒg‚Ìİ’è
+    //ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã®è¨­å®š
     {
         D3D11_VIEWPORT scene_viewport{};
         scene_viewport.TopLeftX = 0;
@@ -388,14 +388,14 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
     dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
-    // ƒJƒƒ‰‚Ì‰EEãE‘OƒxƒNƒgƒ‹‚ğæ“¾icamera.h ‚É GetRight/GetUp/GetFront ‚ª‚ ‚éj
+    // ã‚«ãƒ¡ãƒ©ã®å³ãƒ»ä¸Šãƒ»å‰ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—ï¼ˆcamera.h ã« GetRight/GetUp/GetFront ãŒã‚ã‚‹ï¼‰
     DirectX::XMVECTOR CameraRight = DirectX::XMLoadFloat3(&camera.GetRight());
     DirectX::XMVECTOR CameraUp = DirectX::XMLoadFloat3(&camera.GetUp());
     DirectX::XMVECTOR CameraFront = DirectX::XMLoadFloat3(&camera.GetFront());
     DirectX::XMVECTOR CameraPosition = DirectX::XMLoadFloat3(&camera.GetEye());
 
 
-    //ƒ‰ƒCƒg‚©‚ç‚ÌˆÊ’u‚©‚çŒ©‚½ƒrƒ…[EƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ
+    //ãƒ©ã‚¤ãƒˆã‹ã‚‰ã®ä½ç½®ã‹ã‚‰è¦‹ãŸãƒ“ãƒ¥ãƒ¼ãƒ»ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—
     DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat4(&directional_light_direction);
     LightPosition = DirectX::XMVectorScale(LightPosition, -50.0f);
     DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(LightPosition,
@@ -403,96 +403,96 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
         DirectX::XMVectorSet(camera.GetUp().x, camera.GetUp().y, camera.GetUp().z, 0.0f));
 
 
-    // ƒJƒXƒP[ƒh•ªŠ„‹——£ƒe[ƒuƒ‹
+    // ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰åˆ†å‰²è·é›¢ãƒ†ãƒ¼ãƒ–ãƒ«
     static constexpr float SplitAreaTable[] = {
         0.1f,
-        10.0f,   // ‹ßŒiFƒJƒƒ‰‹É‹ß‹——£
-        30.0f,   // ’†Œi1
-        80.0f,   // ’†Œi2
-        200.0f,  // ‰“Œi
+        10.0f,   // è¿‘æ™¯ï¼šã‚«ãƒ¡ãƒ©æ¥µè¿‘è·é›¢
+        30.0f,   // ä¸­æ™¯1
+        80.0f,   // ä¸­æ™¯2
+        200.0f,  // é æ™¯
     };
 
     static constexpr float fov_y = DirectX::XMConvertToRadians(45);
     float aspect_ratio = static_cast<float>(Graphics::Instance().GetScreenWidth()) / Graphics::Instance().GetScreenHeight();
 
-    // SRV‚ÌƒoƒCƒ“ƒh‚ğ–‘O‚É‰ğœ
+    // SRVã®ãƒã‚¤ãƒ³ãƒ‰ã‚’äº‹å‰ã«è§£é™¤
     ID3D11ShaderResourceView* nullSRVs[ShadowBufferSize] = {};
-    dc->PSSetShaderResources(21, ShadowBufferSize, nullSRVs);  // slot”Ô†‚ÍÀÛ‚Ég‚Á‚Ä‚¢‚é‚à‚Ì‚É‡‚í‚¹‚é
+    dc->PSSetShaderResources(21, ShadowBufferSize, nullSRVs);  // slotç•ªå·ã¯å®Ÿéš›ã«ä½¿ã£ã¦ã„ã‚‹ã‚‚ã®ã«åˆã‚ã›ã‚‹
 
     for (int index = 0; index < ShadowBufferSize; ++index)
     {
-        //ƒVƒƒƒhƒEƒ}ƒbƒv—p‚Ì[“xƒoƒbƒtƒ@‚Éİ’è
+        //ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”¨ã®æ·±åº¦ãƒãƒƒãƒ•ã‚¡ã«è¨­å®š
         dc->ClearDepthStencilView(cascade_shadowmap_depth_stencil_views[index].Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
         dc->OMSetRenderTargets(0, nullptr, cascade_shadowmap_depth_stencil_views[index].Get());
 
         float near_depth = SplitAreaTable[index];
         float far_depth = SplitAreaTable[index + 1];
 
-        //ƒGƒŠƒA‚ğ“à•ï‚·‚é‹„‘ä‚Ì8’¸“_‚ğZo‚·‚é
+        //ã‚¨ãƒªã‚¢ã‚’å†…åŒ…ã™ã‚‹è¦–æ¨å°ã®8é ‚ç‚¹ã‚’ç®—å‡ºã™ã‚‹
         DirectX::XMVECTOR vertex[8];
         {
-            //	ƒGƒŠƒA‚Ì‹ß•½–Ê‚Ì’†S‚©‚ç‚Ìã–Ê‚Ü‚Å‚Ì‹——£‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®è¿‘å¹³é¢ã®ä¸­å¿ƒã‹ã‚‰ã®ä¸Šé¢ã¾ã§ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
             float	nearY = tanf(fov_y * 0.5f) * near_depth;
 
-            //	ƒGƒŠƒA‚Ì‹ß•½–Ê‚Ì’†S‚©‚ç‚Ì‰E–Ê‚Ü‚Å‚Ì‹——£‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®è¿‘å¹³é¢ã®ä¸­å¿ƒã‹ã‚‰ã®å³é¢ã¾ã§ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
             float	nearX = nearY * aspect_ratio;
 
-            //	ƒGƒŠƒA‚Ì‰“•½–Ê‚Ì’†S‚©‚ç‚Ìã–Ê‚Ü‚Å‚Ì‹——£‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®é å¹³é¢ã®ä¸­å¿ƒã‹ã‚‰ã®ä¸Šé¢ã¾ã§ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
             float	farY = tanf(fov_y * 0.5f) * far_depth;
 
-            //	ƒGƒŠƒA‚Ì‰“•½–Ê‚Ì’†S‚©‚ç‚Ì‰E–Ê‚Ü‚Å‚Ì‹——£‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®é å¹³é¢ã®ä¸­å¿ƒã‹ã‚‰ã®å³é¢ã¾ã§ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
             float	farX = farY * aspect_ratio;
 
-            //	ƒGƒŠƒA‚Ì‹ß•½–Ê‚Ì’†SÀ•W‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®è¿‘å¹³é¢ã®ä¸­å¿ƒåº§æ¨™ã‚’æ±‚ã‚ã‚‹
             DirectX::XMVECTOR	NearPosition = DirectX::XMVectorAdd(CameraPosition,
                 DirectX::XMVectorScale(CameraFront, near_depth));
 
-            //	ƒGƒŠƒA‚Ì‰“•½–Ê‚Ì’†SÀ•W‚ğ‹‚ß‚é
+            //	ã‚¨ãƒªã‚¢ã®é å¹³é¢ã®ä¸­å¿ƒåº§æ¨™ã‚’æ±‚ã‚ã‚‹
             DirectX::XMVECTOR	FarPosition = DirectX::XMVectorAdd(CameraPosition,
                 DirectX::XMVectorScale(CameraFront, far_depth));
 
-            //8’¸“_‚ğ‹‚ß‚é
+            //8é ‚ç‚¹ã‚’æ±‚ã‚ã‚‹
             {
-                //	‹ß•½–Ê‚Ì‰Eã
+                //	è¿‘å¹³é¢ã®å³ä¸Š
                 vertex[0] = DirectX::XMVectorAdd(NearPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, nearY),
                         DirectX::XMVectorScale(CameraRight, nearX)));
 
-                //	‹ß•½–Ê‚Ì¶ã
+                //	è¿‘å¹³é¢ã®å·¦ä¸Š
                 vertex[1] = DirectX::XMVectorAdd(NearPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, nearY),
                         DirectX::XMVectorScale(CameraRight, -nearX)));
 
-                //	‹ß•½–Ê‚Ì‰E‰º
+                //	è¿‘å¹³é¢ã®å³ä¸‹
                 vertex[2] = DirectX::XMVectorAdd(NearPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, -nearY),
                         DirectX::XMVectorScale(CameraRight, nearX)));
 
-                //	‹ß•½–Ê‚Ì¶‰º
+                //	è¿‘å¹³é¢ã®å·¦ä¸‹
                 vertex[3] = DirectX::XMVectorAdd(NearPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, -nearY),
                         DirectX::XMVectorScale(CameraRight, -nearX)));
 
-                //	‰“•½–Ê‚Ì‰Eã
+                //	é å¹³é¢ã®å³ä¸Š
                 vertex[4] = DirectX::XMVectorAdd(FarPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, farY),
                         DirectX::XMVectorScale(CameraRight, farX)));
-                //	‰“•½–Ê‚Ì¶ã
+                //	é å¹³é¢ã®å·¦ä¸Š
                 vertex[5] = DirectX::XMVectorAdd(FarPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, farY),
                         DirectX::XMVectorScale(CameraRight, -farX)));
-                //	‰“•½–Ê‚Ì‰E‰º
+                //	é å¹³é¢ã®å³ä¸‹
                 vertex[6] = DirectX::XMVectorAdd(FarPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, -farY),
                         DirectX::XMVectorScale(CameraRight, farX)));
-                //	‰“•½–Ê‚Ì¶‰º
+                //	é å¹³é¢ã®å·¦ä¸‹
                 vertex[7] = DirectX::XMVectorAdd(FarPosition,
                     DirectX::XMVectorAdd(
                         DirectX::XMVectorScale(CameraUp, -farY),
@@ -500,7 +500,7 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
             }
         }
 
-        //8’¸“_‚ğƒ‰ƒCƒgƒrƒ…[‹óŠÔ‚É•ÏŠ·‚µ‚ÄAÅ‘å’lEÅ¬’l‚ğ‹‚ß‚é
+        //8é ‚ç‚¹ã‚’ãƒ©ã‚¤ãƒˆãƒ“ãƒ¥ãƒ¼ç©ºé–“ã«å¤‰æ›ã—ã¦ã€æœ€å¤§å€¤ãƒ»æœ€å°å€¤ã‚’æ±‚ã‚ã‚‹
         float lsMinZ = FLT_MAX, lsMaxZ = -FLT_MAX;
         for (auto& it : vertex)
         {
@@ -509,7 +509,7 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
             lsMinZ = min(p.z, lsMinZ);
             lsMaxZ = max(p.z, lsMaxZ);
         }
-        lsMinZ = max(0.1f, lsMinZ - 50.0f); // ‰eƒLƒƒƒXƒ^[‚ª”ÍˆÍŠO‚É‚¢‚Ä‚àE‚¦‚é‚æ‚¤è‘O‚É‰„’·
+        lsMinZ = max(0.1f, lsMinZ - 50.0f); // å½±ã‚­ãƒ£ã‚¹ã‚¿ãƒ¼ãŒç¯„å›²å¤–ã«ã„ã¦ã‚‚æ‹¾ãˆã‚‹ã‚ˆã†æ‰‹å‰ã«å»¶é•·
         lsMaxZ += 50.0f;
 
         DirectX::XMMATRIX P = DirectX::XMMatrixOrthographicLH(10000.0f, 10000.0f, lsMinZ, lsMaxZ);
@@ -529,7 +529,7 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
 
         }
 
-        //ƒNƒƒbƒvs—ñ‚ğ‹‚ß‚é
+        //ã‚¯ãƒ­ãƒƒãƒ—è¡Œåˆ—ã‚’æ±‚ã‚ã‚‹
         DirectX::XMMATRIX ClopMatrix = DirectX::XMMatrixIdentity();
         {
             float	xScale = 2.0f / (vertex_max.x - vertex_min.x);
@@ -546,15 +546,15 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
 
         }
 
-        //ƒ‰ƒCƒgƒrƒ…[ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚ÉƒNƒƒbƒvs—ñ‚ğæZ
+        //ãƒ©ã‚¤ãƒˆãƒ“ãƒ¥ãƒ¼ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã«ã‚¯ãƒ­ãƒƒãƒ—è¡Œåˆ—ã‚’ä¹—ç®—
         DirectX::XMFLOAT4X4 light_view_projection;
         DirectX::XMStoreFloat4x4(&light_view_projection, LVP * ClopMatrix);
 
-        //ƒJƒXƒP[ƒh—p’è”ƒoƒbƒtƒ@‚É”[“ü
+        //ã‚«ã‚¹ã‚±ãƒ¼ãƒ‰ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡ã«ç´å…¥
 
         cascade_shadow_constant.light_view_projection[index] = light_view_projection;
 
-        //’è”ƒoƒbƒtƒ@‚ÌXV
+        //å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®æ›´æ–°
         {
             static constexpr int SceneCBVIndex = 1;
             scene_constants scene{};
@@ -569,13 +569,13 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
             dc->PSSetConstantBuffers(SceneCBVIndex, 1, cascade_shadowmap_constant_buffer.GetAddressOf());
         }
 
-        //ƒ‚ƒfƒ‹‚Ì•`‰æ
+        //ãƒ¢ãƒ‡ãƒ«ã®æç”»
         stage::Instance().render(rc, modelRenderer);
-        // ƒvƒŒƒCƒ„[Eƒsƒbƒ`ƒƒ[‚Ì•`‰æ(ƒJƒŠƒ“ƒO‚È‚µ‚Å—¼–Ê•`‰æ)
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ»ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®æç”»(ã‚«ãƒªãƒ³ã‚°ãªã—ã§ä¸¡é¢æç”»)
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
-        // ƒsƒbƒ`ƒƒ[‚Ì•`‰æ
+        // ãƒ”ãƒƒãƒãƒ£ãƒ¼ã®æç”»
         Pitcher::Instance().Render(rc, modelRenderer);
-        // ƒvƒŒƒCƒ„[‚Ì•`‰æ
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æç”»
         Player::Instance().Render(rc, modelRenderer);
     }
 }
@@ -601,7 +601,7 @@ void ShadowRenderer::BindShadowResources(ID3D11DeviceContext* dc) const
     sm.shadow_bias = shadow_bias;
     sm.use_cascade = use_cascade_shadow_map;
     dc->UpdateSubresource(shadowmap_constant_buffer.Get(), 0, 0, &sm, 0, 0);
-    // b6: shadowmap_constantsi’ÊíƒVƒƒƒhƒE‚ÌƒoƒCƒAƒXEattenuationEuse_cascade ƒtƒ‰ƒOj
+    // b6: shadowmap_constantsï¼ˆé€šå¸¸ã‚·ãƒ£ãƒ‰ã‚¦ã®ãƒã‚¤ã‚¢ã‚¹ãƒ»attenuationãƒ»use_cascade ãƒ•ãƒ©ã‚°ï¼‰
     dc->VSSetConstantBuffers(6, 1, shadowmap_constant_buffer.GetAddressOf());
     dc->PSSetConstantBuffers(6, 1, shadowmap_constant_buffer.GetAddressOf());
 
@@ -611,7 +611,7 @@ void ShadowRenderer::BindShadowResources(ID3D11DeviceContext* dc) const
     dc->PSSetConstantBuffers(7, 1, spot_shadowmap_constant_buffer.GetAddressOf());
 
 
-    // cascade or ’ÊíƒVƒƒƒhƒE
+    // cascade or é€šå¸¸ã‚·ãƒ£ãƒ‰ã‚¦
     if (use_cascade_shadow_map)
     {
         dc->UpdateSubresource(cascade_shadowmap_constant_buffer.Get(), 0, 0,
@@ -624,7 +624,7 @@ void ShadowRenderer::BindShadowResources(ID3D11DeviceContext* dc) const
     {
         dc->PSSetShaderResources(10, 1, shadowmap_shader_resource_view.GetAddressOf());
     }
-    // ƒXƒ|ƒbƒgƒVƒƒƒhƒE
+    // ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦
     for (int i = 0; i < SpotShadowCount; ++i)
         dc->PSSetShaderResources(30 + i, 1, spot_shadowmap_shader_resource_views[i].GetAddressOf());
 
@@ -633,7 +633,7 @@ void ShadowRenderer::BindShadowResources(ID3D11DeviceContext* dc) const
 
 void ShadowRenderer::UnbindShadowResources(ID3D11DeviceContext* dc) const
 {
-    // cascade or ’ÊíƒVƒƒƒhƒE
+    // cascade or é€šå¸¸ã‚·ãƒ£ãƒ‰ã‚¦
     if (use_cascade_shadow_map)
     {
         ID3D11ShaderResourceView* nullSRVs[ShadowBufferSize] = {};
@@ -644,7 +644,7 @@ void ShadowRenderer::UnbindShadowResources(ID3D11DeviceContext* dc) const
         ID3D11ShaderResourceView* nullSRV = nullptr;
         dc->PSSetShaderResources(10, 1, &nullSRV);
     }
-    // ƒXƒ|ƒbƒgƒVƒƒƒhƒE
+    // ã‚¹ãƒãƒƒãƒˆã‚·ãƒ£ãƒ‰ã‚¦
     ID3D11ShaderResourceView* nullSRVs[SpotShadowCount] = {};
     dc->PSSetShaderResources(30, SpotShadowCount, nullSRVs);
 }

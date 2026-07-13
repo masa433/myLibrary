@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <vector>
 #include <wrl.h>
@@ -10,16 +10,16 @@ class PrimitiveRenderer
 public:
 	PrimitiveRenderer(ID3D11Device* device);
 
-	// ’¸“_’Ç‰Á
+	// é ‚ç‚¹è¿½åŠ 
 	void AddVertex(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& color);
 
-	// ²•`‰æ(D3D11_PRIMITIVE_TOPOLOGY_LINELIST)
+	// è»¸æç”»(D3D11_PRIMITIVE_TOPOLOGY_LINELIST)
 	void DrawAxis(const DirectX::XMFLOAT4X4& transform, const DirectX::XMFLOAT4& color);
 
-	// ƒOƒŠƒbƒh•`‰æ(D3D11_PRIMITIVE_TOPOLOGY_LINELIST)
+	// ã‚°ãƒªãƒƒãƒ‰æç”»(D3D11_PRIMITIVE_TOPOLOGY_LINELIST)
 	void DrawGrid(int subdivisions, float scale);
 
-	// •`‰æÀs
+	// æç”»å®Ÿè¡Œ
 	void Render(
 		ID3D11DeviceContext* dc,
 		const DirectX::XMFLOAT4X4& view,

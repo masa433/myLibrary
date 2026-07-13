@@ -1,24 +1,24 @@
-// FontRenderer.h
-// stb_truetype.h ���g���� TTF/OTF �t�H���g�𒼐ړǂݍ��݁A
-// D3D11�Ńr�b�g�}�b�v�t�H���g�Ƃ��ĕ`�悷�邽�߂̃N���X�B
+﻿// FontRenderer.h
+// stb_truetype.h を使って TTF/OTF フォントを直接読み込み、
+// D3D11でビットマップフォントとして描画するためのクラス。
 //
-// �����{��(Unicode)�Ή��Ł�
-//   ASCII�����łȂ��C�ӂ�Unicode�R�[�h�|�C���g(�Ђ炪��/�J�^�J�i/�����܂�)��
-//   �w�肵�ăx�C�N�ł���B������`�掞��UTF-8���f�R�[�h����1��������������B
-//   ���t�H���g�t�@�C�����̂ɊY���O���t���܂܂�Ă���K�v������
-//     (��: ������p�t�H���g�ł͓��{��͕\���ł��Ȃ�)�B
+// ★日本語(Unicode)対応版★
+//   ASCIIだけでなく任意のUnicodeコードポイント(ひらがな/カタカナ/漢字含む)を
+//   指定してベイクできる。文字列描画時はUTF-8をデコードして1文字ずつ処理する。
+//   ※フォントファイル自体に該当グリフが含まれている必要がある
+//     (例: 欧文専用フォントでは日本語は表示できない)。
 //
-// �g����:
-//   // 1) �K�v�ȕ����������x�C�N����(�S�p�܂ޏꍇ�̓������ߖ�̂���)
+// 使い方:
+//   // 1) 必要な文字だけをベイクする(全角含む場合はメモリ節約のため)
 //   std::vector<int> codepoints = FontRenderer::Utf8ToCodepoints(u8"0123456789km/h");
-//   auto jpCodepoints = FontRenderer::Utf8ToCodepoints(u8"�X�g���[�g�X���C�_�[�J�[�u...");
+//   auto jpCodepoints = FontRenderer::Utf8ToCodepoints(u8"ストレートスライダーカーブ...");
 //   codepoints.insert(codepoints.end(), jpCodepoints.begin(), jpCodepoints.end());
 //
 //   FontRenderer font;
 //   font.Initialize(device, L".\\resources\\fonts\\NotoSansJP-Regular.ttf",
 //                    32.0f, 1280, 720, 512, 512, &codepoints);
 //   ...
-//   font.DrawText(dc, u8"�X�g���[�g", 100.0f, 100.0f, 1.0f, 1,1,1,1);
+//   font.DrawText(dc, u8"ストレート", 100.0f, 100.0f, 1.0f, 1,1,1,1);
 //   ...
 //   font.Uninitialize();
 //
@@ -31,8 +31,8 @@
 #include <vector>
 #include <unordered_map>
 
-// stb_truetype.h �̓w�b�_�I�����[���C�u�����B
-// ������ FontRenderer.cpp ����1�񂾂� STB_TRUETYPE_IMPLEMENTATION ���`����include����B
+// stb_truetype.h はヘッダオンリーライブラリ。
+// 実装は FontRenderer.cpp 側で1回だけ STB_TRUETYPE_IMPLEMENTATION を定義してincludeする。
 #include "imstb_truetype.h"
 
 class FontRenderer
@@ -41,17 +41,17 @@ public:
 	FontRenderer() = default;
 	~FontRenderer() { Uninitialize(); }
 
-	// UTF-8�����񂩂�Unicode�R�[�h�|�C���g������w���p�[�B
-	// �x�C�N�������������܂Ƃ߂Ďw�肷��ۂɎg��(�d�����Ă��Ă�OK�AInitialize���Ń��j�[�N������)�B
+	// UTF-8文字列からUnicodeコードポイント列を作るヘルパー。
+	// ベイクしたい文字をまとめて指定する際に使う(重複していてもOK、Initialize側でユニーク化する)。
 	static std::vector<int> Utf8ToCodepoints(const char* utf8Text);
 
-	// fontPath  : .ttf / .otf �ւ̃p�X(ttc�t�H���g�R���N�V������fontIndex�Ŗʂ��w��)
-	// pixelHeight: �x�C�N����t�H���g�̊�T�C�Y(px)�B�傫���قǃe�N�X�`�����Y�킾���d���B
-	// screenWidth/screenHeight: �`���̃X�N���[���T�C�Y(�s�N�Z���ϊ��Ɏg�p)
-	// codepoints: �x�C�N������Unicode�R�[�h�|�C���g�̈ꗗ�B
-	//             nullptr�̏ꍇ��ASCII 32(' ')?126('~')�݂̂��x�C�N����(�]������)�B
-	//             ���{����g���ꍇ�� Utf8ToCodepoints() �ō�����z���n�����ƁB
-	// fontIndex : .ttc(�t�H���g�R���N�V����)���̖ʔԍ��B�ʏ��.ttf/.otf��0�ł悢�B
+	// fontPath  : .ttf / .otf へのパス(ttcフォントコレクションはfontIndexで面を指定)
+	// pixelHeight: ベイクするフォントの基準サイズ(px)。大きいほどテクスチャが綺麗だが重い。
+	// screenWidth/screenHeight: 描画先のスクリーンサイズ(ピクセル変換に使用)
+	// codepoints: ベイクしたいUnicodeコードポイントの一覧。
+	//             nullptrの場合はASCII 32(' ')?126('~')のみをベイクする(従来動作)。
+	//             日本語を使う場合は Utf8ToCodepoints() で作った配列を渡すこと。
+	// fontIndex : .ttc(フォントコレクション)内の面番号。通常の.ttf/.otfは0でよい。
 	bool Initialize(
 		ID3D11Device* device,
 		const wchar_t* fontPath,
@@ -65,11 +65,11 @@ public:
 
 	void Uninitialize();
 
-	// �X�N���[���T�C�Y���ς�����ꍇ�ɌĂ�(���T�C�Y�Ή�)
+	// スクリーンサイズが変わった場合に呼ぶ(リサイズ対応)
 	void SetScreenSize(int screenWidth, int screenHeight) { screenWidth_ = screenWidth; screenHeight_ = screenHeight; }
 
-	// text(UTF-8)�� (x, y) �������Ƃ��ĕ`�悷��B
-	// �x�C�N���Ă��Ȃ�����(�R�[�h�|�C���g)�͖�������A���p�X�y�[�X�������i�ށB
+	// text(UTF-8)を (x, y) を左上基準として描画する。
+	// ベイクしていない文字(コードポイント)は無視され、半角スペース分だけ進む。
 	void DrawText(
 		ID3D11DeviceContext* dc,
 		const char* utf8Text,
@@ -77,7 +77,7 @@ public:
 		float scale,
 		float r, float g, float b, float a);
 
-	// �������`�悵���ꍇ�̕��E����(px)���v�Z����(���s��Ή���1�s�z��)
+	// 文字列を描画した場合の幅・高さ(px)を計算する(改行非対応の1行想定)
 	void MeasureText(const char* utf8Text, float scale, float& outWidth, float& outHeight) const;
 
 	bool IsValid() const { return valid_; }
@@ -106,7 +106,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>         vertexBuffer_;
 	size_t                                       vertexBufferCapacity_ = 0;
 
-	// �R�[�h�|�C���g(Unicode) -> �x�C�N���ꂽ�O���t���
+	// コードポイント(Unicode) -> ベイクされたグリフ情報
 	std::unordered_map<int, stbtt_packedchar> glyphs_;
 
 	int   atlasWidth_ = 512;

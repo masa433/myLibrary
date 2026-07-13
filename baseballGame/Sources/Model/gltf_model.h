@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #define NOMINMAX
 #include <d3d11.h>
 #include <wrl.h>
@@ -20,23 +20,23 @@ public:
 	struct scene
 	{
 		std::string name;
-		std::vector<int> nodes;// uƒ‹[ƒgvƒm[ƒh‚Ì”z—ñ
+		std::vector<int> nodes;// ã€Œãƒ«ãƒ¼ãƒˆã€ãƒãƒ¼ãƒ‰ã®é…åˆ—
 	};
 	std::vector<scene> scenes;
 
 	struct node 
 	{
 		std::string name;
-		int skin{ -1 };// ‚±‚Ìƒm[ƒh‚ªQÆ‚·‚éƒXƒLƒ“‚ÌƒCƒ“ƒfƒbƒNƒX
-		int mesh{ -1 };// ‚±‚Ìƒm[ƒh‚ªQÆ‚·‚éƒƒbƒVƒ…‚ÌƒCƒ“ƒfƒbƒNƒX
-		//-1‚ÍƒXƒLƒ“‚âƒƒbƒVƒ…‚ğQÆ‚µ‚Ä‚¢‚È‚¢
+		int skin{ -1 };// ã“ã®ãƒãƒ¼ãƒ‰ãŒå‚ç…§ã™ã‚‹ã‚¹ã‚­ãƒ³ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
+		int mesh{ -1 };// ã“ã®ãƒãƒ¼ãƒ‰ãŒå‚ç…§ã™ã‚‹ãƒ¡ãƒƒã‚·ãƒ¥ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
+		//-1ã¯ã‚¹ã‚­ãƒ³ã‚„ãƒ¡ãƒƒã‚·ãƒ¥ã‚’å‚ç…§ã—ã¦ã„ãªã„
 
-		std::vector<int> children;// ‚±‚Ìƒm[ƒh‚Ìqƒm[ƒh‚ÌƒCƒ“ƒfƒbƒNƒX‚Ì”z—ñ
-		int parent{ -1 }; // eƒm[ƒh‚ÌƒCƒ“ƒfƒbƒNƒX‚ğ’Ç‰Á
+		std::vector<int> children;// ã“ã®ãƒãƒ¼ãƒ‰ã®å­ãƒãƒ¼ãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®é…åˆ—
+		int parent{ -1 }; // è¦ªãƒãƒ¼ãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’è¿½åŠ 
 		//Local Transforms
-		DirectX::XMFLOAT4 rotation{ 0,0,0,1 };//‰ñ“]
-		DirectX::XMFLOAT3 scale{ 1,1,1 };//ƒXƒP[ƒ‹
-		DirectX::XMFLOAT3 translation{ 0,0,0 };//ˆÊ’u
+		DirectX::XMFLOAT4 rotation{ 0,0,0,1 };//å›è»¢
+		DirectX::XMFLOAT3 scale{ 1,1,1 };//ã‚¹ã‚±ãƒ¼ãƒ«
+		DirectX::XMFLOAT3 translation{ 0,0,0 };//ä½ç½®
 
 		DirectX::XMFLOAT4X4 global_transform{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 		DirectX::XMFLOAT4X4 local_transform{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
@@ -45,35 +45,35 @@ public:
 
 	struct buffer_view
 	{
-		DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN; // ƒoƒbƒtƒ@“àƒf[ƒ^‚ÌDXGIƒtƒH[ƒ}ƒbƒg
-		Microsoft::WRL::ComPtr<ID3D11Buffer> buffer; // Direct3D 11 ƒoƒbƒtƒ@‚Ö‚ÌQÆ
-		size_t stride_in_bytes{ 0 }; // 1—v‘f‚ ‚½‚è‚ÌƒoƒCƒg”iƒXƒgƒ‰ƒCƒhj
-		size_t size_in_bytes{ 0 };   // ƒoƒbƒtƒ@‘S‘Ì‚ÌƒoƒCƒg”
+		DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN; // ãƒãƒƒãƒ•ã‚¡å†…ãƒ‡ãƒ¼ã‚¿ã®DXGIãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ
+		Microsoft::WRL::ComPtr<ID3D11Buffer> buffer; // Direct3D 11 ãƒãƒƒãƒ•ã‚¡ã¸ã®å‚ç…§
+		size_t stride_in_bytes{ 0 }; // 1è¦ç´ ã‚ãŸã‚Šã®ãƒã‚¤ãƒˆæ•°ï¼ˆã‚¹ãƒˆãƒ©ã‚¤ãƒ‰ï¼‰
+		size_t size_in_bytes{ 0 };   // ãƒãƒƒãƒ•ã‚¡å…¨ä½“ã®ãƒã‚¤ãƒˆæ•°
 		size_t count() const
 		{
-			return size_in_bytes / stride_in_bytes; // ƒoƒbƒtƒ@“à‚Ì—v‘f”‚ğ•Ô‚·
+			return size_in_bytes / stride_in_bytes; // ãƒãƒƒãƒ•ã‚¡å†…ã®è¦ç´ æ•°ã‚’è¿”ã™
 		}
 	};
 
 	struct mesh
 	{
-		std::string name; // ƒƒbƒVƒ…–¼
+		std::string name; // ãƒ¡ãƒƒã‚·ãƒ¥å
 		struct primitive
 		{
-			int material; // g—p‚·‚éƒ}ƒeƒŠƒAƒ‹‚ÌƒCƒ“ƒfƒbƒNƒX
-			std::map<std::string, buffer_view> vertex_buffer_views; // ’¸“_‘®«–¼‚Æƒoƒbƒtƒ@‚Ì‘Î‰•\
-			buffer_view index_buffer_view; // ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@
+			int material; // ä½¿ç”¨ã™ã‚‹ãƒãƒ†ãƒªã‚¢ãƒ«ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
+			std::map<std::string, buffer_view> vertex_buffer_views; // é ‚ç‚¹å±æ€§åã¨ãƒãƒƒãƒ•ã‚¡ã®å¯¾å¿œè¡¨
+			buffer_view index_buffer_view; // ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡
 
-			//ƒoƒbƒ`ƒ“ƒO—p‚ÌCPU‘¤‚Ì’¸“_ƒf[ƒ^
+			//ãƒãƒƒãƒãƒ³ã‚°ç”¨ã®CPUå´ã®é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿
 			std::vector<DirectX::XMFLOAT3> cpu_positions;
 			std::vector<DirectX::XMFLOAT3> cpu_normals;
 			std::vector<DirectX::XMFLOAT4> cpu_tangents;
 			std::vector<DirectX::XMFLOAT2> cpu_texcoords;
 			std::vector<uint32_t>          cpu_indices;
 		};
-		std::vector<primitive> primitives; // ƒƒbƒVƒ…‚ğ\¬‚·‚éƒvƒŠƒ~ƒeƒBƒu‚Ì”z—ñ
+		std::vector<primitive> primitives; // ãƒ¡ãƒƒã‚·ãƒ¥ã‚’æ§‹æˆã™ã‚‹ãƒ—ãƒªãƒŸãƒ†ã‚£ãƒ–ã®é…åˆ—
 	};
-	std::vector<mesh> meshes; // ƒ‚ƒfƒ‹“à‚Ì‘SƒƒbƒVƒ…
+	std::vector<mesh> meshes; // ãƒ¢ãƒ‡ãƒ«å†…ã®å…¨ãƒ¡ãƒƒã‚·ãƒ¥
 
 	void fetch_nodes(const tinygltf::Model& gltf_model);
 	void cumulate_transforms(std::vector<node>& nodes);
@@ -92,7 +92,7 @@ public:
 	void animate(size_t animation_index, float time, std::vector<node>& animated_nodes);
 
 
-	// ƒm[ƒhƒCƒ“ƒfƒbƒNƒXæ“¾
+	// ãƒãƒ¼ãƒ‰ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å–å¾—
 	int GetNodeIndex(const char* name) const;
 
 	const std::vector<mesh>& GetMeshes() const { return meshes; }
@@ -115,7 +115,7 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> primitive_cbuffer;
 
 	// UNIT.35
-	//ƒ}ƒeƒŠƒAƒ‹‚Ìæ“¾
+	//ãƒãƒ†ãƒªã‚¢ãƒ«ã®å–å¾—
 	struct texture_info 
 	{
 		int index = -1;
@@ -202,7 +202,7 @@ public:
 		{
 	     int sampler{ -1 };
 	     int target_node{ -1 };
-		 std::string target_path;// "translation", "rotation", "scale" ‚È‚Ç
+		 std::string target_path;// "translation", "rotation", "scale" ãªã©
 		};
 	    std::vector<channel> channels;
 	
@@ -222,7 +222,7 @@ public:
 	 std::vector<animation> animations;
 
 	 //UNIT.37
-	 //ƒ{[ƒ“s—ñ‚Ì\‘¢‘Ì‚Æ’è”ƒoƒbƒtƒ@
+	 //ãƒœãƒ¼ãƒ³è¡Œåˆ—ã®æ§‹é€ ä½“ã¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	 static const size_t PRIMITIVE_MAX_JOINTS = 512;
 	 struct primitive_joint_constants 
 	 {
@@ -238,24 +238,24 @@ public:
 		 Microsoft::WRL::ComPtr<ID3D11Buffer> normal_buffer;
 		 Microsoft::WRL::ComPtr<ID3D11Buffer> tangent_buffer;
 		 Microsoft::WRL::ComPtr<ID3D11Buffer> texcoord_buffer;
-		 Microsoft::WRL::ComPtr<ID3D11Buffer> joint_buffer;//ƒ_ƒ~[
-		 Microsoft::WRL::ComPtr<ID3D11Buffer> weight_buffer;//ƒ_ƒ~[
+		 Microsoft::WRL::ComPtr<ID3D11Buffer> joint_buffer;//ãƒ€ãƒŸãƒ¼
+		 Microsoft::WRL::ComPtr<ID3D11Buffer> weight_buffer;//ãƒ€ãƒŸãƒ¼
 		 Microsoft::WRL::ComPtr<ID3D11Buffer> index_buffer;
 		 UINT index_count{ 0 };
 	 };
 
 	 std::vector<batched_primitive> batched_primitives;
 
-	 // ƒ[ƒhŒã‚É1‰ñŒÄ‚Ô
+	 // ãƒ­ãƒ¼ãƒ‰å¾Œã«1å›å‘¼ã¶
 	 void build_static_batches(ID3D11Device* device);
 
-	 // ƒoƒbƒ`‚ğg‚Á‚½•`‰æiƒXƒLƒ“‚È‚µƒ‚ƒfƒ‹—pj
+	 // ãƒãƒƒãƒã‚’ä½¿ã£ãŸæç”»ï¼ˆã‚¹ã‚­ãƒ³ãªã—ãƒ¢ãƒ‡ãƒ«ç”¨ï¼‰
 	 void render_batched(ID3D11DeviceContext* immediate_context,
 		 const DirectX::XMFLOAT4X4& world, const std::vector<node>& animated_nodes);
 
 	
 public:
-	//ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO—p‚ÌƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX
+	//ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ç”¨ã®ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹
 	struct BoundingBox
 	{
 		DirectX::XMFLOAT3 box_min;
@@ -263,14 +263,14 @@ public:
 
 		BoundingBox() : box_min(FLT_MAX, FLT_MAX, FLT_MAX), box_max(-FLT_MAX, -FLT_MAX, -FLT_MAX) {}
 
-		void Merge(const DirectX::XMFLOAT3& point);// “_‚ğŠÜ‚Ş‚æ‚¤‚ÉƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚ğŠg’£
-		void Merge(const BoundingBox& other);// ‘¼‚ÌƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚ğŠÜ‚Ş‚æ‚¤‚ÉŠg’£
-		DirectX::XMFLOAT3 GetCenter() const; // ƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚Ì’†S‚ğæ“¾
-		DirectX::XMFLOAT3 GetExtents() const; // ƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚Ì”¼•ª‚ÌƒTƒCƒYiextentsj‚ğæ“¾
-		float GetRadius() const; // ƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚Ì”¼Œa‚ğæ“¾
+		void Merge(const DirectX::XMFLOAT3& point);// ç‚¹ã‚’å«ã‚€ã‚ˆã†ã«ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã‚’æ‹¡å¼µ
+		void Merge(const BoundingBox& other);// ä»–ã®ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã‚’å«ã‚€ã‚ˆã†ã«æ‹¡å¼µ
+		DirectX::XMFLOAT3 GetCenter() const; // ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã®ä¸­å¿ƒã‚’å–å¾—
+		DirectX::XMFLOAT3 GetExtents() const; // ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã®åŠåˆ†ã®ã‚µã‚¤ã‚ºï¼ˆextentsï¼‰ã‚’å–å¾—
+		float GetRadius() const; // ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã®åŠå¾„ã‚’å–å¾—
 	};
 
-	//ƒoƒEƒ“ƒfƒBƒ“ƒOƒXƒtƒBƒA
+	//ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚¹ãƒ•ã‚£ã‚¢
 	struct BoundingSphere
 	{
 		DirectX::XMFLOAT3 center;
@@ -278,11 +278,11 @@ public:
 		BoundingSphere() : center(0.0f, 0.0f, 0.0f), radius(0.0f) {}
 	};
 
-	//ƒ‚ƒfƒ‹‘S‘Ì‚ÌƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚ÆƒoƒEƒ“ƒfƒBƒ“ƒOƒXƒtƒBƒA‚ğæ“¾
+	//ãƒ¢ãƒ‡ãƒ«å…¨ä½“ã®ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã¨ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚¹ãƒ•ã‚£ã‚¢ã‚’å–å¾—
 	const BoundingBox& GetBoundingBox() const { return boundingBox; }
 	const BoundingSphere& GetBoundingSphere() const { return boundingSphere; }
 
-	//ƒ‚ƒfƒ‹‘S‘Ì‚ÌƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚ÆƒoƒEƒ“ƒfƒBƒ“ƒOƒXƒtƒBƒA‚ğŒvZ
+	//ãƒ¢ãƒ‡ãƒ«å…¨ä½“ã®ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã¨ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚¹ãƒ•ã‚£ã‚¢ã‚’è¨ˆç®—
 	void CalculateBounds();
 
 private:

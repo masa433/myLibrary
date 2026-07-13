@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "game_object.h"
 #include "../Model/Model.h"
 #include <DirectXMath.h>

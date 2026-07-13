@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <DirectXMath.h>
 #include <algorithm>
 #include "imgui.h"
@@ -6,33 +6,33 @@
 #include "batSprite.h"
 
 // ============================================================
-//  HitJudge2D  \  2DƒXƒvƒ‰ƒCƒgd‚È‚è & ƒ^ƒCƒ~ƒ“ƒO”»’è
+//  HitJudge2D  â€•  2Dã‚¹ãƒ—ãƒ©ã‚¤ãƒˆé‡ãªã‚Š & ã‚¿ã‚¤ãƒŸãƒ³ã‚°åˆ¤å®š
 //
-//  g‚¢•ûF
-//    1. Player::Update() ‚Ì’†‚Å Update() ‚ğ–ˆƒtƒŒ[ƒ€ŒÄ‚Ô
-//    2. ƒXƒCƒ“ƒO“ü—Í‚ğŒŸ’m‚µ‚½‚ç TrySwing() ‚ğŒÄ‚Ô
-//    3. Õ“ËƒR[ƒ‹ƒoƒbƒN(onContact)‚Å GetHitResult() ‚ğŒ©‚Ä
-//       PhysX ‘¤‚Ì‘¬“x‚É•â³‚ğŠ|‚¯‚é
+//  ä½¿ã„æ–¹ï¼š
+//    1. Player::Update() ã®ä¸­ã§ Update() ã‚’æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶
+//    2. ã‚¹ã‚¤ãƒ³ã‚°å…¥åŠ›ã‚’æ¤œçŸ¥ã—ãŸã‚‰ TrySwing() ã‚’å‘¼ã¶
+//    3. è¡çªã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯(onContact)ã§ GetHitResult() ã‚’è¦‹ã¦
+//       PhysX å´ã®é€Ÿåº¦ã«è£œæ­£ã‚’æ›ã‘ã‚‹
 // ============================================================
 struct HitJudge2DResult
 {
-    bool  validHit = false;  // —LŒø‚È“–‚½‚èi‹óU‚è‚Å‚È‚¢j
-    float velocityScale = 1.0f;  // ‘Å‹…‘¬“x‚Ö‚Ì”{—¦
-    float overlapRatio = 0.0f;  // d‚È‚è“x 0~1iƒfƒoƒbƒO—pj
-    bool  cursorOverlap = false; // ŠÛƒJ[ƒ\ƒ‹‚ªd‚È‚Á‚Ä‚¢‚½‚©
-	float cursorOverlapRatio = 0.0f; // ŠÛƒJ[ƒ\ƒ‹‚Ìd‚È‚è“x 0~1
-    bool  purpleBat = false; // ‡ƒoƒbƒg‚¾‚Á‚½‚©
-	bool isGroundBall = false; // ’n–Ê‚É—‚¿‚é‘Å‹…‚©ionContact ‚Å”»’èj
-	float launchAngle2DDeg = 15.0f; // 2D”»’è‚Å‚Ì‘Å‹…Šp“xionContact ‚ÅŒvZj
-	float hitNormalizedY = 0.0f; // ƒoƒbƒgã’[‚©‚ç‚ÌƒqƒbƒgˆÊ’ui0=ã’[, 1=‰º’[j
-	bool isBallZone = false; // ƒ{[ƒ‹‚ªƒXƒgƒ‰ƒCƒNƒ][ƒ““à‚É“ü‚Á‚Ä‚¢‚½‚©iƒfƒoƒbƒO—pj
+    bool  validHit = false;  // æœ‰åŠ¹ãªå½“ãŸã‚Šï¼ˆç©ºæŒ¯ã‚Šã§ãªã„ï¼‰
+    float velocityScale = 1.0f;  // æ‰“çƒé€Ÿåº¦ã¸ã®å€ç‡
+    float overlapRatio = 0.0f;  // é‡ãªã‚Šåº¦ 0~1ï¼ˆãƒ‡ãƒãƒƒã‚°ç”¨ï¼‰
+    bool  cursorOverlap = false; // ä¸¸ã‚«ãƒ¼ã‚½ãƒ«ãŒé‡ãªã£ã¦ã„ãŸã‹
+	float cursorOverlapRatio = 0.0f; // ä¸¸ã‚«ãƒ¼ã‚½ãƒ«ã®é‡ãªã‚Šåº¦ 0~1
+    bool  purpleBat = false; // ç´«ãƒãƒƒãƒˆã ã£ãŸã‹
+	bool isGroundBall = false; // åœ°é¢ã«è½ã¡ã‚‹æ‰“çƒã‹ï¼ˆonContact ã§åˆ¤å®šï¼‰
+	float launchAngle2DDeg = 15.0f; // 2Dåˆ¤å®šã§ã®æ‰“çƒè§’åº¦ï¼ˆonContact ã§è¨ˆç®—ï¼‰
+	float hitNormalizedY = 0.0f; // ãƒãƒƒãƒˆä¸Šç«¯ã‹ã‚‰ã®ãƒ’ãƒƒãƒˆä½ç½®ï¼ˆ0=ä¸Šç«¯, 1=ä¸‹ç«¯ï¼‰
+	bool isBallZone = false; // ãƒœãƒ¼ãƒ«ãŒã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³å†…ã«å…¥ã£ã¦ã„ãŸã‹ï¼ˆãƒ‡ãƒãƒƒã‚°ç”¨ï¼‰
 };
 
 struct OBB2D
 {
-    DirectX::XMFLOAT2 center; // ’†SÀ•W(px)
-    DirectX::XMFLOAT2 halfSize; // ”¼ƒTƒCƒY(px)
-	float rotationDeg; // ‰ñ“]Šp“x(“x)
+    DirectX::XMFLOAT2 center; // ä¸­å¿ƒåº§æ¨™(px)
+    DirectX::XMFLOAT2 halfSize; // åŠã‚µã‚¤ã‚º(px)
+	float rotationDeg; // å›è»¢è§’åº¦(åº¦)
 };
 
 class HitJudge2D
@@ -44,37 +44,37 @@ public:
         return inst;
     }
 
-    //İ’è
-    //ƒqƒbƒg—LŒø‘‹Fƒ{[ƒ‹‚ªƒXƒgƒ‰ƒCƒNƒ][ƒ““’B‚Ì‰½•b‘O‚©‚ç‰½•bŒã‚Ü‚Å—LŒø‚©
-	float hitWindowBeforeSec = 0.5f; //‘‚·‚¬”»’è
-	float hitWindowAfterSec = 0.5f;  //’x‚·‚¬”»’è
+    //è¨­å®š
+    //ãƒ’ãƒƒãƒˆæœ‰åŠ¹çª“ï¼šãƒœãƒ¼ãƒ«ãŒã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³åˆ°é”ã®ä½•ç§’å‰ã‹ã‚‰ä½•ç§’å¾Œã¾ã§æœ‰åŠ¹ã‹
+	float hitWindowBeforeSec = 0.5f; //æ—©ã™ãåˆ¤å®š
+	float hitWindowAfterSec = 0.5f;  //é…ã™ãåˆ¤å®š
 
-    // ƒoƒbƒg‹éŒ`‚Ì‚¤‚¿u“–‚½‚èv‚ÆŒ©‚È‚·ã’[ƒIƒtƒZƒbƒgipxj
-   // ƒoƒbƒg‰æ‘œ‚Ìã’[‚©‚ç‚±‚Ì”ÍˆÍ‚ğƒqƒbƒg‘Ñ‚Æ‚·‚é
+    // ãƒãƒƒãƒˆçŸ©å½¢ã®ã†ã¡ã€Œå½“ãŸã‚Šã€ã¨è¦‹ãªã™ä¸Šç«¯ã‚ªãƒ•ã‚»ãƒƒãƒˆï¼ˆpxï¼‰
+   // ãƒãƒƒãƒˆç”»åƒã®ä¸Šç«¯ã‹ã‚‰ã“ã®ç¯„å›²ã‚’ãƒ’ãƒƒãƒˆå¸¯ã¨ã™ã‚‹
     float batHitBandHeight = 10.0f;
 
-    // ƒJ[ƒ\ƒ‹‰~‚Ì”¼Œaipxj
+    // ã‚«ãƒ¼ã‚½ãƒ«å††ã®åŠå¾„ï¼ˆpxï¼‰
     float cursorRadius = BatSprite::Instance().GetBatCursorSpriteSize().x * 0.5f;
 
-    // ‡ƒoƒbƒg”»’èƒtƒ‰ƒOiŠO•”‚©‚ç set ‚·‚éj
+    // ç´«ãƒãƒƒãƒˆåˆ¤å®šãƒ•ãƒ©ã‚°ï¼ˆå¤–éƒ¨ã‹ã‚‰ set ã™ã‚‹ï¼‰
     bool  isPurpleBat = false;
-	bool  isBallZone = false; // ƒ{[ƒ‹‚ªƒXƒgƒ‰ƒCƒNƒ][ƒ““à‚É“ü‚Á‚Ä‚¢‚½‚©iŠO•”‚©‚ç set ‚·‚éj
+	bool  isBallZone = false; // ãƒœãƒ¼ãƒ«ãŒã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³å†…ã«å…¥ã£ã¦ã„ãŸã‹ï¼ˆå¤–éƒ¨ã‹ã‚‰ set ã™ã‚‹ï¼‰
 
-    // ƒJ[ƒ\ƒ‹‰~‚Æd‚È‚Á‚½‚Ì‘¬“xƒ{[ƒiƒX
+    // ã‚«ãƒ¼ã‚½ãƒ«å††ã¨é‡ãªã£ãŸæ™‚ã®é€Ÿåº¦ãƒœãƒ¼ãƒŠã‚¹
     float cursorOverlapBonus = 0.4f;   // +40%
-    // ‡ƒoƒbƒg‚Ìƒyƒiƒ‹ƒeƒB
+    // ç´«ãƒãƒƒãƒˆã®ãƒšãƒŠãƒ«ãƒ†ã‚£
     float purpleBatPenalty = 0.20f;   // -20%
 
-    //ƒ{[ƒ‹ƒ][ƒ“‚Ìƒyƒiƒ‹ƒeƒB
+    //ãƒœãƒ¼ãƒ«ã‚¾ãƒ¼ãƒ³ã®ãƒšãƒŠãƒ«ãƒ†ã‚£
 	float ballZonePenalty = 0.20f; // -20%
 
-    // ballScreenCenter  : 2Dƒ{[ƒ‹ƒXƒvƒ‰ƒCƒg‚Ì’†S(px)
-    // batTopLeft        : ƒoƒbƒg‹éŒ`‚Ì¶ã(px)
-    // batSize           : ƒoƒbƒg‹éŒ`‚ÌƒTƒCƒY(px)
-    // batRotationDeg    : ƒoƒbƒg‚Ì‰ñ“]iŒ»İ‚Í‹éŒ` AABB ‚Å‹ß—j
-    // cursorCenter      : ŠÛƒJ[ƒ\ƒ‹‚Ì’†S(px)
-    // estTimeToZone     : ƒ{[ƒ‹‚ªƒXƒgƒ‰ƒCƒNƒ][ƒ““’B‚Ü‚Å‚Ìc‚è•b”
-    //                     (0 = “’BA³ = ‚Ü‚¾—ˆ‚Ä‚¢‚È‚¢A•‰ = ’Ê‰ßÏ‚İ)
+    // ballScreenCenter  : 2Dãƒœãƒ¼ãƒ«ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®ä¸­å¿ƒ(px)
+    // batTopLeft        : ãƒãƒƒãƒˆçŸ©å½¢ã®å·¦ä¸Š(px)
+    // batSize           : ãƒãƒƒãƒˆçŸ©å½¢ã®ã‚µã‚¤ã‚º(px)
+    // batRotationDeg    : ãƒãƒƒãƒˆã®å›è»¢ï¼ˆç¾åœ¨ã¯çŸ©å½¢ AABB ã§è¿‘ä¼¼ï¼‰
+    // cursorCenter      : ä¸¸ã‚«ãƒ¼ã‚½ãƒ«ã®ä¸­å¿ƒ(px)
+    // estTimeToZone     : ãƒœãƒ¼ãƒ«ãŒã‚¹ãƒˆãƒ©ã‚¤ã‚¯ã‚¾ãƒ¼ãƒ³åˆ°é”ã¾ã§ã®æ®‹ã‚Šç§’æ•°
+    //                     (0 = åˆ°é”ã€æ­£ = ã¾ã æ¥ã¦ã„ãªã„ã€è²  = é€šéæ¸ˆã¿)
     void Update(const DirectX::XMFLOAT2& ballScreenCenter,
         const DirectX::XMFLOAT2& batCenter,
         const DirectX::XMFLOAT2& batSize,
@@ -89,33 +89,33 @@ public:
         cursorCenter_ = cursorCenter;
         timeToZone_ = estTimeToZone;
 
-        // d‚È‚èŒvZiAABB + ƒ{[ƒ‹”¼Œa‚ÅŠÈˆÕ”»’èj
+        // é‡ãªã‚Šè¨ˆç®—ï¼ˆAABB + ãƒœãƒ¼ãƒ«åŠå¾„ã§ç°¡æ˜“åˆ¤å®šï¼‰
         overlapResult_ = CalcOverlap();
 
-        swingConsumed_ = false;   // –ˆƒtƒŒ[ƒ€ƒŠƒZƒbƒgiTrySwing ‚ÅÁ”ïj
+        swingConsumed_ = false;   // æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ãƒªã‚»ãƒƒãƒˆï¼ˆTrySwing ã§æ¶ˆè²»ï¼‰
     }
 
-    // ---- ƒXƒCƒ“ƒO“ü—Í‚ÉŒÄ‚Ô ----
-    // –ß‚è’l‚ª true ‚È‚ç—LŒøƒqƒbƒgAfalse ‚È‚ç‹óU‚è
+    // ---- ã‚¹ã‚¤ãƒ³ã‚°å…¥åŠ›æ™‚ã«å‘¼ã¶ ----
+    // æˆ»ã‚Šå€¤ãŒ true ãªã‚‰æœ‰åŠ¹ãƒ’ãƒƒãƒˆã€false ãªã‚‰ç©ºæŒ¯ã‚Š
     bool TrySwing(HitJudge2DResult& outResult)
     {
         outResult = {};
 
-        // ƒ^ƒCƒ~ƒ“ƒO”»’è
+        // ã‚¿ã‚¤ãƒŸãƒ³ã‚°åˆ¤å®š
         bool timingOK = (timeToZone_ >= -hitWindowAfterSec &&
             timeToZone_ <= hitWindowBeforeSec);
 
-        // d‚È‚è”»’è
+        // é‡ãªã‚Šåˆ¤å®š
         bool overlapOK = overlapResult_.anyOverlap;
 
         if (!timingOK || !overlapOK)
         {
-            // ‹óU‚è
+            // ç©ºæŒ¯ã‚Š
             outResult.validHit = false;
             return false;
         }
 
-        // ---- —LŒøƒqƒbƒg ----
+        // ---- æœ‰åŠ¹ãƒ’ãƒƒãƒˆ ----
         outResult.validHit = true;
         outResult.overlapRatio = overlapResult_.ratio;
         outResult.cursorOverlap = overlapResult_.cursorOverlap;
@@ -128,23 +128,23 @@ public:
 
         float scale = 1.0f;
 
-        //ƒ{[ƒ‹ƒ][ƒ“‚È‚çŒ¸‘¬
+        //ãƒœãƒ¼ãƒ«ã‚¾ãƒ¼ãƒ³ãªã‚‰æ¸›é€Ÿ
         if(outResult.isBallZone)
         {
             scale -= ballZonePenalty;
 		}
       
-        // —Dæ‡ˆÊFƒJ[ƒ\ƒ‹d‚È‚è > ‡ƒoƒbƒg
+        // å„ªå…ˆé †ä½ï¼šã‚«ãƒ¼ã‚½ãƒ«é‡ãªã‚Š > ç´«ãƒãƒƒãƒˆ
         if (overlapResult_.cursorOverlap)
         {
             
-			//‚Ç‚ê‚­‚ç‚¢d‚È‚Á‚Ä‚¢‚é‚©‚Åƒ{[ƒiƒX‚ğ‘Œ¸‚·‚éê‡‚ÍA‚±‚±‚Å ratio ‚ğg‚Á‚Ä’²®‰Â”\
+			//ã©ã‚Œãã‚‰ã„é‡ãªã£ã¦ã„ã‚‹ã‹ã§ãƒœãƒ¼ãƒŠã‚¹ã‚’å¢—æ¸›ã™ã‚‹å ´åˆã¯ã€ã“ã“ã§ ratio ã‚’ä½¿ã£ã¦èª¿æ•´å¯èƒ½
 			scale += cursorOverlapBonus * overlapResult_.cursorOverlapRatio;
 
         }
         else if (isPurpleBat)
         {
-            // ”’ŠÛ‚ªd‚È‚Á‚Ä‚¢‚È‚¢ ‚©‚Â ‡ƒoƒbƒgFƒyƒiƒ‹ƒeƒB
+            // ç™½ä¸¸ãŒé‡ãªã£ã¦ã„ãªã„ ã‹ã¤ ç´«ãƒãƒƒãƒˆï¼šãƒšãƒŠãƒ«ãƒ†ã‚£
             scale -= purpleBatPenalty;
         }
 
@@ -154,10 +154,10 @@ public:
         return true;
     }
 
-    // ---- ÅŒã‚Ì—LŒøŒ‹‰Ê‚ğæ“¾ionContact ‚©‚çQÆ‚·‚é—pj----
+    // ---- æœ€å¾Œã®æœ‰åŠ¹çµæœã‚’å–å¾—ï¼ˆonContact ã‹ã‚‰å‚ç…§ã™ã‚‹ç”¨ï¼‰----
     const HitJudge2DResult& GetLastResult() const { return lastResult_; }
 
-    // ƒfƒoƒbƒO—pFŒ»İƒtƒŒ[ƒ€‚Ìd‚È‚èó‘Ô
+    // ãƒ‡ãƒãƒƒã‚°ç”¨ï¼šç¾åœ¨ãƒ•ãƒ¬ãƒ¼ãƒ ã®é‡ãªã‚ŠçŠ¶æ…‹
     bool  IsOverlapping()   const { return overlapResult_.anyOverlap; }
     float GetOverlapRatio() const { return overlapResult_.ratio; }
     float GetTimeToZone()   const { return timeToZone_; }
@@ -178,25 +178,25 @@ private:
         float hitNormalizedY = 0.0f;     
     };
 
-    // ---- AABB + ƒ{[ƒ‹”¼Œa‚É‚æ‚éd‚È‚è”»’è ----
-    // uƒ{[ƒ‹‚Ì‰º”¼•ª‚Æƒoƒbƒg‚Ìã’[•t‹ß‚ªd‚È‚év‚ğÀ‘•
+    // ---- AABB + ãƒœãƒ¼ãƒ«åŠå¾„ã«ã‚ˆã‚‹é‡ãªã‚Šåˆ¤å®š ----
+    // ã€Œãƒœãƒ¼ãƒ«ã®ä¸‹åŠåˆ†ã¨ãƒãƒƒãƒˆã®ä¸Šç«¯ä»˜è¿‘ãŒé‡ãªã‚‹ã€ã‚’å®Ÿè£…
     OverlapInfo CalcOverlap() const
 {
     OverlapInfo info;
     const float br = ballRadius_px_;
 
-    // batTL_ ‚ğu’†Sv‚Æ‚µ‚Ä OBB ‚ğ\’z
+    // batTL_ ã‚’ã€Œä¸­å¿ƒã€ã¨ã—ã¦ OBB ã‚’æ§‹ç¯‰
     OBB2D batOBB;
-    batOBB.center = batTL_;   // Update() ‚Å’†S‚ğ“n‚·‚æ‚¤‚É‚µ‚½‚Ì‚Å‚»‚Ì‚Ü‚Üg‚¤
+    batOBB.center = batTL_;   // Update() ã§ä¸­å¿ƒã‚’æ¸¡ã™ã‚ˆã†ã«ã—ãŸã®ã§ãã®ã¾ã¾ä½¿ã†
     batOBB.halfSize = { batSize_.x * 0.5f, batSize_.y * 0.5f };
     batOBB.rotationDeg = batRot_;
 
-    // OBBvsCircle ‚Å”»’è
+    // OBBvsCircle ã§åˆ¤å®š
     info.anyOverlap = OBBvsCircle(batOBB, ballCenter_, br);
 
     if (info.anyOverlap)
     {
-        // d‚È‚è“xFƒ{[ƒ‹’†S‚©‚çOBB•\–Ê‚Ü‚Å‚Ì‹——£‚ÅŠÈˆÕŒvZ
+        // é‡ãªã‚Šåº¦ï¼šãƒœãƒ¼ãƒ«ä¸­å¿ƒã‹ã‚‰OBBè¡¨é¢ã¾ã§ã®è·é›¢ã§ç°¡æ˜“è¨ˆç®—
         float rad = DirectX::XMConvertToRadians(batOBB.rotationDeg);
         float cosA = cosf(-rad), sinA = sinf(-rad);
         float dx = ballCenter_.x - batOBB.center.x;
@@ -208,33 +208,33 @@ private:
         float dist = sqrtf((localX - clampX) * (localX - clampX) + (localY - clampY) * (localY - clampY));
         info.ratio = 1.0f - (std::min)(1.0f, dist / br);
 
-        // ƒ{[ƒ‹‚Ìƒ[ƒJƒ‹YiƒXƒNƒŠ[ƒ“À•WŒnj‚ğ—p‚¢‚Äã/‰º‚ğ”»’è
-        // localY < 0 : ƒ{[ƒ‹’†S‚ªƒoƒbƒg‚Ìã‘¤iƒtƒ‰ƒCŠñ‚èj
-        // localY > 0 : ƒ{[ƒ‹’†S‚ªƒoƒbƒg‚Ì‰º‘¤iƒSƒŠñ‚èj
+        // ãƒœãƒ¼ãƒ«ã®ãƒ­ãƒ¼ã‚«ãƒ«Yï¼ˆã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ç³»ï¼‰ã‚’ç”¨ã„ã¦ä¸Š/ä¸‹ã‚’åˆ¤å®š
+        // localY < 0 : ãƒœãƒ¼ãƒ«ä¸­å¿ƒãŒãƒãƒƒãƒˆã®ä¸Šå´ï¼ˆãƒ•ãƒ©ã‚¤å¯„ã‚Šï¼‰
+        // localY > 0 : ãƒœãƒ¼ãƒ«ä¸­å¿ƒãŒãƒãƒƒãƒˆã®ä¸‹å´ï¼ˆã‚´ãƒ­å¯„ã‚Šï¼‰
         float maxOffset = batOBB.halfSize.y + br;
         float normalizedY = 0.0f;
         if (maxOffset > 0.0f)
         {
-            // normalizedY_internal: -1.0 (ã’[) ... 0.0 (’†S) ... +1.0 (‰º’[)
+            // normalizedY_internal: -1.0 (ä¸Šç«¯) ... 0.0 (ä¸­å¿ƒ) ... +1.0 (ä¸‹ç«¯)
             normalizedY = (std::max)(-1.0f, (std::min)(1.0f, localY / maxOffset));
         }
 
-        // ŠO•” API ‚Ìd—liHitJudge2DResult::hitNormalizedYj‚Í 0 = ã’[, 1 = ‰º’[ ‚Æ‚µ‚Ä‚¢‚é‚½‚ßA
-        // -1..+1 ‚ğ 0..1 ‚Éƒ}ƒbƒsƒ“ƒO‚µ‚Ä•Û‘¶‚·‚é
+        // å¤–éƒ¨ API ã®ä»•æ§˜ï¼ˆHitJudge2DResult::hitNormalizedYï¼‰ã¯ 0 = ä¸Šç«¯, 1 = ä¸‹ç«¯ ã¨ã—ã¦ã„ã‚‹ãŸã‚ã€
+        // -1..+1 ã‚’ 0..1 ã«ãƒãƒƒãƒ”ãƒ³ã‚°ã—ã¦ä¿å­˜ã™ã‚‹
         info.hitNormalizedY = (normalizedY + 1.0f) * 0.5f; // 0..1
 
-        // ‘Å‹…‹ÂŠpF“à•”ŒvZ‚Í normalizedY_internal ‚ğ—p‚¢‚éiã‘¤‚Ù‚Ç‘å‚«‚Èƒtƒ‰ƒCŠp“xj
+        // æ‰“çƒä»°è§’ï¼šå†…éƒ¨è¨ˆç®—ã¯ normalizedY_internal ã‚’ç”¨ã„ã‚‹ï¼ˆä¸Šå´ã»ã©å¤§ããªãƒ•ãƒ©ã‚¤è§’åº¦ï¼‰
         float internalY = normalizedY; // -1..+1
         float angle;
         if (internalY <= 0.0f)
         {
-            // ã‘¤i’†S -> topj
+            // ä¸Šå´ï¼ˆä¸­å¿ƒ -> topï¼‰
             float t = -internalY; // 0..1
             angle = launchAngleCenter + t * (launchAngleTop - launchAngleCenter);
         }
         else
         {
-            // ‰º‘¤icenter -> bottomj
+            // ä¸‹å´ï¼ˆcenter -> bottomï¼‰
             float t = internalY; // 0..1
             angle = launchAngleCenter + t * (launchAngleBottom - launchAngleCenter);
         }
@@ -242,7 +242,7 @@ private:
         info.isGroundBall = (info.hitNormalizedY >= groundBallThreshold);
     }
 
-    // ŠÛƒJ[ƒ\ƒ‹‚Æ‚Ì”»’èi•ÏX‚È‚µj
+    // ä¸¸ã‚«ãƒ¼ã‚½ãƒ«ã¨ã®åˆ¤å®šï¼ˆå¤‰æ›´ãªã—ï¼‰
     float dx = ballCenter_.x - cursorCenter_.x;
     float dy = ballCenter_.y - cursorCenter_.y;
     float dist = sqrtf(dx * dx + dy * dy);
@@ -251,7 +251,7 @@ private:
 
     if (info.cursorOverlap)
     {
-        // ƒJ[ƒ\ƒ‹d‚È‚è“xFƒ{[ƒ‹’†S‚©‚çƒJ[ƒ\ƒ‹’†S‚Ü‚Å‚Ì‹——£‚ÅŠÈˆÕŒvZ
+        // ã‚«ãƒ¼ã‚½ãƒ«é‡ãªã‚Šåº¦ï¼šãƒœãƒ¼ãƒ«ä¸­å¿ƒã‹ã‚‰ã‚«ãƒ¼ã‚½ãƒ«ä¸­å¿ƒã¾ã§ã®è·é›¢ã§ç°¡æ˜“è¨ˆç®—
         info.cursorOverlapRatio = 1.0f - (dist / sumR);
         info.cursorOverlapRatio = (std::max)(0.0f, info.cursorOverlapRatio);
     }
@@ -259,7 +259,7 @@ private:
     return info;
 }
 
-    // ---- “à•”ó‘Ô ----
+    // ---- å†…éƒ¨çŠ¶æ…‹ ----
     DirectX::XMFLOAT2 ballCenter_ = {};
     DirectX::XMFLOAT2 batTL_ = {};
     DirectX::XMFLOAT2 batSize_ = {};
@@ -267,20 +267,20 @@ private:
     DirectX::XMFLOAT2 cursorCenter_ = {};
     float              timeToZone_ = 99.0f;
 
-    float              ballRadius_px_ = ballSprite::Instance().GetBallSpriteSize().x * 0.5f;  // 2Dƒ{[ƒ‹‰æ‘œ‚Ì”¼Œa(px)
+    float              ballRadius_px_ = ballSprite::Instance().GetBallSpriteSize().x * 0.5f;  // 2Dãƒœãƒ¼ãƒ«ç”»åƒã®åŠå¾„(px)
 
     OverlapInfo        overlapResult_ = {};
     HitJudge2DResult   lastResult_ = {};
     bool               swingConsumed_ = false;
 
-    // ‘Å‹…Šp“xƒ}ƒbƒsƒ“ƒOiƒ{[ƒ‹ã’[‚É“–‚½‚Á‚½ ¨ Å‘åƒtƒ‰ƒCA‰º’[ ¨ ƒSƒj
-    float launchAngleTop = 150.0f;   // ƒ{[ƒ‹ã’[‚É“–‚½‚Á‚½‚Ì‹ÂŠp(“x)
-    float launchAngleCenter = 0.0f;   // ƒ{[ƒ‹’†S‚É“–‚½‚Á‚½
-    float launchAngleBottom = -5.0f;  // ƒ{[ƒ‹‰º’[‚É“–‚½‚Á‚½(ƒSƒ)
-    float groundBallThreshold = 0.5f;  // hitNormalizedY ‚ª‚±‚êˆÈã‚ÅƒSƒ”»’è
+    // æ‰“çƒè§’åº¦ãƒãƒƒãƒ”ãƒ³ã‚°ï¼ˆãƒœãƒ¼ãƒ«ä¸Šç«¯ã«å½“ãŸã£ãŸæ™‚ â†’ æœ€å¤§ãƒ•ãƒ©ã‚¤ã€ä¸‹ç«¯ â†’ ã‚´ãƒ­ï¼‰
+    float launchAngleTop = 150.0f;   // ãƒœãƒ¼ãƒ«ä¸Šç«¯ã«å½“ãŸã£ãŸæ™‚ã®ä»°è§’(åº¦)
+    float launchAngleCenter = 0.0f;   // ãƒœãƒ¼ãƒ«ä¸­å¿ƒã«å½“ãŸã£ãŸæ™‚
+    float launchAngleBottom = -5.0f;  // ãƒœãƒ¼ãƒ«ä¸‹ç«¯ã«å½“ãŸã£ãŸæ™‚(ã‚´ãƒ­)
+    float groundBallThreshold = 0.5f;  // hitNormalizedY ãŒã“ã‚Œä»¥ä¸Šã§ã‚´ãƒ­åˆ¤å®š
 
 public:
-    // ballRadius_px ‚ğŠO‚©‚çİ’è‚Å‚«‚é‚æ‚¤‚É‚·‚é
+    // ballRadius_px ã‚’å¤–ã‹ã‚‰è¨­å®šã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
     void SetBallRadiusPx(float r) { ballRadius_px_ = r; }
 
     void SetPendingResult(const HitJudge2DResult& r)
@@ -307,49 +307,49 @@ public:
         if (ImGui::CollapsingHeader("HitJudge2D Debug"))
         {
             HitJudge2D& hj = HitJudge2D::Instance();
-            ImGui::Text(u8"‚©‚Ô‚Á‚Ä‚¢‚é‚© : %s", hj.IsOverlapping() ? "YES" : "no");
-            ImGui::Text(u8"d‚È‚è—¦: %.2f", hj.GetOverlapRatio());
-            ImGui::Text(u8"ŠÔ: %.3f •b", hj.GetTimeToZone());
-            ImGui::Text(u8"ƒSƒ”»’è‚ÌŠ„‡: %.3f  (- = ƒtƒ‰ƒC, + = ƒSƒ)",
+            ImGui::Text(u8"ã‹ã¶ã£ã¦ã„ã‚‹ã‹ : %s", hj.IsOverlapping() ? "YES" : "no");
+            ImGui::Text(u8"é‡ãªã‚Šç‡: %.2f", hj.GetOverlapRatio());
+            ImGui::Text(u8"æ™‚é–“: %.3f ç§’", hj.GetTimeToZone());
+            ImGui::Text(u8"ã‚´ãƒ­åˆ¤å®šã®å‰²åˆ: %.3f  (- = ãƒ•ãƒ©ã‚¤, + = ã‚´ãƒ­)",
                 hj.overlapResult_.hitNormalizedY);
-            ImGui::Text(u8"‘Å‹…Šp“x 2D: %.1f “x", hj.overlapResult_.launchAngle2DDeg);
-            ImGui::Text(u8"ƒSƒ”»’è: %s", hj.overlapResult_.isGroundBall ? "YES" : "no");
+            ImGui::Text(u8"æ‰“çƒè§’åº¦ 2D: %.1f åº¦", hj.overlapResult_.launchAngle2DDeg);
+            ImGui::Text(u8"ã‚´ãƒ­åˆ¤å®š: %s", hj.overlapResult_.isGroundBall ? "YES" : "no");
             // DrawGUI
-            ImGui::Text(u8"ƒJ[ƒ\ƒ‹d‚È‚è: %s", hj.IsCursorOverlapping() ? "YES" : "no");
+            ImGui::Text(u8"ã‚«ãƒ¼ã‚½ãƒ«é‡ãªã‚Š: %s", hj.IsCursorOverlapping() ? "YES" : "no");
 
-            ImGui::Text(u8"ƒJ[ƒ\ƒ‹d‚È‚è—¦: %.2f", hj.overlapResult_.cursorOverlapRatio); 
+            ImGui::Text(u8"ã‚«ãƒ¼ã‚½ãƒ«é‡ãªã‚Šç‡: %.2f", hj.overlapResult_.cursorOverlapRatio); 
             ImGui::Separator();
 
-            ImGui::DragFloat(u8"ƒqƒbƒg‚Ì—LŒøŠÔ (‘O)", &hj.hitWindowBeforeSec, 0.01f, 0.0f, 1.0f);
-            ImGui::DragFloat(u8"ƒqƒbƒg‚Ì—LŒøŠÔ (Œã)", &hj.hitWindowAfterSec, 0.01f, 0.0f, 1.0f);
-            ImGui::DragFloat(u8"ƒoƒbƒgƒqƒbƒgƒoƒ“ƒh‚Ì‚‚³ (px)", &hj.batHitBandHeight, 1.0f, 1.0f, 100.0f);
-            ImGui::DragFloat(u8"ƒJ[ƒ\ƒ‹‚Ì”¼Œa (px)", &hj.cursorRadius, 1.0f, 1.0f, 80.0f);
-            ImGui::DragFloat(u8"ƒJ[ƒ\ƒ‹d‚È‚èƒ{[ƒiƒX", &hj.cursorOverlapBonus, 0.01f, 0.0f, 1.0f);
-            ImGui::DragFloat(u8"ƒp[ƒvƒ‹ƒoƒbƒgƒyƒiƒ‹ƒeƒB", &hj.purpleBatPenalty, 0.01f, 0.0f, 1.0f);
-            ImGui::Checkbox(u8"ƒp[ƒvƒ‹ƒoƒbƒg‚©", &hj.isPurpleBat);
-            ImGui::Text(u8"-- ‘Å‹…Šp“xƒ}ƒbƒsƒ“ƒO --");
-            ImGui::DragFloat(u8"Šp“x ã’[ (ƒtƒ‰ƒC)", &hj.launchAngleTop, 0.5f, 0.0f, 60.0f);
-            ImGui::DragFloat(u8"Šp“x ’†S", &hj.launchAngleCenter, 0.5f, -30.0f, 60.0f);
-            ImGui::DragFloat(u8"Šp“x ‰º’[ (ƒSƒ)", &hj.launchAngleBottom, 0.5f, -30.0f, 10.0f);
-            ImGui::DragFloat(u8"’n–Ê‚Ìè‡’l", &hj.groundBallThreshold, 0.01f, 0.0f, 1.0f);
-            ImGui::Text(u8"ƒ{[ƒ‹ƒ][ƒ“: %s", hj.isBallZone ? "YES" : "no");
-            ImGui::DragFloat(u8"ƒ{[ƒ‹ƒ][ƒ“ƒyƒiƒ‹ƒeƒB", &hj.ballZonePenalty, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat(u8"ãƒ’ãƒƒãƒˆã®æœ‰åŠ¹æ™‚é–“ (å‰)", &hj.hitWindowBeforeSec, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat(u8"ãƒ’ãƒƒãƒˆã®æœ‰åŠ¹æ™‚é–“ (å¾Œ)", &hj.hitWindowAfterSec, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat(u8"ãƒãƒƒãƒˆãƒ’ãƒƒãƒˆãƒãƒ³ãƒ‰ã®é«˜ã• (px)", &hj.batHitBandHeight, 1.0f, 1.0f, 100.0f);
+            ImGui::DragFloat(u8"ã‚«ãƒ¼ã‚½ãƒ«ã®åŠå¾„ (px)", &hj.cursorRadius, 1.0f, 1.0f, 80.0f);
+            ImGui::DragFloat(u8"ã‚«ãƒ¼ã‚½ãƒ«é‡ãªã‚Šãƒœãƒ¼ãƒŠã‚¹", &hj.cursorOverlapBonus, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat(u8"ãƒ‘ãƒ¼ãƒ—ãƒ«ãƒãƒƒãƒˆãƒšãƒŠãƒ«ãƒ†ã‚£", &hj.purpleBatPenalty, 0.01f, 0.0f, 1.0f);
+            ImGui::Checkbox(u8"ãƒ‘ãƒ¼ãƒ—ãƒ«ãƒãƒƒãƒˆã‹", &hj.isPurpleBat);
+            ImGui::Text(u8"-- æ‰“çƒè§’åº¦ãƒãƒƒãƒ”ãƒ³ã‚° --");
+            ImGui::DragFloat(u8"è§’åº¦ ä¸Šç«¯ (ãƒ•ãƒ©ã‚¤)", &hj.launchAngleTop, 0.5f, 0.0f, 60.0f);
+            ImGui::DragFloat(u8"è§’åº¦ ä¸­å¿ƒ", &hj.launchAngleCenter, 0.5f, -30.0f, 60.0f);
+            ImGui::DragFloat(u8"è§’åº¦ ä¸‹ç«¯ (ã‚´ãƒ­)", &hj.launchAngleBottom, 0.5f, -30.0f, 10.0f);
+            ImGui::DragFloat(u8"åœ°é¢ã®é–¾å€¤", &hj.groundBallThreshold, 0.01f, 0.0f, 1.0f);
+            ImGui::Text(u8"ãƒœãƒ¼ãƒ«ã‚¾ãƒ¼ãƒ³: %s", hj.isBallZone ? "YES" : "no");
+            ImGui::DragFloat(u8"ãƒœãƒ¼ãƒ«ã‚¾ãƒ¼ãƒ³ãƒšãƒŠãƒ«ãƒ†ã‚£", &hj.ballZonePenalty, 0.01f, 0.0f, 1.0f);
         }
     }
 
-	/// 2D OBB ‚Æ‰~‚ÌÕ“Ë”»’èi‰ñ“]‹éŒ`‚Æ‰~j
+	/// 2D OBB ã¨å††ã®è¡çªåˆ¤å®šï¼ˆå›è»¢çŸ©å½¢ã¨å††ï¼‰
     static bool OBBvsCircle(const OBB2D& obb, DirectX::XMFLOAT2 circleCenter, float radius)
     {
-		float rad = DirectX::XMConvertToRadians(obb.rotationDeg);// Šp“x‚ğƒ‰ƒWƒAƒ“‚É•ÏŠ·
+		float rad = DirectX::XMConvertToRadians(obb.rotationDeg);// è§’åº¦ã‚’ãƒ©ã‚¸ã‚¢ãƒ³ã«å¤‰æ›
 		float cosA = cosf(-rad), sinA = sinf(-rad);
 
-		//ƒ{[ƒ‹‚Ì’†S‚ğOBB‚Ìƒ[ƒJƒ‹À•WŒn‚É•ÏŠ·
+		//ãƒœãƒ¼ãƒ«ã®ä¸­å¿ƒã‚’OBBã®ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™ç³»ã«å¤‰æ›
 		float dx = circleCenter.x - obb.center.x;
 		float dy = circleCenter.y - obb.center.y;
-		float localX = cosA * dx - sinA * dy;// ‹t‰ñ“]
-		float localY = sinA * dx + cosA * dy;// ‹t‰ñ“]
+		float localX = cosA * dx - sinA * dy;// é€†å›è»¢
+		float localY = sinA * dx + cosA * dy;// é€†å›è»¢
 
-        // Å‹ß–T“_ƒNƒ‰ƒ“ƒv
+        // æœ€è¿‘å‚ç‚¹ã‚¯ãƒ©ãƒ³ãƒ—
         float clampX = (std::max)(-obb.halfSize.x, (std::min)(obb.halfSize.x, localX));
         float clampY = (std::max)(-obb.halfSize.y, (std::min)(obb.halfSize.y, localY));
 

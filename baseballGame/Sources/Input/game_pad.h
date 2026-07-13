@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 
 using GamePadButton = unsigned int;
 
-// ƒQ[ƒ€ƒpƒbƒh
+// ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰
 class GamePad
 {
 public:
@@ -27,37 +27,37 @@ public:
 	GamePad() {}
 	~GamePad() {}
 
-	// XV
+	// æ›´æ–°
 	void Update();
 
-	// ƒXƒƒbƒgİ’è
+	// ã‚¹ãƒ­ãƒƒãƒˆè¨­å®š
 	void SetSlot(int slot) { this->slot = slot; }
 
-	// ƒ{ƒ^ƒ““ü—Íó‘Ô‚Ìæ“¾
+	// ãƒœã‚¿ãƒ³å…¥åŠ›çŠ¶æ…‹ã®å–å¾—
 	GamePadButton GetButton() const { return buttonState[0]; }
 
-	// ƒ{ƒ^ƒ“‰Ÿ‰ºó‘Ô‚Ìæ“¾
+	// ãƒœã‚¿ãƒ³æŠ¼ä¸‹çŠ¶æ…‹ã®å–å¾—
 	GamePadButton GetButtonDown() const { return buttonDown; }
 
-	// ƒ{ƒ^ƒ“‰Ÿãó‘Ô‚Ìæ“¾
+	// ãƒœã‚¿ãƒ³æŠ¼ä¸ŠçŠ¶æ…‹ã®å–å¾—
 	GamePadButton GetButtonUp() const { return buttonUp; }
 
-	// ¶ƒXƒeƒBƒbƒNX²“ü—Íó‘Ô‚Ìæ“¾
+	// å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯Xè»¸å…¥åŠ›çŠ¶æ…‹ã®å–å¾—
 	float GetAxisLX() const { return axisLx; }
 
-	// ¶ƒXƒeƒBƒbƒNY²“ü—Íó‘Ô‚Ìæ“¾
+	// å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯Yè»¸å…¥åŠ›çŠ¶æ…‹ã®å–å¾—
 	float GetAxisLY() const { return axisLy; }
 
-	// ‰EƒXƒeƒBƒbƒNX²“ü—Íó‘Ô‚Ìæ“¾
+	// å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯Xè»¸å…¥åŠ›çŠ¶æ…‹ã®å–å¾—
 	float GetAxisRX() const { return axisRx; }
 
-	// ‰EƒXƒeƒBƒbƒNY²“ü—Íó‘Ô‚Ìæ“¾
+	// å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯Yè»¸å…¥åŠ›çŠ¶æ…‹ã®å–å¾—
 	float GetAxisRY() const { return axisRy; }
 
-	// ¶ƒgƒŠƒK[“ü—Íó‘Ô‚Ìæ“¾
+	// å·¦ãƒˆãƒªã‚¬ãƒ¼å…¥åŠ›çŠ¶æ…‹ã®å–å¾—
 	float GetTriggerL() const { return triggerL; }
 
-	// ‰EƒgƒŠƒK[“ü—Íó‘Ô‚Ìæ“¾
+	// å³ãƒˆãƒªã‚¬ãƒ¼å…¥åŠ›çŠ¶æ…‹ã®å–å¾—
 	float GetTriggerR() const { return triggerR; }
 
 private:

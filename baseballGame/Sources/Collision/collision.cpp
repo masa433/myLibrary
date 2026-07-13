@@ -1,7 +1,7 @@
-#include"collision.h"
+ï»¿#include"collision.h"
 #include <DirectXCollision.h>
 
-//‹…‚Æ‹…‚ÌŒğ·”»’è
+//çƒã¨çƒã®äº¤å·®åˆ¤å®š
 bool collision::IntersectSphereVsSphere(
 	const DirectX::XMFLOAT3& positionA,
 	float radiusA,
@@ -10,24 +10,24 @@ bool collision::IntersectSphereVsSphere(
 	DirectX::XMFLOAT3& outPositionB
 )
 {
-	// A¨B‚Ì’PˆÊƒxƒNƒgƒ‹‚ğZo
+	// Aâ†’Bã®å˜ä½ãƒ™ã‚¯ãƒˆãƒ«ã‚’ç®—å‡º
 	DirectX::XMVECTOR PositionA = { positionA.x, positionA.y, positionA.z };
 	DirectX::XMVECTOR PositionB = { positionB.x, positionB.y, positionB.z };
 
-	// A‚©‚çB‚Ö‚ÌƒxƒNƒgƒ‹‚ğŒvZ
+	// Aã‹ã‚‰Bã¸ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’è¨ˆç®—
 	DirectX::XMVECTOR Vec = DirectX::XMVectorSubtract(PositionB, PositionA);
 
-	// ’·‚³‚Ì“ñæ‚ğŒvZ
+	// é•·ã•ã®äºŒä¹—ã‚’è¨ˆç®—
 	DirectX::XMVECTOR LengthSq = DirectX::XMVector3LengthSq(Vec);
 	float lengthSq;
 	DirectX::XMStoreFloat(&lengthSq, LengthSq);
 
-	//‹——£”»’è
+	//è·é›¢åˆ¤å®š
 	float range = radiusA + radiusB;
 	if (lengthSq > range) {
 		return false;
 	}
-	//A‚ªB‚ğ‰Ÿ‚µo‚·
+	//AãŒBã‚’æŠ¼ã—å‡ºã™
 	DirectX::XMVECTOR overlap = DirectX::XMVectorScale(Vec, (range - sqrt(lengthSq)) / sqrt(lengthSq));
 	PositionB = DirectX::XMVectorAdd(PositionB, overlap);
 
@@ -45,19 +45,19 @@ bool collision::IntersectCylinderVsCylinder(
 	float heightB,
 	DirectX::XMFLOAT3& outPositionB)
 {
-	// A‚Ì‘«Œ³‚ªB‚Ì“ª‚æ‚èã‚È‚ç“–‚½‚Á‚Ä‚¢‚È‚¢
+	// Aã®è¶³å…ƒãŒBã®é ­ã‚ˆã‚Šä¸Šãªã‚‰å½“ãŸã£ã¦ã„ãªã„
 	if (positionA.y > positionB.y + heightB)
 	{
 		return false;
 	}
 
-	// A‚Ì“ª‚ªB‚Ì‘«Œ³‚æ‚è‰º‚È‚ç“–‚½‚Á‚Ä‚¢‚È‚¢
+	// Aã®é ­ãŒBã®è¶³å…ƒã‚ˆã‚Šä¸‹ãªã‚‰å½“ãŸã£ã¦ã„ãªã„
 	if (positionA.y + heightA < positionB.y)
 	{
 		return false;
 	}
 
-	// XZ•½–Ê‚Å‚Ì”ÍˆÍƒ`ƒFƒbƒN
+	// XZå¹³é¢ã§ã®ç¯„å›²ãƒã‚§ãƒƒã‚¯
 	float vx = positionB.x - positionA.x;
 	float vz = positionB.z - positionA.z;
 	float range = radiusA + radiusB;
@@ -68,15 +68,15 @@ bool collision::IntersectCylinderVsCylinder(
 		return false;
 	}
 
-	// ’PˆÊƒxƒNƒgƒ‹‰»
+	// å˜ä½ãƒ™ã‚¯ãƒˆãƒ«åŒ–
 
 	vx /= disXZ;
 	vz /= disXZ;
 
 
-	// A‚ªB‚ğ‰Ÿ‚µo‚·
+	// AãŒBã‚’æŠ¼ã—å‡ºã™
 	outPositionB.x = positionA.x + (vx * range);
-	outPositionB.y = positionB.y;// y‚Í‚»‚Ì‚Ü‚Ü
+	outPositionB.y = positionB.y;// yã¯ãã®ã¾ã¾
 	outPositionB.z = positionA.z + (vz * range);
 
 	return true;
@@ -90,34 +90,34 @@ bool collision::IntersectSphereVsCylinder(
 	float cylinderHeight,
 	DirectX::XMFLOAT3& outCylinderPosition)
 {
-	// ‹…‚Ì’†S‚ª‰~’Œ‚Ìã’[‚æ‚èã‚Ìê‡A“–‚½‚Á‚Ä‚¢‚È‚¢
+	// çƒã®ä¸­å¿ƒãŒå††æŸ±ã®ä¸Šç«¯ã‚ˆã‚Šä¸Šã®å ´åˆã€å½“ãŸã£ã¦ã„ãªã„
 	if (spherePosition.y > cylinderPosition.y + cylinderHeight + sphereRadius) {
 		return false;
 	}
 
-	// ‹…‚Ì’†S‚ª‰~’Œ‚Ì‰º’[‚æ‚è‰º‚Ìê‡A“–‚½‚Á‚Ä‚¢‚È‚¢
+	// çƒã®ä¸­å¿ƒãŒå††æŸ±ã®ä¸‹ç«¯ã‚ˆã‚Šä¸‹ã®å ´åˆã€å½“ãŸã£ã¦ã„ãªã„
 	if (spherePosition.y < cylinderPosition.y - sphereRadius) {
 		return false;
 	}
 
-	// XZ•½–Ê‚Å‚Ì‹——£ƒ`ƒFƒbƒN
+	// XZå¹³é¢ã§ã®è·é›¢ãƒã‚§ãƒƒã‚¯
 	float vx = cylinderPosition.x - spherePosition.x;
 	float vz = cylinderPosition.z - spherePosition.z;
 	float combinedRadius = sphereRadius + cylinderRadius;
 	float distanceXZ = sqrt(vx * vx + vz * vz);
 
-	// XZ•½–Êã‚Å‹——£‚ª”¼Œa‚Ì‡Œv‚æ‚è‘å‚«‚¢ê‡A“–‚½‚Á‚Ä‚¢‚È‚¢
+	// XZå¹³é¢ä¸Šã§è·é›¢ãŒåŠå¾„ã®åˆè¨ˆã‚ˆã‚Šå¤§ãã„å ´åˆã€å½“ãŸã£ã¦ã„ãªã„
 	if (distanceXZ > combinedRadius) {
 		return false;
 	}
 
-	// XZ•½–Ê‚Å’PˆÊƒxƒNƒgƒ‹‰»
+	// XZå¹³é¢ã§å˜ä½ãƒ™ã‚¯ãƒˆãƒ«åŒ–
 	vx /= distanceXZ;
 	vz /= distanceXZ;
 
-	// ‹…‚ª‰~’Œ‚ğ‰Ÿ‚µo‚·ˆÊ’u‚ğŒvZ
+	// çƒãŒå††æŸ±ã‚’æŠ¼ã—å‡ºã™ä½ç½®ã‚’è¨ˆç®—
 	outCylinderPosition.x = spherePosition.x + (vx * combinedRadius);
-	outCylinderPosition.y = cylinderPosition.y; // Y‚Í‚»‚Ì‚Ü‚Ü
+	outCylinderPosition.y = cylinderPosition.y; // Yã¯ãã®ã¾ã¾
 	outCylinderPosition.z = spherePosition.z + (vz * combinedRadius);
 
 	return true;
@@ -130,19 +130,19 @@ bool collision::IntersectAABBVsAABB(
 	const DirectX::XMFLOAT3& maxB
 )
 {
-	// X²•ûŒü‚Ì”»’è
+	// Xè»¸æ–¹å‘ã®åˆ¤å®š
 	if (maxA.x < minB.x || minA.x > maxB.x) {
 		return false;
 	}
-	// Y²•ûŒü‚Ì”»’è
+	// Yè»¸æ–¹å‘ã®åˆ¤å®š
 	if (maxA.y < minB.y || minA.y > maxB.y) {
 		return false;
 	}
-	// Z²•ûŒü‚Ì”»’è
+	// Zè»¸æ–¹å‘ã®åˆ¤å®š
 	if (maxA.z < minB.z || minA.z > maxB.z) {
 		return false;
 	}
-	// ‘S‚Ä‚Ì²‚Åd‚È‚Á‚Ä‚¢‚é‚Ì‚Å“–‚½‚Á‚Ä‚¢‚é
+	// å…¨ã¦ã®è»¸ã§é‡ãªã£ã¦ã„ã‚‹ã®ã§å½“ãŸã£ã¦ã„ã‚‹
 	return true;
 }
 

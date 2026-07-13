@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <d3d11.h>
 #include <DirectXMath.h>
@@ -9,37 +9,37 @@ using json = nlohmann::json;
 class SkyRenderer
 {
 public:
-	//‹ó‚Ì’è”ƒoƒbƒtƒ@\‘¢‘Ì
+	//ç©ºã®å®šæ•°ãƒãƒƒãƒ•ã‚¡æ§‹é€ ä½“
 	struct sky_constants
 	{
-		DirectX::XMFLOAT4 sun_direction;// ‘¾—zŒõ‚Ì•ûŒü
-		DirectX::XMFLOAT4 sun_color;    // ‘¾—zŒõ‚ÌF
-		DirectX::XMFLOAT4 sky_zenith_color;// ‹ó‚Ì“V’¸‚ÌF
-		DirectX::XMFLOAT4 sky_horizon_color;// ‹ó‚Ì’n•½ü‚ÌF
-		DirectX::XMFLOAT4 sky_ground_color;// ‹ó‚Ì’n–Ê‚ÌFi¡‰ñ‚Íg—p‚µ‚È‚¢j
-		float time_of_day; // i0.0f ` 1.0fj
-		float sun_size; // ‘¾—z‚ÌƒTƒCƒY
-		float sun_bloom_size; // ‘¾—z‚Ìƒuƒ‹[ƒ€‚ÌƒTƒCƒY
-		float sky_dummy; // ƒpƒfƒBƒ“ƒO
+		DirectX::XMFLOAT4 sun_direction;// å¤ªé™½å…‰ã®æ–¹å‘
+		DirectX::XMFLOAT4 sun_color;    // å¤ªé™½å…‰ã®è‰²
+		DirectX::XMFLOAT4 sky_zenith_color;// ç©ºã®å¤©é ‚ã®è‰²
+		DirectX::XMFLOAT4 sky_horizon_color;// ç©ºã®åœ°å¹³ç·šã®è‰²
+		DirectX::XMFLOAT4 sky_ground_color;// ç©ºã®åœ°é¢ã®è‰²ï¼ˆä»Šå›ã¯ä½¿ç”¨ã—ãªã„ï¼‰
+		float time_of_day; // æ™‚åˆ»ï¼ˆ0.0f ï½ 1.0fï¼‰
+		float sun_size; // å¤ªé™½ã®ã‚µã‚¤ã‚º
+		float sun_bloom_size; // å¤ªé™½ã®ãƒ–ãƒ«ãƒ¼ãƒ ã®ã‚µã‚¤ã‚º
+		float sky_dummy; // ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°
 	};
 
-	//ƒpƒ‰ƒ[ƒ^
-	float time_of_day = 0.35f; // i0.0f ` 1.0fj
-	float time_speed = 0.01f; // ‚Ì•Ï‰»‘¬“x
-	bool auto_advance_time = false; // ‚Ì©“®is
-	float sun_size = 0.025f; // ‘¾—z‚ÌƒTƒCƒY
-	float sun_bloom_size = 0.12f; // ‘¾—z‚Ìƒuƒ‹[ƒ€‚ÌƒTƒCƒY
+	//ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+	float time_of_day = 0.35f; // æ™‚åˆ»ï¼ˆ0.0f ï½ 1.0fï¼‰
+	float time_speed = 0.01f; // æ™‚åˆ»ã®å¤‰åŒ–é€Ÿåº¦
+	bool auto_advance_time = false; // æ™‚åˆ»ã®è‡ªå‹•é€²è¡Œ
+	float sun_size = 0.025f; // å¤ªé™½ã®ã‚µã‚¤ã‚º
+	float sun_bloom_size = 0.12f; // å¤ªé™½ã®ãƒ–ãƒ«ãƒ¼ãƒ ã®ã‚µã‚¤ã‚º
 
 public:
-	//ŠÖ”
+	//é–¢æ•°
 	void Initialize(ID3D11Device* device);
 	void Update(float elapsedTime);
 	void Render(ID3D11DeviceContext* dc,
-		ID3D11Buffer* scene_constant_buffer,  // ƒV[ƒ“’è”ƒoƒbƒtƒ@
-		ID3D11DepthStencilState* depth_read_only,   // [“xƒXƒeƒ“ƒVƒ‹ƒXƒe[ƒgi“Ç‚İæ‚èê—pj
-		ID3D11RasterizerState* rasterizer_none);// ƒ‰ƒXƒ^ƒ‰ƒCƒU[ƒXƒe[ƒgiƒJƒŠƒ“ƒO‚È‚µj
+		ID3D11Buffer* scene_constant_buffer,  // ã‚·ãƒ¼ãƒ³å®šæ•°ãƒãƒƒãƒ•ã‚¡
+		ID3D11DepthStencilState* depth_read_only,   // æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã‚¹ãƒ†ãƒ¼ãƒˆï¼ˆèª­ã¿å–ã‚Šå°‚ç”¨ï¼‰
+		ID3D11RasterizerState* rasterizer_none);// ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆï¼ˆã‚«ãƒªãƒ³ã‚°ãªã—ï¼‰
 
-	DirectX::XMFLOAT4 GetSunDirectionToLight() const; // ƒ‰ƒCƒg‹óŠÔ‚Å‚Ì‘¾—zŒõ‚Ì•ûŒü‚ğæ“¾
+	DirectX::XMFLOAT4 GetSunDirectionToLight() const; // ãƒ©ã‚¤ãƒˆç©ºé–“ã§ã®å¤ªé™½å…‰ã®æ–¹å‘ã‚’å–å¾—
 
 	void DrawGUI();
 
@@ -47,10 +47,10 @@ public:
 	void LoadFromJson(const json& j);
 
 private:
-	Microsoft::WRL::ComPtr<ID3D11Buffer> constant_buffer; // ’è”ƒoƒbƒtƒ@
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader; // ’¸“_ƒVƒF[ƒ_[
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixel_shader; // ƒsƒNƒZƒ‹ƒVƒF[ƒ_[
+	Microsoft::WRL::ComPtr<ID3D11Buffer> constant_buffer; // å®šæ•°ãƒãƒƒãƒ•ã‚¡
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader; // é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixel_shader; // ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 
-	void ComputeSkyColors(sky_constants& out) const; // ‹ó‚ÌF‚ğŒvZ
-	DirectX::XMFLOAT3 ComputeSunDirection() const; // ‘¾—zŒõ‚Ì•ûŒü‚ğŒvZ
+	void ComputeSkyColors(sky_constants& out) const; // ç©ºã®è‰²ã‚’è¨ˆç®—
+	DirectX::XMFLOAT3 ComputeSunDirection() const; // å¤ªé™½å…‰ã®æ–¹å‘ã‚’è¨ˆç®—
 };

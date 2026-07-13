@@ -1,4 +1,4 @@
-#include "FreeCameraController.h"
+ï»¿#include "FreeCameraController.h"
 #include "imgui.h"
 #include <cmath>
 
@@ -9,14 +9,14 @@ void FreeCameraController::SyncCameraToController(const Camera& camera)
 	up = camera.GetUp();
 	right = camera.GetRight();
 
-	// ‹“_‚©‚ç’‹“_‚Ü‚Å‚Ì‹——£‚ğZo
+	// è¦–ç‚¹ã‹ã‚‰æ³¨è¦–ç‚¹ã¾ã§ã®è·é›¢ã‚’ç®—å‡º
 	DirectX::XMVECTOR Eye = DirectX::XMLoadFloat3(&eye);
 	DirectX::XMVECTOR Focus = DirectX::XMLoadFloat3(&focus);
 	DirectX::XMVECTOR Vec = DirectX::XMVectorSubtract(Focus, Eye);
 	DirectX::XMVECTOR Distance = DirectX::XMVector3Length(Vec);
 	DirectX::XMStoreFloat(&distance, Distance);
 
-	// ‰ñ“]Šp“x‚ğZo
+	// å›è»¢è§’åº¦ã‚’ç®—å‡º
 	const DirectX::XMFLOAT3& front = camera.GetFront();
 	angleX = ::asinf(-front.y);
 	if (up.y < 0)
@@ -38,7 +38,7 @@ void FreeCameraController::SyncCameraToController(const Camera& camera)
 
 }
 
-// ƒRƒ“ƒgƒ[ƒ‰[‚©‚çƒJƒƒ‰‚Öƒpƒ‰ƒ[ƒ^‚ğ“¯Šú‚·‚é
+// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã‹ã‚‰ã‚«ãƒ¡ãƒ©ã¸ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’åŒæœŸã™ã‚‹
 void FreeCameraController::SyncControllerToCamera(Camera& camera)
 {
 	camera.SetLookAt(eye, focus, up);

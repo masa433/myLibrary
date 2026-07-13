@@ -1,13 +1,13 @@
-#include "input.h"
+ï»¿#include "input.h"
 
-// ‰Šú‰»
+// åˆæœŸåŒ–
 void Input::Initialize(HWND hWnd)
 {
 	gamePad = std::make_unique<GamePad>();
 	mouse = std::make_unique<Mouse>(hWnd);
 }
 
-// XVˆ—
+// æ›´æ–°å‡¦ç†
 void Input::Update()
 {
 	gamePad->Update();

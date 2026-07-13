@@ -1,56 +1,56 @@
-#include "FrustumCulling.h"
+ï»¿#include "FrustumCulling.h"
 
 void FrustumCulling::Construct(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection)
 {
 	using namespace DirectX;
 
-	// ƒrƒ…[s—ñ‚ÆƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚ğ“Ç‚İ‚Ş
+	// ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã‚’èª­ã¿è¾¼ã‚€
 	XMMATRIX V = XMLoadFloat4x4(&view);
 	XMMATRIX P = XMLoadFloat4x4(&projection);
 	XMMATRIX VP = V * P;
 
-	// ƒrƒ…[s—ñ‚ÆƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚ÌÏ‚ğ•Û‘¶‚·‚é
+	// ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã®ç©ã‚’ä¿å­˜ã™ã‚‹
 	XMFLOAT4X4 vpMatrix;
 	XMStoreFloat4x4(&vpMatrix, VP);
 
-	// ƒtƒ‰ƒXƒ^ƒ€‚Ì6‚Â‚Ì•½–Ê‚ğ’Šo‚·‚é
-	// ¶•½–Ê : s—ñ‚Ì‘æ4—ñ + ‘æ1—ñ
+	// ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã®6ã¤ã®å¹³é¢ã‚’æŠ½å‡ºã™ã‚‹
+	// å·¦å¹³é¢ : è¡Œåˆ—ã®ç¬¬4åˆ— + ç¬¬1åˆ—
 	planes[0].normal.x = vpMatrix._14 + vpMatrix._11;
 	planes[0].normal.y = vpMatrix._24 + vpMatrix._21;
 	planes[0].normal.z = vpMatrix._34 + vpMatrix._31;
 	planes[0].distance = vpMatrix._44 + vpMatrix._41;
 
-	// ‰E•½–Ê : s—ñ‚Ì‘æ4—ñ - ‘æ1—ñ
+	// å³å¹³é¢ : è¡Œåˆ—ã®ç¬¬4åˆ— - ç¬¬1åˆ—
 	planes[1].normal.x = vpMatrix._14 - vpMatrix._11;
 	planes[1].normal.y = vpMatrix._24 - vpMatrix._21;
 	planes[1].normal.z = vpMatrix._34 - vpMatrix._31;
 	planes[1].distance = vpMatrix._44 - vpMatrix._41;
 
-	// ã•½–Ê : s—ñ‚Ì‘æ4—ñ - ‘æ2—ñ
+	// ä¸Šå¹³é¢ : è¡Œåˆ—ã®ç¬¬4åˆ— - ç¬¬2åˆ—
 	planes[2].normal.x = vpMatrix._14 - vpMatrix._12;
 	planes[2].normal.y = vpMatrix._24 - vpMatrix._22;
 	planes[2].normal.z = vpMatrix._34 - vpMatrix._32;
 	planes[2].distance = vpMatrix._44 - vpMatrix._42;
 
-	// ‰º•½–Ê : s—ñ‚Ì‘æ4—ñ + ‘æ2—ñ
+	// ä¸‹å¹³é¢ : è¡Œåˆ—ã®ç¬¬4åˆ— + ç¬¬2åˆ—
 	planes[3].normal.x = vpMatrix._14 + vpMatrix._12;
 	planes[3].normal.y = vpMatrix._24 + vpMatrix._22;
 	planes[3].normal.z = vpMatrix._34 + vpMatrix._32;
 	planes[3].distance = vpMatrix._44 + vpMatrix._42;
 
-	// ‹ß•½–Ê : s—ñ‚Ì‘æ4—ñ + ‘æ3—ñ
+	// è¿‘å¹³é¢ : è¡Œåˆ—ã®ç¬¬4åˆ— + ç¬¬3åˆ—
 	planes[4].normal.x = vpMatrix._14 + vpMatrix._13;
 	planes[4].normal.y = vpMatrix._24 + vpMatrix._23;
 	planes[4].normal.z = vpMatrix._34 + vpMatrix._33;
 	planes[4].distance = vpMatrix._44 + vpMatrix._43;
 
-	// ‰“•½–Ê : s—ñ‚Ì‘æ4—ñ - ‘æ3—ñ
+	// é å¹³é¢ : è¡Œåˆ—ã®ç¬¬4åˆ— - ç¬¬3åˆ—
 	planes[5].normal.x = vpMatrix._14 - vpMatrix._13;
 	planes[5].normal.y = vpMatrix._24 - vpMatrix._23;
 	planes[5].normal.z = vpMatrix._34 - vpMatrix._33;
 	planes[5].distance = vpMatrix._44 - vpMatrix._43;
 
-	//Še•½–Ê‚ğ³‹K‰»
+	//å„å¹³é¢ã‚’æ­£è¦åŒ–
 	for(int i = 0; i < 6; ++i)
 	{
 		XMVECTOR normal = XMLoadFloat3(&planes[i].normal);
@@ -72,15 +72,15 @@ bool FrustumCulling::IssphereVisible(const DirectX::XMFLOAT3& center, float radi
 		float distance = DistanceToPlane(planes[i], center);
 		if (distance < -radius)
 		{
-			return false; // ‹…‚ªƒtƒ‰ƒXƒ^ƒ€‚ÌŠO‚É‚ ‚é
+			return false; // çƒãŒãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã®å¤–ã«ã‚ã‚‹
 		}
 	}
-	return true; // ‹…‚ªƒtƒ‰ƒXƒ^ƒ€‚Ì“à‘¤‚Ü‚½‚ÍŒğ·‚µ‚Ä‚¢‚é
+	return true; // çƒãŒãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã®å†…å´ã¾ãŸã¯äº¤å·®ã—ã¦ã„ã‚‹
 }
 
 bool FrustumCulling::IsAABBVisible(const DirectX::XMFLOAT3& min, const DirectX::XMFLOAT3& max) const
 {
-	// AABB‚Ì8‚Â‚Ì’¸“_‚ğŒvZ
+	// AABBã®8ã¤ã®é ‚ç‚¹ã‚’è¨ˆç®—
 	DirectX::XMFLOAT3 corners[8] = {
 		{ min.x, min.y, min.z },
 		{ max.x, min.y, min.z },
@@ -102,17 +102,17 @@ bool FrustumCulling::IsAABBVisible(const DirectX::XMFLOAT3& min, const DirectX::
 			if (distance >= 0)
 			{
 				allOutSide = false;
-				break; // ‚±‚Ì•½–Ê‚É‘Î‚µ‚Ä­‚È‚­‚Æ‚à1‚Â‚Ì’¸“_‚ª“à‘¤‚É‚ ‚é
+				break; // ã“ã®å¹³é¢ã«å¯¾ã—ã¦å°‘ãªãã¨ã‚‚1ã¤ã®é ‚ç‚¹ãŒå†…å´ã«ã‚ã‚‹
 			}
 		}
 
 		if (allOutSide)
 		{
-			return false; // AABB‚ªƒtƒ‰ƒXƒ^ƒ€‚ÌŠO‚É‚ ‚é
+			return false; // AABBãŒãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã®å¤–ã«ã‚ã‚‹
 		}
 	}
 
-	return true; // AABB‚ªƒtƒ‰ƒXƒ^ƒ€‚Ì“à‘¤‚Ü‚½‚ÍŒğ·‚µ‚Ä‚¢‚é
+	return true; // AABBãŒãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã®å†…å´ã¾ãŸã¯äº¤å·®ã—ã¦ã„ã‚‹
 }
 
 float FrustumCulling::DistanceToPlane(const Plane& plane, const DirectX::XMFLOAT3& point) const
@@ -122,32 +122,32 @@ float FrustumCulling::DistanceToPlane(const Plane& plane, const DirectX::XMFLOAT
 	XMVECTOR normal = XMLoadFloat3(&plane.normal);
 	XMVECTOR pointVec = XMLoadFloat3(&point);
 
-	// •½–Ê‚Ì–@ü‚Æ“_‚Ì“àÏ‚ğŒvZ‚µA‹——£‚ğ‹‚ß‚é
+	// å¹³é¢ã®æ³•ç·šã¨ç‚¹ã®å†…ç©ã‚’è¨ˆç®—ã—ã€è·é›¢ã‚’æ±‚ã‚ã‚‹
 	float dot = XMVectorGetX(XMVector3Dot(normal, pointVec));
-	return dot + plane.distance;// •½–Ê‚Ì‹——£‚ğ‰ÁZ
+	return dot + plane.distance;// å¹³é¢ã®è·é›¢ã‚’åŠ ç®—
 }
 
-// ƒ[ƒ‹ƒh•ÏŠ·s—ñ‚ğl—¶‚µ‚½ƒoƒEƒ“ƒfƒBƒ“ƒO‹…‘Ì‚Ì‰Â‹«ƒ`ƒFƒbƒN
+// ãƒ¯ãƒ¼ãƒ«ãƒ‰å¤‰æ›è¡Œåˆ—ã‚’è€ƒæ…®ã—ãŸãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°çƒä½“ã®å¯è¦–æ€§ãƒã‚§ãƒƒã‚¯
 bool FrustumCulling::IsTransformedSphereVisible(const DirectX::XMFLOAT3& center, float radius, const DirectX::XMFLOAT4X4& worldTransform) const
 {
 	using namespace DirectX;
 	
-	// ƒ[ƒ‹ƒh•ÏŠ·s—ñ‚Å’†S“_‚ğ•ÏŠ·
+	// ãƒ¯ãƒ¼ãƒ«ãƒ‰å¤‰æ›è¡Œåˆ—ã§ä¸­å¿ƒç‚¹ã‚’å¤‰æ›
 	XMVECTOR centerVec = XMLoadFloat3(&center);
 	XMMATRIX world = XMLoadFloat4x4(&worldTransform);
 	XMVECTOR transformedCenter = XMVector3Transform(centerVec, world);
 
-	//ƒXƒP[ƒ‹‚ğl—¶‚µ‚Ä”¼Œa‚ğ’²®
-	//ƒ[ƒ‹ƒhs—ñ‚ÌƒXƒP[ƒ‹¬•ª‚ğæ“¾
+	//ã‚¹ã‚±ãƒ¼ãƒ«ã‚’è€ƒæ…®ã—ã¦åŠå¾„ã‚’èª¿æ•´
+	//ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã®ã‚¹ã‚±ãƒ¼ãƒ«æˆåˆ†ã‚’å–å¾—
 	XMVECTOR scaleX = XMVector3Length(world.r[0]);
 	XMVECTOR scaleY = XMVector3Length(world.r[1]);
 	XMVECTOR scaleZ = XMVector3Length(world.r[2]);
 
-	//Å‘åƒXƒP[ƒ‹‚ğæ“¾
+	//æœ€å¤§ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å–å¾—
 	float maxScale = XMVectorGetX(XMVectorMax(XMVectorMax(scaleX, scaleY), scaleZ));
-	float scaledRadius = radius * maxScale;//ƒXƒP[ƒ‹‚ğl—¶‚µ‚½”¼Œa
+	float scaledRadius = radius * maxScale;//ã‚¹ã‚±ãƒ¼ãƒ«ã‚’è€ƒæ…®ã—ãŸåŠå¾„
 
-	//•ÏŠ·Œã‚Ì’†S“_‚ÆƒXƒP[ƒ‹‚ğl—¶‚µ‚½”¼Œa‚Å‰Â‹«‚ğ”»’è
+	//å¤‰æ›å¾Œã®ä¸­å¿ƒç‚¹ã¨ã‚¹ã‚±ãƒ¼ãƒ«ã‚’è€ƒæ…®ã—ãŸåŠå¾„ã§å¯è¦–æ€§ã‚’åˆ¤å®š
 	XMFLOAT3 transformedCenterFloat;
 	XMStoreFloat3(&transformedCenterFloat, transformedCenter);
 

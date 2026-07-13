@@ -11,6 +11,7 @@
 #include "Ball.h"
 #include "ballSprite.h"
 #include "TrackingData.h"
+#include "FoulSprite.h"
 
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
@@ -46,6 +47,8 @@ void Pitcher::Initialize()
 	Ball::Instance().Initialize();
 
 	Wind::Instance().Initialize();
+
+	FoulSprite::Instance().Initialize(device);
 
 	boxPosition = { 0.0f, 0.8f, 0.0f }; // ストライクゾーンの位置を設定
 	boxSize = { 0.43f, 0.6f, 0.2f }; // ストライクゾーンのサイズを設定
@@ -111,6 +114,7 @@ void Pitcher::Uninitialize()
 {
 	Ball::Instance().Uninitialize();
 	Wind::Instance().Uninitialize();
+	FoulSprite::Instance().Uninitialize();
 	if (strikeZoneTrigger)
 	{
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
@@ -227,7 +231,7 @@ void Pitcher::Update(float elapsedTime)
 			resultWaitTimer += elapsedTime;
 
 			// トラッキングデータの表示猶予（例：表示開始から3秒見せる）
-			constexpr float RESULT_DISPLAY_DURATION = 1.0f;
+			constexpr float RESULT_DISPLAY_DURATION = 1.5f;
 			if (resultWaitTimer >= RESULT_DISPLAY_DURATION)
 			{
 				TrackingData::Instance().Reset();
@@ -287,6 +291,13 @@ void Pitcher::Update(float elapsedTime)
 		}
 	}
 
+	//バットに当たった後ボールのポジションが-1.0f以下だったら、トラッキングデータを表示しない
+	DirectX::XMFLOAT3 ballPosition = Ball::Instance().GetWorldPosition();
+	if(ballPosition.z < -1.0f && Ball::Instance().GetHasCollidedWithBat())
+	{
+		TrackingData::Instance().SetTrackingDataVisible(false);
+	}
+
 	// ボールが地面に落ちたらリセット
 	if (Ball::Instance().GetWorldPosition().y < 0.0f)
 	{
@@ -297,9 +308,19 @@ void Pitcher::Update(float elapsedTime)
 
 	Wind::Instance().Update(elapsedTime);
 
+
+	FoulSprite::Instance().Update(elapsedTime);
+
+	if(Ball::Instance().GetIsFoulConfirmed() && TrackingData::Instance().IsTrackingDataVisible() && !foulSpriteTriggered)
+	{
+		FoulSprite::Instance().SetShowFoulSprite(true);
+		foulSpriteTriggered = true;
+	}
+
+
 	// ボールが転がり中（グラウンド着地済み・まだ判定前）のみ監視
 	if (Ball::Instance().GetHasCollidedWithGround() &&
-		!Ball::Instance().GetHasCollidedWithFence() && !Ball::Instance().GetHasBeenJudged() && !Ball::Instance().GetFoulLogged())
+		!Ball::Instance().GetHasCollidedWithFence() && !Ball::Instance().GetHasBeenJudged() && !Ball::Instance().GetFoulLogged() && Ball::Instance().GetHasCollidedWithBat())
 	{
 		physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 		if (ballCollider)
@@ -309,7 +330,7 @@ void Pitcher::Update(float elapsedTime)
 			// z=19.5未満の間だけ監視（超えたらもうフェア確定ゾーン）
 			if (ballPos.z < 19.5f)
 			{
-				bool isFair = (ballPos.z >= 0.0f) &&
+				bool isFair = (ballPos.z >= 1.0f) &&
 					(std::fabs(ballPos.x) <= ballPos.z);
 
 				if (!isFair)
@@ -320,10 +341,28 @@ void Pitcher::Update(float elapsedTime)
 
 					Ball::Instance().SetFoulLogged(true); // ファウルログフラグを設定
 					Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
-
+					
 					char debugMessage[256];
 					snprintf(debugMessage, sizeof(debugMessage),
 						u8"ファウル：転がってファウルラインを越えた x=%.2f z=%.2f\n",
+						ballPos.x, ballPos.z);
+					OutputDebugStringA(debugMessage);
+					if (consoleLog)
+					{
+						consoleLog->push_back(debugMessage);
+					}
+				}
+
+				//ファウルからフェアに戻った場合の処理
+				if (isFair && Ball::Instance().GetFoulLogged())
+				{
+					// ファウルログがある状態でフェアに戻った場合、ファウルログをリセット
+					Ball::Instance().SetFoulLogged(false);
+					Ball::Instance().SetIsFoulConfirmed(false); // ファウル確定フラグもリセット
+					
+					char debugMessage[256];
+					snprintf(debugMessage, sizeof(debugMessage),
+						u8"フェア：転がってファウルラインを越えた後、フェアに戻った x=%.2f z=%.2f\n",
 						ballPos.x, ballPos.z);
 					OutputDebugStringA(debugMessage);
 					if (consoleLog)
@@ -356,6 +395,7 @@ void Pitcher::ResetPitchFlags()
 	ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
 
 	TrackingData::Instance().Reset(); // トラッキングデータをリセット
+	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 }
 
 // 描画
@@ -370,7 +410,6 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 
 	Wind::Instance().Render(rc);
 	
-
 	
 }
 
@@ -883,6 +922,7 @@ void Pitcher::DrawGUI()
 			UpdatePitcherModel();
 		}
 	Wind::Instance().DrawGUI();
+	FoulSprite::Instance().DrawGUI();
 
 #endif
 }

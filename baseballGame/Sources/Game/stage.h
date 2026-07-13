@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 #include <wrl.h>
 #include <DirectXMath.h>
@@ -21,7 +21,7 @@ class stage : public GameObject
 {
 public:
 
-	//ƒCƒ“ƒXƒ^ƒ“ƒX
+	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	static stage& Instance()
 	{
 		static stage instance;
@@ -73,7 +73,7 @@ private:
 
 	static constexpr int TOWER_COUNT = 4;
 
-	// ƒ‰ƒCƒgƒ^ƒ[‚ÌˆÊ’ui4Šî•ªj
+	// ãƒ©ã‚¤ãƒˆã‚¿ãƒ¯ãƒ¼ã®ä½ç½®ï¼ˆ4åŸºåˆ†ï¼‰
 	DirectX::XMFLOAT3 towerPositions[TOWER_COUNT] =
 	{
 		
@@ -102,21 +102,21 @@ private:
 
 public:
 	
-	// ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚Ì•ÒW—p
+	// ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®ç·¨é›†ç”¨
 	struct LineTriggerEditor
 	{
-		std::vector<DirectX::XMFLOAT3> linePoints; // ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚Ì’¸“_À•W
-		std::vector<physx::PxRigidStatic*> triggers; // ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚ÌƒgƒŠƒK[ƒRƒ‰ƒCƒ_[
-		bool editMode = false;   // •ÒWƒ‚[ƒh‚ÌON/OFF
-		float thickness = 0.5f; // ƒtƒFƒ“ƒXƒ‰ƒCƒ“‚ÌŒú‚İ
-		float extraHeight = 40.0f; // ƒtƒFƒ“ƒXã’[‚©‚ç‚³‚ç‚Éã‚Ö”»’è‚ğL‚Î‚·‚‚³
+		std::vector<DirectX::XMFLOAT3> linePoints; // ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®é ‚ç‚¹åº§æ¨™
+		std::vector<physx::PxRigidStatic*> triggers; // ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®ãƒˆãƒªã‚¬ãƒ¼ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼
+		bool editMode = false;   // ç·¨é›†ãƒ¢ãƒ¼ãƒ‰ã®ON/OFF
+		float thickness = 0.5f; // ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã®åšã¿
+		float extraHeight = 40.0f; // ãƒ•ã‚§ãƒ³ã‚¹ä¸Šç«¯ã‹ã‚‰ã•ã‚‰ã«ä¸Šã¸åˆ¤å®šã‚’ä¼¸ã°ã™é«˜ã•
 
 		std::string triggerName;
 		std::string raycastTargetName;
 	};
 
-	LineTriggerEditor homerunLineEditor; // ƒz[ƒ€ƒ‰ƒ“ƒ‰ƒCƒ“‚Ì•ÒW—pƒf[ƒ^
-	LineTriggerEditor foulLineEditor; // ƒtƒ@ƒEƒ‹ƒ‰ƒCƒ“‚Ì•ÒW—pƒf[ƒ^
+	LineTriggerEditor homerunLineEditor; // ãƒ›ãƒ¼ãƒ ãƒ©ãƒ³ãƒ©ã‚¤ãƒ³ã®ç·¨é›†ç”¨ãƒ‡ãƒ¼ã‚¿
+	LineTriggerEditor foulLineEditor; // ãƒ•ã‚¡ã‚¦ãƒ«ãƒ©ã‚¤ãƒ³ã®ç·¨é›†ç”¨ãƒ‡ãƒ¼ã‚¿
 
 	void UpdateLineEditor(LineTriggerEditor& editor,
 		const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,

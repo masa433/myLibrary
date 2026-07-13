@@ -1,11 +1,11 @@
-#pragma once
+ï»¿#pragma once
 
 #include <memory>
 #include <vector>
 #include <DirectXMath.h>
 #include "ModelResource.h"
 
-// ƒ‚ƒfƒ‹
+// ãƒ¢ãƒ‡ãƒ«
 class Model
 {
 public:
@@ -25,14 +25,14 @@ public:
 		std::vector<Node*>	children;
 	};
 
-	// s—ñŒvZ
+	// è¡Œåˆ—è¨ˆç®—
 	void UpdateTransform();
 
-	// ƒm[ƒhƒŠƒXƒgæ“¾
+	// ãƒãƒ¼ãƒ‰ãƒªã‚¹ãƒˆå–å¾—
 	const std::vector<Node>& GetNodes() const { return nodes; }
 	std::vector<Node>& GetNodes() { return nodes; }
 
-	// ƒŠƒ\[ƒXæ“¾
+	// ãƒªã‚½ãƒ¼ã‚¹å–å¾—
 	const ModelResource* GetResource() const { return resource.get(); }
 
 private:

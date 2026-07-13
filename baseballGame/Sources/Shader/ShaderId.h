@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "RenderContext.h"
 #include "../Model/ModelResource.h"
@@ -9,12 +9,12 @@ public:
 	Shader() {}
 	virtual ~Shader() {}
 
-	// ŠJnˆ—
+	// é–‹å§‹å‡¦ç†
 	virtual void Begin(const RenderContext& rc) = 0;
 
-	// XVˆ—
+	// æ›´æ–°å‡¦ç†
 	virtual void Update(const RenderContext& rc, const ModelResource::Material& material) = 0;
 
-	// I—¹ˆ—
+	// çµ‚äº†å‡¦ç†
 	virtual void End(const RenderContext& rc) = 0;
 };

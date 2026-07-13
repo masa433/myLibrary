@@ -1,4 +1,4 @@
-#include <stdlib.h>
+ï»¿#include <stdlib.h>
 #include <fstream>
 #include <functional>
 #include <cereal/cereal.hpp>
@@ -21,7 +21,7 @@ const std::vector<D3D11_INPUT_ELEMENT_DESC> ModelResource::InputElementDescs =
 	{ "BONE_INDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
-// CEREALƒo[ƒWƒ‡ƒ“’è‹`
+// CEREALãƒãƒ¼ã‚¸ãƒ§ãƒ³å®šç¾©
 CEREAL_CLASS_VERSION(ModelResource::Node, 1)
 CEREAL_CLASS_VERSION(ModelResource::Material, 1)
 CEREAL_CLASS_VERSION(ModelResource::Subset, 1)
@@ -32,7 +32,7 @@ CEREAL_CLASS_VERSION(ModelResource::Keyframe, 1)
 CEREAL_CLASS_VERSION(ModelResource::Animation, 1)
 CEREAL_CLASS_VERSION(ModelResource, 1)
 
-// ƒVƒŠƒAƒ‰ƒCƒY
+// ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚º
 namespace DirectX
 {
 	template<class Archive>
@@ -180,35 +180,35 @@ void ModelResource::Animation::serialize(Archive& archive, int version)
 	);
 }
 
-// “Ç‚İ‚İ
+// èª­ã¿è¾¼ã¿
 void ModelResource::Load(ID3D11Device* device, const char* filename)
 {
-	// ƒfƒBƒŒƒNƒgƒŠƒpƒXæ“¾
+	// ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãƒ‘ã‚¹å–å¾—
 	char drive[32], dir[256], dirname[256];
 	::_splitpath_s(filename, drive, sizeof(drive), dir, sizeof(dir), nullptr, 0, nullptr, 0);
 	::_makepath_s(dirname, sizeof(dirname), drive, dir, nullptr, nullptr);
 
-	// ƒfƒVƒŠƒAƒ‰ƒCƒY
+	// ãƒ‡ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚º
 	Deserialize(filename);
 
-	// ƒ‚ƒfƒ‹\’z
+	// ãƒ¢ãƒ‡ãƒ«æ§‹ç¯‰
 	BuildModel(device, dirname);
 }
 
-// ƒ‚ƒfƒ‹\’z
+// ãƒ¢ãƒ‡ãƒ«æ§‹ç¯‰
 void ModelResource::BuildModel(ID3D11Device* device, const char* dirname)
 {
 	for (Material& material : materials)
 	{
-		// ‘Š‘ÎƒpƒX‚Ì‰ğŒˆ
+		// ç›¸å¯¾ãƒ‘ã‚¹ã®è§£æ±º
 		char filename[256];
 		::_makepath_s(filename, 256, nullptr, dirname, material.textureFilename.c_str(), nullptr);
 
-		// ƒ}ƒ‹ƒ`ƒoƒCƒg•¶š‚©‚çƒƒCƒh•¶š‚Ö•ÏŠ·
+		// ãƒãƒ«ãƒãƒã‚¤ãƒˆæ–‡å­—ã‹ã‚‰ãƒ¯ã‚¤ãƒ‰æ–‡å­—ã¸å¤‰æ›
 		wchar_t wfilename[256];
 		::MultiByteToWideChar(CP_ACP, 0, filename, -1, wfilename, 256);
 
-		// ƒeƒNƒXƒ`ƒƒ“Ç‚İ‚İ
+		// ãƒ†ã‚¯ã‚¹ãƒãƒ£èª­ã¿è¾¼ã¿
 		Microsoft::WRL::ComPtr<ID3D11Resource> resource;
 		HRESULT hr = GpuResourceUtils::LoadTexture(device, filename, material.shaderResourceView.GetAddressOf());
 		if (FAILED(hr))
@@ -220,13 +220,13 @@ void ModelResource::BuildModel(ID3D11Device* device, const char* dirname)
 
 	for (Mesh& mesh : meshes)
 	{
-		// ƒTƒuƒZƒbƒg
+		// ã‚µãƒ–ã‚»ãƒƒãƒˆ
 		for (Subset& subset : mesh.subsets)
 		{
 			subset.material = &materials.at(subset.materialIndex);
 		}
 
-		// ’¸“_ƒoƒbƒtƒ@
+		// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡
 		{
 			D3D11_BUFFER_DESC bufferDesc = {};
 			D3D11_SUBRESOURCE_DATA subresourceData = {};
@@ -246,7 +246,7 @@ void ModelResource::BuildModel(ID3D11Device* device, const char* dirname)
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		}
 
-		// ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@
+		// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡
 		{
 			D3D11_BUFFER_DESC bufferDesc = {};
 			D3D11_SUBRESOURCE_DATA subresourceData = {};
@@ -267,7 +267,7 @@ void ModelResource::BuildModel(ID3D11Device* device, const char* dirname)
 	}
 }
 
-// ƒVƒŠƒAƒ‰ƒCƒY
+// ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚º
 void ModelResource::Serialize(const char* filename)
 {
 	std::ofstream ostream(filename, std::ios::binary);
@@ -294,7 +294,7 @@ void ModelResource::Serialize(const char* filename)
 	}
 }
 
-// ƒfƒVƒŠƒAƒ‰ƒCƒY
+// ãƒ‡ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚º
 void ModelResource::Deserialize(const char* filename)
 {
 	std::ifstream istream(filename, std::ios::binary);

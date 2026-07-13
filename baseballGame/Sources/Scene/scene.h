@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 
 class scene
@@ -10,13 +10,13 @@ public:
     virtual void update(float elapsed_time) = 0;
     virtual void render(float elapsedTime) = 0;
     virtual void uninitialize() = 0;
-    // GUI•`‰æˆ—
+    // GUIæç”»å‡¦ç†
     virtual void DrawGUI() {}
 
-    //€”õŠ®—¹‚µ‚Ä‚¢‚é‚©
+    //æº–å‚™å®Œäº†ã—ã¦ã„ã‚‹ã‹
 	bool IsReady() const { return isReady; }
 
-    //€”õŠ®—¹İ’è
+    //æº–å‚™å®Œäº†è¨­å®š
 	void SetReady() { isReady = true; }
 private:
     bool isReady = false;

@@ -1,4 +1,4 @@
-// FontRenderer.cpp
+ï»¿// FontRenderer.cpp
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "FontRenderer.h"
 
@@ -14,7 +14,7 @@ using Microsoft::WRL::ComPtr;
 
 namespace
 {
-	// ’¸“_ƒVƒF[ƒ_: CPU‘¤‚ÅŒvZÏ‚İ‚ÌNDCÀ•W‚ğ‚»‚Ì‚Ü‚Üg‚¤ŠÈˆÕ”Å(s—ñ‚È‚µ)
+	// é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€: CPUå´ã§è¨ˆç®—æ¸ˆã¿ã®NDCåº§æ¨™ã‚’ãã®ã¾ã¾ä½¿ã†ç°¡æ˜“ç‰ˆ(è¡Œåˆ—ãªã—)
 	const char* kFontVS = R"(
 struct VS_IN
 {
@@ -38,8 +38,8 @@ VS_OUT main(VS_IN vin)
 }
 )";
 
-	// ƒsƒNƒZƒ‹ƒVƒF[ƒ_: ƒtƒHƒ“ƒgƒAƒgƒ‰ƒX‚ÍR8(ƒAƒ‹ƒtƒ@‚Ì‚İ)B
-	// ƒTƒ“ƒvƒŠƒ“ƒO‚µ‚½’l‚ğƒAƒ‹ƒtƒ@‚Æ‚µ‚Äg‚¢A’¸“_ƒJƒ‰[‚Å’…F‚·‚éB
+	// ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€: ãƒ•ã‚©ãƒ³ãƒˆã‚¢ãƒˆãƒ©ã‚¹ã¯R8(ã‚¢ãƒ«ãƒ•ã‚¡ã®ã¿)ã€‚
+	// ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã—ãŸå€¤ã‚’ã‚¢ãƒ«ãƒ•ã‚¡ã¨ã—ã¦ä½¿ã„ã€é ‚ç‚¹ã‚«ãƒ©ãƒ¼ã§ç€è‰²ã™ã‚‹ã€‚
 	const char* kFontPS = R"(
 Texture2D    fontTexture : register(t0);
 SamplerState fontSampler : register(s0);
@@ -82,7 +82,7 @@ float4 main(PS_IN pin) : SV_TARGET
 	}
 }
 
-// ===== UTF-8 ƒfƒR[ƒh =====
+// ===== UTF-8 ãƒ‡ã‚³ãƒ¼ãƒ‰ =====
 
 std::vector<int> FontRenderer::Utf8ToCodepoints(const char* utf8Text)
 {
@@ -98,11 +98,11 @@ std::vector<int> FontRenderer::Utf8ToCodepoints(const char* utf8Text)
 
 		if ((c & 0x80) == 0x00) { codepoint = c; extraBytes = 0; }          // 0xxxxxxx (1byte)
 		else if ((c & 0xE0) == 0xC0) { codepoint = c & 0x1F; extraBytes = 1; } // 110xxxxx (2byte)
-		else if ((c & 0xF0) == 0xE0) { codepoint = c & 0x0F; extraBytes = 2; } // 1110xxxx (3byte, “ú–{Œê‚Ì‘å”¼‚Í‚±‚±)
-		else if ((c & 0xF8) == 0xF0) { codepoint = c & 0x07; extraBytes = 3; } // 11110xxx (4byte, ŠG•¶š‚È‚Ç)
+		else if ((c & 0xF0) == 0xE0) { codepoint = c & 0x0F; extraBytes = 2; } // 1110xxxx (3byte, æ—¥æœ¬èªã®å¤§åŠã¯ã“ã“)
+		else if ((c & 0xF8) == 0xF0) { codepoint = c & 0x07; extraBytes = 3; } // 11110xxx (4byte, çµµæ–‡å­—ãªã©)
 		else
 		{
-			// •s³‚ÈƒoƒCƒg—ñ‚Í1ƒoƒCƒg“Ç‚İ”ò‚Î‚·
+			// ä¸æ­£ãªãƒã‚¤ãƒˆåˆ—ã¯1ãƒã‚¤ãƒˆèª­ã¿é£›ã°ã™
 			++p;
 			continue;
 		}
@@ -146,12 +146,12 @@ bool FontRenderer::Initialize(
 	atlasHeight_ = atlasHeight;
 	glyphs_.clear();
 
-	// TTF/OTFƒtƒ@ƒCƒ‹‚ğƒoƒCƒg—ñ‚Æ‚µ‚Ä“Ç‚İ‚Ş
+	// TTF/OTFãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒã‚¤ãƒˆåˆ—ã¨ã—ã¦èª­ã¿è¾¼ã‚€
 	std::vector<unsigned char> ttfBuffer;
 	if (!ReadFileBytes(fontPath, ttfBuffer))
 		return false;
 
-	// ƒxƒCƒN‚·‚éƒR[ƒhƒ|ƒCƒ“ƒgˆê——‚ğŠm’è‚·‚é(w’è‚ª–³‚¯‚ê‚ÎASCII 32-126)
+	// ãƒ™ã‚¤ã‚¯ã™ã‚‹ã‚³ãƒ¼ãƒ‰ãƒã‚¤ãƒ³ãƒˆä¸€è¦§ã‚’ç¢ºå®šã™ã‚‹(æŒ‡å®šãŒç„¡ã‘ã‚Œã°ASCII 32-126)
 	std::vector<int> codepointList;
 	if (codepoints && !codepoints->empty())
 	{
@@ -164,7 +164,7 @@ bool FontRenderer::Initialize(
 		for (int c = 32; c < 127; ++c) codepointList.push_back(c);
 	}
 
-	// ƒAƒgƒ‰ƒXƒrƒbƒgƒ}ƒbƒv(8bit, 1ƒ`ƒƒƒ“ƒlƒ‹)‚ğŠm•Û‚µ‚ÄPack API‚ÅƒxƒCƒN‚·‚é
+	// ã‚¢ãƒˆãƒ©ã‚¹ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—(8bit, 1ãƒãƒ£ãƒ³ãƒãƒ«)ã‚’ç¢ºä¿ã—ã¦Pack APIã§ãƒ™ã‚¤ã‚¯ã™ã‚‹
 	std::vector<unsigned char> bitmap(static_cast<size_t>(atlasWidth_) * atlasHeight_, 0);
 	std::vector<stbtt_packedchar> packedChars(codepointList.size());
 
@@ -172,7 +172,7 @@ bool FontRenderer::Initialize(
 	if (!stbtt_PackBegin(&packContext, bitmap.data(), atlasWidth_, atlasHeight_, 0, 1, nullptr))
 		return false;
 
-	// ¬‚³‚¢•¶š‚ª’×‚ê‚È‚¢‚æ‚¤Œy‚­ƒI[ƒo[ƒTƒ“ƒvƒŠƒ“ƒO
+	// å°ã•ã„æ–‡å­—ãŒæ½°ã‚Œãªã„ã‚ˆã†è»½ãã‚ªãƒ¼ãƒãƒ¼ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°
 	stbtt_PackSetOversampling(&packContext, 2, 2);
 
 	const int fontOffset = stbtt_GetFontOffsetForIndex(ttfBuffer.data(), fontIndex);
@@ -194,27 +194,27 @@ bool FontRenderer::Initialize(
 
 	if (packResult == 0)
 	{
-		// 0‚Ìê‡: ƒAƒgƒ‰ƒX‚É‘S•¶š‚ª“ü‚è‚«‚ç‚È‚©‚Á‚½‰Â”\«‚ª‚‚¢(atlasWidth/Height‚ğ‘å‚«‚­‚·‚é)
+		// 0ã®å ´åˆ: ã‚¢ãƒˆãƒ©ã‚¹ã«å…¨æ–‡å­—ãŒå…¥ã‚Šãã‚‰ãªã‹ã£ãŸå¯èƒ½æ€§ãŒé«˜ã„(atlasWidth/Heightã‚’å¤§ããã™ã‚‹)
 		OutputDebugStringW(L"[FontRenderer] WARNING: not all glyphs fit in the atlas. "
 			L"Increase atlasWidth/atlasHeight or reduce pixelHeight/number of codepoints.\n");
-		// “ü‚ç‚È‚©‚Á‚½•¶š‚Íx1=x0=0‚È‚Ç‚É‚È‚é‚ªA‚»‚ê‚Å‚à•`‰æ‚ÍŒp‘±‚Å‚«‚é‚æ‚¤‚»‚Ì‚Ü‚Üi‚ß‚é
+		// å…¥ã‚‰ãªã‹ã£ãŸæ–‡å­—ã¯x1=x0=0ãªã©ã«ãªã‚‹ãŒã€ãã‚Œã§ã‚‚æç”»ã¯ç¶™ç¶šã§ãã‚‹ã‚ˆã†ãã®ã¾ã¾é€²ã‚ã‚‹
 	}
 
-	// ƒR[ƒhƒ|ƒCƒ“ƒg -> ƒOƒŠƒtî•ñ‚Ìƒ}ƒbƒv‚ğ\’z
+	// ã‚³ãƒ¼ãƒ‰ãƒã‚¤ãƒ³ãƒˆ -> ã‚°ãƒªãƒ•æƒ…å ±ã®ãƒãƒƒãƒ—ã‚’æ§‹ç¯‰
 	for (size_t i = 0; i < codepointList.size(); ++i)
 	{
 		glyphs_[codepointList[i]] = packedChars[i];
 	}
 
-	// D3D11ƒeƒNƒXƒ`ƒƒ/ƒVƒF[ƒ_ƒŠƒ\[ƒXƒrƒ…[‚ğì¬
+	// D3D11ãƒ†ã‚¯ã‚¹ãƒãƒ£/ã‚·ã‚§ãƒ¼ãƒ€ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ã‚’ä½œæˆ
 	if (!CreateAtlasTexture(device, bitmap.data(), atlasWidth_, atlasHeight_))
 		return false;
 
-	// ƒVƒF[ƒ_/“ü—ÍƒŒƒCƒAƒEƒg‚ğì¬
+	// ã‚·ã‚§ãƒ¼ãƒ€/å…¥åŠ›ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆã‚’ä½œæˆ
 	if (!CreateShaders(device))
 		return false;
 
-	// ƒTƒ“ƒvƒ‰ƒXƒe[ƒg
+	// ã‚µãƒ³ãƒ—ãƒ©ã‚¹ãƒ†ãƒ¼ãƒˆ
 	{
 		D3D11_SAMPLER_DESC desc{};
 		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -227,7 +227,7 @@ bool FontRenderer::Initialize(
 			return false;
 	}
 
-	// ƒuƒŒƒ“ƒhƒXƒe[ƒg(ƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒh)
+	// ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆ(ã‚¢ãƒ«ãƒ•ã‚¡ãƒ–ãƒ¬ãƒ³ãƒ‰)
 	{
 		D3D11_BLEND_DESC desc{};
 		desc.RenderTarget[0].BlendEnable = TRUE;
@@ -242,7 +242,7 @@ bool FontRenderer::Initialize(
 			return false;
 	}
 
-	// ƒ‰ƒXƒ^ƒ‰ƒCƒUƒXƒe[ƒg(ƒJƒŠƒ“ƒO‚È‚µ)
+	// ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ã‚¹ãƒ†ãƒ¼ãƒˆ(ã‚«ãƒªãƒ³ã‚°ãªã—)
 	{
 		D3D11_RASTERIZER_DESC desc{};
 		desc.FillMode = D3D11_FILL_SOLID;
@@ -382,7 +382,7 @@ void FontRenderer::MeasureText(const char* utf8Text, float scale, float& outWidt
 		auto it = glyphs_.find(cp);
 		if (it == glyphs_.end())
 		{
-			penX += pixelHeight_ * 0.3f * scale; // –¢‘Î‰•¶š‚Í”¼ŠpƒXƒy[ƒX•ª‚¾‚¯i‚ß‚é
+			penX += pixelHeight_ * 0.3f * scale; // æœªå¯¾å¿œæ–‡å­—ã¯åŠè§’ã‚¹ãƒšãƒ¼ã‚¹åˆ†ã ã‘é€²ã‚ã‚‹
 			continue;
 		}
 		penX += it->second.xadvance * scale;
@@ -421,7 +421,7 @@ void FontRenderer::DrawText(
 		auto it = glyphs_.find(cp);
 		if (it == glyphs_.end())
 		{
-			// ƒxƒCƒN‚³‚ê‚Ä‚¢‚È‚¢•¶š(‰üsE–¢‘Î‰Š¿š‚È‚Ç)‚Í”¼ŠpƒXƒy[ƒX•ª‚¾‚¯i‚ß‚Ä–³‹
+			// ãƒ™ã‚¤ã‚¯ã•ã‚Œã¦ã„ãªã„æ–‡å­—(æ”¹è¡Œãƒ»æœªå¯¾å¿œæ¼¢å­—ãªã©)ã¯åŠè§’ã‚¹ãƒšãƒ¼ã‚¹åˆ†ã ã‘é€²ã‚ã¦ç„¡è¦–
 			penX += pixelHeight_ * 0.3f * scale;
 			continue;
 		}
@@ -438,10 +438,10 @@ void FontRenderer::DrawText(
 		const float s1 = static_cast<float>(bc.x1) / atlasWidth_;
 		const float t1 = static_cast<float>(bc.y1) / atlasHeight_;
 
-		XMFLOAT2 p0 = toNDC(x0, y0); // ¶ã
-		XMFLOAT2 p1 = toNDC(x1, y0); // ‰Eã
-		XMFLOAT2 p2 = toNDC(x0, y1); // ¶‰º
-		XMFLOAT2 p3 = toNDC(x1, y1); // ‰E‰º
+		XMFLOAT2 p0 = toNDC(x0, y0); // å·¦ä¸Š
+		XMFLOAT2 p1 = toNDC(x1, y0); // å³ä¸Š
+		XMFLOAT2 p2 = toNDC(x0, y1); // å·¦ä¸‹
+		XMFLOAT2 p3 = toNDC(x1, y1); // å³ä¸‹
 
 		Vertex v0{ XMFLOAT3(p0.x, p0.y, 0.0f), color, XMFLOAT2(s0, t0) };
 		Vertex v1{ XMFLOAT3(p1.x, p1.y, 0.0f), color, XMFLOAT2(s1, t0) };
@@ -461,7 +461,7 @@ void FontRenderer::DrawText(
 	if (vertices.empty()) return;
 
 	ID3D11Device* rawDevice = nullptr;
-	dc->GetDevice(&rawDevice); // GetDevice‚ÍQÆƒJƒEƒ“ƒg‚ğ+1‚·‚é‚Ì‚ÅComPtr‚ÅAttach‚µ‚ÄŠÇ—‚·‚é
+	dc->GetDevice(&rawDevice); // GetDeviceã¯å‚ç…§ã‚«ã‚¦ãƒ³ãƒˆã‚’+1ã™ã‚‹ã®ã§ComPtrã§Attachã—ã¦ç®¡ç†ã™ã‚‹
 	ComPtr<ID3D11Device> devicePtr;
 	devicePtr.Attach(rawDevice);
 

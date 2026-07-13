@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 #include <wrl.h>
 #include <DirectXMath.h>
@@ -28,7 +28,7 @@ class Wind
 	float GetWindHeight() const { return windHeight; }
 	float GetWindThickness() const { return windThickness; }
 
-	// •—‚Ì‰e‹¿‚ğó‚¯‚éƒGƒŠƒA‚Éƒ{[ƒ‹‚ª“ü‚Á‚Ä‚¢‚é‚©
+	// é¢¨ã®å½±éŸ¿ã‚’å—ã‘ã‚‹ã‚¨ãƒªã‚¢ã«ãƒœãƒ¼ãƒ«ãŒå…¥ã£ã¦ã„ã‚‹ã‹
 	bool IsBallInWindArea() const;
 
 	const DirectX::XMFLOAT3 GetWindVector() const { return DirectX::XMFLOAT3(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength); }
@@ -40,10 +40,10 @@ private:
 	struct WindLine
 	{
 		DirectX::XMFLOAT3 position;
-		float baseYOffset; // Y²‚Ì‘Š‘Î“I‚ÈˆÊ’uŠ„‡ (0.0 ` 1.0)
+		float baseYOffset; // Yè»¸ã®ç›¸å¯¾çš„ãªä½ç½®å‰²åˆ (0.0 ï½ 1.0)
 		float speed;
 		float length;
-		float phase; // ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌˆÊ‘Š
+		float phase; // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®ä½ç›¸
 	};
 	std::vector<WindLine> windLines;
 	DirectX::XMFLOAT3 windDirection = { -1.0f, 0.0f, -0.5f };
@@ -51,7 +51,7 @@ private:
 	float windHeight = 20.0f;
 	float windThickness = 50.0f;
 
-	//ƒXƒvƒ‰ƒCƒgŠÖ˜A
+	//ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆé–¢é€£
 	struct Sprite
 	{
 		std::wstring texturePath;
@@ -68,7 +68,7 @@ private:
 	std::unique_ptr<sprite> windBoardSpriteRenderer;
 	FontRenderer windStrengthFont;
 
-	// ƒVƒF[ƒ_[ŠÖ˜Aƒƒ“ƒo[‚ğ’Ç‰Á
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼é–¢é€£ãƒ¡ãƒ³ãƒãƒ¼ã‚’è¿½åŠ 
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;

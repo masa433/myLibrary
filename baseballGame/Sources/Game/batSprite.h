@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 #include <directXmath.h>
 #include <memory>
@@ -15,7 +15,7 @@ class BatSprite
 {
 public:
 
-	//ƒCƒ“ƒXƒ^ƒ“ƒX
+	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	static BatSprite& Instance()
 	{
 		static BatSprite instance;
@@ -30,15 +30,15 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
-	//ƒoƒbƒg‚ÌƒTƒCƒY‚Æƒ|ƒWƒVƒ‡ƒ“‚ÌƒQƒbƒ^[
+	//ãƒãƒƒãƒˆã®ã‚µã‚¤ã‚ºã¨ãƒã‚¸ã‚·ãƒ§ãƒ³ã®ã‚²ãƒƒã‚¿ãƒ¼
 	DirectX::XMFLOAT2 GetBatSpriteSize() const { return batSpriteData->size; }
 	DirectX::XMFLOAT2 GetBatSpritePosition() const { return batSpriteData->position; }
 
-	//ƒoƒbƒgƒJ[ƒ\ƒ‹‚ÌƒTƒCƒY‚Æƒ|ƒWƒVƒ‡ƒ“‚ÌƒQƒbƒ^[
+	//ãƒãƒƒãƒˆã‚«ãƒ¼ã‚½ãƒ«ã®ã‚µã‚¤ã‚ºã¨ãƒã‚¸ã‚·ãƒ§ãƒ³ã®ã‚²ãƒƒã‚¿ãƒ¼
 	DirectX::XMFLOAT2 GetBatCursorSpriteSize() const { return batCursorSpriteData->size; }
 	DirectX::XMFLOAT2 GetBatCursorSpritePosition() const { return batCursorSpriteData->position; }
 private:
-	//ƒXƒvƒ‰ƒCƒgƒf[ƒ^
+	//ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒ‡ãƒ¼ã‚¿
 	struct Sprite
 	{
 		std::wstring texturePath;
@@ -54,7 +54,7 @@ private:
 	std::unique_ptr<Sprite> batCursorSpriteData;
 
 
-	// ƒVƒF[ƒ_[ŠÖ˜A
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼é–¢é€£
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;

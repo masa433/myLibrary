@@ -1,4 +1,4 @@
-#include "SkyRenderer.h"
+ï»¿#include "SkyRenderer.h"
 #include "shader.h"
 #include "misc.h"
 #include "imgui.h"
@@ -6,21 +6,21 @@
 
 using namespace DirectX;
 
-//ƒJƒ‰[ƒe[ƒuƒ‹
+//ã‚«ãƒ©ãƒ¼ãƒ†ãƒ¼ãƒ–ãƒ«
 
-// ‚É‰‚¶‚½‹ó‚ÌF‚ğŒvZ
-// ‚Í0.0f`1.0f‚Ì”ÍˆÍ‚ÅA0.0f‚ª–éA0.5f‚ª’‹A1.0f‚ªÄ‚Ñ–é‚ğ•\‚·
+// æ™‚åˆ»ã«å¿œã˜ãŸç©ºã®è‰²ã‚’è¨ˆç®—
+// æ™‚åˆ»ã¯0.0fï½1.0fã®ç¯„å›²ã§ã€0.0fãŒå¤œã€0.5fãŒæ˜¼ã€1.0fãŒå†ã³å¤œã‚’è¡¨ã™
 struct SkyColorKey
 {
-	float t;// 
-	XMFLOAT3 zenith;// “V’¸‚ÌF
-	XMFLOAT3 horizon;// ’n•½ü‚ÌF
-	XMFLOAT3 ground;// ’n–Ê‚ÌFi¡‰ñ‚Íg—p‚µ‚È‚¢j
-	XMFLOAT3 sun_color;// ‘¾—z‚ÌF
-	float sun_intensity;// ‘¾—z‚Ì‹­“x
+	float t;// æ™‚åˆ»
+	XMFLOAT3 zenith;// å¤©é ‚ã®è‰²
+	XMFLOAT3 horizon;// åœ°å¹³ç·šã®è‰²
+	XMFLOAT3 ground;// åœ°é¢ã®è‰²ï¼ˆä»Šå›ã¯ä½¿ç”¨ã—ãªã„ï¼‰
+	XMFLOAT3 sun_color;// å¤ªé™½ã®è‰²
+	float sun_intensity;// å¤ªé™½ã®å¼·åº¦
 };
 
-// ‚Æ‘Î‰‚·‚é‹ó‚ÌF‚ÌƒL[
+// æ™‚åˆ»ã¨å¯¾å¿œã™ã‚‹ç©ºã®è‰²ã®ã‚­ãƒ¼
 static const SkyColorKey kColorTable[] =
 {
     { 0.00f, {0.00f,0.00f,0.05f},  {0.02f,0.02f,0.08f},  {0.02f,0.01f,0.00f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // midnight
@@ -34,21 +34,21 @@ static const SkyColorKey kColorTable[] =
     { 1.00f, {0.00f,0.00f,0.05f},  {0.02f,0.02f,0.08f},  {0.02f,0.01f,0.00f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // midnight again
 };
 
-// üŒ`•âŠÔŠÖ”
+// ç·šå½¢è£œé–“é–¢æ•°
 static XMFLOAT3 LerpFloat3(const XMFLOAT3& a, const XMFLOAT3& b, float t)
 {
 	return { a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t };
 }
 
-// ‚É‰‚¶‚½‹ó‚ÌF‚ğŒvZ
+// æ™‚åˆ»ã«å¿œã˜ãŸç©ºã®è‰²ã‚’è¨ˆç®—
 XMFLOAT3 SkyRenderer::ComputeSunDirection() const
 {
-	float angle = (time_of_day * 2.0f - 0.5f) * XM_PI;// ‚ğŠp“x‚É•ÏŠ·i0.0f‚ª–éA0.5f‚ª’‹A1.0f‚ªÄ‚Ñ–éj
+	float angle = (time_of_day * 2.0f - 0.5f) * XM_PI;// æ™‚åˆ»ã‚’è§’åº¦ã«å¤‰æ›ï¼ˆ0.0fãŒå¤œã€0.5fãŒæ˜¼ã€1.0fãŒå†ã³å¤œï¼‰
 
-	// ‘¾—z‚Ì•ûŒü‚ğŒvZiz²‚ğ’†S‚É‰ñ“]j
+	// å¤ªé™½ã®æ–¹å‘ã‚’è¨ˆç®—ï¼ˆzè»¸ã‚’ä¸­å¿ƒã«å›è»¢ï¼‰
 	float sun_x = cosf(angle);
 	float sun_y = sinf(angle);
-	float sun_z = 0.0f; // …•½‚É‰ñ“]‚³‚¹‚é‚¾‚¯‚È‚Ì‚Åz‚Íí‚É0
+	float sun_z = 0.0f; // æ°´å¹³ã«å›è»¢ã•ã›ã‚‹ã ã‘ãªã®ã§zã¯å¸¸ã«0
 
 	XMFLOAT3 direction = { sun_x, sun_y, sun_z };
 	XMVECTOR v = XMVector3Normalize(XMLoadFloat3(&direction));
@@ -56,26 +56,26 @@ XMFLOAT3 SkyRenderer::ComputeSunDirection() const
 	return direction;
 }
 
-// ‚É‰‚¶‚½‹ó‚ÌF‚ğŒvZ
+// æ™‚åˆ»ã«å¿œã˜ãŸç©ºã®è‰²ã‚’è¨ˆç®—
 XMFLOAT4 SkyRenderer::GetSunDirectionToLight() const
 {
 	XMFLOAT3 sun_dir = ComputeSunDirection();
-	return XMFLOAT4(-sun_dir.x, -sun_dir.y, -sun_dir.z, 0.0f); // ƒ‰ƒCƒg‹óŠÔ‚Å‚Í‘¾—zŒõ‚Ì•ûŒü‚Í‹t‚É‚È‚é
+	return XMFLOAT4(-sun_dir.x, -sun_dir.y, -sun_dir.z, 0.0f); // ãƒ©ã‚¤ãƒˆç©ºé–“ã§ã¯å¤ªé™½å…‰ã®æ–¹å‘ã¯é€†ã«ãªã‚‹
 }
 
-// ‚É‰‚¶‚½‹ó‚ÌF‚ğŒvZ
+// æ™‚åˆ»ã«å¿œã˜ãŸç©ºã®è‰²ã‚’è¨ˆç®—
 void SkyRenderer::ComputeSkyColors(sky_constants& out) const
 {
-	float t = fmodf(time_of_day, 1.0f); // ‚ğ0.0f`1.0f‚Ì”ÍˆÍ‚Éû‚ß‚é
-	if (t < 0.0f) t += 1.0f; // •‰‚Ì’l‚Ìê‡‚Í³‚Ì”ÍˆÍ‚É•ÏŠ·
+	float t = fmodf(time_of_day, 1.0f); // æ™‚åˆ»ã‚’0.0fï½1.0fã®ç¯„å›²ã«åã‚ã‚‹
+	if (t < 0.0f) t += 1.0f; // è² ã®å€¤ã®å ´åˆã¯æ­£ã®ç¯„å›²ã«å¤‰æ›
 
-	int count = (int)(sizeof(kColorTable) / sizeof(kColorTable[0]));// ƒJƒ‰[ƒe[ƒuƒ‹‚ÌƒGƒ“ƒgƒŠ”
+	int count = (int)(sizeof(kColorTable) / sizeof(kColorTable[0]));// ã‚«ãƒ©ãƒ¼ãƒ†ãƒ¼ãƒ–ãƒ«ã®ã‚¨ãƒ³ãƒˆãƒªæ•°
 
-	// ‚É‰‚¶‚½2‚Â‚ÌƒL[‚ğŒ©‚Â‚¯‚é
+	// æ™‚åˆ»ã«å¿œã˜ãŸ2ã¤ã®ã‚­ãƒ¼ã‚’è¦‹ã¤ã‘ã‚‹
 	int lo = 0, hi = 1;
 	for (int i = 0; i < count - 1; ++i)
 	{
-		// t‚ªkColorTable[i]‚ÆkColorTable[i + 1]‚ÌŠÔ‚É‚ ‚é‚©Šm”F
+		// æ™‚åˆ»tãŒkColorTable[i]ã¨kColorTable[i + 1]ã®é–“ã«ã‚ã‚‹ã‹ç¢ºèª
 		if (t >= kColorTable[i].t && t <= kColorTable[i + 1].t)
 		{
 			lo = i;
@@ -84,11 +84,11 @@ void SkyRenderer::ComputeSkyColors(sky_constants& out) const
 		}
 	}
 
-	float span = kColorTable[hi].t - kColorTable[lo].t; // 2‚Â‚ÌƒL[‚Ì‚Ì·
-	float alpha = (span > 0.0001f) ? (t - kColorTable[lo].t) / span : 0.0f; // •âŠÔŒW”
+	float span = kColorTable[hi].t - kColorTable[lo].t; // 2ã¤ã®ã‚­ãƒ¼ã®æ™‚åˆ»ã®å·®
+	float alpha = (span > 0.0001f) ? (t - kColorTable[lo].t) / span : 0.0f; // è£œé–“ä¿‚æ•°
 
-	const SkyColorKey& a = kColorTable[lo];// 2‚Â‚ÌƒL[‚ğüŒ`•âŠÔ‚µ‚Ä‹ó‚ÌF‚ğŒvZ
-	const SkyColorKey& b = kColorTable[hi];// •âŠÔ‚µ‚ÄŒ‹‰Ê‚ğo—Í
+	const SkyColorKey& a = kColorTable[lo];// 2ã¤ã®ã‚­ãƒ¼ã‚’ç·šå½¢è£œé–“ã—ã¦ç©ºã®è‰²ã‚’è¨ˆç®—
+	const SkyColorKey& b = kColorTable[hi];// è£œé–“ã—ã¦çµæœã‚’å‡ºåŠ›
 
 	auto ToFloat4 = [](const XMFLOAT3& v, float w) -> XMFLOAT4 {
 		return { v.x, v.y, v.z, w };
@@ -107,10 +107,10 @@ void SkyRenderer::ComputeSkyColors(sky_constants& out) const
 	out.time_of_day = time_of_day;
 	out.sun_size = sun_size;
 	out.sun_bloom_size = sun_bloom_size;
-	out.sky_dummy = 0.0f; // ƒpƒfƒBƒ“ƒO
+	out.sky_dummy = 0.0f; // ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°
 }
 
-//‰Šú‰»
+//åˆæœŸåŒ–
 void SkyRenderer::Initialize(ID3D11Device* device)
 {
 	HRESULT hr;
@@ -132,7 +132,7 @@ void SkyRenderer::Initialize(ID3D11Device* device)
 
 }
 
-//XV
+//æ›´æ–°
 void SkyRenderer::Update(float elapsedTime)
 {
 	if (auto_advance_time)
@@ -141,31 +141,31 @@ void SkyRenderer::Update(float elapsedTime)
 	}
 }
 
-//•`‰æ
+//æç”»
 void SkyRenderer::Render(ID3D11DeviceContext* dc, ID3D11Buffer* scene_constant_buffer, ID3D11DepthStencilState* depth_read_only, ID3D11RasterizerState* rasterizer_none)
 {
-	//’è”ƒoƒbƒtƒ@‚ÌXV
+	//å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®æ›´æ–°
 	sky_constants constants;
-	ComputeSkyColors(constants);// ‹ó‚ÌF‚ğŒvZ
+	ComputeSkyColors(constants);// ç©ºã®è‰²ã‚’è¨ˆç®—
 	dc->UpdateSubresource(constant_buffer.Get(), 0, nullptr, &constants, 0, 0);
 
-	//ƒoƒCƒ“ƒh
-	dc->PSSetConstantBuffers(9, 1, constant_buffer.GetAddressOf()); // ƒsƒNƒZƒ‹ƒVƒF[ƒ_[‚Ì’è”ƒoƒbƒtƒ@ƒXƒƒbƒg1‚ÉƒoƒCƒ“ƒh
-	dc->PSSetConstantBuffers(1, 1, &scene_constant_buffer); // ƒV[ƒ“’è”ƒoƒbƒtƒ@‚ğƒsƒNƒZƒ‹ƒVƒF[ƒ_[‚Ì’è”ƒoƒbƒtƒ@ƒXƒƒbƒg2‚ÉƒoƒCƒ“ƒh
+	//ãƒã‚¤ãƒ³ãƒ‰
+	dc->PSSetConstantBuffers(9, 1, constant_buffer.GetAddressOf()); // ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚¹ãƒ­ãƒƒãƒˆ1ã«ãƒã‚¤ãƒ³ãƒ‰
+	dc->PSSetConstantBuffers(1, 1, &scene_constant_buffer); // ã‚·ãƒ¼ãƒ³å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚’ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚¹ãƒ­ãƒƒãƒˆ2ã«ãƒã‚¤ãƒ³ãƒ‰
 
-	//ƒVƒF[ƒ_[İ’è
+	//ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼è¨­å®š
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
 
-	dc->IASetInputLayout(nullptr); // ’¸“_ƒŒƒCƒAƒEƒg‚Í•s—vi’¸“_ƒVƒF[ƒ_[‚ÅSV_VertexID‚ğg—p‚µ‚Ä‚¢‚é‚½‚ßj
-	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // ƒgƒ|ƒƒW[‚ÍOŠpŒ`ƒŠƒXƒg
+	dc->IASetInputLayout(nullptr); // é ‚ç‚¹ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆã¯ä¸è¦ï¼ˆé ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã§SV_VertexIDã‚’ä½¿ç”¨ã—ã¦ã„ã‚‹ãŸã‚ï¼‰
+	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // ãƒˆãƒãƒ­ã‚¸ãƒ¼ã¯ä¸‰è§’å½¢ãƒªã‚¹ãƒˆ
 
-	//[“xƒXƒeƒ“ƒVƒ‹ƒXƒe[ƒg‚Æƒ‰ƒXƒ^ƒ‰ƒCƒU[ƒXƒe[ƒg‚ğİ’è
+	//æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã‚¹ãƒ†ãƒ¼ãƒˆã¨ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆã‚’è¨­å®š
 	dc->OMSetDepthStencilState(depth_read_only, 0);
 	dc->RSSetState(rasterizer_none);
 
-	//•`‰æ
-	dc->Draw(3, 0); // ƒtƒ‹ƒXƒNƒŠ[ƒ“OŠpŒ`‚ğ•`‰æ
+	//æç”»
+	dc->Draw(3, 0); // ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ä¸‰è§’å½¢ã‚’æç”»
 }
 
 void SkyRenderer::DrawGUI()

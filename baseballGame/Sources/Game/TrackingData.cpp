@@ -1,4 +1,4 @@
-#include "TrackingData.h"
+ï»¿#include "TrackingData.h"
 #include "shader.h"
 #include <imgui.h>
 #include <Ball.h>
@@ -16,7 +16,7 @@ void TrackingData::Initialize(ID3D11Device* device)
 		input_element_desc, _countof(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
 
-	// ƒXƒvƒ‰ƒCƒg‚Ì‰Šú‰»
+	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®åˆæœŸåŒ–
 	
 	trackingDataSpriteData = std::make_unique<Sprite>();
 	trackingDataSpriteData->texturePath = L".\\resources\\textures\\TrackingDataBoard.png";
@@ -31,12 +31,12 @@ void TrackingData::Initialize(ID3D11Device* device)
 
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789.km/h-"
-		u8"Šp“x‘¬“x•ûŒü"
-		u8"0123456789.“x"
+		u8"è§’åº¦é€Ÿåº¦æ–¹å‘"
+		u8"0123456789.åº¦"
 		u8"Tracking Data"
 	);
 
-	// ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒ‰[‚Ì‰Šú‰»
+	// ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ã®åˆæœŸåŒ–
 	trackingDataFont.Initialize(device,
 		L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf",
 		28.0f,
@@ -62,6 +62,7 @@ void TrackingData::Update(float elapsedTime)
 		showTrackingDelay = displayStartTime;
 		showTrackingData = true;
 	}
+
 }
 
 void TrackingData::Reset()
@@ -102,7 +103,7 @@ void TrackingData::Render()
 	float lineY = trackingDataSpriteData->position.y + 10.0f;
 	const float lineHeight = trackingDataValueFontScale * 50.0f;
 	const float valuePadding = 8.0f;
-	const float TrackingDataLabelOffsetY = 20.0f; // "Tracking Data"ƒ‰ƒxƒ‹‚ÌYƒIƒtƒZƒbƒg
+	const float TrackingDataLabelOffsetY = 20.0f; // "Tracking Data"ãƒ©ãƒ™ãƒ«ã®Yã‚ªãƒ•ã‚»ãƒƒãƒˆ
 
 	const float valueColumnCenterX = trackingDataSpriteData->position.x + trackingDataSpriteData->size.x * 0.7f;
 
@@ -111,49 +112,49 @@ void TrackingData::Render()
 			float rounded = std::round(value);
 			if (rounded == 0.0f)
 			{
-				return 0.0f; // -0.x‚Ìê‡‚É-0“x‚Æ•\¦‚³‚ê‚é‚Ì‚ğ–h‚®
+				return 0.0f; // -0.xã®å ´åˆã«-0åº¦ã¨è¡¨ç¤ºã•ã‚Œã‚‹ã®ã‚’é˜²ã
 			}
 			return rounded;
 		};
 
-	char angleLabel[16];     snprintf(angleLabel, sizeof(angleLabel), u8"Šp“x@");
-	char angleValue[32];     snprintf(angleValue, sizeof(angleValue), u8"%.f“x", FormatRoundedValue(Physics::Instance().GetBallAngle()));
+	char angleLabel[16];     snprintf(angleLabel, sizeof(angleLabel), u8"è§’åº¦ã€€");
+	char angleValue[32];     snprintf(angleValue, sizeof(angleValue), u8"%.fåº¦", FormatRoundedValue(Physics::Instance().GetBallAngle()));
 
-	char speedLabel[16];     snprintf(speedLabel, sizeof(speedLabel), u8"‘¬“x@");
+	char speedLabel[16];     snprintf(speedLabel, sizeof(speedLabel), u8"é€Ÿåº¦ã€€");
 	char speedValue[32];     snprintf(speedValue, sizeof(speedValue), u8"%.fkm/h", FormatRoundedValue(Physics::Instance().GetBallSpeed()));
 
-	//‰æ‘œ‚Ì¶ã•t‹ß‚ÉTrackingData‚Ìƒ‰ƒxƒ‹‚ğ•\¦‚·‚é
+	//ç”»åƒã®å·¦ä¸Šä»˜è¿‘ã«TrackingDataã®ãƒ©ãƒ™ãƒ«ã‚’è¡¨ç¤ºã™ã‚‹
 	char trackingDataLabel[32]; snprintf(trackingDataLabel, sizeof(trackingDataLabel), "Tracking Data");
 
 	
-	/*char directionLabel[16]; snprintf(directionLabel, sizeof(directionLabel), u8"•ûŒü@");
-	char directionValue[32]; snprintf(directionValue, sizeof(directionValue), u8"%.f“x", FormatRoundedValue(Physics::Instance().GetBallDirection()));*/
+	/*char directionLabel[16]; snprintf(directionLabel, sizeof(directionLabel), u8"æ–¹å‘ã€€");
+	char directionValue[32]; snprintf(directionValue, sizeof(directionValue), u8"%.fåº¦", FormatRoundedValue(Physics::Instance().GetBallDirection()));*/
 
-	// ƒ‰ƒxƒ‹{”’l‚ğƒyƒA‚Å•`‰æ‚·‚éƒwƒ‹ƒp[iƒIƒtƒZƒbƒg•t‚«j
+	// ãƒ©ãƒ™ãƒ«ï¼‹æ•°å€¤ã‚’ãƒšã‚¢ã§æç”»ã™ã‚‹ãƒ˜ãƒ«ãƒ‘ãƒ¼ï¼ˆã‚ªãƒ•ã‚»ãƒƒãƒˆä»˜ãï¼‰
 	auto DrawLabelAndValue = [&](const char* label, const char* value, float y,
 		const DirectX::XMFLOAT2& labelOffset, const DirectX::XMFLOAT2& valueOffset)
 		{
-			//‘Å‹…‘¬“x‚ª150ƒLƒˆÈã‚©‚Â‘Å‹…Šp“x‚ª25“x‚©‚ç35“x‚Ì”ÍˆÍ“à‚Ìê‡A—¼Ò‚ğ‹àF‚Å•\¦
+			//æ‰“çƒé€Ÿåº¦ãŒ150ã‚­ãƒ­ä»¥ä¸Šã‹ã¤æ‰“çƒè§’åº¦ãŒ25åº¦ã‹ã‚‰35åº¦ã®ç¯„å›²å†…ã®å ´åˆã€ä¸¡è€…ã‚’é‡‘è‰²ã§è¡¨ç¤º
 			if(Physics::Instance().GetIsHomeRun())
 			{
 				trackingDataFont.DrawTextW(dc, label,
 					baseX + labelOffset.x, y + labelOffset.y,
-					trackingDataFontScale, 1.0f, 1.0f, 1.0f, 1.0f); // ”’F
-				// ”’l‚Í•‚ğ‘ª‚Á‚Ä’†‰›‚¼‚ë‚¦
+					trackingDataFontScale, 1.0f, 1.0f, 1.0f, 1.0f); // ç™½è‰²
+				// æ•°å€¤ã¯å¹…ã‚’æ¸¬ã£ã¦ä¸­å¤®ãã‚ãˆ
 				float valueWidth = 0.0f, valueHeight = 0.0f;
 				trackingDataFont.MeasureText(value, trackingDataValueFontScale, valueWidth, valueHeight);
 				float valueX = valueColumnCenterX - valueWidth * 0.5f;
 				trackingDataFont.DrawTextW(dc, value,
 					valueX + valueOffset.x, y + valueOffset.y,
-					trackingDataValueFontScale, 1.0f, 0.843f, 0.0f, 1.0f); // ‹àF
+					trackingDataValueFontScale, 1.0f, 0.843f, 0.0f, 1.0f); // é‡‘è‰²
 			}
 			else
 			{
-				// ƒ‰ƒxƒ‹‚Í‚±‚ê‚Ü‚Å’Ê‚è¶‘µ‚¦
+				// ãƒ©ãƒ™ãƒ«ã¯ã“ã‚Œã¾ã§é€šã‚Šå·¦æƒãˆ
 				trackingDataFont.DrawTextW(dc, label,
 					baseX + labelOffset.x, y + labelOffset.y,
 					trackingDataFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
-				// ”’l‚Í•‚ğ‘ª‚Á‚Ä’†‰›‚¼‚ë‚¦
+				// æ•°å€¤ã¯å¹…ã‚’æ¸¬ã£ã¦ä¸­å¤®ãã‚ãˆ
 				float valueWidth = 0.0f, valueHeight = 0.0f;
 				trackingDataFont.MeasureText(value, trackingDataValueFontScale, valueWidth, valueHeight);
 				float valueX = valueColumnCenterX - valueWidth * 0.5f;
@@ -181,7 +182,7 @@ void TrackingData::DrawGUI()
 	if (ImGui::CollapsingHeader("Tracking Data"))
 	{
 		ImGui::Checkbox("Show Tracking Data", &showTrackingData);
-		//showtrackingDelay‚ğ•\¦
+		//showtrackingDelayã‚’è¡¨ç¤º
 		ImGui::DragFloat("Display Start Time", &displayStartTime, 0.01f, 0.0f, 5.0f);
 		ImGui::DragFloat("Show Tracking Delay Timer", &showTrackingDelay, 0.01f, 0.0f, 5.0f);
 
@@ -193,15 +194,15 @@ void TrackingData::DrawGUI()
 
 		if (ImGui::TreeNode("Text Offsets"))
 		{
-			ImGui::Text(u8"Šp“x");
+			ImGui::Text(u8"è§’åº¦");
 			ImGui::DragFloat2("Angle Label Offset", &angleLabelOffset.x, 0.5f, -200.0f, 200.0f);
 			ImGui::DragFloat2("Angle Value Offset", &angleValueOffset.x, 0.5f, -200.0f, 200.0f);
 
-			ImGui::Text(u8"‘¬“x");
+			ImGui::Text(u8"é€Ÿåº¦");
 			ImGui::DragFloat2("Speed Label Offset", &speedLabelOffset.x, 0.5f, -200.0f, 200.0f);
 			ImGui::DragFloat2("Speed Value Offset", &speedValueOffset.x, 0.5f, -200.0f, 200.0f);
 
-			/*ImGui::Text(u8"•ûŒü");
+			/*ImGui::Text(u8"æ–¹å‘");
 			ImGui::DragFloat2("Direction Label Offset", &directionLabelOffset.x, 0.5f, -200.0f, 200.0f);
 			ImGui::DragFloat2("Direction Value Offset", &directionValueOffset.x, 0.5f, -200.0f, 200.0f);*/
 

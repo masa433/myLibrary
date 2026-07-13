@@ -1,35 +1,35 @@
-#pragma once
+ï»¿#pragma once
 #include <DirectXMath.h>
 
-// ƒtƒ‰ƒXƒ^ƒ€ƒJƒŠƒ“ƒO‚ğs‚¤‚½‚ß‚ÌƒNƒ‰ƒX
+// ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚«ãƒªãƒ³ã‚°ã‚’è¡Œã†ãŸã‚ã®ã‚¯ãƒ©ã‚¹
 class FrustumCulling
 {
 public:
 	FrustumCulling() = default;
 	~FrustumCulling() = default;
 
-	//ƒrƒ…[s—ñ‚ÆƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚©‚çƒtƒ‰ƒXƒ^ƒ€‚ğ’Šo
+	//ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã‹ã‚‰ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã‚’æŠ½å‡º
 	void Construct(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection);
 
-	//‹…‚ªƒtƒ‰ƒXƒ^ƒ€“à‚É‚ ‚é‚©‚Ç‚¤‚©‚ğ”»’è‚·‚é
+	//çƒãŒãƒ•ãƒ©ã‚¹ã‚¿ãƒ å†…ã«ã‚ã‚‹ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
 	bool IssphereVisible(const DirectX::XMFLOAT3& center, float radius) const;
 
-	//AABB‚ªƒtƒ‰ƒXƒ^ƒ€“à‚É‚ ‚é‚©‚Ç‚¤‚©‚ğ”»’è‚·‚é
+	//AABBãŒãƒ•ãƒ©ã‚¹ã‚¿ãƒ å†…ã«ã‚ã‚‹ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
 	bool IsAABBVisible(const DirectX::XMFLOAT3& min, const DirectX::XMFLOAT3& max) const;
 
-	//ƒfƒoƒbƒO—p‚Ìƒtƒ‰ƒXƒ^ƒ€‚Ì•½–Ê‚ğ•\‚·\‘¢‘Ì
+	//ãƒ‡ãƒãƒƒã‚°ç”¨ã®ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã®å¹³é¢ã‚’è¡¨ã™æ§‹é€ ä½“
 	struct Plane
 	{
 		DirectX::XMFLOAT3 normal;
 		float distance;
 	};
 
-	//ƒ[ƒ‹ƒh•ÏŠ·s—ñ‚ğl—¶‚µ‚½ƒoƒEƒ“ƒfƒBƒ“ƒO‹…‘Ì‚Ì‰Â‹«ƒ`ƒFƒbƒN
+	//ãƒ¯ãƒ¼ãƒ«ãƒ‰å¤‰æ›è¡Œåˆ—ã‚’è€ƒæ…®ã—ãŸãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°çƒä½“ã®å¯è¦–æ€§ãƒã‚§ãƒƒã‚¯
 	bool IsTransformedSphereVisible(const DirectX::XMFLOAT3& center, float radius, const DirectX::XMFLOAT4X4& worldTransform) const;
 
 private:
-	Plane planes[6]; //ƒtƒ‰ƒXƒ^ƒ€‚Ì6‚Â‚Ì•½–Ê(¶A‰EAãA‰ºA‘OAŒã)
+	Plane planes[6]; //ãƒ•ãƒ©ã‚¹ã‚¿ãƒ ã®6ã¤ã®å¹³é¢(å·¦ã€å³ã€ä¸Šã€ä¸‹ã€å‰ã€å¾Œ)
 
-	//•½–Ê‚Æ“_‚Ì‹——£‚ğŒvZ
+	//å¹³é¢ã¨ç‚¹ã®è·é›¢ã‚’è¨ˆç®—
 	float DistanceToPlane(const Plane& plane, const DirectX::XMFLOAT3& point) const;
 };

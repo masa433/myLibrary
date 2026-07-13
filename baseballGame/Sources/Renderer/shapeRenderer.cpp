@@ -1,13 +1,13 @@
-#include <memory>
+ï»¿#include <memory>
 #include "Misc.h"
 #include "texture.h"
 #include "shader.h"
 #include "ShapeRenderer.h"
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 ShapeRenderer::ShapeRenderer(ID3D11Device* device)
 {
-	// “ü—ÍƒŒƒCƒAƒEƒg
+	// å…¥åŠ›ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆ
 	D3D11_INPUT_ELEMENT_DESC wiredInputElementDesc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -18,7 +18,7 @@ ShapeRenderer::ShapeRenderer(ID3D11Device* device)
 		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	// ’¸“_ƒVƒF[ƒ_[
+	// é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 	create_vs_from_cso(
 		device,
 		".\\resources\\shader\\WiredShapeRendererVS.cso",
@@ -35,7 +35,7 @@ ShapeRenderer::ShapeRenderer(ID3D11Device* device)
 		solidInputElementDesc,
 		_countof(solidInputElementDesc));
 
-	// ƒsƒNƒZƒ‹ƒVƒF[ƒ_[
+	// ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 	create_ps_from_cso(
 		device,
 		".\\resources\\shader\\WiredShapeRendererPS.cso",
@@ -47,7 +47,7 @@ ShapeRenderer::ShapeRenderer(ID3D11Device* device)
 		solidPixelShader.GetAddressOf());
 
 
-	// ’è”ƒoƒbƒtƒ@
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	D3D11_BUFFER_DESC bufferDesc = {};
 	bufferDesc.ByteWidth = sizeof(CbWiredMesh);
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -59,7 +59,7 @@ ShapeRenderer::ShapeRenderer(ID3D11Device* device)
 	HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, wiredConstantBuffer.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	// ’è”ƒoƒbƒtƒ@
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	//D3D11_BUFFER_DESC bufferDesc = {};
 	bufferDesc.ByteWidth = sizeof(CbSolidMesh);
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -71,38 +71,38 @@ ShapeRenderer::ShapeRenderer(ID3D11Device* device)
 	hr = device->CreateBuffer(&bufferDesc, nullptr, solidConstantBuffer.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	// ” ƒƒbƒVƒ…¶¬
+	// ç®±ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	CreateWiredBoxMesh(device, 1.0f, 1.0f, 1.0f);
 	CreateSolidBoxMesh(device, 1.0f, 1.0f, 1.0f);
 
-	// ‹…ƒƒbƒVƒ…¶¬
+	// çƒãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	CreateWiredSphereMesh(device, 1.0f, 32);
 	CreateSolidSphereMesh(device, 1.0f, 32);
 
-	// ”¼‹…ƒƒbƒVƒ…¶¬
+	// åŠçƒãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	CreateWiredHalfSphereMesh(device, 1.0f, 32);
 	CreateSolidHalfSphereMesh(device, 1.0f, 32);
 
-	// ‰~’ŒƒƒbƒVƒ…¶¬
+	// å††æŸ±ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	CreateWiredCylinderMesh(device, 1.0f, 1.0f, -0.5f, 1.0f, 32);
 	CreateSolidCylinderMesh(device, 1.0f, 1.0f, -0.5f, 1.0f, 32, false);
 
-	//‰~ƒƒbƒVƒ…¶¬
+	//å††éŒãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	CreateWiredCylinderMesh(device, 1.0f, 0.0f, 0.0f, 1.0f, 16, wiredConeMesh);
 	CreateSolidCylinderMesh(device, 1.0f, 0.0f, 0.0f, 1.0f, 16, true, solidConeMesh);
 }
 
-//ƒ|ƒCƒ“ƒgƒ‰ƒCƒg•`‰æ
+//ãƒã‚¤ãƒ³ãƒˆãƒ©ã‚¤ãƒˆæç”»
 void ShapeRenderer::DrawPointLight(
 	const DirectX::XMFLOAT3& position,
 	float radius,
 	const DirectX::XMFLOAT4& color)
 {
-	// ‹…‘Ì‚ÅŒõŒ¹ˆÊ’u‚ğ•\¦
+	// çƒä½“ã§å…‰æºä½ç½®ã‚’è¡¨ç¤º
 	DrawSphere(position, radius, color);
 }
 
-//ƒXƒ|ƒbƒgƒ‰ƒCƒg•`‰æ
+//ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆæç”»
 void ShapeRenderer::DrawSpotLight(
 	const DirectX::XMFLOAT3& position,
 	const DirectX::XMFLOAT3& direction,
@@ -113,28 +113,28 @@ void ShapeRenderer::DrawSpotLight(
 {
 	using namespace DirectX;
 
-	//•ûŒü‚ğ³‹K‰»
+	//æ–¹å‘ã‚’æ­£è¦åŒ–
 	XMVECTOR dir = XMVector3Normalize(XMLoadFloat3(&direction));
 	XMVECTOR pos = XMLoadFloat3(&position);
 
-	//Œõ‚ÌŒü‚«‚ğ‰Â‹‰»‚·‚éü
+	//å…‰ã®å‘ãã‚’å¯è¦–åŒ–ã™ã‚‹ç·š
 	{
 		Instance& instance = instances.emplace_back();
 		instance.wiredMesh = nullptr;
 		instance.solidMesh = nullptr;
-		//ü‚Íprimitive renderer‚Å•`‰æ‚·‚é‚½‚ßAƒƒbƒVƒ…‚Íİ’è‚µ‚È‚¢
+		//ç·šã¯primitive rendererã§æç”»ã™ã‚‹ãŸã‚ã€ãƒ¡ãƒƒã‚·ãƒ¥ã¯è¨­å®šã—ãªã„
 	}
 
-	//ŠO‘¤‰~
+	//å¤–å´å††éŒ
 	{
 		Instance& instance = instances.emplace_back();
 		instance.wiredMesh = &wiredConeMesh;
-		instance.solidMesh = nullptr; // ƒƒCƒ„[‚Ì‚İ
+		instance.solidMesh = nullptr; // ãƒ¯ã‚¤ãƒ¤ãƒ¼ã®ã¿
 		instance.color = color;
 
 		float coneRadius = range * std::tan(outerAngle);
 
-		//ƒfƒtƒHƒ‹ƒg‚ÌƒVƒŠƒ“ƒ_[‚Íy²•ûŒü‚È‚Ì‚ÅAdir‚ÉŒü‚¯‚Ä‰ñ“]
+		//ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®ã‚·ãƒªãƒ³ãƒ€ãƒ¼ã¯yè»¸æ–¹å‘ãªã®ã§ã€dirã«å‘ã‘ã¦å›è»¢
 		XMVECTOR up = XMVectorSet(0, 1, 0, 0);
 		XMVECTOR rotAxis = XMVector3Cross(up, dir);
 		float rotAngle = std::acos(XMVectorGetX(XMVector3Dot(up, dir)));
@@ -142,7 +142,7 @@ void ShapeRenderer::DrawSpotLight(
 		XMMATRIX R;
 		if(XMVector3LengthSq(rotAxis).m128_f32[0] < 1e-6f)
 		{
-			// dir‚ªY²‚Æ•½s‚Èê‡
+			// dirãŒYè»¸ã¨å¹³è¡Œãªå ´åˆ
 			R = XMMatrixRotationX(rotAngle > 1.0f ? XM_PI : 0.0f);
 		}
 		else
@@ -157,12 +157,12 @@ void ShapeRenderer::DrawSpotLight(
 		XMStoreFloat4x4(&instance.worldTransform, S * R * T);
 	}
 
-	// ===== 3. “à‘¤‰~ =====
+	// ===== 3. å†…å´å††éŒ =====
 	{
 		Instance& instance = instances.emplace_back();
 		instance.wiredMesh = &wiredConeMesh;
 		instance.solidMesh = nullptr;
-		instance.color = { color.x, color.y, color.z, color.w * 0.5f }; // ­‚µ”–‚­
+		instance.color = { color.x, color.y, color.z, color.w * 0.5f }; // å°‘ã—è–„ã
 
 		float innerRadius = range * std::tan(innerAngle);
 
@@ -189,7 +189,7 @@ void ShapeRenderer::DrawSpotLight(
 	}
 }
 
-// ” •`‰æ
+// ç®±æç”»
 void ShapeRenderer::DrawBox(
 	const DirectX::XMFLOAT3& position,
 	const DirectX::XMFLOAT3& angle,
@@ -224,7 +224,7 @@ void ShapeRenderer::DrawBox(
 	DirectX::XMStoreFloat4x4(&instance.worldTransform, Transform);
 }
 
-// ‹…•`‰æ
+// çƒæç”»
 void ShapeRenderer::DrawSphere(
 	const DirectX::XMFLOAT3& position,
 	float radius,
@@ -257,7 +257,7 @@ void ShapeRenderer::DrawSphere(
 	DirectX::XMStoreFloat4x4(&instance.worldTransform, Transform);
 }
 
-// ƒJƒvƒZƒ‹•`‰æ
+// ã‚«ãƒ—ã‚»ãƒ«æç”»
 void ShapeRenderer::DrawCapsule(
 	const DirectX::XMFLOAT4X4& transform,
 	float radius,
@@ -266,7 +266,7 @@ void ShapeRenderer::DrawCapsule(
 {
 	DirectX::XMMATRIX Transform = DirectX::XMLoadFloat4x4(&transform);
 
-	// ã”¼‹…
+	// ä¸ŠåŠçƒ
 	{
 		Instance& instance = instances.emplace_back();
 		instance.wiredMesh = &wiredHalfSphereMesh;
@@ -278,7 +278,7 @@ void ShapeRenderer::DrawCapsule(
 		DirectX::XMStoreFloat4x4(&instance.worldTransform, World);
 		instance.color = color;
 	}
-	// ‰~’Œ
+	// å††æŸ±
 	{
 		Instance& instance = instances.emplace_back();
 		instance.wiredMesh = &wiredCylinderMesh;
@@ -291,7 +291,7 @@ void ShapeRenderer::DrawCapsule(
 		DirectX::XMStoreFloat4x4(&instance.worldTransform, World);
 		instance.color = color;
 	}
-	// ‰º”¼‹…
+	// ä¸‹åŠçƒ
 	{
 		Instance& instance = instances.emplace_back();
 		instance.wiredMesh = &wiredHalfSphereMesh;
@@ -309,7 +309,7 @@ void ShapeRenderer::DrawCapsule(
 	}
 }
 
-// ƒƒbƒVƒ…¶¬
+// ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 void ShapeRenderer::CreateWiredMesh(ID3D11Device* device, const std::vector<DirectX::XMFLOAT3>& vertices, WiredMesh& mesh)
 {
 	D3D11_BUFFER_DESC desc = {};
@@ -369,7 +369,7 @@ void ShapeRenderer::CreateSolidMesh(ID3D11Device* device, const std::vector<Vert
 	mesh.indexCount = static_cast<UINT>(indices.size());
 }
 
-// ” ƒƒbƒVƒ…ì¬
+// ç®±ãƒ¡ãƒƒã‚·ãƒ¥ä½œæˆ
 void ShapeRenderer::CreateWiredBoxMesh(ID3D11Device* device, float width, float height, float depth)
 {
 	DirectX::XMFLOAT3 positions[8] =
@@ -417,72 +417,72 @@ void ShapeRenderer::CreateWiredBoxMesh(ID3D11Device* device, float width, float 
 	vertices.emplace_back(positions[3]);
 	vertices.emplace_back(positions[7]);
 
-	// ƒƒbƒVƒ…¶¬
+	// ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	CreateWiredMesh(device, vertices, wiredBoxMesh);
 }
 
 void ShapeRenderer::CreateSolidBoxMesh(ID3D11Device* device, float width, float height, float depth)
 {
-	// ’¸“_ƒf[ƒ^‚Ì’è‹`
+	// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ã®å®šç¾©
 	//     ___________
-	//   ^|        ^|
-	// ^__|______^  |
+	//   ï¼|        ï¼|
+	// ï¼__|______ï¼  |
 	// |   |_____|____|
-	// |  ^     |  ^
-	// |^_______|^
+	// |  ï¼     |  ï¼
+	// |ï¼_______|ï¼
 	//            
-	// ’¸“_ƒf[ƒ^‚É–@üƒf[ƒ^‚ğ’è‹`‚·‚é
+	// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ã«æ³•ç·šãƒ‡ãƒ¼ã‚¿ã‚’å®šç¾©ã™ã‚‹
 	std::vector<Vertex> vertices = {
-		// ³–Ê
+		// æ­£é¢
 		{ DirectX::XMFLOAT3(-width, +height, -depth), DirectX::XMFLOAT3(0, 0, -1) },
 		{ DirectX::XMFLOAT3(+width, +height, -depth), DirectX::XMFLOAT3(0, 0, -1) },
 		{ DirectX::XMFLOAT3(-width, -height, -depth), DirectX::XMFLOAT3(0, 0, -1) },
 		{ DirectX::XMFLOAT3(+width, -height, -depth), DirectX::XMFLOAT3(0, 0, -1) },
-		// ”w–Ê
+		// èƒŒé¢
 		{ DirectX::XMFLOAT3(-width, +height, +depth), DirectX::XMFLOAT3(0, 0, 1) },
 		{ DirectX::XMFLOAT3(+width, +height, +depth), DirectX::XMFLOAT3(0, 0, 1) },
 		{ DirectX::XMFLOAT3(-width, -height, +depth), DirectX::XMFLOAT3(0, 0, 1) },
 		{ DirectX::XMFLOAT3(+width, -height, +depth), DirectX::XMFLOAT3(0, 0, 1) },
-		// ‰E–Ê
+		// å³é¢
 		{ DirectX::XMFLOAT3(+width, +height, -depth), DirectX::XMFLOAT3(1, 0, 0) },
 		{ DirectX::XMFLOAT3(+width, +height, +depth), DirectX::XMFLOAT3(1, 0, 0) },
 		{ DirectX::XMFLOAT3(+width, -height, -depth), DirectX::XMFLOAT3(1, 0, 0) },
 		{ DirectX::XMFLOAT3(+width, -height, +depth), DirectX::XMFLOAT3(1, 0, 0) },
-		// ¶–Ê
+		// å·¦é¢
 		{ DirectX::XMFLOAT3(-width, +height, -depth), DirectX::XMFLOAT3(-1, 0, 0) },
 		{ DirectX::XMFLOAT3(-width, +height, +depth), DirectX::XMFLOAT3(-1, 0, 0) },
 		{ DirectX::XMFLOAT3(-width, -height, -depth), DirectX::XMFLOAT3(-1, 0, 0) },
 		{ DirectX::XMFLOAT3(-width, -height, +depth), DirectX::XMFLOAT3(-1, 0, 0) },
-		// ã–Ê
+		// ä¸Šé¢
 		{ DirectX::XMFLOAT3(-width, +height, +depth), DirectX::XMFLOAT3(0, 1, 0) },
 		{ DirectX::XMFLOAT3(+width, +height, +depth), DirectX::XMFLOAT3(0, 1, 0) },
 		{ DirectX::XMFLOAT3(-width, +height, -depth), DirectX::XMFLOAT3(0, 1, 0) },
 		{ DirectX::XMFLOAT3(+width, +height, -depth), DirectX::XMFLOAT3(0, 1, 0) },
-		// ‰º–Ê
+		// ä¸‹é¢
 		{ DirectX::XMFLOAT3(-width, -height, +depth), DirectX::XMFLOAT3(0, -1, 0) },
 		{ DirectX::XMFLOAT3(+width, -height, +depth), DirectX::XMFLOAT3(0, -1, 0) },
 		{ DirectX::XMFLOAT3(-width, -height, -depth), DirectX::XMFLOAT3(0, -1, 0) },
 		{ DirectX::XMFLOAT3(+width, -height, -depth), DirectX::XMFLOAT3(0, -1, 0) },
 	};
 
-	// ƒCƒ“ƒfƒbƒNƒXƒf[ƒ^
+	// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒ‡ãƒ¼ã‚¿
 	std::vector<uint16_t> indices = {
-		// ³–Ê
+		// æ­£é¢
 		0, 1, 2,
 		2, 1, 3,
-		// ”w–Ê
+		// èƒŒé¢
 		5, 4, 7,
 		7, 4, 6,
-		// ‰E–Ê
+		// å³é¢
 		8, 9, 10,
 		10, 9, 11,
-		// ¶–Ê
+		// å·¦é¢
 		13, 12, 15,
 		15, 12, 14,
-		// ã–Ê
+		// ä¸Šé¢
 		16, 17, 18,
 		18, 17, 19,
-		// ‰º–Ê
+		// ä¸‹é¢
 		21, 20, 23,
 		23, 20, 22,
 	};
@@ -491,14 +491,14 @@ void ShapeRenderer::CreateSolidBoxMesh(ID3D11Device* device, float width, float 
 }
 
 
-// ‹…ƒƒbƒVƒ…ì¬
+// çƒãƒ¡ãƒƒã‚·ãƒ¥ä½œæˆ
 void ShapeRenderer::CreateWiredSphereMesh(ID3D11Device* device, float radius, int subdivisions)
 {
 	float step = DirectX::XM_2PI / subdivisions;
 
 	std::vector<DirectX::XMFLOAT3> vertices;
 
-	// XZ•½–Ê
+	// XZå¹³é¢
 	for (int i = 0; i < subdivisions; ++i)
 	{
 		for (int j = 0; j < 2; ++j)
@@ -511,7 +511,7 @@ void ShapeRenderer::CreateWiredSphereMesh(ID3D11Device* device, float radius, in
 			p.z = cosf(theta) * radius;
 		}
 	}
-	// XY•½–Ê
+	// XYå¹³é¢
 	for (int i = 0; i < subdivisions; ++i)
 	{
 		for (int j = 0; j < 2; ++j)
@@ -524,7 +524,7 @@ void ShapeRenderer::CreateWiredSphereMesh(ID3D11Device* device, float radius, in
 			p.z = 0.0f;
 		}
 	}
-	// YZ•½–Ê
+	// YZå¹³é¢
 	for (int i = 0; i < subdivisions; ++i)
 	{
 		for (int j = 0; j < 2; ++j)
@@ -538,7 +538,7 @@ void ShapeRenderer::CreateWiredSphereMesh(ID3D11Device* device, float radius, in
 		}
 	}
 
-	// ƒƒbƒVƒ…¶¬
+	// ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	CreateWiredMesh(device, vertices, wiredSphereMesh);
 }
 
@@ -679,14 +679,14 @@ void ShapeRenderer::CreateSolidSphereMesh(ID3D11Device* device, float radius, in
 	CreateSolidMesh(device, vertices, indices, solidSphereMesh);
 }
 
-// ”¼‹…ƒƒbƒVƒ…ì¬
+// åŠçƒãƒ¡ãƒƒã‚·ãƒ¥ä½œæˆ
 void ShapeRenderer::CreateWiredHalfSphereMesh(ID3D11Device* device, float radius, int subdivisions)
 {
 	std::vector<DirectX::XMFLOAT3> vertices;
 
 	float theta_step = DirectX::XM_2PI / subdivisions;
 
-	// XZ•½–Ê
+	// XZå¹³é¢
 	for (int i = 0; i < subdivisions; ++i)
 	{
 		for (int j = 0; j < 2; ++j)
@@ -700,7 +700,7 @@ void ShapeRenderer::CreateWiredHalfSphereMesh(ID3D11Device* device, float radius
 			v.z = cosf(theta) * radius;
 		}
 	}
-	// XY•½–Ê
+	// XYå¹³é¢
 	for (int i = 0; i < subdivisions / 2; ++i)
 	{
 		for (int j = 0; j < 2; ++j)
@@ -714,7 +714,7 @@ void ShapeRenderer::CreateWiredHalfSphereMesh(ID3D11Device* device, float radius
 			v.z = 0.0f;
 		}
 	}
-	// YZ•½–Ê
+	// YZå¹³é¢
 	for (int i = 0; i < subdivisions / 2; ++i)
 	{
 		for (int j = 0; j < 2; ++j)
@@ -729,7 +729,7 @@ void ShapeRenderer::CreateWiredHalfSphereMesh(ID3D11Device* device, float radius
 		}
 	}
 
-	// ƒƒbƒVƒ…¶¬
+	// ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	CreateWiredMesh(device, vertices, wiredHalfSphereMesh);
 }
 
@@ -847,14 +847,14 @@ void ShapeRenderer::CreateSolidHalfSphereMesh(ID3D11Device* device, float radius
 	CreateSolidMesh(device, vertices, indices, solidHalfSphereMesh);
 }
 
-// ‰~’Œ
+// å††æŸ±
 void ShapeRenderer::CreateWiredCylinderMesh(ID3D11Device* device, float radius1, float radius2, float start, float height, int subdivisions)
 {
 	std::vector<DirectX::XMFLOAT3> vertices;
 
 	float theta_step = DirectX::XM_2PI / subdivisions;
 
-	// XZ•½–Ê
+	// XZå¹³é¢
 	for (int i = 0; i < subdivisions; ++i)
 	{
 		for (int j = 0; j < 2; ++j)
@@ -881,14 +881,14 @@ void ShapeRenderer::CreateWiredCylinderMesh(ID3D11Device* device, float radius1,
 			v.z = cosf(theta) * radius2;
 		}
 	}
-	// XY•½–Ê
+	// XYå¹³é¢
 	{
 		vertices.emplace_back(DirectX::XMFLOAT3(0.0f, start, radius1));
 		vertices.emplace_back(DirectX::XMFLOAT3(0.0f, start + height, radius2));
 		vertices.emplace_back(DirectX::XMFLOAT3(0.0f, start, -radius1));
 		vertices.emplace_back(DirectX::XMFLOAT3(0.0f, start + height, -radius2));
 	}
-	// YZ•½–Ê
+	// YZå¹³é¢
 	{
 		vertices.emplace_back(DirectX::XMFLOAT3(radius1, start, 0.0f));
 		vertices.emplace_back(DirectX::XMFLOAT3(radius2, start + height, 0.0f));
@@ -896,7 +896,7 @@ void ShapeRenderer::CreateWiredCylinderMesh(ID3D11Device* device, float radius1,
 		vertices.emplace_back(DirectX::XMFLOAT3(-radius2, start + height, 0.0f));
 	}
 
-	// ƒƒbƒVƒ…¶¬
+	// ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	CreateWiredMesh(device, vertices, wiredCylinderMesh);
 }
 
@@ -906,7 +906,7 @@ void ShapeRenderer::CreateWiredCylinderMesh(ID3D11Device* device, float radius1,
 
 	float theta_step = DirectX::XM_2PI / subdivisions;
 
-	// XZ•½–Ê
+	// XZå¹³é¢
 	for (int i = 0; i < subdivisions; ++i)
 	{
 		for (int j = 0; j < 2; ++j)
@@ -933,14 +933,14 @@ void ShapeRenderer::CreateWiredCylinderMesh(ID3D11Device* device, float radius1,
 			v.z = cosf(theta) * radius2;
 		}
 	}
-	// XY•½–Ê
+	// XYå¹³é¢
 	{
 		vertices.emplace_back(DirectX::XMFLOAT3(0.0f, start, radius1));
 		vertices.emplace_back(DirectX::XMFLOAT3(0.0f, start + height, radius2));
 		vertices.emplace_back(DirectX::XMFLOAT3(0.0f, start, -radius1));
 		vertices.emplace_back(DirectX::XMFLOAT3(0.0f, start + height, -radius2));
 	}
-	// YZ•½–Ê
+	// YZå¹³é¢
 	{
 		vertices.emplace_back(DirectX::XMFLOAT3(radius1, start, 0.0f));
 		vertices.emplace_back(DirectX::XMFLOAT3(radius2, start + height, 0.0f));
@@ -948,7 +948,7 @@ void ShapeRenderer::CreateWiredCylinderMesh(ID3D11Device* device, float radius1,
 		vertices.emplace_back(DirectX::XMFLOAT3(-radius2, start + height, 0.0f));
 	}
 
-	// ƒƒbƒVƒ…¶¬
+	// ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	CreateWiredMesh(device, vertices, outMesh);
 }
 
@@ -1376,30 +1376,30 @@ void ShapeRenderer::CreateSolidCylinderMesh(ID3D11Device* device, float radius1,
 	CreateSolidMesh(device, vertices, indices, outMesh);
 }
 
-// •`‰æÀs
+// æç”»å®Ÿè¡Œ
 void ShapeRenderer::Render(
 	ID3D11DeviceContext* dc,
 	const DirectX::XMFLOAT4X4& view,
 	const DirectX::XMFLOAT4X4& projection,
 	const DirectX::XMFLOAT3& lightDirection)
 {
-	// ƒrƒ…[ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñì¬
+	// ãƒ“ãƒ¥ãƒ¼ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ä½œæˆ
 	DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&view);
 	DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&projection);
 	DirectX::XMMATRIX VP = V * P;
 
-	// ƒ\ƒŠƒbƒh
+	// ã‚½ãƒªãƒƒãƒ‰
 	{
-		// ƒVƒF[ƒ_[İ’è
+		// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼è¨­å®š
 		dc->VSSetShader(solidVertexShader.Get(), nullptr, 0);
 		dc->PSSetShader(solidPixelShader.Get(), nullptr, 0);
 		dc->IASetInputLayout(solidInputLayout.Get());
 
-		// ’è”ƒoƒbƒtƒ@İ’è
+		// å®šæ•°ãƒãƒƒãƒ•ã‚¡è¨­å®š
 		dc->VSSetConstantBuffers(0, 1, solidConstantBuffer.GetAddressOf());
 		dc->PSSetConstantBuffers(0, 1, solidConstantBuffer.GetAddressOf());
 
-		// ƒvƒŠƒ~ƒeƒBƒuİ’è
+		// ãƒ—ãƒªãƒŸãƒ†ã‚£ãƒ–è¨­å®š
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 		dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -1411,57 +1411,57 @@ void ShapeRenderer::Render(
 		cbMesh.lightDirection.z = lightDirection.z;
 		for (const Instance& instance : instances)
 		{
-			if (!instance.solidMesh) continue; // nullƒ`ƒFƒbƒN‚ğ’Ç‰Á
+			if (!instance.solidMesh) continue; // nullãƒã‚§ãƒƒã‚¯ã‚’è¿½åŠ 
 
-			// ’è”ƒoƒbƒtƒ@XV
+			// å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–°
 			cbMesh.world = instance.worldTransform;
 			cbMesh.color = instance.color;
 			dc->UpdateSubresource(solidConstantBuffer.Get(), 0, 0, &cbMesh, 0, 0);
 
-			// ’¸“_ƒoƒbƒtƒ@İ’è
+			// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡è¨­å®š
 			dc->IASetVertexBuffers(0, 1, instance.solidMesh->vertexBuffer.GetAddressOf(), &stride, &offset);
 			dc->IASetIndexBuffer(instance.solidMesh->indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
-			// •`‰æ
+			// æç”»
 			dc->DrawIndexed(instance.solidMesh->indexCount, 0, 0);
 		}
 	}
 
-	// ƒƒCƒ„[ƒtƒŒ[ƒ€
+	// ãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ 
 	{
-		// ƒVƒF[ƒ_[İ’è
+		// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼è¨­å®š
 		dc->VSSetShader(wiredVertexShader.Get(), nullptr, 0);
 		dc->PSSetShader(wiredPixelShader.Get(), nullptr, 0);
 		dc->IASetInputLayout(wiredInputLayout.Get());
 
-		// ’è”ƒoƒbƒtƒ@İ’è
+		// å®šæ•°ãƒãƒƒãƒ•ã‚¡è¨­å®š
 		dc->VSSetConstantBuffers(0, 1, wiredConstantBuffer.GetAddressOf());
 		dc->PSSetConstantBuffers(0, 1, wiredConstantBuffer.GetAddressOf());
 
-		// ƒvƒŠƒ~ƒeƒBƒuİ’è
+		// ãƒ—ãƒªãƒŸãƒ†ã‚£ãƒ–è¨­å®š
 		UINT stride = sizeof(DirectX::XMFLOAT3);
 		UINT offset = 0;
 		dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
 		for (const Instance& instance : instances)
 		{
-			if (!instance.wiredMesh) continue; // nullƒ`ƒFƒbƒN‚ğ’Ç‰Á
+			if (!instance.wiredMesh) continue; // nullãƒã‚§ãƒƒã‚¯ã‚’è¿½åŠ 
 
-			// ƒ[ƒ‹ƒhƒrƒ…[ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñì¬
+			// ãƒ¯ãƒ¼ãƒ«ãƒ‰ãƒ“ãƒ¥ãƒ¼ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ä½œæˆ
 			DirectX::XMMATRIX W = DirectX::XMLoadFloat4x4(&instance.worldTransform);
 			DirectX::XMMATRIX WVP = W * VP;
 
-			// ’è”ƒoƒbƒtƒ@XV
+			// å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–°
 			CbWiredMesh cbMesh;
 			DirectX::XMStoreFloat4x4(&cbMesh.worldViewProjection, WVP);
 			cbMesh.color = instance.color;
 			cbMesh.color.w = 1.0f;
 			dc->UpdateSubresource(wiredConstantBuffer.Get(), 0, 0, &cbMesh, 0, 0);
 
-			// ’¸“_ƒoƒbƒtƒ@İ’è
+			// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡è¨­å®š
 			dc->IASetVertexBuffers(0, 1, instance.wiredMesh->vertexBuffer.GetAddressOf(), &stride, &offset);
 
-			// •`‰æ
+			// æç”»
 			dc->Draw(instance.wiredMesh->vertexCount, 0);
 		}
 	}

@@ -1,12 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include <vector>
 #include <DirectXMath.h>
 #include <PxPhysicsAPI.h>
 #include <string>
 
-
-// フィジクス
 class Physics 
 	:public physx::PxSimulationEventCallback
 	
@@ -16,55 +14,47 @@ private:
 	~Physics() = default;
 
 public:
-	// インスタンス取得
+	//インスタンス
 	static Physics& Instance()
 	{
 		static Physics instance;
 		return instance;
 	}
 
-	// 初期化
+	//初期化
 	void Initialize();
 
-	// 終了化
+	//終了化
 	void Finalize();
 
-	// 更新処理
+	//更新処理
 	void Update(float elapsedTime);
 
-	// 描画処理
+	//描画処理
 	void Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection, const DirectX::XMFLOAT3& lightDirection);
 
-	// 描画オプション設定
+	//描画オプション設定
 	void SetRenderSimpleShapesOnly(bool enable) { renderSimpleShapesOnly = enable; }
 	void SetSkipSleepingActors(bool enable) { skipSleepingActors = enable; }
 	bool GetRenderSimpleShapesOnly() const { return renderSimpleShapesOnly; }
 	bool GetSkipSleepingActors() const { return skipSleepingActors; }
 
-	// フィジクス取得
+	//Physics取得
 	physx::PxPhysics* GetPhysics() { return pxPhysics; }
 
-	// シーン取得
+	//シーン取得
 	physx::PxScene* GetScene() { return pxScene; }
 
-	// コントローラーマネージャー取得
+	//コントローラーマネージャー取得
 	physx::PxControllerManager* GetControllerManager() { return pxControllerManager; }
 
-	// マテリアル取得
+	//マテリアル取得
 	physx::PxMaterial* GetMaterial() { return pxMaterial; }
 
-	bool IsBoxCollider(physx::PxActor* actor);
-
 protected:
-	//--------------------------
-	// NOTE:③フィルタリングインターフェース関数
-	//--------------------------
-	//physx::PxQueryHitType::Enum preFilter(const physx::PxFilterData& filterData, const physx::PxShape* shape, const physx::PxRigidActor* actor, physx::PxHitFlags& queryFlags) override;
-	//physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit, const physx::PxShape* shape, const physx::PxRigidActor* actor) override;
+	
 
-	//--------------------------
-	// NOTE:⑦衝突イベントインターフェース関数
-	//--------------------------
+	//衝突イベントインターフェース関数
 	void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) override {};
 	void onWake(physx::PxActor** actors, physx::PxU32 count) override {};
 	void onSleep(physx::PxActor** actors, physx::PxU32 count) override {};
@@ -73,9 +63,8 @@ protected:
 	void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) override {};
 
 private:
-	//--------------------------
-	// NOTE:⑧衝突検出フィルタリング
-	//--------------------------
+
+	//衝突検出フィルタリング
 	static physx::PxFilterFlags SimulationFilterShader(
 		physx::PxFilterObjectAttributes	attributes0, physx::PxFilterData filterData0,
 		physx::PxFilterObjectAttributes	attributes1, physx::PxFilterData	filterData1,
@@ -117,7 +106,7 @@ private:
 	bool skipSleepingActors = false;
 
 public:
-	// コンソールログへのポインタをセット
+	//コンソールログへのポインタ
 	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
 
 private:
@@ -137,7 +126,7 @@ public:
 	float outAngle = 0.0f; //打球角度
 	float outDirection = 0.0f; //打球方向
 
-	//確信ホームランかどうかを判定するフラグとゲッター
+	//確信ホームランかどうかを判定する変数とゲッター
 	bool isHomeRun = false;
 	bool GetIsHomeRun() const { return isHomeRun; }
 	void SetIsHomeRun(bool value) { isHomeRun = value; }

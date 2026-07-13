@@ -1,9 +1,9 @@
-#include "Misc.h"
+ï»¿#include "Misc.h"
 #include "texture.h"
 #include "shader.h"
 #include "PrimitiveRenderer.h"
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device)
 {
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[]
@@ -11,7 +11,7 @@ PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device)
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	// ’¸“_ƒVƒF[ƒ_[
+	// é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 	create_vs_from_cso(
 		device,
 		".\\resources\\shader\\PrimitiveRendererVS.cso",
@@ -21,13 +21,13 @@ PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device)
 		_countof(inputElementDesc)
 		);
 
-	// ƒsƒNƒZƒ‹ƒVƒF[ƒ_[
+	// ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 	create_ps_from_cso(
 		device,
 		".\\resources\\shader\\PrimitiveRendererPS.cso",
 		pixelShader.GetAddressOf());
 
-	// ’è”ƒoƒbƒtƒ@
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	D3D11_BUFFER_DESC bufferDesc = {};
 	bufferDesc.ByteWidth = sizeof(CbScene);
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -39,7 +39,7 @@ PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device)
 	HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, constantBuffer.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	// ’¸“_ƒoƒbƒtƒ@
+	// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡
 	D3D11_BUFFER_DESC desc;
 	desc.ByteWidth = sizeof(Vertex) * VertexCapacity;
 	desc.Usage = D3D11_USAGE_DYNAMIC;
@@ -51,7 +51,7 @@ PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device)
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 }
 
-// ’¸“_’Ç‰Á
+// é ‚ç‚¹è¿½åŠ 
 void PrimitiveRenderer::AddVertex(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& color)
 {
 	Vertex& v = vertices.emplace_back();
@@ -59,7 +59,7 @@ void PrimitiveRenderer::AddVertex(const DirectX::XMFLOAT3& position, const Direc
 	v.color = color;
 }
 
-// ²•`‰æ
+// è»¸æç”»
 void PrimitiveRenderer::DrawAxis(const DirectX::XMFLOAT4X4& transform, const DirectX::XMFLOAT4& color)
 {
 	DirectX::XMMATRIX W = DirectX::XMLoadFloat4x4(&transform);
@@ -76,7 +76,7 @@ void PrimitiveRenderer::DrawAxis(const DirectX::XMFLOAT4X4& transform, const Dir
 	AddVertex(z, { 0, 0, 1, 1 });
 }
 
-// ƒOƒŠƒbƒh•`‰æ
+// ã‚°ãƒªãƒƒãƒ‰æç”»
 void PrimitiveRenderer::DrawGrid(int subdivisions, float scale)
 {
 	int numLines = (subdivisions + 1) * 2;
@@ -127,7 +127,7 @@ void PrimitiveRenderer::DrawGrid(int subdivisions, float scale)
 		s += step;
 	}
 
-	// X²
+	// Xè»¸
 	{
 		const DirectX::XMFLOAT4 red = DirectX::XMFLOAT4(1, 0, 0, 1);
 		V = DirectX::XMVectorSet(0, 0, 0, 0);
@@ -141,7 +141,7 @@ void PrimitiveRenderer::DrawGrid(int subdivisions, float scale)
 		AddVertex(position, red);
 	}
 
-	// Y²
+	// Yè»¸
 	{
 		const DirectX::XMFLOAT4 green = DirectX::XMFLOAT4(0, 1, 0, 1);
 		V = DirectX::XMVectorSet(0, 0, 0, 0);
@@ -155,7 +155,7 @@ void PrimitiveRenderer::DrawGrid(int subdivisions, float scale)
 		AddVertex(position, green);
 	}
 
-	// Z²
+	// Zè»¸
 	{
 		const DirectX::XMFLOAT4 blue = DirectX::XMFLOAT4(0, 0, 1, 1);
 		V = DirectX::XMVectorSet(0, 0, 0, 0);
@@ -170,38 +170,38 @@ void PrimitiveRenderer::DrawGrid(int subdivisions, float scale)
 	}
 }
 
-// •`‰æÀs
+// æç”»å®Ÿè¡Œ
 void PrimitiveRenderer::Render(
 	ID3D11DeviceContext* dc,
 	const DirectX::XMFLOAT4X4& view,
 	const DirectX::XMFLOAT4X4& projection,
 	D3D11_PRIMITIVE_TOPOLOGY primitiveTopology)
 {
-	// ƒVƒF[ƒ_[İ’è
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼è¨­å®š
 	dc->VSSetShader(vertexShader.Get(), nullptr, 0);
 	dc->PSSetShader(pixelShader.Get(), nullptr, 0);
 	dc->IASetInputLayout(inputLayout.Get());
 
-	// ’è”ƒoƒbƒtƒ@İ’è
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡è¨­å®š
 	dc->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
-	// ƒrƒ…[ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñì¬
+	// ãƒ“ãƒ¥ãƒ¼ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ä½œæˆ
 	DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&view);
 	DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&projection);
 	DirectX::XMMATRIX VP = V * P;
 
-	// ’è”ƒoƒbƒtƒ@XV
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–°
 	CbScene cbScene;
 	DirectX::XMStoreFloat4x4(&cbScene.viewProjection, VP);
 	dc->UpdateSubresource(constantBuffer.Get(), 0, 0, &cbScene, 0, 0);
 
-	// ’¸“_ƒoƒbƒtƒ@İ’è
+	// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡è¨­å®š
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	dc->IASetPrimitiveTopology(primitiveTopology);
 	dc->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 
-	// •`‰æ
+	// æç”»
 	UINT totalVertexCount = static_cast<UINT>(vertices.size());
 	UINT start = 0;
 	UINT count = (totalVertexCount < VertexCapacity) ? totalVertexCount : VertexCapacity;

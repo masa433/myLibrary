@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <d3d11.h>
 #include <wrl.h>
 #include <DirectXMath.h>
@@ -14,7 +14,7 @@ using json = nlohmann::json;
 class HomeRunCount
 {
 public:
-	//ƒCƒ“ƒXƒ^ƒ“ƒX
+	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	static HomeRunCount& Instance()
 	{
 		static HomeRunCount instance;
@@ -34,10 +34,10 @@ public:
 	void ResetCount() { homeRunCount = 0; }
 
 private:
-	int homeRunCount = 0;//ƒz[ƒ€ƒ‰ƒ“”‚ğ•Û‚·‚é•Ï”
-	int previousHomeRunCount = 0;//‘O‰ñ‚Ìƒz[ƒ€ƒ‰ƒ“”‚ğ•Û‚·‚é•Ï”
+	int homeRunCount = 0;//ãƒ›ãƒ¼ãƒ ãƒ©ãƒ³æ•°ã‚’ä¿æŒã™ã‚‹å¤‰æ•°
+	int previousHomeRunCount = 0;//å‰å›ã®ãƒ›ãƒ¼ãƒ ãƒ©ãƒ³æ•°ã‚’ä¿æŒã™ã‚‹å¤‰æ•°
 
-	//ƒXƒvƒ‰ƒCƒgƒf[ƒ^
+	//ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒ‡ãƒ¼ã‚¿
 	struct Sprite
 	{
 		std::wstring texturePath;
@@ -53,12 +53,12 @@ private:
 	FontRenderer homeRunCountFont;
 	FontRenderer homeRunCountLabelFont;
 
-	// ƒVƒF[ƒ_[ŠÖ˜A
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼é–¢é€£
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
 
-	//ƒtƒHƒ“ƒg‚ÌˆÊ’u‚âƒTƒCƒYAF‚È‚Ç‚Ìİ’è
+	//ãƒ•ã‚©ãƒ³ãƒˆã®ä½ç½®ã‚„ã‚µã‚¤ã‚ºã€è‰²ãªã©ã®è¨­å®š
 	float labelPositionX = 10.0f;
 	float labelPositionY = 10.0f;
 	float labelScale = 1.0f;
@@ -67,12 +67,12 @@ private:
 	float numberScale = 1.0f;
 	DirectX::XMFLOAT4 numberColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-	//ƒJƒEƒ“ƒgƒ|ƒbƒvƒAƒjƒ[ƒVƒ‡ƒ“
-	float numberDisplayScale = 3.0f;      // ÀÛ‚É•`‰æ‚Ég‚¤Œ»İ‚ÌƒXƒP[ƒ‹
-	float numberPopScaleMultiplier = 1.8f; // ‘‚¦‚½uŠÔ‚É‰½”{‚Ü‚Å‘å‚«‚­‚·‚é‚©
-	float numberScaleAnimSpeed = 6.0f;    // Œ³‚ÌƒTƒCƒY‚Ö–ß‚é‘¬“xi‘å‚«‚¢‚Ù‚Ç‘¬‚¢j
+	//ã‚«ã‚¦ãƒ³ãƒˆãƒãƒƒãƒ—ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
+	float numberDisplayScale = 3.0f;      // å®Ÿéš›ã«æç”»ã«ä½¿ã†ç¾åœ¨ã®ã‚¹ã‚±ãƒ¼ãƒ«
+	float numberPopScaleMultiplier = 1.8f; // å¢—ãˆãŸç¬é–“ã«ä½•å€ã¾ã§å¤§ããã™ã‚‹ã‹
+	float numberScaleAnimSpeed = 6.0f;    // å…ƒã®ã‚µã‚¤ã‚ºã¸æˆ»ã‚‹é€Ÿåº¦ï¼ˆå¤§ãã„ã»ã©é€Ÿã„ï¼‰
 
-	//“§–¾“x‚ğ™X‚É0‚É‚·‚é‚½‚ß‚Ì•Ï”
-	float numberAlpha = 1.0f; // Œ»İ‚Ì“§–¾“x
-	float alphaDecreaseSpeed = 1.0f; // “§–¾“x‚ğŒ¸­‚³‚¹‚é‘¬“xi‘å‚«‚¢‚Ù‚Ç‘¬‚¢j
+	//é€æ˜åº¦ã‚’å¾ã€…ã«0ã«ã™ã‚‹ãŸã‚ã®å¤‰æ•°
+	float numberAlpha = 1.0f; // ç¾åœ¨ã®é€æ˜åº¦
+	float alphaDecreaseSpeed = 1.0f; // é€æ˜åº¦ã‚’æ¸›å°‘ã•ã›ã‚‹é€Ÿåº¦ï¼ˆå¤§ãã„ã»ã©é€Ÿã„ï¼‰
 };

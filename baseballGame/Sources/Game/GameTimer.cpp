@@ -1,4 +1,4 @@
-#include "GameTimer.h"
+ï»¿#include "GameTimer.h"
 #include "Graphics.h"
 #include <imgui.h>
 
@@ -14,7 +14,7 @@ void GameTimer::Initialize(ID3D11Device* device)
 		input_element_desc, _countof(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
 
-	// ƒXƒvƒ‰ƒCƒg‚Ì‰Šú‰»
+	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®åˆæœŸåŒ–
 	timerSpriteData = std::make_unique<Sprite>();
 	timerSpriteData->texturePath = L".\\resources\\textures\\timerBoard.png";
 	timerSpriteData->position = { 10.0f, 10.0f };
@@ -23,7 +23,7 @@ void GameTimer::Initialize(ID3D11Device* device)
 	timerSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	timerSprite = std::make_unique<sprite>(device, timerSpriteData->texturePath.c_str());
 
-	// ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒ‰[‚Ì‰Šú‰»
+	// ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ã®åˆæœŸåŒ–
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
@@ -53,7 +53,7 @@ void GameTimer::Update(float elapsedTime)
 	{
 		startCountdown -= elapsedTime;
 		if (startCountdown < 0.0f) startCountdown = 0.0f;
-		return; // ƒJƒEƒ“ƒgƒ_ƒEƒ“’†‚Íƒ^ƒCƒ}[‚ğŒ¸‚ç‚³‚È‚¢
+		return; // ã‚«ã‚¦ãƒ³ãƒˆãƒ€ã‚¦ãƒ³ä¸­ã¯ã‚¿ã‚¤ãƒãƒ¼ã‚’æ¸›ã‚‰ã•ãªã„
 	}
 
 	remainingTime -= elapsedTime;
@@ -62,7 +62,7 @@ void GameTimer::Update(float elapsedTime)
 
 void GameTimer::Render()
 {
-	// ƒ^ƒCƒ}[‚Ì•`‰æˆ—
+	// ã‚¿ã‚¤ãƒãƒ¼ã®æç”»å‡¦ç†
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
@@ -73,7 +73,7 @@ void GameTimer::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	// ƒXƒvƒ‰ƒCƒg‚Ì•`‰æ(’†S“_)
+	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®æç”»(ä¸­å¿ƒç‚¹)
 	if (timerSprite && timerSpriteData)
 	{
 		timerSprite->render(dc,
@@ -84,7 +84,7 @@ void GameTimer::Render()
 			timerSpriteData->rotation);
 	}
 
-	//’†‰›‚¼‚ë‚¦‚É‚·‚éƒwƒ‹ƒp[ŠÖ”
+	//ä¸­å¤®ãã‚ãˆã«ã™ã‚‹ãƒ˜ãƒ«ãƒ‘ãƒ¼é–¢æ•°
 	auto centerTextPosition = [&](const std::string& text, float fontSize, float x, float y) -> DirectX::XMFLOAT2
 	{
 		float textWidth = 0.0f;
@@ -94,30 +94,30 @@ void GameTimer::Render()
 	};
 
 
-	// ƒtƒHƒ“ƒg‚Ì•`‰æ
+	// ãƒ•ã‚©ãƒ³ãƒˆã®æç”»
 	DirectX::XMFLOAT2 fontPos = centerTextPosition("00:00", fontSize,
 		fontPosition.x, fontPosition.y
 	);
 
 
-	// ƒtƒHƒ“ƒg‚Ì•`‰æ
+	// ãƒ•ã‚©ãƒ³ãƒˆã®æç”»
 	int minutes = static_cast<int>(remainingTime) / 60;
 	int seconds = static_cast<int>(remainingTime) % 60;
 	char buffer[6];
 	sprintf_s(buffer, "%02d:%02d", minutes, seconds);
 
-	//c‚èŠÔ‚ª30•b‚ğØ‚Á‚½‚ç‰©F‚­‚·‚éA10•b‚ğØ‚Á‚½‚çÔ‚­‚·‚é
+	//æ®‹ã‚Šæ™‚é–“ãŒ30ç§’ã‚’åˆ‡ã£ãŸã‚‰é»„è‰²ãã™ã‚‹ã€10ç§’ã‚’åˆ‡ã£ãŸã‚‰èµ¤ãã™ã‚‹
 	if (remainingTime <= 30.0f && remainingTime > 10.0f)
 	{
-		fontColor = { 1.0f, 1.0f, 0.0f, 1.0f }; // ‰©F
+		fontColor = { 1.0f, 1.0f, 0.0f, 1.0f }; // é»„è‰²
 	}
 	else if (remainingTime <= 10.0f)
 	{
-		fontColor = { 1.0f, 0.0f, 0.0f, 1.0f }; // ÔF
+		fontColor = { 1.0f, 0.0f, 0.0f, 1.0f }; // èµ¤è‰²
 	}
 	else
 	{
-		fontColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // ”’F
+		fontColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // ç™½è‰²
 	}
 
 	timerFont.DrawTextW(dc, buffer, fontPosition.x, fontPosition.y, fontSize, fontColor.x, fontColor.y, fontColor.z, fontColor.w);
@@ -134,7 +134,7 @@ void GameTimer::DrawGUI()
 {
 	if(ImGui::CollapsingHeader("Game Timer"))
 	{
-		//ƒXƒvƒ‰ƒCƒg‚ÌˆÊ’uAƒTƒCƒYAF‚ğGUI‚Å•ÒW
+		//ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®ä½ç½®ã€ã‚µã‚¤ã‚ºã€è‰²ã‚’GUIã§ç·¨é›†
 
 		if(ImGui::TreeNode("Sprite"))
 		{

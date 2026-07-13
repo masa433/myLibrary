@@ -1,8 +1,8 @@
-#include "game_object.h"
+ï»¿#include "game_object.h"
 
 void GameObject::UpdateTransform()
 {
-	//‰EèŒn‚Æ‚©¶èŒn‚ğ‘I‘ğ‚Å‚«‚é‚æ‚¤‚É‚·‚é
+	//å³æ‰‹ç³»ã¨ã‹å·¦æ‰‹ç³»ã‚’é¸æŠã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
 	
 	const DirectX::XMFLOAT4X4 coordinate_system_transforms[]{
 		{ -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 },	// 0:RHS Y-UP
@@ -11,7 +11,7 @@ void GameObject::UpdateTransform()
 		{ 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 },		// 3:LHS Z-UP
 	};
 
-	//¶èŒnY-UP‚Å•`‰æ‚·‚é
+	//å·¦æ‰‹ç³»Y-UPã§æç”»ã™ã‚‹
 	DirectX::XMMATRIX C = DirectX::XMLoadFloat4x4(&coordinate_system_transforms[1]);
 	
 	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
