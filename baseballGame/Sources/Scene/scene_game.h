@@ -15,6 +15,7 @@
 #include "ShadowRenderer.h"
 #include "FreeCameraController.h"
 #include "FrustumCulling.h"
+#include "BroadcastCamera.h"
 #include "json.hpp"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
@@ -40,6 +41,8 @@ private:
 	bool useFreeCamera = false;//	フリーカメラを使用するかどうか
 
 	FrustumCulling frustumCulling;
+
+	BroadcastCamera broadcastCamera;
 
 private:
     //	カスケードシャドウマップ数
@@ -117,25 +120,6 @@ private:
         DirectX::XMFLOAT2	texture_size{ SCREEN_WIDTH, SCREEN_HEIGHT };
     };
 
-    //カメラの位置定義
-    struct CameraPreset
-    {
-        std::string name;
-        DirectX::XMFLOAT3 eye;
-        DirectX::XMFLOAT3 focus;
-		float fov = DirectX::XMConvertToRadians(45.0f);
-		bool enableTrackingZoom = false;
-		float fovNear = DirectX::XMConvertToRadians(5.0f);  // ボールが近いときのFOV
-		float fovFar = DirectX::XMConvertToRadians(15.0f); // ボールが遠いときのFOV
-		float zoomNearDist = 10.0f;  // この距離以下でfovNear
-		float zoomFarDist = 100.0f;  // この距離以上でfovFar
-	};
-
-    //カメラ配列
-	std::vector<CameraPreset> cameraPresets;
-    std::vector<CameraController> cameraControllers;
-	int activeCameraIndex = 0;
-
     //ポストエフェクト用定数バッファ構造体
     struct post_effect_constants
     {
@@ -187,12 +171,7 @@ public:
     void SaveSetting();
 	void LoadSetting();
 
-    //カメラ関連の関数
-    int AddCameraPreset(const CameraPreset& preset);//カメラ追加関数
-	int AddCameraPreset(const std::string& name, const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus);//カメラ追加関数
-	void RemoveCameraPreset(int index);//カメラ削除関数
-	void ApplyPresetToController(const CameraPreset& preset, CameraController& controller);//カメラプリセットをコントローラーに適用する関数
-	void SetupDefaultCameras();//デフォルトカメラの設定関数
+   
    
 private:
 	// シーン描画用定数バッファ

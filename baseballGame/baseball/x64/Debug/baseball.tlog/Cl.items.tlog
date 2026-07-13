@@ -6,6 +6,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_impl_win32.cpp;C:\Us
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_ja_gryph_ranges.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_ja_gryph_ranges.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_tables.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_tables.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_widgets.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_widgets.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\BroadcastCamera.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\BroadcastCamera.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\camera.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\camera.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\camera_controller.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\camera_controller.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\FreeCameraController.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\FreeCameraController.obj

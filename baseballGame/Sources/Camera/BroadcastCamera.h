@@ -1,0 +1,57 @@
+#pragma once
+#include <string>
+#include <vector>
+#include <DirectXMath.h>
+#include <camera_controller.h>
+#include "json.hpp"
+
+using json = nlohmann::json;
+
+class BroadcastCamera
+{
+public:
+
+	//カメラの位置定義
+	struct CameraPreset
+	{
+		std::string name;
+		DirectX::XMFLOAT3 eye;
+		DirectX::XMFLOAT3 focus;
+		float fov = DirectX::XMConvertToRadians(45.0f);
+		bool enableTrackingZoom = false;
+		float fovNear = DirectX::XMConvertToRadians(5.0f);  // ボールが近いときのFOV
+		float fovFar = DirectX::XMConvertToRadians(15.0f); // ボールが遠いときのFOV
+		float zoomNearDist = 10.0f;  // この距離以下でfovNear
+		float zoomFarDist = 100.0f;  // この距離以上でfovFar
+	};
+
+	
+	//カメラ関連の関数
+	int AddCameraPreset(const CameraPreset& preset);//カメラ追加関数
+	int AddCameraPreset(const std::string& name, const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus);//カメラ追加関数
+	void RemoveCameraPreset(int index);//カメラ削除関数
+	void ApplyPresetToController(const CameraPreset& preset, CameraController& controller);//カメラプリセットをコントローラーに適用する関数
+	void SetupDefaultCameras();//デフォルトカメラの設定関数
+
+	void Update(float elapsed_time, bool ballHasCollidedWithBat);     // 数字キー切替+追跡ロジック
+	void SyncToCamera(Camera& camera, float aspect, float nearZ, float farZ); // 実際にCameraへ反映
+	void DrawGUI();                                        // 「中継カメラ」ヘッダーの中身
+
+	void SaveToJson(json& j) const;
+	void LoadFromJson(const json& j);
+
+	bool IsTrackingBall() const;
+	void StopAllTracking();
+
+	int GetActiveIndex() const { return activeCameraIndex; }
+	void SetActiveIndex(int i) { activeCameraIndex = i; }
+	std::vector<CameraPreset>& Presets() { return cameraPresets; }
+
+private:
+	//カメラ配列
+	std::vector<CameraPreset> cameraPresets;
+	std::vector<CameraController> cameraControllers;
+	int activeCameraIndex = 0;
+
+
+};
