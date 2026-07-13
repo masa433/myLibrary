@@ -21,7 +21,7 @@ ShapeRenderer::ShapeRenderer(ID3D11Device* device)
 	// 頂点シェーダー
 	create_vs_from_cso(
 		device,
-		"WiredShapeRendererVS.cso",
+		".\\resources\\shader\\WiredShapeRendererVS.cso",
 		wiredVertexShader.GetAddressOf(),
 		wiredInputLayout.GetAddressOf(),
 		wiredInputElementDesc,
@@ -29,7 +29,7 @@ ShapeRenderer::ShapeRenderer(ID3D11Device* device)
 
 	create_vs_from_cso(
 		device,
-		"SolidShapeRendererVS.cso",
+		".\\resources\\shader\\SolidShapeRendererVS.cso",
 		solidVertexShader.GetAddressOf(),
 		solidInputLayout.GetAddressOf(),
 		solidInputElementDesc,
@@ -38,12 +38,12 @@ ShapeRenderer::ShapeRenderer(ID3D11Device* device)
 	// ピクセルシェーダー
 	create_ps_from_cso(
 		device,
-		"WiredShapeRendererPS.cso",
+		".\\resources\\shader\\WiredShapeRendererPS.cso",
 		wiredPixelShader.GetAddressOf());
 
 	create_ps_from_cso(
 		device,
-		"SolidShapeRendererPS.cso",
+		".\\resources\\shader\\SolidShapeRendererPS.cso",
 		solidPixelShader.GetAddressOf());
 
 

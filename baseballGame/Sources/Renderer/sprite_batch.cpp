@@ -32,8 +32,8 @@ sprite_batch::sprite_batch(ID3D11Device* device, const wchar_t* filename, size_t
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	// UNIT.10
-	create_vs_from_cso(device, "sprite_vs.cso", vertex_shader.GetAddressOf(), input_layout.GetAddressOf(), input_element_desc, _countof(input_element_desc));
-	create_ps_from_cso(device, "sprite_ps.cso", pixel_shader.GetAddressOf());
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", vertex_shader.GetAddressOf(), input_layout.GetAddressOf(), input_element_desc, _countof(input_element_desc));
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", pixel_shader.GetAddressOf());
 
 	// UNIT.10
 	load_texture_from_file(device, filename, shader_resource_view.GetAddressOf(), &texture2d_desc);

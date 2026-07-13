@@ -4,9 +4,9 @@
 
 fullscreen_quad::fullscreen_quad(ID3D11Device* device) 
 {
-	create_vs_from_cso(device, "fullscreen_quad_vs.cso", embedded_vertex_shader.ReleaseAndGetAddressOf(),
+	create_vs_from_cso(device, ".\\resources\\shader\\fullscreen_quad_vs.cso", embedded_vertex_shader.ReleaseAndGetAddressOf(),
 		          nullptr, nullptr, 0);
-	create_ps_from_cso(device, "fullscreen_quad_ps.cso", embedded_pixel_shader.ReleaseAndGetAddressOf());
+	create_ps_from_cso(device, ".\\resources\\shader\\fullscreen_quad_ps.cso", embedded_pixel_shader.ReleaseAndGetAddressOf());
 }
 
 void fullscreen_quad::blit(ID3D11DeviceContext * immediate_context,

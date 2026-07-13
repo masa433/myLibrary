@@ -75,9 +75,26 @@ void scene_game::SetupDefaultCameras()
 	cameraPresets.clear();// 既存のカメラプリセットをクリア
 	cameraControllers.clear();// 既存のカメラコントローラーをクリア
 
-	// デフォルトカメラの追加
-	AddCameraPreset(u8"デフォルトカメラ", { 0.0f, 1.2f, -3.5f }, { 0.0f, 0.0f, 14.0f });
-    AddCameraPreset(u8"俯瞰カメラ", { 0.0f, 5.0f, -15.0f }, { 0.0f, 0.0f, 14.0f });
+
+    {
+		CameraPreset preset;
+		preset.name = u8"デフォルトカメラ";
+		preset.eye = { 0.0f, 1.2f, -3.5f };
+		preset.focus = { 0.0f, 0.0f, 14.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		AddCameraPreset(preset);
+    }
+
+    {
+		CameraPreset preset;
+        preset.name = u8"俯瞰カメラ";
+		preset.eye = { 0.0f, 5.0f, -15.0f };
+		preset.focus = { 0.0f, 0.0f, 14.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		AddCameraPreset(preset);
+    }
 
     {
 		CameraPreset preset;
@@ -384,8 +401,8 @@ void scene_game::initialize()
             { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
             { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         };
-        create_vs_from_cso(device, "sprite_vs.cso", sprite_vertex_shader.GetAddressOf(), sprite_input_layout.GetAddressOf(), input_element_desc, _countof(input_element_desc));
-        create_ps_from_cso(device, "sprite_ps.cso", sprite_pixel_shader.GetAddressOf());
+        create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", sprite_vertex_shader.GetAddressOf(), sprite_input_layout.GetAddressOf(), input_element_desc, _countof(input_element_desc));
+        create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", sprite_pixel_shader.GetAddressOf());
 
      
     }
@@ -455,11 +472,11 @@ void scene_game::initialize()
             { "JOINTS", 0, DXGI_FORMAT_R16G16B16A16_UINT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
             { "WEIGHTS", 0,DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         };
-        create_ps_from_cso(device, "luminance_extract_ps.cso", luminance_extract_pixel_shader.GetAddressOf());
+        create_ps_from_cso(device, ".\\resources\\shader\\luminance_extract_ps.cso", luminance_extract_pixel_shader.GetAddressOf());
         luminance_extract_pass_sprite = std::make_unique<sprite>(device, scene_shader_resource_view);
 
         //	高輝度抽出バッファぼかし用
-        create_ps_from_cso(device, "gaussian_filtering_ps.cso", gaussian_filter_pixel_shader.GetAddressOf());
+        create_ps_from_cso(device, ".\\resources\\shader\\gaussian_filtering_ps.cso", gaussian_filter_pixel_shader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
         bokeh_luminance_extract_pass_sprite = std::make_unique<sprite>(device, luminance_extract_shader_resource_view);
 
@@ -1890,6 +1907,9 @@ void scene_game::SaveSetting()
 	//physxの保存
 	j["physx"]["show_debug"] = showPhysxDebug;
 
+	//カリングの保存
+	j["culling"]["enable_frustum_culling"] = enableFrustumCulling;
+
 	// ── Performance Options の保存
 	j["performance"]["enable_shadows"] = enableShadows;
 	j["performance"]["enable_bloom"] = enableBloom;
@@ -1906,14 +1926,14 @@ void scene_game::SaveSetting()
 	HomeRunCount::Instance().SaveToJson(j["homeRunCount"]);
 
     // ファイルに保存
-    std::ofstream file("settings.json");
+    std::ofstream file("resources\\setting\\settings.json");
     file << j.dump(4);
     consoleLog.push_back("[Info] Settings saved.");
 }
 
 void scene_game::LoadSetting()
 {
-	std::ifstream file("settings.json");
+	std::ifstream file("resources\\setting\\settings.json");
     if(!file.is_open())
     {
         consoleLog.push_back("[Warn] No settings file found. Using defaults.");
@@ -2069,6 +2089,12 @@ void scene_game::LoadSetting()
     if (j.contains("physx"))
     {
         showPhysxDebug = j["physx"]["show_debug"];
+	}
+
+    //カリングの読み込み
+    if (j.contains("culling"))
+    {
+        enableFrustumCulling = j["culling"].value("enable_frustum_culling", true);
 	}
 
 	// ── Performance Options の読み込み

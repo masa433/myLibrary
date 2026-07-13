@@ -7,100 +7,100 @@
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\BasicPS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\BasicPS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\BasicVS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\BasicVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\blur_ps.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\blur_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\cascade_shadowmap_ps.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\cascade_shadowmap_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\fullscreen_quad_ps.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\fullscreen_quad_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\fullscreen_quad_vs.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\fullscreen_quad_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\gaussian_filtering_ps.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gaussian_filtering_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_ps.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\gltf_model_vs.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\LambertPS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\LambertPS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\LambertVS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\LambertVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\luminance_extraction_ps.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\luminance_extraction_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\luminance_extract_ps.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\luminance_extract_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\PhongShaderPS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\PhongShaderPS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\PhongShaderVS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\PhongShaderVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\phong_shader_ps.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\phong_shader_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\phong_shader_vs.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\phong_shader_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\PrimitiveRendererPS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\PrimitiveRendererPS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\PrimitiveRendererVS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\PrimitiveRendererVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\ShadowMapCasterPS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\ShadowMapCasterPS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\ShadowMapCasterVS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\ShadowMapCasterVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\shadowmap_caster_vs.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\shadowmap_caster_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\sky_ps.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\sky_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\sky_vs.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\sky_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\SolidShapeRendererPS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\SolidShapeRendererPS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\SolidShapeRendererVS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\SolidShapeRendererVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_ps.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\sprite_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\sprite_vs.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\sprite_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\ToonShaderPS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\ToonShaderPS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\ToonShaderVS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\ToonShaderVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\WiredShapeRendererPS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\WiredShapeRendererPS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\WiredShapeRendererVS.cso</FullPath>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\WiredShapeRendererVS.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

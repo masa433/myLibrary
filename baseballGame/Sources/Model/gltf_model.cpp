@@ -64,8 +64,8 @@ gltf_model::gltf_model(ID3D11Device* device, const std::string& filename) : file
 		{ "JOINTS", 0, DXGI_FORMAT_R16G16B16A16_UINT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "WEIGHTS", 0,DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	create_vs_from_cso(device, "gltf_model_vs.cso", vertex_shader.ReleaseAndGetAddressOf(), input_layout.ReleaseAndGetAddressOf(), input_element_desc, _countof(input_element_desc));
-	create_ps_from_cso(device, "gltf_model_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
+	create_vs_from_cso(device, ".\\resources\\shader\\gltf_model_vs.cso", vertex_shader.ReleaseAndGetAddressOf(), input_layout.ReleaseAndGetAddressOf(), input_element_desc, _countof(input_element_desc));
+	create_ps_from_cso(device, ".\\resources\\shader\\gltf_model_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
 	//UNIT.37
 	//ボーン行列の定数バッファを生成する
 	D3D11_BUFFER_DESC buffer_desc{};

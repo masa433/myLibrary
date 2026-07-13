@@ -116,10 +116,10 @@ void SkyRenderer::Initialize(ID3D11Device* device)
 	HRESULT hr;
 
 	// Load shaders (adjust paths to match your project layout)
-	hr = create_vs_from_cso(device, "sky_vs.cso", vertex_shader.GetAddressOf(), nullptr, nullptr, 0);
+	hr = create_vs_from_cso(device, ".\\resources\\shader\\sky_vs.cso", vertex_shader.GetAddressOf(), nullptr, nullptr, 0);
 	if (FAILED(hr)) return ;
 
-	hr = create_ps_from_cso(device, "sky_ps.cso", pixel_shader.GetAddressOf());
+	hr = create_ps_from_cso(device, ".\\resources\\shader\\sky_ps.cso", pixel_shader.GetAddressOf());
 	if (FAILED(hr)) return;
 
 	// Constant buffer

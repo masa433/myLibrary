@@ -14,7 +14,7 @@ PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device)
 	// 頂点シェーダー
 	create_vs_from_cso(
 		device,
-		"PrimitiveRendererVS.cso",
+		".\\resources\\shader\\PrimitiveRendererVS.cso",
 		vertexShader.GetAddressOf(),
 		inputLayout.GetAddressOf(),
 		inputElementDesc,
@@ -24,7 +24,7 @@ PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device)
 	// ピクセルシェーダー
 	create_ps_from_cso(
 		device,
-		"PrimitiveRendererPS.cso",
+		".\\resources\\shader\\PrimitiveRendererPS.cso",
 		pixelShader.GetAddressOf());
 
 	// 定数バッファ
