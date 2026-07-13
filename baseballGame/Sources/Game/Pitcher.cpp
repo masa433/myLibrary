@@ -316,7 +316,12 @@ void Pitcher::Update(float elapsedTime)
 		FoulSprite::Instance().SetShowFoulSprite(true);
 		foulSpriteTriggered = true;
 	}
-
+	//ボールが後ろに飛んで行ったらファウル判定
+	else if (Ball::Instance().GetHasCollidedWithBat() && Ball::Instance().GetIsFoulConfirmed() && !TrackingData::Instance().IsTrackingDataVisible() && !foulSpriteTriggered)
+	{
+		FoulSprite::Instance().SetShowFoulSprite(true);
+		foulSpriteTriggered = true;
+	}
 
 	// ボールが転がり中（グラウンド着地済み・まだ判定前）のみ監視
 	if (Ball::Instance().GetHasCollidedWithGround() &&
