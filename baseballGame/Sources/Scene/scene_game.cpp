@@ -408,7 +408,7 @@ void scene_game::update(float elapsed_time)
 
 	elapsed_time *= timeScale;
 
-	broadcastCamera.Update(elapsed_time, Physics::Instance().GetBallWasHit());
+	broadcastCamera.Update(elapsed_time, Ball::Instance().GetHasCollidedWithBat());
 
 	float screenWidth = static_cast<float>(Graphics::Instance().GetScreenWidth());
 	float screenHeight = static_cast<float>(Graphics::Instance().GetScreenHeight());

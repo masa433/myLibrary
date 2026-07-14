@@ -7,6 +7,16 @@
 
 using json = nlohmann::json;
 
+//カメラの種類の列挙
+enum class CameraType
+{
+	NormalCamera,  //通常カメラ
+	HitCamera,    //ヒットカメラ
+	HomeRunCamera, //ホームランカメラ
+	ReplayCamera,  //リプレイカメラ
+	EventCamera,   //イベントカメラ
+};
+
 class BroadcastCamera
 {
 public:
@@ -23,6 +33,8 @@ public:
 		float fovFar = DirectX::XMConvertToRadians(15.0f); // ボールが遠いときのFOV
 		float zoomNearDist = 10.0f;  // この距離以下でfovNear
 		float zoomFarDist = 100.0f;  // この距離以上でfovFar
+		CameraType type = CameraType::HomeRunCamera; // カメラの種類
+		int cameraId = -1; // カメラのID（必要に応じて使用）
 	};
 
 	
@@ -46,6 +58,10 @@ public:
 	int GetActiveIndex() const { return activeCameraIndex; }
 	void SetActiveIndex(int i) { activeCameraIndex = i; }
 	std::vector<CameraPreset>& Presets() { return cameraPresets; }
+
+	bool prevHasCollidedWithBat = false; // 前フレームでボールがバットに当たったかどうかのフラグ
+	bool prevHasShowTrackingData = false; // 前フレームで追跡データを表示していたかどうかのフラグ
+	bool prevIsHomeRun = false; // 前フレームでホームランだったかどうかのフラグ
 
 private:
 	//カメラ配列

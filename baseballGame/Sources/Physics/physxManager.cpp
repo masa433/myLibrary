@@ -1120,6 +1120,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			outSpeed = newBallVelocity.magnitude() * 3.6f;
 			outAngle = launchAngleDeg;
 			outDirection = hitDirectionAngleDeg;
+			outOriginalDirection = originalAngleDeg;
 		}
 
 

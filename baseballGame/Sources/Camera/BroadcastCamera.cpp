@@ -1,6 +1,7 @@
 #include "BroadcastCamera.h"
 #include "Ball.h"
 #include "physxManager.h"
+#include "TrackingData.h"
 #include <imgui.h>
 
 //カメラ管理
@@ -61,77 +62,312 @@ void BroadcastCamera::SetupDefaultCameras()
 		preset.focus = { 0.0f, 0.0f, 14.0f };
 		preset.fov = DirectX::XMConvertToRadians(45.0f);
 		preset.enableTrackingZoom = false;
+		preset.type = CameraType::NormalCamera;
+		preset.cameraId = 0; // デフォルトカメラのIDを設定
 		AddCameraPreset(preset);
 	}
 
 	{
 		CameraPreset preset;
-		preset.name = u8"俯瞰カメラ";
-		preset.eye = { 0.0f, 5.0f, -15.0f };
+		preset.name = u8"バックネットカメラ";
+		preset.eye = { 0.0f, 5.0f, -20.0f };
 		preset.focus = { 0.0f, 0.0f, 14.0f };
 		preset.fov = DirectX::XMConvertToRadians(45.0f);
-		preset.enableTrackingZoom = false;
+		preset.enableTrackingZoom = true;
+		preset.fovNear = DirectX::XMConvertToRadians(45.0f);// ボールが近いときのFOV
+		preset.fovFar = DirectX::XMConvertToRadians(10.0f);// ボールが遠いときのFOV
+		preset.zoomNearDist = 10.0f;// この距離以下でfovNear
+		preset.zoomFarDist = 150.0f;// この距離以上でfovFar
+		preset.type = CameraType::HitCamera;
+		preset.cameraId = 1; // バックネットカメラのIDを設定
 		AddCameraPreset(preset);
 	}
 
 	{
 		CameraPreset preset;
 		preset.name = u8"1塁側カメラ";
-		preset.eye = { 27.0f, 11.0f, -12.5f };
-		preset.focus = { 0.0f, 1.0f, 15.0f };
+		preset.eye = { 20.0f, 5.0f, -15.0f };
+		preset.focus = { 0.0f, 1.0f, 5.0f };
 		preset.fov = DirectX::XMConvertToRadians(30.0f);
 		preset.enableTrackingZoom = true;
 		preset.fovNear = DirectX::XMConvertToRadians(30.0f);// ボールが近いときのFOV
 		preset.fovFar = DirectX::XMConvertToRadians(10.0f);// ボールが遠いときのFOV
 		preset.zoomNearDist = 10.0f;// この距離以下でfovNear
 		preset.zoomFarDist = 100.0f;// この距離以上でfovFar
+		preset.type = CameraType::HitCamera;
+		preset.cameraId = 2; // 1塁側カメラのIDを設定
 		AddCameraPreset(preset);
 	}
 
 	{
 		CameraPreset preset;
 		preset.name = u8"外野カメラ";
-		preset.eye = { -5.0f, 10.0f,120.0f };
+		preset.eye = { -10.0f, 9.0f,127.5f };
 		preset.focus = { 0.0f, 0.5f, 5.0f };
 		preset.fov = DirectX::XMConvertToRadians(2.0f);
 		preset.enableTrackingZoom = true;
-		preset.fovNear = DirectX::XMConvertToRadians(45.0f);// ボールが近いときのFOV
+		preset.fovNear = DirectX::XMConvertToRadians(30.0f);// ボールが近いときのFOV
 		preset.fovFar = DirectX::XMConvertToRadians(10.0f);// ボールが遠いときのFOV
 		preset.zoomNearDist = 10.0f;// この距離以下でfovNear
-		preset.zoomFarDist = 100.0f;// この距離以上でfovFar
+		preset.zoomFarDist = 130.0f;// この距離以上でfovFar
+		preset.type = CameraType::HitCamera;
+		preset.cameraId = 3; // 外野カメラのIDを設定
 		AddCameraPreset(preset);
 	}
 
+	{
+		CameraPreset preset;
+		preset.name = u8"屋根カメラ";
+		preset.eye = { 0.0f, 60.0f, -65.0f };
+		preset.focus = { 0.0f, 0.0f, 30.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::EventCamera;
+		preset.cameraId = 4; // 屋根カメラのIDを設定
+		AddCameraPreset(preset);
+	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"3塁側カメラ";
+		preset.eye = { -20.0f, 5.0f, -15.0f };
+		preset.focus = { 0.0f, 1.0f, 5.0f };
+		preset.fov = DirectX::XMConvertToRadians(30.0f);
+		preset.enableTrackingZoom = true;
+		preset.fovNear = DirectX::XMConvertToRadians(30.0f);// ボールが近いときのFOV
+		preset.fovFar = DirectX::XMConvertToRadians(10.0f);// ボールが遠いときのFOV
+		preset.zoomNearDist = 10.0f;// この距離以下でfovNear
+		preset.zoomFarDist = 100.0f;// この距離以上でfovFar
+		preset.type = CameraType::HitCamera;
+		preset.cameraId = 5; // 3塁側カメラのIDを設定
+		AddCameraPreset(preset);
+	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"確信ホームランカメラ1";
+		preset.eye = { 0.0f, 0.7f, 2.0f };
+		preset.focus = { 0.0f, 1.8f, -1.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::HomeRunCamera;
+		preset.cameraId = 6; // 確信ホームランカメラ1のIDを設定
+		AddCameraPreset(preset);
+	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"確信ホームランカメラ2";
+		preset.eye = { -4.0f, 1.0f, 2.0f };
+		preset.focus = { 0.0f, 1.0f, 0.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::HomeRunCamera;
+		preset.cameraId = 7; // 確信ホームランカメラ2のIDを設定
+		AddCameraPreset(preset);
+	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"確信ホームランカメラ3";
+		preset.eye = { 4.0f, 1.0f, 2.0f };
+		preset.focus = { 0.0f, 1.0f, 0.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::HomeRunCamera;
+		preset.cameraId = 8; // 確信ホームランカメラ3のIDを設定
+		AddCameraPreset(preset);
+	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"確信ホームランカメラ4";
+		preset.eye = { 0.0f, 0.4f, -3.5f };
+		preset.focus = { 0.0f, 1.0f, -1.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::HomeRunCamera;
+		preset.cameraId = 9; // 確信ホームランカメラ4のIDを設定
+		AddCameraPreset(preset);
+	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"確信ホームランカメラ5";
+		preset.eye = { -2.0f, 1.0f, -3.0f };
+		preset.focus = { 0.0f, 1.0f, 0.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::HomeRunCamera;
+		preset.cameraId = 10; // 確信ホームランカメラ5のIDを設定
+		AddCameraPreset(preset);
+	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"確信ホームランカメラ6";
+		preset.eye = { 3.0f, 1.0f, -30.0f };
+		preset.focus = { 0.0f, 1.0f, 0.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::HomeRunCamera;
+		preset.cameraId = 11; // 確信ホームランカメラ6のIDを設定
+		AddCameraPreset(preset);
+	}
 	activeCameraIndex = 0;// 最初のカメラをアクティブにする
 }
 
 void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 {
-	// 数字キーで切り替え
-	for (int i = 0; i < static_cast<int>(cameraPresets.size()) && i < 9; ++i)
-	{
-		if (ImGui::IsKeyPressed(static_cast<ImGuiKey>(ImGuiKey_1 + i)))
-		{
-			activeCameraIndex = i;
-		}
-	}
-
+	
 	if (cameraPresets.empty())
 	{
 		SetupDefaultCameras();
 	}
 	activeCameraIndex = (std::max)(0, (std::min)(activeCameraIndex, static_cast<int>(cameraPresets.size() - 1)));
 
-	CameraPreset& preset = cameraPresets[activeCameraIndex];
-	if (ballHasCollidedWithBat
-		&& preset.enableTrackingZoom)
+
+	bool nowShowTrackingData = TrackingData::Instance().IsTrackingDataVisible();
+	bool nowIsHomeRun = Physics::Instance().GetIsHomeRun();
+
+	//打球方向によってアクティブにするカメラを変える
+	float ballDirection = Physics::Instance().GetBallDirection();
+	float originalDirection = Physics::Instance().GetBallOriginalDirection();
+
+	//バットに当たった瞬間にHitCameraの追跡を開始する
+	if(ballHasCollidedWithBat && !prevHasCollidedWithBat)
 	{
 		Physics::Instance().ClearBallWasHit();
-		for (auto& controller : cameraControllers)
-			controller.StartTrackingBall(&Ball::Instance(), 3.0f, -30.0f);
+		for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
+		{
+			if (cameraPresets[i].type == CameraType::HitCamera || cameraPresets[i].type == CameraType::ReplayCamera)
+			{
+				cameraControllers[i].StartTrackingBall(&Ball::Instance(), 3.0f, -30.0f);
+			}
+		}
 	}
 
-	cameraControllers[activeCameraIndex].Update(elapsed_time); // 仮の経過時間を渡す
+	//確信ホームランの立ち上がりでHomeRunCameraに切り替える
+	if(nowIsHomeRun && !prevIsHomeRun)
+	{
+		
+		CameraPreset& preset = cameraPresets[activeCameraIndex];
+		if(preset.type != CameraType::HomeRunCamera)
+		{
+			std::vector<int> homeRunCameraIndices;
+			for(int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
+			{
+				if(cameraPresets[i].type == CameraType::HomeRunCamera)
+				{
+					homeRunCameraIndices.push_back(i);// HomeRunCameraのインデックスを保存
+				}
+			}
+			if(!homeRunCameraIndices.empty())
+			{
+				// ランダムにHomeRunCameraを選択して切り替える
+				int randomIndex = homeRunCameraIndices[rand() % homeRunCameraIndices.size()];
+				activeCameraIndex = randomIndex;
+
+			}
+		}
+	}
+
+	//確信ホームランの状態でトラッキングデータが表示された瞬間にhitCameraに切り替える
+	if(nowIsHomeRun && nowShowTrackingData && !prevHasShowTrackingData)
+	{
+		CameraPreset& preset = cameraPresets[activeCameraIndex];
+		if(preset.type != CameraType::HitCamera)
+		{
+			std::vector<int> hitCameraIndices;
+			for(int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
+			{
+				if(cameraPresets[i].type == CameraType::HitCamera)
+				{
+					hitCameraIndices.push_back(i);// HitCameraのインデックスを保存
+				}
+			}
+			if(!hitCameraIndices.empty())
+			{
+				//レフト方向のカメラを選択
+				if (originalDirection >= -45.0f && originalDirection <= -15.0f)
+				{
+					activeCameraIndex = 2;//1塁側カメラ
+				}
+				else if (originalDirection >= 15.0f && originalDirection <= 45.0f)
+				{
+					activeCameraIndex = 5;//3塁側カメラ
+				}
+				else
+				{
+					activeCameraIndex = 1;//バックネットカメラ
+				}
+			}
+		}
+	}
+
+	//トラッキングデータが表示された瞬間にカメラをhitCameraに切り替える
+	if (!nowIsHomeRun)
+	{
+		if (nowShowTrackingData && !prevHasShowTrackingData)
+		{
+			
+			CameraPreset& preset = cameraPresets[activeCameraIndex];
+			if (preset.type != CameraType::HitCamera)
+			{
+				std::vector<int> hitCameraIndices;
+				for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
+				{
+					if (cameraPresets[i].type == CameraType::HitCamera)
+					{
+						hitCameraIndices.push_back(i);// HitCameraのインデックスを保存
+					}
+				}
+				if (!hitCameraIndices.empty())
+				{
+					
+					//打球方向によってカメラを切り替える
+					
+					//レフト方向のカメラを選択
+					if(originalDirection >=-45.0f && originalDirection <=-15.0f)
+					{
+						activeCameraIndex = 2;//1塁側カメラ
+					}
+					else if(originalDirection >=15.0f && originalDirection <=45.0f)
+					{
+						activeCameraIndex = 5;//3塁側カメラ
+					}
+					else
+					{
+						activeCameraIndex = 1;//バックネットカメラ
+					}
+				}
+			}
+		}
+	}
+
+	//バットの接触状態が解除されたら、NormalCameraに戻す
+	if(!ballHasCollidedWithBat && prevHasCollidedWithBat)
+	{
+		for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
+		{
+			if (cameraPresets[i].type == CameraType::NormalCamera)
+			{
+				activeCameraIndex = i;
+				break;
+			}
+		}
+		StopAllTracking();
+	}
+
+	prevHasCollidedWithBat = ballHasCollidedWithBat;// 前フレームの状態を更新
+	prevHasShowTrackingData = nowShowTrackingData;// 前フレームの状態を更新
+	prevIsHomeRun = nowIsHomeRun;// 前フレームの状態を更新
+
+	//すべてのカメラを更新する
+	for (auto& controller : cameraControllers)
+	{
+		controller.Update(elapsed_time);
+	}
 }
 
 void BroadcastCamera::SyncToCamera(Camera& camera, float aspect, float nearZ, float farZ)
@@ -215,6 +451,19 @@ void BroadcastCamera::DrawGUI()
 					changed |= ImGui::DragFloat(u8"遠距離閾値", &preset.zoomFarDist, 0.5f, 0.0f, 500.0f);// ズームアウト追跡のFOV範囲編集
 				}
 
+				//カメラタイプを選択できるようにする
+				const char* cameraTypeItems[] = { u8"通常カメラ", u8"ヒットカメラ", u8"ホームランカメラ", u8"リプレイカメラ", u8"イベントカメラ" };
+
+				int currentTypeIndex = static_cast<int>(preset.type);
+
+				if (ImGui::Combo(u8"カメラタイプ", &currentTypeIndex, cameraTypeItems, IM_ARRAYSIZE(cameraTypeItems)))
+				{
+					preset.type = static_cast<CameraType>(currentTypeIndex);
+				}
+
+				// カメラIDを編集できるようにする
+				changed |= ImGui::InputInt(u8"カメラID", &preset.cameraId);
+
 				if (changed)
 				{
 					// 編集したプリセットがアクティブでフリーカメラ使用中なら、即座に反映させる
@@ -269,6 +518,8 @@ void BroadcastCamera::SaveToJson(json& j) const
 		j["relay_cameras"][i]["fov_far"] = p.fovFar;
 		j["relay_cameras"][i]["zoom_near_dist"] = p.zoomNearDist;
 		j["relay_cameras"][i]["zoom_far_dist"] = p.zoomFarDist;
+		j["relay_cameras"][i]["type"] = static_cast<int>(p.type);
+		j["relay_cameras"][i]["cameraId"] = p.cameraId;
 	}
 	j["relay_cameras_active_index"] = activeCameraIndex;
 }
@@ -293,6 +544,8 @@ void BroadcastCamera::LoadFromJson(const nlohmann::json& j)
 		preset.fovFar = jc.value("fov_far", DirectX::XMConvertToRadians(15.0f));
 		preset.zoomNearDist = jc.value("zoom_near_dist", 10.0f);
 		preset.zoomFarDist = jc.value("zoom_far_dist", 130.0f);
+		preset.type = static_cast<CameraType>(jc.value("type", 0));
+		preset.cameraId = jc.value("cameraId", -1);
 		AddCameraPreset(preset);
 	}
 	activeCameraIndex = j.value("relay_cameras_active_index", 0);

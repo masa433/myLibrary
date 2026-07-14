@@ -3,8 +3,15 @@
 //指定方向を向く
 void Camera::SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up)
 {
+	DirectX::XMFLOAT3 safeFocus = focus;
+    //eyeとfocusが一致していると行列計算のアサートで落ちるため少しずらす
+    if (eye.x == focus.x && eye.y == focus.y && eye.z == focus.z)
+    {
+        safeFocus.z += 0.0001f; // 微小なオフセットを加える
+    }
+
     DirectX::XMVECTOR Eye = DirectX::XMLoadFloat3(&eye);
-    DirectX::XMVECTOR Focus = DirectX::XMLoadFloat3(&focus);
+    DirectX::XMVECTOR Focus = DirectX::XMLoadFloat3(&safeFocus);
     DirectX::XMVECTOR Up = DirectX::XMLoadFloat3(&up);
     DirectX::XMMATRIX View = DirectX::XMMatrixLookAtLH(Eye, Focus, Up);
     //LH=Left Hand(左手系用)

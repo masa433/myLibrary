@@ -57,11 +57,32 @@ void TrackingData::Update(float elapsedTime)
 	
 	showTrackingDelay += elapsedTime;
 
-	if (showTrackingDelay > displayStartTime)
+	if(Physics::Instance().GetIsHomeRun())
 	{
-		showTrackingDelay = displayStartTime;
-		showTrackingData = true;
+		if (showTrackingDelay > displayStartTimeHomeRun)
+		{
+			showTrackingDelay = displayStartTimeHomeRun;
+			showTrackingData = true;
+		}
+		else
+		{
+			showTrackingData = false;
+		}
 	}
+	else
+	{
+		if (showTrackingDelay > displayStartTime)
+		{
+			showTrackingDelay = displayStartTime;
+			showTrackingData = true;
+		}
+		else
+		{
+			showTrackingData = false;
+		}
+	}
+
+	
 
 }
 

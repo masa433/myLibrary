@@ -121,10 +121,12 @@ public:
 	float GetBallSpeed() const { return outSpeed; }
 	float GetBallAngle() const { return outAngle; }
 	float GetBallDirection() const { return outDirection; }
+	float GetBallOriginalDirection() const { return outOriginalDirection; }
 
 	float outSpeed = 0.0f; //打球速度
 	float outAngle = 0.0f; //打球角度
 	float outDirection = 0.0f; //打球方向
+	float outOriginalDirection = 0.0f; //打球方向（元の方向）
 
 	//確信ホームランかどうかを判定する変数とゲッター
 	bool isHomeRun = false;

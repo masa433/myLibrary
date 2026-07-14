@@ -61,6 +61,7 @@ private:
 	float showTrackingDelay = 0.0f; // トラッキングデータ表示までの遅延時間
 	//表示開始時間
 	float displayStartTime = 0.7f;
+	float displayStartTimeHomeRun = 1.0f; // ホームラン時の表示開始時間
 
 	// 各行のラベル/数値位置を個別に微調整するためのオフセット
 	DirectX::XMFLOAT2 angleLabelOffset = { 0.0f, 0.0f };

@@ -86,6 +86,9 @@ void CameraController::StartTrackingBall(const Ball* ball, float offsetTracking,
 // ボール追跡カメラを停止する
 void CameraController::StopTrackingBall()
 {
+	//追跡していなかったら何もしない
+	if (trackingState == TrackState::None) return;
+
 	trackedBall = nullptr;
 	trackingState = TrackState::None;
 
