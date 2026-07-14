@@ -589,28 +589,39 @@ void ballSprite::Render()
 
 	TrackingData::Instance().Render();
 
+	bool isHomeRun = Physics::Instance().GetIsHomeRun();
+	bool isTrackingVisible = TrackingData::Instance().IsTrackingDataVisible();
+
+	//ホームランかつトラッキングデータも出ているなら、何も描画しない
+	if (isHomeRun && isTrackingVisible) return;
+
 	// 2Dスプライトの描画は、TrackingDataが表示されている場合はスキップする
-	if (TrackingData::Instance().IsTrackingDataVisible())return;
+	if (isTrackingVisible)return;
 
-	if (strikeZoneSprite && strikeZoneSpriteData)
+	//確信ホームランの時はストライクゾーンとボールの描画をスキップする
+	if (!isHomeRun)
 	{
-		strikeZoneSprite->render(dc,
-			strikeZoneSpriteData->position.x, strikeZoneSpriteData->position.y,
-			strikeZoneSpriteData->size.x, strikeZoneSpriteData->size.y,
-			strikeZoneSpriteData->color.x, strikeZoneSpriteData->color.y,
-			strikeZoneSpriteData->color.z, strikeZoneSpriteData->color.w,
-			strikeZoneSpriteData->rotation);
-	}
+		//ストライクゾーンとボールの描画
+		if (strikeZoneSprite && strikeZoneSpriteData)
+		{
+			strikeZoneSprite->render(dc,
+				strikeZoneSpriteData->position.x, strikeZoneSpriteData->position.y,
+				strikeZoneSpriteData->size.x, strikeZoneSpriteData->size.y,
+				strikeZoneSpriteData->color.x, strikeZoneSpriteData->color.y,
+				strikeZoneSpriteData->color.z, strikeZoneSpriteData->color.w,
+				strikeZoneSpriteData->rotation);
+		}
 
-	
-	if (ballDebugSprite && ballDebugSpriteData)
-	{
-		ballDebugSprite->render(dc,
-			ballDebugSpriteData->position.x, ballDebugSpriteData->position.y,
-			ballDebugSpriteData->size.x, ballDebugSpriteData->size.y,
-			ballDebugSpriteData->color.x, ballDebugSpriteData->color.y,
-			ballDebugSpriteData->color.z, ballDebugSpriteData->color.w,
-			ballDebugSpriteData->rotation);
+
+		if (ballDebugSprite && ballDebugSpriteData)
+		{
+			ballDebugSprite->render(dc,
+				ballDebugSpriteData->position.x, ballDebugSpriteData->position.y,
+				ballDebugSpriteData->size.x, ballDebugSpriteData->size.y,
+				ballDebugSpriteData->color.x, ballDebugSpriteData->color.y,
+				ballDebugSpriteData->color.z, ballDebugSpriteData->color.w,
+				ballDebugSpriteData->rotation);
+		}
 	}
 
 	if(ballBoardSprite && ballBoardSpriteData && showBallBoard)

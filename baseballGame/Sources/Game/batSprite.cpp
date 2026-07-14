@@ -117,6 +117,9 @@ void BatSprite::Render()
 
 	// トラッキングデータが表示されている場合はバットスプライトを描画しない
 	if (TrackingData::Instance().IsTrackingDataVisible()) return;
+
+	//確信ホームランのときも描画しない
+	if (Physics::Instance().GetIsHomeRun()) return;
 	
 	if (batSprite && batSpriteData)
 	{
