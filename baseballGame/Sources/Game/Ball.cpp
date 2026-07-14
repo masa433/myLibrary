@@ -325,17 +325,20 @@ void Ball::UpdateFromPhysics(float elapsedTime)
 	UpdateWorldTransform();
 
 	// 物理演算中（飛んでいる時）にトレイルを記録
-	trailRecordTimer += elapsedTime;
-	if (trailRecordTimer >= TrailRecordInterval)
+
+	if (hasCollidedWithBat)
 	{
-		trailRecordTimer = 0.0f;
-		ballTrail.push_back(worldPosition);
-		if (ballTrail.size() > MaxTrailLength)
+		trailRecordTimer += elapsedTime;
+		if (trailRecordTimer >= TrailRecordInterval)
 		{
-			ballTrail.pop_front();
+			trailRecordTimer = 0.0f;
+			ballTrail.push_back(worldPosition);
+			if (ballTrail.size() > MaxTrailLength)
+			{
+				ballTrail.pop_front();
+			}
 		}
 	}
-
 
 }
 
