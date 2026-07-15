@@ -68,6 +68,8 @@ public:
     //ボールゾーンのペナルティ
 	float ballZonePenalty = 0.20f; // -20%
 
+	float cursorDeadZoneRatio = 0.2f; // カーソル円の中心がバット矩形からこの割合以上離れていたらボーナス無効
+
     // ballScreenCenter  : 2Dボールスプライトの中心(px)
     // batTopLeft        : バット矩形の左上(px)
     // batSize           : バット矩形のサイズ(px)
@@ -251,9 +253,21 @@ private:
 
     if (info.cursorOverlap)
     {
-        // カーソル重なり度：ボール中心からカーソル中心までの距離で簡易計算
-        info.cursorOverlapRatio = 1.0f - (dist / sumR);
-        info.cursorOverlapRatio = (std::max)(0.0f, info.cursorOverlapRatio);
+        // カーソル重なり度：ボール中心からカーソル中心までの距離で簡易計算(範囲はやや広めにとる)
+        float deadZoneRatio = cursorDeadZoneRatio; // 0.0～1.0（sumRに対する割合）
+        float deadZoneDist = sumR * deadZoneRatio;
+
+        if (dist <= deadZoneDist)
+        {
+            info.cursorOverlapRatio = 1.0f;
+        }
+        else
+        {
+            // デッドゾーンの外側だけを 0.0～1.0 に再マッピングして減衰させる
+            float remainingRange = sumR - deadZoneDist;
+            float t = (dist - deadZoneDist) / (std::max)(remainingRange, 0.001f);
+            info.cursorOverlapRatio = 1.0f - (std::min)(1.0f, t);
+        }
     }
 
     return info;
@@ -276,7 +290,7 @@ private:
     // 打球角度マッピング（ボール上端に当たった時 → 最大フライ、下端 → ゴロ）
     float launchAngleTop = 150.0f;   // ボール上端に当たった時の仰角(度)
     float launchAngleCenter = 0.0f;   // ボール中心に当たった時
-    float launchAngleBottom = -5.0f;  // ボール下端に当たった時(ゴロ)
+    float launchAngleBottom = -150.0f;  // ボール下端に当たった時(ゴロ)
     float groundBallThreshold = 0.5f;  // hitNormalizedY がこれ以上でゴロ判定
 
 public:
@@ -318,6 +332,7 @@ public:
             ImGui::Text(u8"カーソル重なり: %s", hj.IsCursorOverlapping() ? "YES" : "no");
 
             ImGui::Text(u8"カーソル重なり率: %.2f", hj.overlapResult_.cursorOverlapRatio); 
+			ImGui::DragFloat(u8"カーソルデッドゾーン割合", &hj.cursorDeadZoneRatio, 0.01f, 0.0f, 1.0f);
             ImGui::Separator();
 
             ImGui::DragFloat(u8"ヒットの有効時間 (前)", &hj.hitWindowBeforeSec, 0.01f, 0.0f, 1.0f);
