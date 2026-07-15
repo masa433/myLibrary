@@ -1023,7 +1023,15 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			float adjustedRestitution = std::clamp(
 				TARGET_Q + (1.0f + TARGET_Q) * massRatio, 0.5f, 0.95f);
 			float q = (adjustedRestitution - massRatio) / (1.0f + massRatio);
-			float estimatedExitVelocity = q * ballSpeed + (1.0f + q) * batSpeed;
+			float powerScale = ballSprite::Instance().GetCurrentPitchPowerScale();
+			if (consoleLog)
+			{
+				char dbg[128];
+				snprintf(dbg, sizeof(dbg), u8"[Debug] powerScale=%.2f currentPitchIndex=%d", powerScale, ballSprite::Instance().currentPitchIndex);
+				consoleLog->push_back(dbg);
+			}
+
+			float estimatedExitVelocity = (q * ballSpeed + (1.0f + q) * batSpeed) / powerScale;// 2D判定の打球速度を使用する場合は result.exitVelocityKmh を使用する
 
 			// 打球角度補正
 			/*float launchAngle = std::atan2(
@@ -1055,10 +1063,8 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 
 			// 最終速度
 			physx::PxVec3 newBallVelocity = collisionNormal * estimatedExitVelocity;
-			float physSpeed = newBallVelocity.magnitude();
-			if (physSpeed > 1e-3f)
-				newBallVelocity *= (std::min)(estimatedExitVelocity, physSpeed * 0.8f) / physSpeed;
-
+			
+			
 			newBallVelocity *= result.velocityScale; // 2D判定の倍率
 
 			// 打球方向判定

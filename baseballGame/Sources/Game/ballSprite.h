@@ -163,6 +163,38 @@ public:
 		return 1.0f;
 	}
 
+	static const char* GetPowerGradeLabel(Pitcher::Power power)
+	{
+		switch (power)
+		{
+		case Pitcher::Power::F: return "F";
+		case Pitcher::Power::E: return "E";
+		case Pitcher::Power::D: return "D";
+		case Pitcher::Power::C: return "C";
+		case Pitcher::Power::B: return "B";
+		case Pitcher::Power::A: return "A";
+		case Pitcher::Power::S: return "S";
+		default: return "";
+		}
+	}
+
+	// 球威グレード → 打球の「弾き返しにくさ」倍率
+	// 大きいほど球威が強く、打球速度計算時にこの値で割ることで打球を弱くする
+	static float GetPowerGradeScale(Pitcher::Power power)
+	{
+		switch (power)
+		{
+		case Pitcher::Power::F: return 0.5f; // 弾き返しやすい（軽い球）
+		case Pitcher::Power::E: return 0.75f;
+		case Pitcher::Power::D: return 0.9f;
+		case Pitcher::Power::C: return 1.0f;  // 基準
+		case Pitcher::Power::B: return 1.25f;
+		case Pitcher::Power::A: return 1.5f;
+		case Pitcher::Power::S: return 2.0f; // 弾き返しにくい（重い球）
+		default: return 1.0f;
+		}
+	}
+
 	//投手1人分・球種16個分の変化量を設定する
 	struct PitchBreakSet
 	{
@@ -174,8 +206,30 @@ public:
 			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C,
 			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C
 		};
+
+		Pitcher::Power powerGrades[19] = {
+			Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C,
+			Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C,
+			Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C,
+			Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C,
+			Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C
+		};
 		bool initialized = false;
 	};
+
+	Pitcher::Power pitchPowers[19] = {
+	Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C,
+	Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C,
+	Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C,
+	Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C,
+	Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C
+	};
+
+	//現在投げている球種の球威スケールを取得
+	float GetCurrentPitchPowerScale() const
+	{
+		return GetPowerGradeScale(realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)].powerGrades[currentPitchIndex]);
+	}
 
 	// インデックスは Pitcher::RealPitcher の値（Noneは未使用）
 	// 投手ごとに完全に独立したデータを持つため、他の投手の値を書き換えることはない

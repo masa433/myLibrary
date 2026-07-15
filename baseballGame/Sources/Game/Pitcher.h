@@ -299,6 +299,18 @@ public:
 		S
 	};
 
+	//球速の強さを表す列挙型
+	enum class Power
+	{
+		F,
+		E,
+		D,
+		C,//デフォルトのpitchBreaksと同じ大きさ
+		B,
+		A,
+		S
+	};
+
 	//実在投手が投げる球種のデータ
 	struct RealArsenalEntry
 	{
@@ -306,6 +318,7 @@ public:
 		float weightPercent; // その球種を投げる確率（0.0～1.0）
 		float speedKmh; // 球速（km/h）
 		BreakGrade breakGrade = BreakGrade::C;
+		Power power = Power::C;
 	};
 
 	// 実在投手プリセットを選択する。球種別球速をpitchParametersへ反映し、

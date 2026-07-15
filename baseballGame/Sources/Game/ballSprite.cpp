@@ -752,8 +752,8 @@ void ballSprite::DrawGUI()
 	// ----- グレード（段階）で一括指定 -----
 	if (activeSet != nullptr)
 	{
-		int gradeIndex = static_cast<int>(activeSet->grades[editIndex]); // E=0 ... S=5
-		static const char* gradeNames[] = { u8"E", u8"D", u8"C", u8"B", u8"A", u8"S" };
+		int gradeIndex = static_cast<int>(activeSet->grades[editIndex]); // F=0 ... S=6
+		static const char* gradeNames[] = { u8"F", u8"E", u8"D", u8"C", u8"B", u8"A", u8"S"};
 		ImGui::TextColored(ImVec4(0.3f, 0.9f, 1.0f, 1.0f), u8"曲がりグレード : %s", GetBreakGradeLabel(activeSet->grades[editIndex]));
 		if (ImGui::Combo(u8"グレード変更", &gradeIndex, gradeNames, IM_ARRAYSIZE(gradeNames)))
 		{
@@ -767,6 +767,16 @@ void ballSprite::DrawGUI()
 			brk = activeSet->breaks[editIndex];
 		}
 		ImGui::Spacing();
+
+		//球威のグレードも表示
+		int powerIndex = static_cast<int>(activeSet->powerGrades[editIndex]); // F=0 ... S=6
+		static const char* powerNames[] = { u8"F", u8"E", u8"D", u8"C", u8"B", u8"A", u8"S" };
+		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.2f, 1.0f), u8"球威グレード : %s", GetPowerGradeLabel(activeSet->powerGrades[editIndex]));
+		if (ImGui::Combo(u8"球威グレード変更", &powerIndex, powerNames, IM_ARRAYSIZE(powerNames)))
+		{
+			activeSet->powerGrades[editIndex] = static_cast<Pitcher::Power>(powerIndex);
+			pitchPowers[editIndex] = activeSet->powerGrades[editIndex]; // 投手専用データにも反映
+		}
 	}
 
 	// ----- 数値での微調整（従来通り） -----
@@ -810,12 +820,13 @@ void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
 	}
 
 	// この時点のpitchBreaks[16]を「グレードCの基準形状」として使用する
-	ballBreak2D baseShape[16];
-	for(int i = 0; i < 16; ++i)
+	ballBreak2D baseShape[19];
+	for(int i = 0; i < 19; ++i)
 	{
 		baseShape[i] = pitchBreaks[i];
 		breakSet.breaks[i] = pitchBreaks[i];
 		breakSet.grades[i] = Pitcher::BreakGrade::C; // デフォルトはグレードC
+		breakSet.powerGrades[i] = Pitcher::Power::C; // デフォルトはパワーC
 	}
 
 	std::vector<Pitcher::RealArsenalEntry> arsenal;
@@ -831,7 +842,7 @@ void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
 	for(const Pitcher::RealArsenalEntry& entry : arsenal)
 	{
 		int breakIndex = Pitcher::PitchTypeToBreakIndex(entry.pitchType);
-		if(breakIndex < 0 || breakIndex >= 16)
+		if(breakIndex < 0 || breakIndex >= 19)
 		{
 			continue; // 無効な球種
 		}
@@ -841,6 +852,7 @@ void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
 		breakSet.breaks[breakIndex].breakX = baseShape[breakIndex].breakX * scale;
 		breakSet.breaks[breakIndex].breakY = baseShape[breakIndex].breakY * scale;
 		breakSet.grades[breakIndex] = entry.breakGrade;
+		breakSet.powerGrades[breakIndex] = entry.power;
 	}
 
 	breakSet.initialized = true;
@@ -864,9 +876,10 @@ void ballSprite::SyncRealPitcherBreaks()
 
 	const int index = static_cast<int>(currentRealPitcher);
 	const PitchBreakSet& breakSet = realPitcherBreaks[index];
-	for(int i = 0; i < 16; ++i)
+	for(int i = 0; i < 19; ++i)
 	{
 		pitchBreaks[i] = breakSet.breaks[i];
+		pitchPowers[i] = breakSet.powerGrades[i];
 	}
 }
 
@@ -914,7 +927,8 @@ void ballSprite::SaveToJson(json& j)
 			breaksArr.push_back({
 				{"breakX", realPitcherBreaks[rp].breaks[i].breakX},
 				{"breakY", realPitcherBreaks[rp].breaks[i].breakY},
-				{"grade", static_cast<int>(realPitcherBreaks[rp].grades[i])}
+				{"grade", static_cast<int>(realPitcherBreaks[rp].grades[i])},
+				{"power", static_cast<int>(realPitcherBreaks[rp].powerGrades[i])}
 				});
 		}
 		realPitcherBreaksJson.push_back({
@@ -1037,6 +1051,8 @@ void ballSprite::LoadFromJson(const json& j)
 					realPitcherBreaks[rp].breaks[i].breakY = breaksArr[i]["breakY"].get<float>();
 				if (breaksArr[i].contains("grade"))
 					realPitcherBreaks[rp].grades[i] = static_cast<Pitcher::BreakGrade>(breaksArr[i]["grade"].get<int>());
+				if (breaksArr[i].contains("power"))
+					realPitcherBreaks[rp].powerGrades[i] = static_cast<Pitcher::Power>(breaksArr[i]["power"].get<int>());
 			}
 			realPitcherBreaks[rp].initialized = true;
 		}

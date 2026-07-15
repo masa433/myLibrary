@@ -159,7 +159,7 @@ void Pitcher::Update(float elapsedTime)
 		ResetPitchFlags(); // pitchFlagsをリセット		
 		isBallThrown = false;
 		TrackingData::Instance().Reset(); // トラッキングデータをリセット
-		if (stateTime > 3.0f) // 3秒後に投球開始
+		if (stateTime > 1.0f) // 1秒後に投球開始
 		{
 			currentState = State::Throwing;
 			stateTime = 0.0f;
@@ -1252,11 +1252,11 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"戸郷翔征";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Fastball,			 53.2f, 146.7f, BreakGrade::C },
-			{ PitchType::Forkball,			 24.9f, 134.4f, BreakGrade::A },
-			{ PitchType::VerticalSlider,     16.3f, 130.9f, BreakGrade::B },
-			{ PitchType::Curveball,			  5.3f, 124.9f, BreakGrade::D },
-			{ PitchType::Cutter,			  0.3f, 138.0f, BreakGrade::C },
+			{ PitchType::Fastball,			 53.2f, 146.7f, BreakGrade::C , Power::C },
+			{ PitchType::Forkball,			 24.9f, 134.4f, BreakGrade::A , Power::B },
+			{ PitchType::VerticalSlider,     16.3f, 130.9f, BreakGrade::B , Power::B },
+			{ PitchType::Curveball,			  5.3f, 124.9f, BreakGrade::D , Power::E },
+			{ PitchType::Cutter,			  0.3f, 138.0f, BreakGrade::C , Power::D },
 		};
 		return true;
 
@@ -1264,10 +1264,10 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"才木浩人";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Fastball,   51.4f, 151.0f, BreakGrade::C },
-			{ PitchType::Forkball,   23.3f, 133.6f, BreakGrade::A },
-			{ PitchType::Slider,     16.9f, 132.4f, BreakGrade::B },
-			{ PitchType::Curveball,   8.9f, 116.6f, BreakGrade::D },
+			{ PitchType::Fastball,   51.4f, 151.0f, BreakGrade::C , Power::A },
+			{ PitchType::Forkball,   23.3f, 133.6f, BreakGrade::A , Power::A },
+			{ PitchType::Slider,     16.9f, 132.4f, BreakGrade::B , Power::B },
+			{ PitchType::Curveball,   8.9f, 116.6f, BreakGrade::D , Power::D },
 		};
 		return true;
 
@@ -1275,13 +1275,13 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"東克樹";
 		outIsRight = false;
 		outArsenal = {
-			{ PitchType::Fastball,   26.2f, 143.0f, BreakGrade::C },
-			{ PitchType::Slider,     23.5f, 126.8f, BreakGrade::B },
-			{ PitchType::Changeup,   21.7f, 124.8f, BreakGrade::A },
-			{ PitchType::TwoSeam,    19.2f, 142.7f, BreakGrade::C },
-			{ PitchType::Cutter,      4.6f, 135.3f, BreakGrade::C },
-			{ PitchType::Curveball,   3.6f, 109.2f, BreakGrade::D },
-			{ PitchType::Shooter,     1.3f, 141.8f, BreakGrade::C },
+			{ PitchType::Fastball,   26.2f, 143.0f, BreakGrade::C , Power::B },
+			{ PitchType::Slider,     23.5f, 126.8f, BreakGrade::B , Power::B },
+			{ PitchType::Changeup,   21.7f, 124.8f, BreakGrade::A , Power::B },
+			{ PitchType::TwoSeam,    19.2f, 142.7f, BreakGrade::C , Power::C },
+			{ PitchType::Cutter,      4.6f, 135.3f, BreakGrade::C , Power::C },
+			{ PitchType::Curveball,   3.6f, 109.2f, BreakGrade::D , Power::D },
+			{ PitchType::Shooter,     1.3f, 141.8f, BreakGrade::C , Power::C },
 		};
 		return true;
 
@@ -1289,12 +1289,12 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"宮城大弥";
 		outIsRight = false;
 		outArsenal = {
-			{ PitchType::Fastball,   42.7f, 147.4f, BreakGrade::C },
-			{ PitchType::Slider,     30.1f, 130.7f, BreakGrade::A },
-			{ PitchType::Splitter,   18.9f, 137.4f, BreakGrade::C },
-			{ PitchType::Changeup,    4.2f, 126.3f, BreakGrade::C },
-			{ PitchType::Curveball,   4.2f, 102.2f, BreakGrade::C },
-			{ PitchType::SlowCurve,   4.2f,  92.5f, BreakGrade::D },
+			{ PitchType::Fastball,   42.7f, 147.4f, BreakGrade::C , Power::A },
+			{ PitchType::Slider,     30.1f, 130.7f, BreakGrade::A , Power::A },
+			{ PitchType::Splitter,   18.9f, 137.4f, BreakGrade::C , Power::B },
+			{ PitchType::Changeup,    4.2f, 126.3f, BreakGrade::C , Power::C },
+			{ PitchType::Curveball,   4.2f, 102.2f, BreakGrade::C , Power::D },
+			{ PitchType::SlowCurve,   4.2f,  92.5f, BreakGrade::D , Power::C },
 		};
 		return true;
 
@@ -1302,16 +1302,15 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"伊藤大海";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Fastball,   35.4f, 148.0f, BreakGrade::C },
-			{ PitchType::Slider,     13.2f, 134.5f, BreakGrade::B },
-			{ PitchType::Splitter,   12.7f, 140.4f, BreakGrade::C },
-			{ PitchType::Sweeper,    11.0f, 131.0f, BreakGrade::D }, 
-			{ PitchType::TwoSeam,     9.4f, 146.3f, BreakGrade::C },
-			{ PitchType::Cutter,      7.0f, 144.9f, BreakGrade::C },
-			{ PitchType::Curveball,   5.5f, 121.6f, BreakGrade::D },
-			{ PitchType::Changeup,    3.4f, 134.5f, BreakGrade::C },
-			{ PitchType::Forkball,    1.6f, 135.3f, BreakGrade::D },
-			{ PitchType::SlowBall,	  1.6f,  90.0f, BreakGrade::D },
+			{ PitchType::Fastball,   35.4f, 148.0f, BreakGrade::C , Power::A },
+			{ PitchType::Slider,     13.2f, 134.5f, BreakGrade::B , Power::B },
+			{ PitchType::Splitter,   12.7f, 140.4f, BreakGrade::C , Power::B },
+			{ PitchType::TwoSeam,     9.4f, 146.3f, BreakGrade::C , Power::E },
+			{ PitchType::Cutter,      7.0f, 144.9f, BreakGrade::C , Power::B },
+			{ PitchType::Curveball,   5.5f, 121.6f, BreakGrade::D , Power::D },
+			{ PitchType::Changeup,    3.4f, 134.5f, BreakGrade::C , Power::D },
+			{ PitchType::Forkball,    1.6f, 135.3f, BreakGrade::D , Power::D },
+			{ PitchType::SlowBall,	  1.6f,  90.0f, BreakGrade::D , Power::E },
 		};
 		return true;
 
@@ -1319,13 +1318,13 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"床田寛樹";
 		outIsRight = false;
 		outArsenal = {
-			{ PitchType::CutFastball,30.1f, 143.1f, BreakGrade::C },
-			{ PitchType::Cutter,     19.4f, 136.3f, BreakGrade::C },
-			{ PitchType::TwoSeam,    17.6f, 135.9f, BreakGrade::C },
-			{ PitchType::Slider,     15.8f, 125.3f, BreakGrade::B },
-			{ PitchType::Changeup,    8.7f, 126.0f, BreakGrade::C },
-			{ PitchType::Curveball,   5.9f, 118.0f, BreakGrade::D },
-			{ PitchType::Palm,        2.4f, 112.8f, BreakGrade::C },
+			{ PitchType::CutFastball,30.1f, 143.1f, BreakGrade::C , Power::B },
+			{ PitchType::Cutter,     19.4f, 136.3f, BreakGrade::C , Power::B },
+			{ PitchType::TwoSeam,    17.6f, 135.9f, BreakGrade::C , Power::B },
+			{ PitchType::Slider,     15.8f, 125.3f, BreakGrade::B , Power::D },
+			{ PitchType::Changeup,    8.7f, 126.0f, BreakGrade::C , Power::D },
+			{ PitchType::Curveball,   5.9f, 118.0f, BreakGrade::D , Power::D },
+			{ PitchType::Palm,        2.4f, 112.8f, BreakGrade::C , Power::D },
 		};
 		return true;
 
@@ -1333,13 +1332,13 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"石川雅規";
 		outIsRight = false;
 		outArsenal = {
-			{ PitchType::Fastball,   27.2f, 129.0f, BreakGrade::C },
-			{ PitchType::Sinker,     19.3f, 119.0f, BreakGrade::C }, //左投げなので表示はスクリュー
-			{ PitchType::Slider,     17.4f, 118.2f, BreakGrade::B },
-			{ PitchType::Cutter,     14.7f, 126.2f, BreakGrade::C },
-			{ PitchType::Shooter,    10.8f, 128.0f, BreakGrade::E },
-			{ PitchType::Curveball,   6.2f, 110.0f, BreakGrade::B }, // カツオカーブ
-			{ PitchType::Changeup,    4.4f, 110.2f, BreakGrade::E },
+			{ PitchType::Fastball,   27.2f, 129.0f, BreakGrade::C , Power::E },
+			{ PitchType::Sinker,     19.3f, 119.0f, BreakGrade::C , Power::B }, //左投げなので表示はスクリュー
+			{ PitchType::Slider,     17.4f, 118.2f, BreakGrade::B , Power::C },
+			{ PitchType::Cutter,     14.7f, 126.2f, BreakGrade::C , Power::C },
+			{ PitchType::Shooter,    10.8f, 128.0f, BreakGrade::E , Power::D },
+			{ PitchType::Curveball,   6.2f, 110.0f, BreakGrade::B , Power::D }, // カツオカーブ
+			{ PitchType::Changeup,    4.4f, 110.2f, BreakGrade::E , Power::D },
 		};
 		return true;
 
@@ -1347,14 +1346,14 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"九里亜蓮";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Changeup,    27.5f, 126.9f, BreakGrade::C },
-			{ PitchType::Shooter,     20.7f, 140.1f, BreakGrade::E },
-			{ PitchType::Slider,      19.9f, 122.1f, BreakGrade::B },
-			{ PitchType::Sinker,      13.2f, 129.7f, BreakGrade::D },
-			{ PitchType::Fastball,    10.1f, 142.0f, BreakGrade::C },
-			{ PitchType::Cutter,       6.5f, 133.0f, BreakGrade::C },
-			{ PitchType::Curveball,    1.5f, 114.0f, BreakGrade::D },
-			{ PitchType::Knuckleball,  0.4f, 109.0f, BreakGrade::D },
+			{ PitchType::Changeup,    27.5f, 126.9f, BreakGrade::C , Power::D },
+			{ PitchType::Shooter,     20.7f, 140.1f, BreakGrade::E , Power::C },
+			{ PitchType::Slider,      19.9f, 122.1f, BreakGrade::B , Power::C },
+			{ PitchType::Sinker,      13.2f, 129.7f, BreakGrade::D , Power::B },
+			{ PitchType::Fastball,    10.1f, 142.0f, BreakGrade::C , Power::D },
+			{ PitchType::Cutter,       6.5f, 133.0f, BreakGrade::C , Power::C },
+			{ PitchType::Curveball,    1.5f, 114.0f, BreakGrade::D , Power::D },
+			{ PitchType::Knuckleball,  0.4f, 109.0f, BreakGrade::D , Power::D },
 		};
 		return true;
 
@@ -1362,13 +1361,13 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"大谷翔平";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Fastball,     45.3f, 157.7f, BreakGrade::C },
-			{ PitchType::Sweeper,      29.5f, 136.7f, BreakGrade::S },
-			{ PitchType::Curveball,    10.4f, 121.0f, BreakGrade::C },
-			{ PitchType::Splitter,      8.8f, 143.2f, BreakGrade::B },
-			{ PitchType::TwoSeam,       4.1f, 155.2f, BreakGrade::C },
-			{ PitchType::VerticalSlider,1.2f, 141.6f, BreakGrade::B },
-			{ PitchType::Cutter,        0.7f, 148.7f, BreakGrade::D },
+			{ PitchType::Fastball,     45.3f, 157.7f, BreakGrade::C , Power::B },
+			{ PitchType::Sweeper,      29.5f, 136.7f, BreakGrade::S , Power::S },
+			{ PitchType::Curveball,    10.4f, 121.0f, BreakGrade::C , Power::D },
+			{ PitchType::Splitter,      8.8f, 143.2f, BreakGrade::B , Power::B },
+			{ PitchType::TwoSeam,       4.1f, 155.2f, BreakGrade::C , Power::D },
+			{ PitchType::VerticalSlider,1.2f, 141.6f, BreakGrade::B , Power::C },
+			{ PitchType::Cutter,        0.7f, 148.7f, BreakGrade::D , Power::E },
 		};
 		return true;
 
@@ -1376,12 +1375,12 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"山本由伸";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Fastball,   27.1f, 154.5f, BreakGrade::C },
-			{ PitchType::Splitter,   26.3f, 147.1f, BreakGrade::A },
-			{ PitchType::Cutter,     13.5f, 147.0f, BreakGrade::C },
-			{ PitchType::Curveball,  13.5f, 124.0f, BreakGrade::A },
-			{ PitchType::Sinker,     12.7f, 153.5f, BreakGrade::C },
-			{ PitchType::Slider,      6.9f, 140.5f, BreakGrade::C },
+			{ PitchType::Fastball,   27.1f, 154.5f, BreakGrade::C , Power::A },
+			{ PitchType::Splitter,   26.3f, 147.1f, BreakGrade::A , Power::A },
+			{ PitchType::Cutter,     13.5f, 147.0f, BreakGrade::C , Power::C },
+			{ PitchType::Curveball,  13.5f, 124.0f, BreakGrade::A , Power::A },
+			{ PitchType::Sinker,     12.7f, 153.5f, BreakGrade::C , Power::B },
+			{ PitchType::Slider,      6.9f, 140.5f, BreakGrade::C , Power::B },
 		};
 		return true;
 
@@ -1389,11 +1388,11 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"今永昇太";
 		outIsRight = false;
 		outArsenal = {
-			{ PitchType::Fastball,   43.5f, 147.8f, BreakGrade::C },
-			{ PitchType::Splitter,   33.2f, 134.0f, BreakGrade::A },
-			{ PitchType::Slider,     13.8f, 131.1f, BreakGrade::B },
-			{ PitchType::Sinker,      6.5f, 145.3f, BreakGrade::C },
-			{ PitchType::Curveball,   3.0f, 119.6f, BreakGrade::C },
+			{ PitchType::Fastball,   43.5f, 147.8f, BreakGrade::C , Power::B },
+			{ PitchType::Changeup,   33.2f, 134.0f, BreakGrade::B , Power::B },
+			{ PitchType::Slider,     13.8f, 131.1f, BreakGrade::B , Power::B },
+			{ PitchType::Cutter,      6.5f, 141.3f, BreakGrade::C , Power::D },
+			{ PitchType::Curveball,   3.0f, 119.6f, BreakGrade::C , Power::C },
 		};
 		return true;
 
@@ -1401,12 +1400,12 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"菊池雄星";
 		outIsRight = false;
 		outArsenal = {
-			{ PitchType::Fastball,   28.3f, 153.5f, BreakGrade::C },
-			{ PitchType::Splitter,   21.9f, 139.7f, BreakGrade::A },
-			{ PitchType::Slider,     20.8f, 138.3f, BreakGrade::B },
-			{ PitchType::Cutter,     18.3f, 145.2f, BreakGrade::C },
-			{ PitchType::Curveball,   9.7f, 126.8f, BreakGrade::C },
-			{ PitchType::Sinker,      1.0f, 154.8f, BreakGrade::D },
+			{ PitchType::Fastball,   28.3f, 153.5f, BreakGrade::C , Power::C },
+			{ PitchType::Splitter,   21.9f, 139.7f, BreakGrade::A , Power::A },
+			{ PitchType::Slider,     20.8f, 138.3f, BreakGrade::B , Power::D },
+			{ PitchType::Cutter,     18.3f, 145.2f, BreakGrade::C , Power::B },
+			{ PitchType::Curveball,   9.7f, 126.8f, BreakGrade::C , Power::C },
+			{ PitchType::Sinker,      1.0f, 154.8f, BreakGrade::D , Power::D },
 		};
 		return true;
 
@@ -1414,12 +1413,12 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"千賀滉大";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Fastball,   37.7f, 154.6f, BreakGrade::C },
-			{ PitchType::Cutter,     23.8f, 143.9f, BreakGrade::C },
-			{ PitchType::Forkball,   21.0f, 133.6f, BreakGrade::S },
-			{ PitchType::Slider,      4.6f, 138.3f, BreakGrade::B },
-			{ PitchType::Sinker,      4.0f, 143.1f, BreakGrade::C },
-			{ PitchType::Curveball,   0.4f, 105.5f, BreakGrade::D },
+			{ PitchType::Fastball,   37.7f, 154.6f, BreakGrade::C , Power::C },
+			{ PitchType::Cutter,     23.8f, 143.9f, BreakGrade::C , Power::B },
+			{ PitchType::Forkball,   21.0f, 133.6f, BreakGrade::S , Power::S },
+			{ PitchType::Slider,      4.6f, 138.3f, BreakGrade::B , Power::D },
+			{ PitchType::Sinker,      4.0f, 143.1f, BreakGrade::C , Power::E },
+			{ PitchType::Curveball,   0.4f, 105.5f, BreakGrade::D , Power::F },
 		};
 		return true;
 
@@ -1427,9 +1426,9 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"大勢";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::NaturalShoot,60.2f, 153.1f, BreakGrade::C },
-			{ PitchType::Forkball,    38.4f, 138.3f, BreakGrade::A },			
-			{ PitchType::Slider,       1.4f, 126.0f, BreakGrade::B },
+			{ PitchType::NaturalShoot,60.2f, 153.1f, BreakGrade::C , Power::B },
+			{ PitchType::Forkball,    38.4f, 138.3f, BreakGrade::A , Power::A },			
+			{ PitchType::Slider,       1.4f, 126.0f, BreakGrade::B , Power::B },
 		};
 		return true;
 
@@ -1437,10 +1436,10 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"藤川球児";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::BlazingFastball,   65.3f, 150.0f, BreakGrade::C },
-			{ PitchType::Splitter,          20.0f, 138.3f, BreakGrade::B },
-			{ PitchType::TwoSeam,			10.0f, 147.0f, BreakGrade::C },
-			{ PitchType::Curveball,			 5.0f, 116.0f, BreakGrade::C },
+			{ PitchType::BlazingFastball,   65.3f, 150.0f, BreakGrade::C , Power::S },
+			{ PitchType::Splitter,          20.0f, 138.3f, BreakGrade::B , Power::C },
+			{ PitchType::TwoSeam,			10.0f, 147.0f, BreakGrade::C , Power::D },
+			{ PitchType::Curveball,			 5.0f, 116.0f, BreakGrade::C , Power::D },
 		};
 		return true;
 
@@ -1448,11 +1447,11 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"マルティネス";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Fastball,     65.3f, 153.7f, BreakGrade::C },
-			{ PitchType::Splitter,     21.9f, 145.0f, BreakGrade::A },
-			{ PitchType::TwoSeam,       5.2f, 152.6f, BreakGrade::C },
-			{ PitchType::VerticalSlider,4.6f, 141.1f, BreakGrade::E },
-			{ PitchType::Changeup,      3.0f, 138.3f, BreakGrade::D },
+			{ PitchType::Fastball,     65.3f, 153.7f, BreakGrade::C , Power::A },
+			{ PitchType::Splitter,     21.9f, 145.0f, BreakGrade::A , Power::A },
+			{ PitchType::TwoSeam,       5.2f, 152.6f, BreakGrade::C , Power::D },
+			{ PitchType::VerticalSlider,4.6f, 141.1f, BreakGrade::E , Power::C },
+			{ PitchType::Changeup,      3.0f, 138.3f, BreakGrade::D , Power::C },
 		};
 		return true;
 
@@ -1460,11 +1459,11 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"石井大智";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Fastball,      59.8f, 149.2f, BreakGrade::C },
-			{ PitchType::VerticalSlider,17.8f, 133.3f, BreakGrade::B },
-			{ PitchType::Sinker,        12.4f, 134.6f, BreakGrade::B },
-			{ PitchType::Forkball,       5.2f, 134.6f, BreakGrade::B },
-			{ PitchType::Curveball,      4.8f, 123.0f, BreakGrade::D },
+			{ PitchType::Fastball,      59.8f, 149.2f, BreakGrade::C , Power::A },
+			{ PitchType::VerticalSlider,17.8f, 133.3f, BreakGrade::B , Power::C },
+			{ PitchType::Sinker,        12.4f, 134.6f, BreakGrade::B , Power::B },
+			{ PitchType::Forkball,       5.2f, 134.6f, BreakGrade::B , Power::B },
+			{ PitchType::Curveball,      4.8f, 123.0f, BreakGrade::D , Power::D },
 		};
 		return true;
 
@@ -1472,10 +1471,10 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"ビエイラ";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Fastball,      69.5f, 162.0f, BreakGrade::C },
-			{ PitchType::VerticalSlider,20.1f, 139.7f, BreakGrade::A },
-			{ PitchType::TwoSeam,        7.3f, 156.2f, BreakGrade::C },
-			{ PitchType::Splitter,       1.5f, 148.3f, BreakGrade::E },
+			{ PitchType::Fastball,      69.5f, 162.0f, BreakGrade::C , Power::B },
+			{ PitchType::VerticalSlider,20.1f, 139.7f, BreakGrade::A , Power::A },
+			{ PitchType::TwoSeam,        7.3f, 156.2f, BreakGrade::C , Power::C },
+			{ PitchType::Splitter,       1.5f, 148.3f, BreakGrade::E , Power::F },
 		};
 		return true;
 
@@ -1483,9 +1482,9 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"高梨雄平";
 		outIsRight = false;
 		outArsenal = {
-			{ PitchType::Slider,        58.6f, 126.5f, BreakGrade::S },
-			{ PitchType::Shooter,       31.0f, 141.4f, BreakGrade::C },
-			{ PitchType::Fastball,      10.3f, 142.7f, BreakGrade::C },
+			{ PitchType::Slider,        58.6f, 126.5f, BreakGrade::S , Power::B },
+			{ PitchType::Shooter,       31.0f, 141.4f, BreakGrade::C , Power::C },
+			{ PitchType::Fastball,      10.3f, 142.7f, BreakGrade::C , Power::B },
 		};
 		return true;
 
@@ -1493,9 +1492,9 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"松山晋也";
 		outIsRight = true;
 		outArsenal = {
-			{ PitchType::Fastball,      58.8f, 153.9f, BreakGrade::C },
-			{ PitchType::Forkball,      40.6f, 145.2f, BreakGrade::B },
-			{ PitchType::Cutter,         0.6f, 152.0f, BreakGrade::D },
+			{ PitchType::Fastball,      58.8f, 153.9f, BreakGrade::C , Power::B },
+			{ PitchType::Forkball,      40.6f, 145.2f, BreakGrade::B , Power::A },
+			{ PitchType::Cutter,         0.6f, 152.0f, BreakGrade::D , Power::D },
 		};
 		return true;
 
@@ -1503,14 +1502,13 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outName = u8"大竹耕太郎";
 		outIsRight = false;
 		outArsenal = {
-			{ PitchType::Fastball,      39.1f, 137.5f, BreakGrade::C },
-			{ PitchType::Changeup,      25.6f, 116.4f, BreakGrade::B },
-			{ PitchType::Cutter,		13.3f, 131.3f, BreakGrade::C },
-			{ PitchType::TwoSeam,        8.8f, 131.1f, BreakGrade::D },
-			{ PitchType::Slider,         8.1f, 117.4f, BreakGrade::C },
-			{ PitchType::SlowBall,       2.3f,  85.0f, BreakGrade::E },
-			{ PitchType::Curveball,      2.0f, 105.5f, BreakGrade::D },
-			{ PitchType::Knuckleball,    0.7f, 129.6f, BreakGrade::E },
+			{ PitchType::Fastball,      39.1f, 137.5f, BreakGrade::C , Power::C },
+			{ PitchType::Changeup,      25.6f, 116.4f, BreakGrade::B , Power::B },
+			{ PitchType::Cutter,		13.3f, 131.3f, BreakGrade::C , Power::B },
+			{ PitchType::TwoSeam,        8.8f, 131.1f, BreakGrade::D , Power::E },
+			{ PitchType::Slider,         8.1f, 117.4f, BreakGrade::C , Power::D },
+			{ PitchType::SlowBall,       2.3f,  85.0f, BreakGrade::E , Power::D },
+			{ PitchType::Curveball,      2.0f, 105.5f, BreakGrade::D , Power::D },
 		};
 		return true;
 
