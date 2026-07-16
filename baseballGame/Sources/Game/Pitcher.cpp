@@ -273,8 +273,6 @@ void Pitcher::Update(float elapsedTime)
 			{
 				hasReachedZero = true;
 
-				char debugMessage[256];
-			
 				char timeMessage[128];
 				snprintf(timeMessage, sizeof(timeMessage),
 					"Time to reach z=0.0f: %.2f seconds\n", throwCounter);

@@ -184,13 +184,13 @@ public:
 	{
 		switch (power)
 		{
-		case Pitcher::Power::F: return 0.5f; // 弾き返しやすい（軽い球）
-		case Pitcher::Power::E: return 0.75f;
-		case Pitcher::Power::D: return 0.9f;
+		case Pitcher::Power::F: return 0.85f; // 弾き返しやすい（軽い球）
+		case Pitcher::Power::E: return 0.9f;
+		case Pitcher::Power::D: return 0.95f;
 		case Pitcher::Power::C: return 1.0f;  // 基準
-		case Pitcher::Power::B: return 1.25f;
-		case Pitcher::Power::A: return 1.5f;
-		case Pitcher::Power::S: return 2.0f; // 弾き返しにくい（重い球）
+		case Pitcher::Power::B: return 1.05f;
+		case Pitcher::Power::A: return 1.1f;
+		case Pitcher::Power::S: return 1.15f; // 弾き返しにくい（重い球）
 		default: return 1.0f;
 		}
 	}

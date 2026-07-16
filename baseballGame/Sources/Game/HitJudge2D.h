@@ -4,16 +4,11 @@
 #include "imgui.h"
 #include "ballSprite.h"
 #include "batSprite.h"
+#include "json.hpp"
 
-// ============================================================
-//  HitJudge2D  ―  2Dスプライト重なり & タイミング判定
-//
-//  使い方：
-//    1. Player::Update() の中で Update() を毎フレーム呼ぶ
-//    2. スイング入力を検知したら TrySwing() を呼ぶ
-//    3. 衝突コールバック(onContact)で GetHitResult() を見て
-//       PhysX 側の速度に補正を掛ける
-// ============================================================
+using json = nlohmann::json;
+
+
 struct HitJudge2DResult
 {
     bool  validHit = false;  // 有効な当たり（空振りでない）
@@ -372,6 +367,39 @@ public:
             + (localY - clampY) * (localY - clampY);
         return distSq <= radius * radius;
     }
+
+    void SaveToJson(json& j) const
+    {
+        j["hitWindowBeforeSec"] = hitWindowBeforeSec;
+        j["hitWindowAfterSec"] = hitWindowAfterSec;
+        j["batHitBandHeight"] = batHitBandHeight;
+        j["cursorRadius"] = cursorRadius;
+        j["cursorOverlapBonus"] = cursorOverlapBonus;
+        j["purpleBatPenalty"] = purpleBatPenalty;
+        j["ballZonePenalty"] = ballZonePenalty;
+        j["cursorDeadZoneRatio"] = cursorDeadZoneRatio;
+        j["launchAngleTop"] = launchAngleTop;
+        j["launchAngleCenter"] = launchAngleCenter;
+        j["launchAngleBottom"] = launchAngleBottom;
+        j["groundBallThreshold"] = groundBallThreshold;
+	}
+
+
+    void LoadFromJson(const json& j)
+    {
+        hitWindowBeforeSec = j.value("hitWindowBeforeSec", hitWindowBeforeSec);
+        hitWindowAfterSec = j.value("hitWindowAfterSec", hitWindowAfterSec);
+        batHitBandHeight = j.value("batHitBandHeight", batHitBandHeight);
+        cursorRadius = j.value("cursorRadius", cursorRadius);
+        cursorOverlapBonus = j.value("cursorOverlapBonus", cursorOverlapBonus);
+        purpleBatPenalty = j.value("purpleBatPenalty", purpleBatPenalty);
+        ballZonePenalty = j.value("ballZonePenalty", ballZonePenalty);
+        cursorDeadZoneRatio = j.value("cursorDeadZoneRatio", cursorDeadZoneRatio);
+        launchAngleTop = j.value("launchAngleTop", launchAngleTop);
+        launchAngleCenter = j.value("launchAngleCenter", launchAngleCenter);
+        launchAngleBottom = j.value("launchAngleBottom", launchAngleBottom);
+        groundBallThreshold = j.value("groundBallThreshold", groundBallThreshold);
+	}
 
 private:
     HitJudge2DResult pendingResult_ = {};

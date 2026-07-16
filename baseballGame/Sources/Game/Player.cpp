@@ -167,6 +167,24 @@ void Player::Uninitialize()
 
 }
 
+void Player::UpdateBatterModel()
+{
+    // モデルの切り替え
+    ID3D11Device* device = Graphics::Instance().GetDevice();
+    const char* modelPath = isRightBatter ? ".\\resources\\batter\\rightBatter.glb" : ".\\resources\\batter\\leftBatter.glb";
+
+    batter = std::make_unique<gltf_model>(device, modelPath);
+	position = isRightBatter ? DirectX::XMFLOAT3(-1.0f, 0.01f, -0.4f) : DirectX::XMFLOAT3(1.0f, 0.01f, -0.4f);
+	batPosition = isRightBatter ? DirectX::XMFLOAT3(-0.08f, 0.0f, 0.05f) : DirectX::XMFLOAT3(0.08f, 0.0f, 0.05f);
+	batAngle = isRightBatter ? DirectX::XMFLOAT3(0.0f, 0.0f, -1.6f) : DirectX::XMFLOAT3(0.0f, 0.0f, 1.6f);
+
+	batter->build_static_batches(device);
+	animated_nodes = batter->nodes;
+	animation_time = 0.0f;
+    current_animation_index = animation_indices[static_cast<int>(current_state)];
+}
+
+
 // プレイヤー固有の更新処理
 void Player::Update(float elapsedTime)
 {
@@ -449,29 +467,7 @@ void Player::DrawGUI()
         bool prev = isRightBatter;
         if (ImGui::Checkbox("Right Handed", &isRightBatter))
         {
-            if (prev != isRightBatter)
-            {
-                // モデル・位置を再初期化
-                ID3D11Device* device = Graphics::Instance().GetDevice();
-                if (IsRightBatter())
-                {
-                    batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
-                    position = { -1.0f, 0.01f, -0.4f };
-                    batPosition = { -0.08f, 0.0f, 0.05f };
-                    batAngle = { 0.0f, 0.0f, -1.6f };
-                }
-                else
-                {
-                    batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
-                    position = { 1.0f, 0.01f, -0.4f };
-                    batPosition = { 0.08f, 0.0f, 0.05f };
-                    batAngle = { 0.0f, 0.0f, 1.6f };
-                }
-                batter->build_static_batches(device);
-                animated_nodes = batter->nodes;
-                animation_time = 0.0f;
-                current_animation_index = animation_indices[static_cast<int>(current_state)];
-            }
+			UpdateBatterModel();
         }
     }
     if (ImGui::CollapsingHeader("Bat"))
@@ -570,6 +566,23 @@ void Player::DrawGUI()
     ImGui::Checkbox("playhasBeforeSwing", &hasPlayBeforeSwing);
 
 	HitJudge2D::Instance().DrawGUI();
+
+    if (ImGui::CollapsingHeader(u8"実在打者プリセット"))
+    {
+        const char* realBatterNames[] = {
+                u8"なし",
+                u8"森下翔太", u8"佐藤輝明", u8"岡本和真", u8"坂本勇人", u8"牧秀悟",
+                u8"筒香嘉智", u8"村上宗隆", u8"山田哲人",
+                u8"鈴木誠也", u8"坂倉将吾", u8"細川成也", u8"上林誠知", u8"柳田悠岐",
+                u8"山川穂高",u8"大谷翔平",u8"万波中正",u8"吉田正尚",u8"ブーマー",
+                u8"山口航輝",u8"ソト",u8"浅村栄斗",u8"ボイト",u8"中村剛也",u8"ネビン"
+        };
+        int realBatterIndex = static_cast<int>(selectedRealBatter);
+        if (ImGui::Combo(u8"実在打者", &realBatterIndex, realBatterNames, IM_ARRAYSIZE(realBatterNames)))
+        {
+            SelectRealBatter(static_cast<RealBatter>(realBatterIndex));
+        }
+    }
 
 #endif
 }
@@ -957,6 +970,292 @@ void Player::UpdateChildrenRecursive(int nodeIndex)
     }
 }
 
+bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo>& outArsenal, bool& outIsRight, const char*& outName)
+{
+    outArsenal.clear();
+    outIsRight = true;
+    outName = "";
+
+    switch (rb)
+    {
+    case RealBatter::Morisita:
+        outName = u8"森下翔太";
+		outIsRight = true;
+        outArsenal =
+        {
+            { 78 } // power（威力）
+        };
+        return true;
+
+    case RealBatter::Sato:
+		outName = u8"佐藤輝明";
+        outIsRight = false;
+        outArsenal =
+        {
+            { 83 } // power（威力）
+		};
+		return true;
+
+    case RealBatter::Okamoto:
+		outName = u8"岡本和真";
+		outIsRight = true;
+        outArsenal =
+        {
+            { 84 } // power（威力）
+		};
+        return true;
+
+    case RealBatter::Sakamoto:
+		outName = u8"坂本勇人";
+		outIsRight = true;
+        outArsenal =
+        {
+            { 76 } // power（威力）
+        };
+		return true;
+
+    case RealBatter::Maki:
+		outName = u8"牧秀悟";
+        outIsRight = true;
+        outArsenal =
+        {
+            { 81 } // power（威力）
+		};
+		return true;
+
+    case RealBatter::Tsutsugo:
+		outName = u8"筒香嘉智";
+		outIsRight = false;
+        outArsenal =
+        {
+            { 78 } // power（威力）
+        };
+		return true;
+
+    case RealBatter::Murakami:
+		outName = u8"村上宗隆";
+        outIsRight = false;
+        outArsenal =
+        {
+            { 85 } // power（威力）
+		};
+		return true;
+
+    case RealBatter::Yamada:
+		outName = u8"山田哲人";
+        outIsRight = true;
+        outArsenal =
+        {
+            { 78 } // power（威力）
+        };
+		return true;
+
+    case RealBatter::Suzuki:
+        outName =  u8"鈴木誠也";
+        outIsRight = true;
+        outArsenal =
+        {
+			{ 83 } // power（威力）
+        };
+		return true;
+
+    case RealBatter::Sakakura:
+        outName = u8"坂倉将吾";
+        outIsRight = false;
+        outArsenal =
+        {
+            { 75 } // power（威力）
+        };
+		return true;
+
+    case RealBatter::Hosokawa:
+        outName = u8"細川成也";
+        outIsRight = true;
+        outArsenal =
+        {
+            { 80 } // power（威力）
+		};
+		return true;
+
+    case RealBatter::Uebayashi:
+        outName = u8"上林誠知";
+        outIsRight = false;
+        outArsenal =
+        {
+            { 75 } // power（威力）
+		};
+        return true;
+
+    case RealBatter::Yanagita:
+        outName = u8"柳田悠岐";
+        outIsRight = false;
+        outArsenal =
+        {
+            { 77 } // power（威力）
+        };
+		return true;
+
+    case RealBatter::Yamakawa:
+        outName = u8"山川穂高";
+        outIsRight = true;
+        outArsenal =
+        {
+            { 82 } // power（威力）
+		};
+		return true;
+
+    case RealBatter::Ohtani:
+        outName = u8"大谷翔平";
+        outIsRight = false;
+        outArsenal =
+        {
+            { 92 } // power（威力）
+		};
+        return true;
+
+    case RealBatter::Mannami:
+        outName = u8"万波中正";
+        outIsRight = true;
+        outArsenal =
+        {
+            { 79 } // power（威力）
+        };
+		return true;
+
+    case RealBatter::Yoshida:
+        outName = u8"吉田正尚";
+        outIsRight = false;
+        outArsenal =
+        {
+            { 80 } // power（威力）
+		};
+        return true;
+
+    case RealBatter::Boomer:
+        outName = u8"ブーマー";
+        outIsRight = true;
+        outArsenal =
+        {
+            { 84 } // power（威力）
+        };
+		return true;
+
+    case RealBatter::Yamaguchi:
+        outName = u8"山口航輝";
+        outIsRight = true;
+        outArsenal =
+        {
+            { 76 } // power（威力）
+		};
+        return true;
+
+    case RealBatter::Soto:
+        outName = u8"ソト";
+        outIsRight = true;
+        outArsenal =
+        {
+			{ 77 } // power（威力）
+		};
+		return true;
+
+    case RealBatter::Asamura:
+        outName = u8"浅村栄斗";
+        outIsRight = true;
+        outArsenal =
+        {
+            { 77 } // power（威力）
+		};
+        return true;
+
+    case RealBatter::Voit:
+        outName = u8"ボイト";
+        outIsRight = true;
+        outArsenal =
+        {
+			{ 78 } // power（威力）
+        };
+		return true;
+
+    case RealBatter::Nakamura:
+        outName = u8"中村剛也";
+		outIsRight = true;
+        outArsenal =
+        {
+            { 75 } // power（威力）
+		};
+        return true;
+
+    case RealBatter::Nevin:
+        outName = u8"ネビン";
+        outIsRight = true;
+        outArsenal =
+        {
+			{ 76 } // power（威力）
+		};
+        return true;
+
+    default:
+	    return false; // 未知の打者
+    }
+
+}
+
+
+const char* Player::GetRealBatterName(RealBatter rb)
+{
+    std::vector<RealArsenalInfo> arsenal;
+    bool isRight;
+    const char* name;
+    if (GetRealBatterArsenalData(rb, arsenal, isRight, name))
+    {
+        return name;
+    }
+    return "Unknown";
+}
+
+void Player::SelectRealBatter(RealBatter rb)
+{
+	selectedRealBatter = rb;
+    if(rb == RealBatter::None)
+    {
+        realBatterInfo.clear();
+        if (consoleLog)
+        {
+            consoleLog->push_back(u8"[Info] 実在打者プリセットを解除しました\n");
+        }
+        return;
+	}
+
+	std::vector<RealArsenalInfo> arsenal;
+    bool isRight = true;
+    const char* name = "";
+    //実在打者のアーセナルデータを取得
+    if (!GetRealBatterArsenalData(rb, arsenal, isRight, name))
+    {
+        selectedRealBatter = RealBatter::None;
+        realBatterInfo.clear();
+        return;
+    }
+
+	//利き手を設定
+	realBatterInfo = arsenal;
+
+	//利き手を設定
+    if (isRightBatter != isRight)
+    {
+		isRightBatter = isRight;
+		UpdateBatterModel();
+    }
+
+	//コンソールログに出力
+    if (consoleLog)
+    {
+        consoleLog->push_back(u8"[Info] 実在打者プリセットを選択: ");
+        consoleLog->push_back(name);
+        consoleLog->push_back(u8"\n");
+	}
+}
+
 void Player::SaveToJson(json& j)
 {
     // 基本的なプロパティを保存
@@ -969,6 +1268,9 @@ void Player::SaveToJson(json& j)
     j["batAngle"] = { batAngle.x, batAngle.y, batAngle.z };
     j["meshScale"] = { meshScale.x, meshScale.y, meshScale.z };
 
+	HitJudge2D::Instance().SaveToJson(j["HitJudge2D"]); // HitJudge2Dの状態も保存
+
+	j["selectedRealBatter"] = static_cast<int>(selectedRealBatter); // 選択された実在打者の情報を保存
 }
 
 void Player::LoadFromJson(const json& j)
@@ -985,19 +1287,22 @@ void Player::LoadFromJson(const json& j)
     //利き手が変わっていれば再初期化
     if (j.contains("isRightBatter") && (bool)j["isRightBatter"] != isRightBatter)
     {
-        isRightBatter = j["isRightBatter"];
-        ID3D11Device* device = Graphics::Instance().GetDevice();
-        if (isRightBatter)
+		UpdateBatterModel();
+    }
+
+	HitJudge2D::Instance().LoadFromJson(j["HitJudge2D"]); // HitJudge2Dの状態も読み込む
+
+    // 選択された実在打者の情報を読み込む
+    if (j.contains("selectedRealBatter"))
+    {
+        int rbIndex = j["selectedRealBatter"];
+        if (rbIndex >= 0 && rbIndex < static_cast<int>(RealBatter::Count))
         {
-            batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
+            SelectRealBatter(static_cast<RealBatter>(rbIndex));
         }
         else
         {
-            batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
+            SelectRealBatter(RealBatter::None);
         }
-        batter->build_static_batches(device);
-        animated_nodes = batter->nodes;
-        animation_time = 0.0f;
-        current_animation_index = animation_indices[static_cast<int>(current_state)];
     }
 }

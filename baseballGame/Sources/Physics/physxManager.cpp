@@ -1024,14 +1024,8 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				TARGET_Q + (1.0f + TARGET_Q) * massRatio, 0.5f, 0.95f);
 			float q = (adjustedRestitution - massRatio) / (1.0f + massRatio);
 			float powerScale = ballSprite::Instance().GetCurrentPitchPowerScale();
-			if (consoleLog)
-			{
-				char dbg[128];
-				snprintf(dbg, sizeof(dbg), u8"[Debug] powerScale=%.2f currentPitchIndex=%d", powerScale, ballSprite::Instance().currentPitchIndex);
-				consoleLog->push_back(dbg);
-			}
-
-			float estimatedExitVelocity = (q * ballSpeed + (1.0f + q) * batSpeed) / powerScale;// 2D判定の打球速度を使用する場合は result.exitVelocityKmh を使用する
+			
+			float estimatedExitVelocity = (q * ballSpeed + (1.0f + q) * batSpeed) / powerScale;
 
 			// 打球角度補正
 			/*float launchAngle = std::atan2(
@@ -1061,11 +1055,23 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			spinAxis.x = -spinAxis.x;
 			spinAxis.y = -spinAxis.y;
 
+			constexpr float SOFT_LIMIT_THRESHOLD = 165.0f;// 165km/h以上は回転を抑制
+			constexpr float SOFT_LIMIT_MAX = 190.0f;// 190km/h以上は回転を抑制
+			constexpr float SOFT_LIMIT_KNEE = SOFT_LIMIT_MAX - SOFT_LIMIT_THRESHOLD;// 25km/hの範囲で抑制
+
 			// 最終速度
 			physx::PxVec3 newBallVelocity = collisionNormal * estimatedExitVelocity;
-			
-			
 			newBallVelocity *= result.velocityScale; // 2D判定の倍率
+
+			//ソフトリミットをかける
+			float speed = newBallVelocity.magnitude() * 3.6f;
+			if(speed > SOFT_LIMIT_THRESHOLD)
+			{
+				float excess = speed - SOFT_LIMIT_THRESHOLD;// 165km/hを超えた分
+				//tanhで滑らかに抑制する
+				float compressedSpeed = SOFT_LIMIT_THRESHOLD + SOFT_LIMIT_KNEE * std::tanh(excess / SOFT_LIMIT_KNEE);// 165km/hを超えた分をtanhで抑制
+				newBallVelocity *= compressedSpeed / speed;// 速度を圧縮
+			}
 
 			// 打球方向判定
 			float originalAngleDeg = std::atan2(newBallVelocity.x, newBallVelocity.z) * (180.0f / PI);

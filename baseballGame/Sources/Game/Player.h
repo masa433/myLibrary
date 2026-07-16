@@ -57,6 +57,8 @@ private:
 
     void UpdatePhysXMeshTransform(const DirectX::XMFLOAT3& scale);
 
+    void UpdateBatterModel();
+
 public:
     physx::PxRigidDynamic* GetBatCollider() const { return pxBatRigidBody; }
 
@@ -148,4 +150,74 @@ public:
 private:
     std::vector<std::string>* consoleLog = nullptr;
 
+
+public:
+
+    enum class RealBatter
+    {
+        None,
+        Morisita,//森下翔太
+		Sato,//佐藤輝明
+		Okamoto,//岡本和真
+		Sakamoto,//坂本勇人
+		Maki,//牧秀悟
+		Tsutsugo,//筒香嘉智
+		Murakami,//村上宗隆
+		Yamada,//山田哲人
+		Suzuki,//鈴木誠也
+		Sakakura,//坂倉将吾
+		Hosokawa,//細川成也
+		Uebayashi,//上林誠知
+		Yanagita,//柳田悠岐
+		Yamakawa,//山川穂高
+		Ohtani,//大谷翔平
+		Mannami,//万波中正
+		Yoshida,//吉田正尚
+		Boomer,//ブーマー
+		Yamaguchi,//山口航輝
+		Soto,//ソト
+		Asamura,//浅村栄斗
+		Voit,//ボイト
+        Nakamura,//中村剛也
+		Nevin,//ネビン
+        Count
+    };
+
+    enum class BatterPowerRank
+    {
+		C, // Cランク
+        B,
+		A,
+        S
+    };
+
+    inline BatterPowerRank GetPowerRank(int power)
+    {
+        //90～99はSランク、80以上はAランク、70以上はBランク、60以上はCランク、それ以下はFランク
+        if(power >= 90)
+            return BatterPowerRank::S;
+        else if (power >= 80)
+            return BatterPowerRank::A;
+        else if (power >= 70)
+            return BatterPowerRank::B;
+        else if (power >= 60)
+            return BatterPowerRank::C;
+        else
+			return BatterPowerRank::C; //Cランクに統一
+    }
+
+    struct RealArsenalInfo
+    {
+		int power = 0; // 威力
+    };
+
+	void SelectRealBatter(RealBatter batter);
+	RealBatter GetSelectedRealBatter() const { return selectedRealBatter; }
+	static const char* GetRealBatterName(RealBatter batter);
+
+private:
+    RealBatter selectedRealBatter = RealBatter::None;
+	std::vector<RealArsenalInfo> realBatterInfo;
+
+    static bool GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo>& outArsenal, bool& outIsRight, const char*& outName);
 };
