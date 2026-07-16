@@ -139,9 +139,13 @@ private:
 	bool hasPlayBeforeSwing = false;
 	bool isRightBatter = false; // 右打者かどうかのフラグ
 
+	
 public:
 
 	bool isPurpleBat = false; // 紫色のバットに当たったかどうかのフラグ
+
+    bool IsSwinging() const { return current_state == State::Swinging; } // スイング中かどうかを判定するメソッド
+
 
 public:
     // コンソールログへのポインタをセット
@@ -214,6 +218,18 @@ public:
 	void SelectRealBatter(RealBatter batter);
 	RealBatter GetSelectedRealBatter() const { return selectedRealBatter; }
 	static const char* GetRealBatterName(RealBatter batter);
+
+    int GetSelectedRealBatterPower() const
+    {
+        if (realBatterInfo.empty()) return 70;
+		return realBatterInfo[0].power; // 仮に1つ目の情報を返す
+    }
+
+    void SetSelectedRealBatterPower(int power)
+    {
+        if (realBatterInfo.empty()) return;
+        realBatterInfo[0].power = power; // 仮に1つ目の情報を設定
+    }
 
 private:
     RealBatter selectedRealBatter = RealBatter::None;

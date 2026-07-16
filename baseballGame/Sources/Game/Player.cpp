@@ -189,24 +189,6 @@ void Player::UpdateBatterModel()
 void Player::Update(float elapsedTime)
 {
 
-
-    // キー入力による移動処理
-    HandleInput(elapsedTime);
-
-    // アニメーション更新
-    UpdateAnimation(elapsedTime);
-
-    // 位置更新
-    UpdateTransform();
-
-    //バットをアタッチメント
-    AttachBatToHand();
-
-    // ボールの位置を取得してルックアット処理を実行
-    const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetBallPosition();
-    UpdateLookAt(ballPosition);
-
-
     // HitJudge2Dの更新（スイング判定）
     {
         ballSprite& bs = ballSprite::Instance();
@@ -311,38 +293,37 @@ void Player::Update(float elapsedTime)
         HitJudge2D::Instance().Update(
             ballCenter, batCenter, batSize, batRotPhysics, cursorCenter, estTime);
 
-		
+
     }
+
+    // キー入力による移動処理
+    HandleInput(elapsedTime);
+
+    // アニメーション更新
+    UpdateAnimation(elapsedTime);
+
+    // 位置更新
+    UpdateTransform();
+
+    //バットをアタッチメント
+    AttachBatToHand();
+
+    // ボールの位置を取得してルックアット処理を実行
+    const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetBallPosition();
+    UpdateLookAt(ballPosition);
+ 
 
 }
 
 // キー入力処理
 void Player::HandleInput(float elapsedTime)
 {
-
     // スペースキーでスイング
     if (GetAsyncKeyState(VK_SPACE) & 0x8000)
     {
         if (current_state != State::Swinging)
-        {
-            HitJudge2DResult result;
-            bool validHit = HitJudge2D::Instance().TrySwing(result);
-
-            if (validHit)
-            {
-                // 有効ヒット：結果を HitJudge2D に保持させておき
-                // onContact(PhysX) 側で GetLastResult() を参照する
-                HitJudge2D::Instance().SetPendingResult(result);
-                ChangeState(State::Swinging);
-            }
-            else
-            {
-                // 空振り：アニメーションだけ再生（打球なし）
-                ChangeState(State::Swinging);  // アニメは通常通り
-                // PhysX の onContact は Ball::GetHasCollided() でガードされるが
-                // さらに pendingResult を無効にしてスルーさせる
-                HitJudge2D::Instance().ClearPendingResult();
-            }
+        {               
+             ChangeState(State::Swinging);          
         }
     }
 
@@ -501,70 +482,7 @@ void Player::DrawGUI()
         }
 
     }
-
-    // アニメーションデバッグ用
-    if (ImGui::CollapsingHeader("Animation"))
-    {
-        if (batter && !batter->animations.empty())
-        {
-            const gltf_model::animation& animation = batter->animations.at(current_animation_index);
-
-            // アニメーション選択
-            int prev_animation_index = current_animation_index;
-            if (ImGui::SliderInt("Animation Index", &current_animation_index, 0, static_cast<int>(batter->animations.size()) - 1))
-            {
-                // アニメーションが変更されたら時間をリセット
-                if (prev_animation_index != current_animation_index)
-                {
-                    animation_time = 0.0f;
-                }
-            }
-
-            // アニメーション名の表示
-            ImGui::Text("Current Animation: %s", animation.name.c_str());
-
-            // 再生/停止ボタン
-            if (ImGui::Checkbox("Playing", &animation_playing))
-            {
-                // チェックボックスの状態が変わったときの処理
-            }
-
-            // タイムスライダー
-            if (ImGui::SliderFloat("Time", &animation_time, 0.0f, animation.duration))
-            {
-                // スライダーで時間を手動調整したときは再生を一時停止
-                animation_playing = false;
-            }
-
-            ImGui::Text("Duration: %.2f sec", animation.duration);
-
-            // すべてのアニメーションをリスト表示
-            if (ImGui::TreeNode("All Animations"))
-            {
-                for (size_t i = 0; i < batter->animations.size(); ++i)
-                {
-                    const gltf_model::animation& anim = batter->animations.at(i);
-                    bool is_selected = (i == current_animation_index);
-
-                    if (ImGui::Selectable(anim.name.c_str(), is_selected))
-                    {
-                        current_animation_index = static_cast<int>(i);
-                        animation_time = 0.0f;
-                        animation_playing = true;
-                    }
-                }
-                ImGui::TreePop();
-            }
-        }
-        else
-        {
-            ImGui::Text("No animations available");
-        }
-    }
-
-    ImGui::Text("ThrowingStateTime: %.2f", ThrowingStateTime);
-    ImGui::Checkbox("playhasBeforeSwing", &hasPlayBeforeSwing);
-
+    
 	HitJudge2D::Instance().DrawGUI();
 
     if (ImGui::CollapsingHeader(u8"実在打者プリセット"))
@@ -582,6 +500,16 @@ void Player::DrawGUI()
         {
             SelectRealBatter(static_cast<RealBatter>(realBatterIndex));
         }
+
+		//各選手のパワーを表示・編集する
+        if (selectedRealBatter != RealBatter::None)
+        {
+			float power = GetSelectedRealBatterPower();
+            if (ImGui::DragFloat(u8"パワー", &power, 0.01f, 0.0f, 1.0f))
+            {
+                SetSelectedRealBatterPower(power);
+			}
+		}
     }
 
 #endif

@@ -44,6 +44,9 @@ public:
 	float hitWindowBeforeSec = 0.5f; //早すぎ判定
 	float hitWindowAfterSec = 0.5f;  //遅すぎ判定
 
+	float timingJustWindowSec = 0.01f; //ジャスト判定窓（秒）
+	float timingSlightWindowSec = 0.03f; //少し早い/遅い判定窓（秒）
+
     // バット矩形のうち「当たり」と見なす上端オフセット（px）
    // バット画像の上端からこの範囲をヒット帯とする
     float batHitBandHeight = 10.0f;
@@ -63,7 +66,8 @@ public:
     //ボールゾーンのペナルティ
 	float ballZonePenalty = 0.20f; // -20%
 
-	float cursorDeadZoneRatio = 0.2f; // カーソル円の中心がバット矩形からこの割合以上離れていたらボーナス無効
+	float cursorOverlapPenalty = 0.3f; // -20%
+	float cursorNeutralPoint = 0.5f; // カーソル重なり度の中立点（0.5以上でボーナス、0.5未満でペナルティ）
 
     // ballScreenCenter  : 2Dボールスプライトの中心(px)
     // batTopLeft        : バット矩形の左上(px)
@@ -135,8 +139,18 @@ public:
         if (overlapResult_.cursorOverlap)
         {
             
-			//どれくらい重なっているかでボーナスを増減する場合は、ここで ratio を使って調整可能
-			scale += cursorOverlapBonus * overlapResult_.cursorOverlapRatio;
+            float t = overlapResult_.cursorOverlapRatio; // 0..1
+			
+            if (t >= cursorNeutralPoint)
+            {
+				float bonusT = (t - cursorNeutralPoint) / (1.0f - cursorNeutralPoint); // 0..1
+                scale -= cursorOverlapBonus * bonusT;
+            }
+            else
+            {
+                float penaltyT = (cursorNeutralPoint - t) / cursorNeutralPoint; // 0..1
+				scale -= cursorOverlapPenalty * penaltyT;
+            }
 
         }
         else if (isPurpleBat)
@@ -149,6 +163,62 @@ public:
         lastResult_ = outResult;
         swingConsumed_ = true;
         return true;
+    }
+
+    bool EvaluateContact(HitJudge2DResult& outResult)
+    {
+        bool overlapOK = overlapResult_.anyOverlap;
+
+        if (!overlapOK)
+        {
+            // 空振り
+            outResult.validHit = false;
+            return false;
+        }
+
+
+        outResult = {};
+		outResult.overlapRatio = overlapResult_.ratio;
+		outResult.cursorOverlap = overlapResult_.cursorOverlap;
+		outResult.cursorOverlapRatio = overlapResult_.cursorOverlapRatio;
+		outResult.purpleBat = isPurpleBat;
+		outResult.isGroundBall = overlapResult_.isGroundBall;
+		outResult.launchAngle2DDeg = overlapResult_.launchAngle2DDeg;
+		outResult.hitNormalizedY = overlapResult_.hitNormalizedY;
+		outResult.isBallZone = isBallZone;
+        outResult.validHit = true;
+ 
+		float scale = CalcTimingScale();
+
+        if(outResult.isBallZone)
+        {
+            scale -= ballZonePenalty;
+		}
+
+        if(overlapResult_.cursorOverlap)
+        {
+            float t = overlapResult_.cursorOverlapRatio; // 0..1
+            if(t >= cursorNeutralPoint)
+            {
+                float bonusT = (t - cursorNeutralPoint) / (1.0f - cursorNeutralPoint); // 0..1
+                scale -= cursorOverlapBonus * bonusT;
+            }
+            else
+            {
+                float penaltyT = (cursorNeutralPoint - t) / cursorNeutralPoint; // 0..1
+                scale -= cursorOverlapPenalty * penaltyT;
+            }
+        }
+        else if(isPurpleBat)
+        {
+            scale -= purpleBatPenalty;
+		}
+
+        outResult.velocityScale = scale;
+		lastResult_ = outResult;
+		swingConsumed_ = true;
+        return true;
+
     }
 
     // ---- 最後の有効結果を取得（onContact から参照する用）----
@@ -178,95 +248,116 @@ private:
     // ---- AABB + ボール半径による重なり判定 ----
     // 「ボールの下半分とバットの上端付近が重なる」を実装
     OverlapInfo CalcOverlap() const
-{
-    OverlapInfo info;
-    const float br = ballRadius_px_;
-
-    // batTL_ を「中心」として OBB を構築
-    OBB2D batOBB;
-    batOBB.center = batTL_;   // Update() で中心を渡すようにしたのでそのまま使う
-    batOBB.halfSize = { batSize_.x * 0.5f, batSize_.y * 0.5f };
-    batOBB.rotationDeg = batRot_;
-
-    // OBBvsCircle で判定
-    info.anyOverlap = OBBvsCircle(batOBB, ballCenter_, br);
-
-    if (info.anyOverlap)
     {
-        // 重なり度：ボール中心からOBB表面までの距離で簡易計算
-        float rad = DirectX::XMConvertToRadians(batOBB.rotationDeg);
-        float cosA = cosf(-rad), sinA = sinf(-rad);
-        float dx = ballCenter_.x - batOBB.center.x;
-        float dy = ballCenter_.y - batOBB.center.y;
-        float localX = cosA * dx - sinA * dy;
-        float localY = sinA * dx + cosA * dy;
-        float clampX = (std::max)(-batOBB.halfSize.x, (std::min)(batOBB.halfSize.x, localX));
-        float clampY = (std::max)(-batOBB.halfSize.y, (std::min)(batOBB.halfSize.y, localY));
-        float dist = sqrtf((localX - clampX) * (localX - clampX) + (localY - clampY) * (localY - clampY));
-        info.ratio = 1.0f - (std::min)(1.0f, dist / br);
-
-        // ボールのローカルY（スクリーン座標系）を用いて上/下を判定
-        // localY < 0 : ボール中心がバットの上側（フライ寄り）
-        // localY > 0 : ボール中心がバットの下側（ゴロ寄り）
-        float maxOffset = batOBB.halfSize.y + br;
-        float normalizedY = 0.0f;
-        if (maxOffset > 0.0f)
+        OverlapInfo info;
+        const float br = ballRadius_px_;
+    
+        // batTL_ を「中心」として OBB を構築
+        OBB2D batOBB;
+        batOBB.center = batTL_;   // Update() で中心を渡すようにしたのでそのまま使う
+        batOBB.halfSize = { batSize_.x * 0.5f, batSize_.y * 0.5f };
+        batOBB.rotationDeg = batRot_;
+    
+        // OBBvsCircle で判定
+        info.anyOverlap = OBBvsCircle(batOBB, ballCenter_, br);
+    
+        if (info.anyOverlap)
         {
-            // normalizedY_internal: -1.0 (上端) ... 0.0 (中心) ... +1.0 (下端)
-            normalizedY = (std::max)(-1.0f, (std::min)(1.0f, localY / maxOffset));
+            // 重なり度：ボール中心からOBB表面までの距離で簡易計算
+            float rad = DirectX::XMConvertToRadians(batOBB.rotationDeg);
+            float cosA = cosf(-rad), sinA = sinf(-rad);
+            float dx = ballCenter_.x - batOBB.center.x;
+            float dy = ballCenter_.y - batOBB.center.y;
+            float localX = cosA * dx - sinA * dy;
+            float localY = sinA * dx + cosA * dy;
+            float clampX = (std::max)(-batOBB.halfSize.x, (std::min)(batOBB.halfSize.x, localX));
+            float clampY = (std::max)(-batOBB.halfSize.y, (std::min)(batOBB.halfSize.y, localY));
+            float dist = sqrtf((localX - clampX) * (localX - clampX) + (localY - clampY) * (localY - clampY));
+            info.ratio = 1.0f - (std::min)(1.0f, dist / br);
+    
+            // ボールのローカルY（スクリーン座標系）を用いて上/下を判定
+            // localY < 0 : ボール中心がバットの上側（フライ寄り）
+            // localY > 0 : ボール中心がバットの下側（ゴロ寄り）
+            float maxOffset = batOBB.halfSize.y + br;
+            float normalizedY = 0.0f;
+            if (maxOffset > 0.0f)
+            {
+                // normalizedY_internal: -1.0 (上端) ... 0.0 (中心) ... +1.0 (下端)
+                normalizedY = (std::max)(-1.0f, (std::min)(1.0f, localY / maxOffset));
+            }
+    
+            // 外部 API の仕様（HitJudge2DResult::hitNormalizedY）は 0 = 上端, 1 = 下端 としているため、
+            // -1..+1 を 0..1 にマッピングして保存する
+            info.hitNormalizedY = (normalizedY + 1.0f) * 0.5f; // 0..1
+    
+            // 打球仰角：内部計算は normalizedY_internal を用いる（上側ほど大きなフライ角度）
+            float internalY = normalizedY; // -1..+1
+            float angle;
+            if (internalY <= 0.0f)
+            {
+                // 上側（中心 -> top）
+                float t = -internalY; // 0..1
+                angle = launchAngleCenter + t * (launchAngleTop - launchAngleCenter);
+            }
+            else
+            {
+                // 下側（center -> bottom）
+                float t = internalY; // 0..1
+                angle = launchAngleCenter + t * (launchAngleBottom - launchAngleCenter);
+            }
+            info.launchAngle2DDeg = angle;
+            info.isGroundBall = (info.hitNormalizedY >= groundBallThreshold);
         }
-
-        // 外部 API の仕様（HitJudge2DResult::hitNormalizedY）は 0 = 上端, 1 = 下端 としているため、
-        // -1..+1 を 0..1 にマッピングして保存する
-        info.hitNormalizedY = (normalizedY + 1.0f) * 0.5f; // 0..1
-
-        // 打球仰角：内部計算は normalizedY_internal を用いる（上側ほど大きなフライ角度）
-        float internalY = normalizedY; // -1..+1
-        float angle;
-        if (internalY <= 0.0f)
+    
+        // 丸カーソルとの判定（変更なし）
+        float dx = ballCenter_.x - cursorCenter_.x;
+        float dy = ballCenter_.y - cursorCenter_.y;
+        float dist = sqrtf(dx * dx + dy * dy);
+        float sumR = br + cursorRadius;
+        info.cursorOverlap = (dist < sumR);
+    
+        if (info.cursorOverlap)
         {
-            // 上側（中心 -> top）
-            float t = -internalY; // 0..1
-            angle = launchAngleCenter + t * (launchAngleTop - launchAngleCenter);
+            info.cursorOverlapRatio = 1.0f - (dist / sumR);
+            info.cursorOverlapRatio = (std::max)(0.0f, info.cursorOverlapRatio);
         }
-        else
-        {
-            // 下側（center -> bottom）
-            float t = internalY; // 0..1
-            angle = launchAngleCenter + t * (launchAngleBottom - launchAngleCenter);
-        }
-        info.launchAngle2DDeg = angle;
-        info.isGroundBall = (info.hitNormalizedY >= groundBallThreshold);
+    
+        return info;
     }
 
-    // 丸カーソルとの判定（変更なし）
-    float dx = ballCenter_.x - cursorCenter_.x;
-    float dy = ballCenter_.y - cursorCenter_.y;
-    float dist = sqrtf(dx * dx + dy * dy);
-    float sumR = br + cursorRadius;
-    info.cursorOverlap = (dist < sumR);
-
-    if (info.cursorOverlap)
+    float CalcTimingScale() const
     {
-        // カーソル重なり度：ボール中心からカーソル中心までの距離で簡易計算(範囲はやや広めにとる)
-        float deadZoneRatio = cursorDeadZoneRatio; // 0.0～1.0（sumRに対する割合）
-        float deadZoneDist = sumR * deadZoneRatio;
+        char buffer[64];
 
-        if (dist <= deadZoneDist)
+        // ジャスト（±timingJustWindowSec 以内）
+        if (timeToZone_ >= -5.0f && timeToZone_ <= timingJustWindowSec)
         {
-            info.cursorOverlapRatio = 1.0f;
+            snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just)\n", timeToZone_);
+            OutputDebugStringA(buffer);
+            return 1.0f;
         }
-        else
+
+        // 少し早い（ジャストより早いが timingSlightWindowSec 以内）
+        if (timeToZone_ > timingJustWindowSec && timeToZone_ <= timingSlightWindowSec)
         {
-            // デッドゾーンの外側だけを 0.0～1.0 に再マッピングして減衰させる
-            float remainingRange = sumR - deadZoneDist;
-            float t = (dist - deadZoneDist) / (std::max)(remainingRange, 0.001f);
-            info.cursorOverlapRatio = 1.0f - (std::min)(1.0f, t);
+            snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Slight Early)\n", timeToZone_);
+            OutputDebugStringA(buffer);
+            return 0.9f;
         }
+
+        // 少し遅い（ジャストより遅いが timingSlightWindowSec 以内）
+        if (timeToZone_ < -timingJustWindowSec && timeToZone_ >= -timingSlightWindowSec)
+        {
+            snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Slight Late)\n", timeToZone_);
+            OutputDebugStringA(buffer);
+            return 0.9f;
+        }
+
+		// 早すぎ or 遅すぎ
+        snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Too Early/Late)\n", timeToZone_);
+        OutputDebugStringA(buffer);
+		return 0.8f;
     }
-
-    return info;
-}
 
     // ---- 内部状態 ----
     DirectX::XMFLOAT2 ballCenter_ = {};
@@ -280,7 +371,7 @@ private:
 
     OverlapInfo        overlapResult_ = {};
     HitJudge2DResult   lastResult_ = {};
-    bool               swingConsumed_ = false;
+	bool               swingConsumed_ = false;// 1回のスイングで1回だけ有効ヒットを返すためのフラグ
 
     // 打球角度マッピング（ボール上端に当たった時 → 最大フライ、下端 → ゴロ）
     float launchAngleTop = 150.0f;   // ボール上端に当たった時の仰角(度)
@@ -327,7 +418,6 @@ public:
             ImGui::Text(u8"カーソル重なり: %s", hj.IsCursorOverlapping() ? "YES" : "no");
 
             ImGui::Text(u8"カーソル重なり率: %.2f", hj.overlapResult_.cursorOverlapRatio); 
-			ImGui::DragFloat(u8"カーソルデッドゾーン割合", &hj.cursorDeadZoneRatio, 0.01f, 0.0f, 1.0f);
             ImGui::Separator();
 
             ImGui::DragFloat(u8"ヒットの有効時間 (前)", &hj.hitWindowBeforeSec, 0.01f, 0.0f, 1.0f);
@@ -344,6 +434,8 @@ public:
             ImGui::DragFloat(u8"地面の閾値", &hj.groundBallThreshold, 0.01f, 0.0f, 1.0f);
             ImGui::Text(u8"ボールゾーン: %s", hj.isBallZone ? "YES" : "no");
             ImGui::DragFloat(u8"ボールゾーンペナルティ", &hj.ballZonePenalty, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(u8"カーソル重なりペナルティ", &hj.cursorOverlapPenalty, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(u8"カーソル重なり中立点", &hj.cursorNeutralPoint, 0.01f, 0.0f, 1.0f);
         }
     }
 
@@ -377,11 +469,12 @@ public:
         j["cursorOverlapBonus"] = cursorOverlapBonus;
         j["purpleBatPenalty"] = purpleBatPenalty;
         j["ballZonePenalty"] = ballZonePenalty;
-        j["cursorDeadZoneRatio"] = cursorDeadZoneRatio;
         j["launchAngleTop"] = launchAngleTop;
         j["launchAngleCenter"] = launchAngleCenter;
         j["launchAngleBottom"] = launchAngleBottom;
         j["groundBallThreshold"] = groundBallThreshold;
+		j["cursorOverlapPenalty"] = cursorOverlapPenalty;
+		j["cursorNeutralPoint"] = cursorNeutralPoint;
 	}
 
 
@@ -394,11 +487,12 @@ public:
         cursorOverlapBonus = j.value("cursorOverlapBonus", cursorOverlapBonus);
         purpleBatPenalty = j.value("purpleBatPenalty", purpleBatPenalty);
         ballZonePenalty = j.value("ballZonePenalty", ballZonePenalty);
-        cursorDeadZoneRatio = j.value("cursorDeadZoneRatio", cursorDeadZoneRatio);
         launchAngleTop = j.value("launchAngleTop", launchAngleTop);
         launchAngleCenter = j.value("launchAngleCenter", launchAngleCenter);
         launchAngleBottom = j.value("launchAngleBottom", launchAngleBottom);
         groundBallThreshold = j.value("groundBallThreshold", groundBallThreshold);
+		cursorNeutralPoint = j.value("cursorNeutralPoint", cursorNeutralPoint);
+		cursorOverlapPenalty = j.value("cursorOverlapPenalty", cursorOverlapPenalty);
 	}
 
 private:

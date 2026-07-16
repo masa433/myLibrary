@@ -857,6 +857,29 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 	}
 }
 
+inline float PowerToExitVelocityScale(float power)
+{
+	//Cランクを基準にして、パワーに応じてスケールを調整する
+	float t = std::clamp((power - 60.0f) / (99.0f - 60.0f), 0.0f, 1.0f);
+	//60以上69未満: 0.8～1.0、70以上79未満: 1.0～1.2、80以上89未満: 1.2～1.25、90以上99未満: 1.25～1.3
+	if (power < 70.0f)
+	{
+		return 0.8f + t * 0.2f; // 60～69
+	}
+	else if (power < 80.0f)
+	{
+		return 1.0f + t * 0.2f; // 70～79
+	}
+	else if (power < 90.0f)
+	{
+		return 1.2f + t * 0.05f; // 80～89
+	}
+	else
+	{
+		return 1.25f + t * 0.05f; // 90～99
+	}
+}
+
 void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 {
 	for (physx::PxU32 i = 0; i < count; i++)
@@ -931,11 +954,14 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			if (!ballAndBat) continue;
 			if (pair.status != physx::PxPairFlag::eNOTIFY_TOUCH_FOUND) continue;
 			if (Ball::Instance().GetHasCollidedWithBat()) continue;
+			if (!Player::Instance().IsSwinging()) continue; // スイング中のみ判定
 
 			HitJudge2DResult result;
-			if (!HitJudge2D::Instance().ConsumePendingResult(result))
+			if (!HitJudge2D::Instance().EvaluateContact(result))
 				continue; // 空振り：トリガーなので何も起きない
 
+			//const HitJudge2DResult& result = HitJudge2D::Instance().GetLastResult();
+		
 			Ball::Instance().SetHasCollidedWithBat(true);
 			Ball::Instance().CancelBezier();
 			ballSprite::Instance().SetShowBallBoard(true);
@@ -1026,14 +1052,14 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			float powerScale = ballSprite::Instance().GetCurrentPitchPowerScale();
 			
 			float estimatedExitVelocity = (q * ballSpeed + (1.0f + q) * batSpeed) / powerScale;
+			int batterPower = Player::Instance().GetSelectedRealBatterPower();
+			float batterPowerScale = PowerToExitVelocityScale(static_cast<float>(batterPower));
 
-			// 打球角度補正
-			/*float launchAngle = std::atan2(
-				collisionNormal.y,
-				std::sqrt(collisionNormal.x * collisionNormal.x +
-					collisionNormal.z * collisionNormal.z));
-			float launchAngleDeg = launchAngle * (180.0f / PI);*/
+			//スイングのタイミングによって打球速度を補正する
 
+
+			estimatedExitVelocity *= batterPowerScale;
+			
 			// 2D判定の仰角を使用
 			float launchAngleDeg = result.launchAngle2DDeg;
 
@@ -1054,6 +1080,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			else spinAxis = physx::PxVec3(0.0f, 1.0f, 0.0f);
 			spinAxis.x = -spinAxis.x;
 			spinAxis.y = -spinAxis.y;
+			spinAxis.z = -spinAxis.z;
 
 			constexpr float SOFT_LIMIT_THRESHOLD = 165.0f;// 165km/h以上は回転を抑制
 			constexpr float SOFT_LIMIT_MAX = 190.0f;// 190km/h以上は回転を抑制
