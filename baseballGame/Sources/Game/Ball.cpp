@@ -18,6 +18,11 @@ namespace
 	}
 }
 
+void Ball::SetBezierTargetPosition(const DirectX::XMFLOAT3& targetPosition)
+{
+	bezierData.p3 = targetPosition;
+}
+
 // ---- ベジェ曲線投球開始 ----
 void Ball::ThrowBezier(const BezierPitchData& data,
 	const DirectX::XMFLOAT3& visualRotationSpeed,
@@ -35,9 +40,9 @@ void Ball::ThrowBezier(const BezierPitchData& data,
 	//キネマティックモードに切り替え
 	//collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
 
-	// 重力・空気抵抗で動かないよう速度だけゼロにしておく
-	/*collider->setLinearVelocity(physx::PxVec3(0, 0, 0));
-	collider->setAngularVelocity(physx::PxVec3(0, 0, 0));*/
+	//// 重力・空気抵抗で動かないよう速度だけゼロにしておく
+	//collider->setLinearVelocity(physx::PxVec3(0, 0, 0));
+	//collider->setAngularVelocity(physx::PxVec3(0, 0, 0));
 
 	//見た目の回転をリセット
 	modelRotationSpeed = visualRotationSpeed;
@@ -55,41 +60,54 @@ void Ball::ThrowBezier(const BezierPitchData& data,
 
 void Ball::UpdateBezierFlight(float elapsedTime)
 {
-	if(!bezierFlying || !collider)
+	if (!bezierFlying || !collider)
 	{
 		return;
 	}
 
-	bezierT += elapsedTime / bezierData.durationSec;// bezierTを0から1の範囲に制限
+	bezierT += elapsedTime / bezierData.durationSec; // bezierT を 0..1 にする
 
-	if(bezierT >= 1.0f)
-	{
-		bezierT = 1.0f;
-		bezierFlying = false;
-		//キネマティックモードを解除して物理シミュレーションに戻す
-		//_ReleaseToDynamic(physx::PxVec3(0, 0, 0));
-	}
+	if (bezierT > 1.0f) bezierT = 1.0f;
 
 	DirectX::XMFLOAT3 pos = EvalCubicBezier(bezierT);
 
-	
-	collider->setGlobalPose(
-		physx::PxTransform(physx::PxVec3(pos.x, pos.y, pos.z)));
+	// 終了直前（または十分近い）になったら「接線方向」を物理へ渡して動的に移行する
+	const float endThresholdZ = 0.01f;
+	const float endThresholdT = 0.995f; // t 判定も併用して安定させる
+	bool nearEnd = (std::fabs(bezierData.p3.z - pos.z) < endThresholdZ) || (bezierT >= endThresholdT);
 
-	//ベジェ曲線の終着点についたら、しばらく同じ方向にベジェ曲線と同じ強さの力を加える
-	if(bezierData.p3.z - pos.z < 0.01f)
+	if (nearEnd)
 	{
-		//addforceを使って、ベジェ曲線の終着点方向に力を加える
-		physx::PxVec3 forceDirection = physx::PxVec3(bezierData.p3.x - pos.x, bezierData.p3.y - pos.y, bezierData.p3.z - pos.z);
+		// パラメータ t 用の安全な値（1.0 直前の接線を使う）
+		float t_for_deriv = (std::min)(bezierT, 0.999f);
 
-		forceDirection.normalize();
+		// ベジェのパラメータ t に対する導関数 dB/dt を計算
+		DirectX::XMFLOAT3 deriv = EvalCubicBezierDerivative(t_for_deriv);
 
-		//yだけ下に落ちるの対策で、y方向の力を少し上にする
-		forceDirection.y += 0.13f;
+		// 実際のワールド速度 = dB/dt * (1 / durationSec)  （t は 0..1 を durationSec 秒で走る）
+		DirectX::XMFLOAT3 worldVel = {
+			deriv.x / bezierData.durationSec,
+			deriv.y / bezierData.durationSec,
+			deriv.z / bezierData.durationSec
+		};
 
-		collider->addForce(forceDirection * 10.0f, physx::PxForceMode::eFORCE);
+		// 必要なら Y 軸補正を少し入れる（地面落下抑制等）
+		// worldVel.y += 0.0f; // 必要なら調整
+
+		// kinematic を解除して物理へ戻す（速度を設定）
+		collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, false);
+		collider->setLinearVelocity(physx::PxVec3(worldVel.x, worldVel.y, worldVel.z));
+
+		// ベジェ移動は終了
+		bezierFlying = false;
+
+		// 現在位置を記録して戻る（以後は物理が位置を更新する）
+		worldPosition = pos;
+		return; // 以降で kinematic に対して setGlobalPose しないようにする
 	}
 
+	// 通常のキネマティック移動
+	collider->setGlobalPose(physx::PxTransform(physx::PxVec3(pos.x, pos.y, pos.z)));
 	worldPosition = pos;
 }
 
@@ -101,6 +119,21 @@ void Ball::CancelBezier()
 	// DynamicへはonContact()側でSetLinearVelocity前に切り替える
 }
 
+// 3次ベジェ曲線の導関数（dB/dt）
+DirectX::XMFLOAT3 Ball::EvalCubicBezierDerivative(float t) const
+{
+	float u = 1.0f - t;
+	// B'(t) = 3(1-t)^2 (P1 - P0) + 6(1-t)t (P2 - P1) + 3 t^2 (P3 - P2)
+	float c0 = 3.0f * u * u;
+	float c1 = 6.0f * u * t;
+	float c2 = 3.0f * t * t;
+
+	return {
+		c0 * (bezierData.p1.x - bezierData.p0.x) + c1 * (bezierData.p2.x - bezierData.p1.x) + c2 * (bezierData.p3.x - bezierData.p2.x),
+		c0 * (bezierData.p1.y - bezierData.p0.y) + c1 * (bezierData.p2.y - bezierData.p1.y) + c2 * (bezierData.p3.y - bezierData.p2.y),
+		c0 * (bezierData.p1.z - bezierData.p0.z) + c1 * (bezierData.p2.z - bezierData.p1.z) + c2 * (bezierData.p3.z - bezierData.p2.z)
+	};
+}
 
 //3次ベジェ曲線の評価
 DirectX::XMFLOAT3 Ball::EvalCubicBezier(float t) const

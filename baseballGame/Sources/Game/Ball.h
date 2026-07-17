@@ -172,6 +172,9 @@ public:
 		return collider ? collider->getLinearVelocity() : physx::PxVec3(0.0f, 0.0f, 0.0f);
 	}
 
+	//ベジェ曲線のターゲット位置を設定する関数
+	void SetBezierTargetPosition(const DirectX::XMFLOAT3& targetPosition);
+
 private:
 
 	BallMode ballMode = BallMode::Attached;
@@ -227,5 +230,7 @@ private:
 	// ヘルパー
 	DirectX::XMFLOAT3 EvalCubicBezier(float t) const;
 
+	// ヘルパー: ベジェ曲線の微分を評価する関数
+	DirectX::XMFLOAT3 EvalCubicBezierDerivative(float t) const;
 
 };

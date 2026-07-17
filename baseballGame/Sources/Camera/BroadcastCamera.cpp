@@ -58,7 +58,7 @@ void BroadcastCamera::SetupDefaultCameras()
 	{
 		CameraPreset preset;
 		preset.name = u8"デフォルトカメラ";
-		preset.eye = { 0.0f, 1.2f, -3.5f };
+		preset.eye = { 0.0f, 1.0f, -3.5f };
 		preset.focus = { 0.0f, 0.0f, 14.0f };
 		preset.fov = DirectX::XMConvertToRadians(45.0f);
 		preset.enableTrackingZoom = false;

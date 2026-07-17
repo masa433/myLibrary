@@ -175,6 +175,9 @@
     <ClCompile Include="Sources\Camera\BroadcastCamera.cpp">
       <Filter>Sources\Camera</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\catcher.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -368,6 +371,9 @@
     </ClInclude>
     <ClInclude Include="Sources\Camera\BroadcastCamera.h">
       <Filter>Sources\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\catcher.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

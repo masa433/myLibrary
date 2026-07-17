@@ -44,8 +44,8 @@ public:
 	float hitWindowBeforeSec = 0.5f; //早すぎ判定
 	float hitWindowAfterSec = 0.5f;  //遅すぎ判定
 
-	float timingJustWindowSec = 0.01f; //ジャスト判定窓（秒）
-	float timingSlightWindowSec = 0.03f; //少し早い/遅い判定窓（秒）
+	float timingJustWindowSec = 0.03f; //ジャスト判定窓（秒）
+	float timingSlightWindowSec = 0.01f; //少し早い/遅い判定窓（秒）
 
     // バット矩形のうち「当たり」と見なす上端オフセット（px）
    // バット画像の上端からこの範囲をヒット帯とする
@@ -330,28 +330,28 @@ private:
         char buffer[64];
 
         // ジャスト（±timingJustWindowSec 以内）
-        if (timeToZone_ >= -5.0f && timeToZone_ <= timingJustWindowSec)
+        if (timeToZone_ >= -7.0f && timeToZone_ <= timingJustWindowSec)
         {
             snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just)\n", timeToZone_);
             OutputDebugStringA(buffer);
             return 1.0f;
         }
 
-        // 少し早い（ジャストより早いが timingSlightWindowSec 以内）
-        if (timeToZone_ > timingJustWindowSec && timeToZone_ <= timingSlightWindowSec)
-        {
-            snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Slight Early)\n", timeToZone_);
-            OutputDebugStringA(buffer);
-            return 0.9f;
-        }
+  //      // 少し早い（ジャストより早いが timingSlightWindowSec 以内）
+  //      if (timeToZone_ > -7.0f && timeToZone_ <= timingSlightWindowSec)
+  //      {
+  //          snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Slight Early)\n", timeToZone_);
+  //          OutputDebugStringA(buffer);
+  //          return 0.9f;
+  //      }
 
-        // 少し遅い（ジャストより遅いが timingSlightWindowSec 以内）
-        if (timeToZone_ < -timingJustWindowSec && timeToZone_ >= -timingSlightWindowSec)
-        {
-            snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Slight Late)\n", timeToZone_);
-            OutputDebugStringA(buffer);
-            return 0.9f;
-        }
+  //      // 少し遅い（ジャストより遅いが timingSlightWindowSec 以内）
+  //      if (timeToZone_ < -timingJustWindowSec && timeToZone_ >= -timingSlightWindowSec)
+  //      {
+  //          snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Slight Late)\n", timeToZone_);
+  //          OutputDebugStringA(buffer);
+  //          return 0.9f;
+  //      }
 
 		// 早すぎ or 遅すぎ
         snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Too Early/Late)\n", timeToZone_);

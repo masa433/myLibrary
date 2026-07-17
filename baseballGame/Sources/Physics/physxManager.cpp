@@ -861,22 +861,22 @@ inline float PowerToExitVelocityScale(float power)
 {
 	//Cランクを基準にして、パワーに応じてスケールを調整する
 	float t = std::clamp((power - 60.0f) / (99.0f - 60.0f), 0.0f, 1.0f);
-	//60以上69未満: 0.8～1.0、70以上79未満: 1.0～1.2、80以上89未満: 1.2～1.25、90以上99未満: 1.25～1.3
+	//60以上69未満: 0.8～1.0、70以上79未満: 1.05～1.15、80以上89未満: 1.1～1.2、90以上99未満: 1.15～1.25
 	if (power < 70.0f)
 	{
 		return 0.8f + t * 0.2f; // 60～69
 	}
 	else if (power < 80.0f)
 	{
-		return 1.0f + t * 0.2f; // 70～79
+		return 1.05f + t * 0.1f; // 70～79
 	}
 	else if (power < 90.0f)
 	{
-		return 1.2f + t * 0.05f; // 80～89
+		return 1.1f + t * 0.1f; // 80～89
 	}
 	else
 	{
-		return 1.25f + t * 0.05f; // 90～99
+		return 1.15f + t * 0.1f; // 90～99
 	}
 }
 

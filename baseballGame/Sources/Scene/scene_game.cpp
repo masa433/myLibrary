@@ -20,6 +20,7 @@
 #include "GameTimer.h"
 #include "HomeRunCount.h"
 #include "FoulSprite.h"
+#include "catcher.h"
 #include <fstream>
 #include <string>
 
@@ -136,6 +137,8 @@ void scene_game::initialize()
     GameTimer::Instance().Initialize(device);
 
 	HomeRunCount::Instance().Initialize(device);
+
+	Catcher::Instance().Initialize();
 
     // テクスチャマネージャーの初期化
     textureManager.Initialize(device, L"./resources/texture");
@@ -473,6 +476,8 @@ void scene_game::update(float elapsed_time)
 
 	HomeRunCount::Instance().Update(elapsed_time);
 
+	Catcher::Instance().Update(elapsed_time);
+
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
 
@@ -734,6 +739,7 @@ void scene_game::render(float elapsedTime)
 
     Pitcher::Instance().Render(rc, modelRenderer);
 	Player::Instance().RenderPlayer(rc, modelRenderer);
+	Catcher::Instance().Render(rc, modelRenderer);
 	BatSprite::Instance().Render();
 	ballSprite::Instance().Render();
 
@@ -1160,6 +1166,13 @@ void scene_game::DrawGUI()
     {
         HomeRunCount::Instance().DrawGUI();
 	}
+
+	ImGui::Separator();
+
+    if(ImGui::CollapsingHeader("Catcher"))
+    {
+        Catcher::Instance().DrawGUI();
+    }
 
     ImGui::End();
 
@@ -1669,6 +1682,7 @@ void scene_game::SaveSetting()
 	stage::Instance().SaveToJson(j["stage"]);
 	GameTimer::Instance().SaveToJson(j["gameTimer"]);
 	HomeRunCount::Instance().SaveToJson(j["homeRunCount"]);
+	Catcher::Instance().SaveToJson(j["catcher"]);
 
     // ファイルに保存
     std::ofstream file("resources\\setting\\settings.json");
@@ -1838,5 +1852,6 @@ void scene_game::LoadSetting()
 	if (j.contains("stage")) stage::Instance().LoadFromJson(j["stage"]);
 	if (j.contains("gameTimer")) GameTimer::Instance().LoadFromJson(j["gameTimer"]);
 	if (j.contains("homeRunCount")) HomeRunCount::Instance().LoadFromJson(j["homeRunCount"]);
+	if (j.contains("catcher")) Catcher::Instance().LoadFromJson(j["catcher"]);
 	consoleLog.push_back("[Info] Settings loaded.");
 }
