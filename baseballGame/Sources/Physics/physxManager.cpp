@@ -1164,7 +1164,14 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			//打球方向が15度～30度の範囲内で打球速度が170キロ以上、打球角度が25度～35度の時は確信ホームランとして仮でログ出力
 			//後で確信ホームラン用のカメラ演出に切り替える
 			const char* homeRunResult = nullptr;
-			if(hitDirectionAngleDeg >= 15.0f && hitDirectionAngleDeg <= 30.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 35.0f && finalExitVelocityKmh >= 150.0f)
+			if(hitDirectionAngleDeg >= 15.0f && hitDirectionAngleDeg <= 30.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 35.0f && finalExitVelocityKmh >= 170.0f)
+			{
+				homeRunResult = u8"確信ホームラン！";
+				isHomeRun = true;
+			}
+
+			//センター方向は打球角度30度以上35ど以内かつ打球速度が180キロ以上でホームラン判定
+			if(hitDirectionAngleDeg <= 15.0f && launchAngleDeg >= 30.0f && launchAngleDeg <= 35.0f && finalExitVelocityKmh >= 180.0f)
 			{
 				homeRunResult = u8"確信ホームラン！";
 				isHomeRun = true;
