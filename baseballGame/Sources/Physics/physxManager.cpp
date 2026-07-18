@@ -859,25 +859,21 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 inline float PowerToExitVelocityScale(float power)
 {
-	//Cランクを基準にして、パワーに応じてスケールを調整する
-	float t = std::clamp((power - 60.0f) / (99.0f - 60.0f), 0.0f, 1.0f);
-	//60以上69未満: 0.8～1.0、70以上79未満: 1.05～1.15、80以上89未満: 1.1～1.2、90以上99未満: 1.15～1.25
-	if (power < 70.0f)
-	{
-		return 0.8f + t * 0.2f; // 60～69
-	}
-	else if (power < 80.0f)
-	{
-		return 1.05f + t * 0.1f; // 70～79
-	}
-	else if (power < 90.0f)
-	{
-		return 1.1f + t * 0.1f; // 80～89
-	}
-	else
-	{
-		return 1.15f + t * 0.1f; // 90～99
-	}
+	// GetSelectedRealBatterPower() の値域
+	constexpr float kPowerMin = 75.0f;
+	constexpr float kPowerMax = 92.0f;
+
+	// パワー最低時・最高時の打球速度倍率（ここを調整してバランスを取る）
+	constexpr float kScaleMin = 1.0f;
+	constexpr float kScaleMax = 1.1f;
+
+	// 範囲外の値が来ても安全なようにクランプ
+	float clampedPower = std::clamp(power, kPowerMin, kPowerMax);
+
+	// 0.0〜1.0に正規化してから線形補間
+	float t = (clampedPower - kPowerMin) / (kPowerMax - kPowerMin);
+
+	return kScaleMin + (kScaleMax - kScaleMin) * t;
 }
 
 void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
@@ -1032,15 +1028,15 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			{
 				launchDirection = batVelocity.getNormalized();
 			}
-			else
-			{
-				// バットの速度がほぼゼロの場合は、バットの前方方向を使用
-				launchDirection = ballCollider->getGlobalPose().p - batCollider->getGlobalPose().p;
-				if (launchDirection.normalize() < 1e-4f)
-				{
-					launchDirection = physx::PxVec3(0.0f, 0.0f, -1.0f);
-				}
-			}
+			//else
+			//{
+			//	// バットの速度がほぼゼロの場合は、バットの前方方向を使用
+			//	launchDirection = ballCollider->getGlobalPose().p - batCollider->getGlobalPose().p;
+			//	if (launchDirection.normalize() < 1e-4f)
+			//	{
+			//		launchDirection = physx::PxVec3(0.0f, 0.0f, -1.0f);
+			//	}
+			//}
 
 			physx::PxVec3 horizDir;
 
@@ -1074,16 +1070,17 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			float adjustedRestitution = std::clamp(
 				TARGET_Q + (1.0f + TARGET_Q) * massRatio, 0.5f, 0.95f);
 			float q = (adjustedRestitution - massRatio) / (1.0f + massRatio);
-			float powerScale = ballSprite::Instance().GetCurrentPitchPowerScale();
 			
-			float estimatedExitVelocity = (q * ballSpeed + (1.0f + q) * batSpeed) / powerScale;
+			//float estimatedExitVelocity = (q * ballSpeed + (1.0f + q) * batSpeed);
+			float estimatedExitVelocity = result.exitVelocityMps;
 			int batterPower = Player::Instance().GetSelectedRealBatterPower();
 			float batterPowerScale = PowerToExitVelocityScale(static_cast<float>(batterPower));
-
+			float pitchPowerScale = ballSprite::Instance().GetCurrentPitchPowerScale();
 			//スイングのタイミングによって打球速度を補正する
 
 
 			estimatedExitVelocity *= batterPowerScale;
+			estimatedExitVelocity *= pitchPowerScale;
 			
 			// 2D判定の仰角を使用
 			float launchAngleDeg = result.launchAngle2DDeg;
@@ -1130,7 +1127,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 
 			// 最終速度
 			physx::PxVec3 newBallVelocity = launchDirection * estimatedExitVelocity;
-			newBallVelocity *= result.velocityScale; // 2D判定の倍率
+			//newBallVelocity *= result.velocityScale; // 2D判定の倍率
 
 			//ソフトリミットをかける
 			float speed = newBallVelocity.magnitude() * 3.6f;
@@ -1152,6 +1149,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				else if (originalAngleDeg < 0.0f)       hitResult = u8"レフト方向";//-15～-45
 				else                                     hitResult = u8"ライト方向";//+15～+45
 			}
+
 
 			float finalExitVelocityKmh = newBallVelocity.magnitude() * 3.6f;
 

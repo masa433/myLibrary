@@ -21,6 +21,7 @@ struct HitJudge2DResult
 	float launchAngle2DDeg = 15.0f; // 2D判定での打球角度（onContact で計算）
 	float hitNormalizedY = 0.0f; // バット上端からのヒット位置（0=上端, 1=下端）
 	bool isBallZone = false; // ボールがストライクゾーン内に入っていたか（デバッグ用）
+	float exitVelocityMps = 0.0f; // 打球初速（m/s）
 };
 
 struct OBB2D
@@ -215,6 +216,27 @@ public:
 		}
 
         outResult.velocityScale = scale;
+
+        //打球初速を設定する
+		float meetQuality = overlapResult_.ratio;//重なり度を打球初速に反映
+        if (overlapResult_.cursorOverlap)
+        {
+			meetQuality = meetQuality * 0.5f + overlapResult_.cursorOverlapRatio * 0.5f; //重なり度とカーソル重なり度の平均を取る
+        }
+		meetQuality = std::clamp(meetQuality, 0.0f, 1.0f);//0..1にクランプ
+
+        //芯を外したときの最低速度と芯でとらえたときの最高速度
+		constexpr float kMinExitVelocityKmh = 80.0f; // 80km/h
+		constexpr float kMaxExitVelocityKmh = 160.0f; // 160km/h
+
+		// 重なり度に応じて打球初速を線形補間
+		float baseKmh = kMinExitVelocityKmh + (kMaxExitVelocityKmh - kMinExitVelocityKmh) * meetQuality;
+
+		//タイミング・ボールゾーンなどの倍率を反映
+        baseKmh *= (std::max)(0.0f, scale);
+
+		outResult.exitVelocityMps = baseKmh / 3.6f; // m/s に変換
+
 		lastResult_ = outResult;
 		swingConsumed_ = true;
         return true;
@@ -334,7 +356,7 @@ private:
         {
             snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just)\n", timeToZone_);
             OutputDebugStringA(buffer);
-            return 1.0f;
+            return 1.1f;
         }
 
   //      // 少し早い（ジャストより早いが timingSlightWindowSec 以内）

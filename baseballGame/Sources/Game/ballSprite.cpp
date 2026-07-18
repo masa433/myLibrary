@@ -368,13 +368,13 @@ void ballSprite::Update(float elapsedTime)
 				case 3:  // スライダー
 				case 2:  // カットボール
 				case 11: // シュート
-				case 1:  // ツーシーム
+				
 				case 8:  // 縦スライダー
 				case 5:  // チェンジアップ
 				case 14: // スイーパー
 				{
 					// 横変化系はP1とP3の間での進行度を返す
-					static constexpr float P1T = 0.15f;
+					static constexpr float P1T = 0.0f;
 					static constexpr float P3T = 1.0f;
 					if (t < P1T)
 					{
@@ -422,6 +422,7 @@ void ballSprite::Update(float elapsedTime)
 				break;
 
 
+				case 1:  // ツーシーム
 				case 6:  // フォークボール
 				case 9:  // スプリット
 				{
@@ -512,7 +513,7 @@ void ballSprite::Update(float elapsedTime)
 		// ballSpriteのY方向の移動量を半分にする
 		float yMoveScale = 1.0f;
 		const float zoneCenterY = strikeZoneSpriteData->position.y + strikeZoneSpriteData->size.y * 0.5f;
-		//落ちる系の球種(マジックナンバーは使わない)
+		//落ちる系の球種
 		if ((currentPitchIndex == 6 || currentPitchIndex == 9 || currentPitchIndex == 5 || currentPitchIndex == 8 ||
 			currentPitchIndex == 7 || currentPitchIndex == 15 || currentPitchIndex == 12) &&
 			(finalScreenPos.y < zoneCenterY || startScreenPos.y < zoneCenterY))
@@ -522,8 +523,8 @@ void ballSprite::Update(float elapsedTime)
 
 
 		DirectX::XMFLOAT2 currentScreenPos = {
-			startScreenPos.x + (finalScreenPos.x - startScreenPos.x) * t,
-			startScreenPos.y + (finalScreenPos.y - startScreenPos.y) * t * yMoveScale
+			startScreenPos.x + (finalScreenPos.x - startScreenPos.x) * t * GetPitchProgress(),
+			startScreenPos.y + (finalScreenPos.y - startScreenPos.y) * t * yMoveScale * GetPitchProgress()
 		};
 
 
