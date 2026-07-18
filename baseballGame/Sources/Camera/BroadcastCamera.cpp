@@ -264,9 +264,58 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 			}
 			if(!homeRunCameraIndices.empty())
 			{
-				// ランダムにHomeRunCameraを選択して切り替える
-				int randomIndex = homeRunCameraIndices[rand() % homeRunCameraIndices.size()];
-				activeCameraIndex = randomIndex;
+				//打球角度によってカメラを切り替える
+				if(originalDirection >=-45.0f && originalDirection <=-15.0f)
+				{
+					//確信ホームランカメラ1か3か6のどれかからランダム
+					int randomIndex = rand() % 3;
+
+					if(randomIndex == 0)
+					{
+						activeCameraIndex = 6;//確信ホームランカメラ1
+					}
+					else if(randomIndex == 1)
+					{
+						activeCameraIndex = 8;//確信ホームランカメラ3
+					}
+					else
+					{
+						activeCameraIndex = 11;//確信ホームランカメラ6
+					}
+
+				}
+				else if(originalDirection >=15.0f && originalDirection <=45.0f)
+				{
+					//確信ホームランカメラ1か2か5のどれかからランダム
+					int randomIndex = rand() % 3;
+
+					if(randomIndex == 0)
+					{
+						activeCameraIndex = 6;//確信ホームランカメラ1
+					}
+					else if(randomIndex == 1)
+					{
+						activeCameraIndex = 7;//確信ホームランカメラ2
+					}
+					else
+					{
+						activeCameraIndex = 10;//確信ホームランカメラ5
+					}
+				}
+				else
+				{
+					//確信ホームランカメラ1か4のどれかからランダム
+					int randomIndex = rand() % 2;
+
+					if(randomIndex == 0)
+					{
+						activeCameraIndex = 6;//確信ホームランカメラ1
+					}
+					else
+					{
+						activeCameraIndex = 9;//確信ホームランカメラ4
+					}
+				}
 
 			}
 		}
@@ -387,6 +436,18 @@ void BroadcastCamera::StopAllTracking()
 	{
 		controller.StopTrackingBall();
 	}
+}
+
+std::string BroadcastCamera::GetPresetNameById(int cameraId) const
+{
+	for (const auto& preset : cameraPresets)
+	{
+		if (preset.cameraId == cameraId)
+		{
+			return preset.name;
+		}
+	}
+	return ""; // 該当するカメラIDが見つからなかった場合は空文字を返す
 }
 
 void BroadcastCamera::DrawGUI()

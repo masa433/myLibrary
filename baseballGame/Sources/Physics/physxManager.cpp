@@ -1002,44 +1002,69 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				: 0.4f;
 
 			// 衝突法線（トリガーは contactPoints が取れないので位置差分で代用）
-			physx::PxVec3 collisionNormal;
+			physx::PxVec3 contactNormal;
 
+			// 衝突法線がほぼゼロベクトルの場合は、バットの前方方向を使用
 			if (batVelocity.magnitude() > 0.1f)
 			{
-				// バットが動いている方向を打ち出し方向とする
-				collisionNormal = batVelocity.getNormalized();
+				contactNormal = batVelocity.getNormalized();
 			}
 			else
 			{
-				// スイング速度がほぼゼロの場合のフォールバック
-				collisionNormal = ballCollider->getGlobalPose().p - batCollider->getGlobalPose().p;
-				if (collisionNormal.normalize() < 1e-4f)
-					collisionNormal = physx::PxVec3(0.0f, 0.0f, -1.0f);
+				contactNormal = ballCollider->getGlobalPose().p - batCollider->getGlobalPose().p;
+				if (contactNormal.normalize() < 1e-4f)
+				{
+					contactNormal = physx::PxVec3(0.0f, 0.0f, -1.0f);
+				}
 			}
+
+			contactNormal.y = 0.0f;
+			if (contactNormal.normalize() < 1e-4f)
+			{
+				contactNormal = physx::PxVec3(0.0f, 0.0f, -1.0f);
+			}
+
+			//打ち出し方向(exit velosity)の向き
+			physx::PxVec3 launchDirection;
+
+			// バットの速度がほぼゼロの場合は、バットの前方方向を使用
+			if (batVelocity.magnitude() > 0.1f)
+			{
+				launchDirection = batVelocity.getNormalized();
+			}
+			else
+			{
+				// バットの速度がほぼゼロの場合は、バットの前方方向を使用
+				launchDirection = ballCollider->getGlobalPose().p - batCollider->getGlobalPose().p;
+				if (launchDirection.normalize() < 1e-4f)
+				{
+					launchDirection = physx::PxVec3(0.0f, 0.0f, -1.0f);
+				}
+			}
+
+			physx::PxVec3 horizDir;
 
 			{
 				float angle2DRad = result.launchAngle2DDeg * (3.14159265359f / 180.0f);
-
-				// XZ方向（水平方向）はバット速度から維持
-				physx::PxVec3 horizDir = collisionNormal;
-				horizDir.y = 0.0f;
+				horizDir = launchDirection;
+				
+				horizDir.y = 0.0f;// 水平方向のみを考慮
 				if (horizDir.magnitude() < 1e-3f)
+				{
 					horizDir = physx::PxVec3(0.0f, 0.0f, -1.0f);
+				}
 				else
+				{
 					horizDir.normalize();
+				}
 
-				// 2Dの仰角でY成分を決定
-				collisionNormal = physx::PxVec3(
-					horizDir.x * cosf(angle2DRad),
-					sinf(angle2DRad),
-					horizDir.z * cosf(angle2DRad)
-				);
-				collisionNormal.normalize();
+				launchDirection = physx::PxVec3(horizDir.x * cosf(angle2DRad), sinf(angle2DRad), horizDir.z * cosf(angle2DRad));
+				launchDirection.normalize();
 			}
 
 			// 打球速度計算（onContact と同じロジック）
 			physx::PxVec3 relativeVelocity = batVelocity - ballVelocity;
-			float relativeVelocityAlongNormal = relativeVelocity.dot(collisionNormal);
+			float relativeVelocityAlongNormal = relativeVelocity.dot(contactNormal);
 
 			const float BALL_MASS = 0.145f;
 			const float EFFECTIVE_BAT_MASS = 0.3f;
@@ -1068,26 +1093,43 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			else if (launchAngleDeg < 0.0f)  angleScale = 0.95f - 0.1f * std::clamp(launchAngleDeg / -20.0f, 0.0f, 1.0f);
 			estimatedExitVelocity *= angleScale;
 
+			//打球方向を基準にしたローカル座標系を作る
+			physx::PxVec3 forward = launchDirection;
+			physx::PxVec3 worldUp(0.0, 1.0f, 0.0f);
+
+			physx::PxVec3 rightAxis = worldUp.cross(forward);//右方向
+			if(rightAxis.magnitude() <1e-4f) rightAxis = physx::PxVec3(1.0f, 0.0f, 0.0f);//forwardが上方向と同じ場合は右方向をX軸にする
+			
+			physx::PxVec3 upAxis = forward.cross(rightAxis);//上方向
+			upAxis.normalize();
+
 			// 回転計算
 			physx::PxVec3 tangentialVelocity =
-				relativeVelocity - collisionNormal * relativeVelocityAlongNormal;
+				relativeVelocity - contactNormal * relativeVelocityAlongNormal;
 			float tangentialSpeed = tangentialVelocity.magnitude();
 			float angularVelocityRadPerSec = (tangentialSpeed > 1e-3f)
 				? (tangentialSpeed * combinedFriction) / BALL_RADIUS : 0.0f;
 
-			physx::PxVec3 spinAxis = collisionNormal.cross(tangentialVelocity);
-			if (spinAxis.magnitude() > 1e-3f) spinAxis.normalize();
-			else spinAxis = physx::PxVec3(0.0f, 1.0f, 0.0f);
-			spinAxis.x = -spinAxis.x;
-			spinAxis.y = -spinAxis.y;
-			spinAxis.z = -spinAxis.z;
+			//バックスピン成分
+			float backSpinRatio = std::clamp(launchAngleDeg / 25.0f, 0.0f, 1.0f) * 0.8f + 0.2f;// 0度で0.2、25度以上で1.0
 
+			//サイドスピン成分
+			float launchHorizontalAngleDeg = std::atan2(
+				horizDir.x, horizDir.z) * (180.0f / PI); // horizDir は launchDirection 計算時に使ったもの
+			float sideSpinRatio = std::clamp(launchHorizontalAngleDeg / 45.0f, -1.0f, 1.0f);// 左方向が正、右方向が負
+
+
+			physx::PxVec3 spinAxis = rightAxis * -backSpinRatio + upAxis * sideSpinRatio;
+			if (spinAxis.magnitude() > 1e-4f) spinAxis.normalize();
+			else spinAxis = rightAxis;
+			
+			
 			constexpr float SOFT_LIMIT_THRESHOLD = 165.0f;// 165km/h以上は回転を抑制
 			constexpr float SOFT_LIMIT_MAX = 190.0f;// 190km/h以上は回転を抑制
 			constexpr float SOFT_LIMIT_KNEE = SOFT_LIMIT_MAX - SOFT_LIMIT_THRESHOLD;// 25km/hの範囲で抑制
 
 			// 最終速度
-			physx::PxVec3 newBallVelocity = collisionNormal * estimatedExitVelocity;
+			physx::PxVec3 newBallVelocity = launchDirection * estimatedExitVelocity;
 			newBallVelocity *= result.velocityScale; // 2D判定の倍率
 
 			//ソフトリミットをかける
@@ -1122,7 +1164,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			//打球方向が15度～30度の範囲内で打球速度が170キロ以上、打球角度が25度～35度の時は確信ホームランとして仮でログ出力
 			//後で確信ホームラン用のカメラ演出に切り替える
 			const char* homeRunResult = nullptr;
-			if(hitDirectionAngleDeg >= 15.0f && hitDirectionAngleDeg <= 30.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 35.0f && finalExitVelocityKmh >= 170.0f)
+			if(hitDirectionAngleDeg >= 15.0f && hitDirectionAngleDeg <= 30.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 35.0f && finalExitVelocityKmh >= 150.0f)
 			{
 				homeRunResult = u8"確信ホームラン！";
 				isHomeRun = true;

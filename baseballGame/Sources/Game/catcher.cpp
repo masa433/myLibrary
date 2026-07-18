@@ -1,6 +1,7 @@
 #include "catcher.h"
 #include "Graphics.h"
 
+
 void Catcher::Initialize()
 {
 	ID3D11Device* device = Graphics::Instance().GetDevice();
@@ -78,17 +79,40 @@ void Catcher::AttachMittToHand()
 }
 
 
-void Catcher::Render(const RenderContext& rc, ModelRenderer* renderer)
+void Catcher::Render(const RenderContext& rc, ModelRenderer* renderer, FrustumCulling* frustumCulling)
 {
+	
 	if (catcherModel)
 	{
-		// キャッチャーのモデルをレンダリングする処理をここに追加
-		catcherModel->render_batched(rc.deviceContext, catcherTransform, animatedNodes);
+		bool isVisible = true;
+
+		if (frustumCulling)
+		{
+			const auto& sphere = catcherModel->GetBoundingSphere();
+			isVisible = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, catcherTransform);
+		}
+
+		if (isVisible)
+		{
+			// キャッチャーのモデルをレンダリングする処理をここに追加
+			catcherModel->render_batched(rc.deviceContext, catcherTransform, animatedNodes);
+		}
 	}
 	if(catcherMitt)
 	{
-		// キャッチャーミットのモデルをレンダリングする処理をここに追加
-		catcherMitt->render_batched(rc.deviceContext, mittTransform, {});
+		bool isVisible = true;
+
+		if (frustumCulling)
+		{
+			const auto& sphere = catcherMitt->GetBoundingSphere();
+			isVisible = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, mittTransform);
+		}
+
+		if (isVisible)
+		{
+			// キャッチャーミットのモデルをレンダリングする処理をここに追加
+			catcherMitt->render_batched(rc.deviceContext, mittTransform, {});
+		}
 	}
 }
 

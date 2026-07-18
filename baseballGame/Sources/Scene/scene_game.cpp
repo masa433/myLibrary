@@ -739,7 +739,7 @@ void scene_game::render(float elapsedTime)
 
     Pitcher::Instance().Render(rc, modelRenderer);
 	Player::Instance().RenderPlayer(rc, modelRenderer);
-	Catcher::Instance().Render(rc, modelRenderer);
+	Catcher::Instance().Render(rc, modelRenderer, enableFrustumCulling ? &frustumCulling : nullptr);
 	BatSprite::Instance().Render();
 	ballSprite::Instance().Render();
 

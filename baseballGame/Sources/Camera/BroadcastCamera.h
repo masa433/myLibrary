@@ -37,7 +37,6 @@ public:
 		int cameraId = -1; // カメラのID（必要に応じて使用）
 	};
 
-	
 	//カメラ関連の関数
 	int AddCameraPreset(const CameraPreset& preset);//カメラ追加関数
 	int AddCameraPreset(const std::string& name, const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus);//カメラ追加関数
@@ -58,6 +57,8 @@ public:
 	int GetActiveIndex() const { return activeCameraIndex; }
 	void SetActiveIndex(int i) { activeCameraIndex = i; }
 	std::vector<CameraPreset>& Presets() { return cameraPresets; }
+
+	std::string GetPresetNameById(int cameraId) const;
 
 	bool prevHasCollidedWithBat = false; // 前フレームでボールがバットに当たったかどうかのフラグ
 	bool prevHasShowTrackingData = false; // 前フレームで追跡データを表示していたかどうかのフラグ

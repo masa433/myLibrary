@@ -9,6 +9,9 @@
 #include "../Model/gltf_model.h"
 #include "json.hpp"
 #include "HitJudge2D.h"
+#include "FrustumCulling.h"
+
+using json = nlohmann::json;
 
 class Catcher : public GameObject
 {
@@ -22,7 +25,7 @@ public:
 	void Initialize();
 	void Uninitialize();
 	void Update(float elapsedTime);
-	void Render(const RenderContext& rc, ModelRenderer* renderer);
+	void Render(const RenderContext& rc, ModelRenderer* renderer, FrustumCulling* frustumCulling);
 	void DrawGUI();
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
