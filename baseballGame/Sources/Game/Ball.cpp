@@ -280,6 +280,11 @@ void Ball::DrawGUI()
 		if (ImGui::Button("Reset Rotation Speed"))
 			modelRotationSpeed = { 0.0f, 0.0f, 0.0f };
 	}
+
+	//記録するまでの遅延時間を設定する
+	ImGui::DragFloat("Trail Record Delay Time", &trailRecordDelayTime, 0.01f, 0.0f, 5.0f, "%.2f");
+	ImGui::DragFloat("Trail Record Time", &trailRecordTimer, 0.01f, 0.01f, 1.0f, "%.2f");
+
 #endif
 }
 
@@ -320,6 +325,7 @@ void Ball::AttachToHand(const std::vector<gltf_model::node>& animatedNodes, cons
 	// トレイルをリセット
 	ballTrail.clear();
 	trailRecordTimer = 0.0f;
+	trailRecordDelayTime = 0.0f;
 	modelAngle = { 0.0f, 0.0f, 0.0f };
 	modelRotationSpeed = { 0.0f, 0.0f, 0.0f };
 
@@ -358,21 +364,25 @@ void Ball::UpdateFromPhysics(float elapsedTime)
 	UpdateWorldTransform();
 
 	// 物理演算中（飛んでいる時）にトレイルを記録
-
 	if (hasCollidedWithBat)
 	{
-		trailRecordTimer += elapsedTime;
-		if (trailRecordTimer >= TrailRecordInterval)
+		trailRecordDelayTime += elapsedTime;
+
+		if(trailRecordDelayTime >= 2.0f)
 		{
-			trailRecordTimer = 0.0f;
-			ballTrail.push_back(worldPosition);
-			if (ballTrail.size() > MaxTrailLength)
+			trailRecordDelayTime = 2.0f; // 遅延時間の上限を設定
+			trailRecordTimer += elapsedTime;
+			if (trailRecordTimer >= TrailRecordInterval)
 			{
-				ballTrail.pop_front();
+				trailRecordTimer = 0.0f;
+				ballTrail.push_back(worldPosition);
+				if (ballTrail.size() > MaxTrailLength)
+				{
+					ballTrail.pop_front();
+				}
 			}
 		}
 	}
-
 }
 
 void Ball::UpdateCollider()
@@ -455,6 +465,7 @@ void Ball::Throw(const physx::PxVec3& initialVelocity, const physx::PxVec3& angu
 	UpdateWorldTransform();
 	ballTrail.clear();
 	trailRecordTimer = 0.0f;
+	trailRecordDelayTime = 0.0f; // バット衝突後のトレイル記録開始までの遅延時間をリセット
 	modelRotationSpeed = visualRotationSpeed;
 	modelAngle = {                             // ← 追加
 		DirectX::XMConvertToRadians(visualAngle.x),

@@ -13,6 +13,7 @@
 #include "SkyRenderer.h"
 #include "ShadowRenderer.h"
 #include "FreeCameraController.h"
+#include "Hextransitioneffect.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -38,6 +39,9 @@ private:
 
 	//	タイトル用カメラ（1台だけでOK）
 	CameraController cameraController;
+
+	HexTransitionEffect hexTransitionEffect;
+	bool isChangingScene = false;//	シーン切り替え中かどうか
 
 private:
 	//	シーン用定数バッファ構造体（stageのシェーダーが要求するレイアウトに合わせる）

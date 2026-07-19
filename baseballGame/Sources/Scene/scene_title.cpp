@@ -67,6 +67,10 @@ void SceneTitle::initialize()
 	//	ステージ初期化（PhysXを使う作りなら先にInitializeしておく）
 	Physics::Instance().Initialize();
 	stage::Instance().initialize();
+
+	hexTransitionEffect.Initialize();
+	isChangingScene = false;
+
 }
 
 void SceneTitle::update(float elapsed_time)
@@ -96,9 +100,24 @@ void SceneTitle::update(float elapsed_time)
 	  | GamePad::BTN_B 
 	  | GamePad::BTN_X
 	  | GamePad::BTN_Y;
-	if(pad.GetButtonDown() & anyButton)
+
+	if(!isChangingScene)
 	{
-		sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
+		if (pad.GetButtonDown() & anyButton)
+		{
+			isChangingScene = true;
+			hexTransitionEffect.Start(1.0f);
+			
+		}
+	}
+	else
+	{
+		hexTransitionEffect.Update(elapsed_time);
+
+		if (hexTransitionEffect.IsFinished())
+		{
+			sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
+		}
 	}
 		
 }
@@ -199,6 +218,11 @@ void SceneTitle::render(float elapsed_time)
 
 	//	ステージ描画
 	stage::Instance().render(rc, modelRenderer);
+
+	if (isChangingScene)
+	{
+		hexTransitionEffect.Render();
+	}
 }
 
 void SceneTitle::uninitialize()

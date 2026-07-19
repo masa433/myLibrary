@@ -6,10 +6,10 @@
 #define ANISOTROPIC 2
 SamplerState sampler_states[3] : register(s0);
 
-Texture2D skybox : register(t32);
-TextureCube diffuse_iem : register(t33);
-TextureCube specular_pmrem : register(t34);
-Texture2D lut_ggx : register(t35);
+Texture2D skybox : register(t50);
+TextureCube diffuse_iem : register(t51);
+TextureCube specular_pmrem : register(t52);
+Texture2D lut_ggx : register(t53);
 
 float4 sample_lut_ggx(float2 brdf_sample_point)
 {

@@ -126,21 +126,21 @@ void Wind::Render(const RenderContext& rc)
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 
 	// 風の流線を描画
-	for (const auto& line : windLines)
-	{
-		DirectX::XMFLOAT3 start = line.position;
-		start.y += windHeight; // 風の高さを加算
-		DirectX::XMFLOAT3 end = {
-			line.position.x - windDirection.x * line.length,
-			(line.position.y + windHeight) - windDirection.y * line.length,
-			line.position.z - windDirection.z * line.length
-		};
+	//for (const auto& line : windLines)
+	//{
+	//	DirectX::XMFLOAT3 start = line.position;
+	//	start.y += windHeight; // 風の高さを加算
+	//	DirectX::XMFLOAT3 end = {
+	//		line.position.x - windDirection.x * line.length,
+	//		(line.position.y + windHeight) - windDirection.y * line.length,
+	//		line.position.z - windDirection.z * line.length
+	//	};
 
-		DirectX::XMFLOAT4 color = { 0.8f, 0.9f, 1.0f, 0.35f };
+	//	DirectX::XMFLOAT4 color = { 0.8f, 0.9f, 1.0f, 0.35f };
 
-		primitiveRenderer->AddVertex(start, color);
-		primitiveRenderer->AddVertex(end, color);
-	}
+	//	primitiveRenderer->AddVertex(start, color);
+	//	primitiveRenderer->AddVertex(end, color);
+	//}
 
 	// トラッキングデータが表示されている場合は、風のスプライトやテキストを描画しない
 	if (TrackingData::Instance().IsTrackingDataVisible()) return;

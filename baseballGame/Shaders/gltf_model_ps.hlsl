@@ -102,19 +102,19 @@ float GetShadowFactor(float3 w_pos, float3 shadow_texcoord)
                 wvp.x >= 0 && wvp.x <= 1 &&
                 wvp.y >= 0 && wvp.y <= 1)
             {
-                if(soft_shadow_enabled)
+                if (soft_shadow_enabled)
                 {
                     float lit = GetShadowFactorPCF(cascade_shadow_map[i],
-                    shadow_sampler_state, wvp.xy, wvp.z, 
+                    shadow_sampler_state, wvp.xy, wvp.z,
                     cascade_shadow_bias[i], soft_shadow_samples);
                     //lit: 0=完全に影, 1=完全に光
                     factor = lerp(cascade_shadow_attenuation, 1.0f, lit);
                 }
                 else
-                { 
+                {
                     float depth = cascade_shadow_map[i].Sample(shadow_sampler_state, wvp.xy).r;
                     if (wvp.z - depth > cascade_shadow_bias[i])
-                    factor = cascade_shadow_attenuation;
+                        factor = cascade_shadow_attenuation;
                 }
                 break;
             }
@@ -122,7 +122,7 @@ float GetShadowFactor(float3 w_pos, float3 shadow_texcoord)
     }
     else
     {
-        if(soft_shadow_enabled)
+        if (soft_shadow_enabled)
         {
             float lit = GetShadowFactorPCF(shadow_map, shadow_sampler_state,
                 shadow_texcoord.xy, shadow_texcoord.z, shadow_bias, soft_shadow_samples);
@@ -253,41 +253,93 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
             return color;
         }
 
-        float3 dir_diffuse = CalcLambert(N, L_dir, LC, 1) * shadow_factor;
+        //--------------------------------------------
+        //  PBR (metallic-roughness) パラメータの算出
+        //  ※反射（スペキュラー）項は使用しないため、
+        //    roughnessは今回使用していません
+        //--------------------------------------------
+        const float3 dielectric_specular = float3(0.04f, 0.04f, 0.04f);
+
+        float metallic = m.pbr_metallic_roughness.metallic_factor;
+
+        // metallic_roughness_texture : glTF規格でB=metallic
+        if (m.pbr_metallic_roughness.metallic_roughness_texture.index > -1)
+        {
+            float mr_b = material_textures[METALLIC_ROUGHNESS_TEXTURE]
+                .Sample(sampler_states[LINEAR], pin.texcoord).b;
+            metallic *= mr_b;
+        }
+
+        // デバッグ用の調整値（ADJUST_MATERIAL_CONSTANT_BUFFER）を加算
+        metallic = saturate(metallic + adjust_metalness);
+
+        // アンビエントオクルージョン（間接光にのみ適用）
+        float ao = 1.0f;
+        if (m.occlusion_texture.index > -1)
+        {
+            float occ = material_textures[OCCLUSION_TEXTURE]
+                .Sample(sampler_states[LINEAR], pin.texcoord).r;
+            ao = lerp(1.0f, occ, m.occlusion_texture.strength);
+        }
+
+        // glTF metallic-roughness ワークフローに基づく F0 / 拡散反射率
+        // （f0/f90はbrdf_lambertianのフレネル重み付けにのみ使用）
+        float3 f0 = lerp(dielectric_specular, basecolor.rgb, metallic);
+        float3 f90 = float3(1.0f, 1.0f, 1.0f);
+        float3 diffuse_color = lerp(basecolor.rgb * (1.0f - dielectric_specular.r), (float3) 0, metallic);
+
+        float3 direct_lighting = (float3) 0;
+
+        // 平行光源
+        {
+            float3 L = -L_dir; // サーフェスから光源方向へ
+            float3 H = normalize(V + L);
+            float NoL = saturate(dot(N, L));
+            float VoH = saturate(dot(V, H));
+
+            float3 diffuse = brdf_lambertian(f0, f90, diffuse_color, VoH);
+
+            direct_lighting += diffuse * NoL * LC * shadow_factor;
+        }
 
         // 点光源
-        float3 pt_diffuse = (float3) 0;
         [loop]
         for (int i = 0; i < (int) light_count.y; ++i)
         {
-            float3 PL = pin.w_position.xyz - pointLights[i].position.xyz;
-            float len = length(PL);
+            float3 toLight = pointLights[i].position.xyz - pin.w_position.xyz;
+            float len = length(toLight);
             if (len >= pointLights[i].range)
                 continue;
             float att = saturate(1.0f - len / pointLights[i].range);
             att *= att;
-            PL /= len;
-            pt_diffuse += CalcLambert(N, PL, pointLights[i].color.rgb * pointLights[i].intensity, 1) * att;
+            float3 L = toLight / len;
+
+            float3 H = normalize(V + L);
+            float NoL = saturate(dot(N, L));
+            float VoH = saturate(dot(V, H));
+
+            float3 diffuse = brdf_lambertian(f0, f90, diffuse_color, VoH);
+
+            direct_lighting += diffuse * NoL
+                * pointLights[i].color.rgb * pointLights[i].intensity * att;
         }
 
         // スポットライト
-        float3 sp_diffuse = (float3) 0;
         [unroll]
         for (int j = 0; j < 6; ++j)
         {
             if (j >= (int) light_count.z)
                 break;
-            float3 SL = pin.w_position.xyz - spotLights[j].position.xyz;
-            float len = length(SL);
+            float3 toLight = spotLights[j].position.xyz - pin.w_position.xyz;
+            float len = length(toLight);
             if (len >= spotLights[j].range)
                 continue;
             float att = saturate(1.0f - len / spotLights[j].range);
             att *= att;
-            SL /= len;
-            float ang = dot(normalize(spotLights[j].direction.xyz), SL);
+            float3 L = toLight / len;
+            float ang = dot(normalize(spotLights[j].direction.xyz), -L);
             float area = spotLights[j].innerCorn - spotLights[j].outerCorn;
             att *= saturate(1.0f - (spotLights[j].innerCorn - ang) / area);
-            float3 SLC = spotLights[j].color.rgb * spotLights[j].intensity;
 
             // スポットシャドウ
             float sp_shadow = 1.0f;
@@ -323,10 +375,28 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
                         sp_shadow = spot_shadow_attenuation;
                 }
             }
-            sp_diffuse += CalcLambert(N, SL, SLC, 1) * att * sp_shadow;
+
+            float3 H = normalize(V + L);
+            float NoL = saturate(dot(N, L));
+            float VoH = saturate(dot(V, H));
+
+            float3 diffuse = brdf_lambertian(f0, f90, diffuse_color, VoH);
+
+            direct_lighting += diffuse * NoL
+                * spotLights[j].color.rgb * spotLights[j].intensity * att * sp_shadow;
         }
 
-        color.rgb = basecolor.rgb * (ambient + dir_diffuse + pt_diffuse + sp_diffuse);
+        //--------------------------------------------
+        //  IBL（間接光・拡散のみ）
+        //--------------------------------------------
+        float3 ibl_diffuse = ibl_radiance_lambertian(N, V, 1.0f, diffuse_color, f0);
+
+        // 既存のambient_color / 半球ライトはIBLと併用（要求どおり加算）
+        float3 legacy_ambient = ambient;
+
+        float3 indirect_lighting = (ibl_diffuse + legacy_ambient * diffuse_color) * ao;
+
+        color.rgb = direct_lighting + indirect_lighting + emmisive;
     }
 
     //	フォグ（両モード共通）

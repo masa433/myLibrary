@@ -178,6 +178,9 @@
     <ClCompile Include="Sources\Game\catcher.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Shader\Hextransitioneffect.cpp">
+      <Filter>Sources\Shader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -375,6 +378,9 @@
     <ClInclude Include="Sources\Game\catcher.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\Shader\Hextransitioneffect.h">
+      <Filter>Sources\Shader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Basic.hlsli">
@@ -530,6 +536,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\sky_vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HextransitionVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HextransitionPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

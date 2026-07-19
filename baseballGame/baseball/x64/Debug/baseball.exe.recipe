@@ -34,6 +34,12 @@
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\HextransitionPS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\HextransitionVS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\LambertPS.cso</FullPath>
     </ContentFile>
     <ContentFile>

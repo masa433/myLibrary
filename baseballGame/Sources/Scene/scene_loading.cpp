@@ -40,6 +40,12 @@ void scene_loading::update(float elapsed_time)
 void scene_loading::render(float elapsed_time)
 {
 	// ロード画面の描画処理
+	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	float clear_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
+	dc->ClearRenderTargetView(backBufferRTV, clear_color);
+	dc->ClearDepthStencilView(Graphics::Instance().GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	dc->OMSetRenderTargets(1, &backBufferRTV, Graphics::Instance().GetDepthStencilView());
 }
 
 void scene_loading::DrawGUI()

@@ -119,6 +119,7 @@ private:
 	const float TrailRecordInterval = 0.016f; // 記録間隔
 	float trailRecordTimer = 0.0f;
 	float trailWidth = 0.05f; // 軌跡の幅
+	float trailRecordDelayTime = 0.0f; // 軌跡の記録開始までの遅延時間
 
 public:
 	

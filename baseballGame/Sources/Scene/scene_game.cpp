@@ -268,7 +268,7 @@ void scene_game::initialize()
         shadowRenderer.GetSpotLights()[i].range = 250.0f;
         shadowRenderer.GetSpotLights()[i].intensity = 3.0f;
         shadowRenderer.GetSpotLights()[i].innerCorn = DirectX::XMConvertToRadians(50.0f);
-        shadowRenderer.GetSpotLights()[i].outerCorn = DirectX::XMConvertToRadians(90.0f);
+        shadowRenderer.GetSpotLights()[i].outerCorn = DirectX::XMConvertToRadians(55.0f);
     }
 
     ////シーン描画用のバッファ生成
@@ -488,7 +488,7 @@ void scene_game::update(float elapsed_time)
     //時刻が0.2以上0.7以下の時はポイントライトとスポットライトを消す
     if (skyRenderer.time_of_day >= 0.2f && skyRenderer.time_of_day <= 0.7f)
     {
-        directional_light_intensity = 0.7f;
+        directional_light_intensity = 2.0f;
         ambient_color = {1.0f, 1.0f, 1.0f, 1.0f};
         for (auto& pl : shadowRenderer.GetPointLights())
         {
@@ -505,11 +505,11 @@ void scene_game::update(float elapsed_time)
         ambient_color = { 0.7f, 0.7f, 0.7f, 1.0f };
         for (auto& pl : shadowRenderer.GetPointLights())
         {
-            pl.intensity = 2.0f;
+            pl.intensity = 30.0f;
         }
         for (auto& sl : shadowRenderer.GetSpotLights())
         {
-            sl.intensity = 2.0f;
+            sl.intensity = 5.0f;
         }
 	}
 
