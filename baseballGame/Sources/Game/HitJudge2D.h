@@ -58,6 +58,9 @@ public:
     // 紫バット判定フラグ（外部から set する）
     bool  isPurpleBat = false;
 	bool  isBallZone = false; // ボールがストライクゾーン内に入っていたか（外部から set する）
+    bool  isInsideCourse = false; // ボールがインコースだったか
+
+	float insideCourseJustWindowScale = 0.5f; // インコースジャスト判定窓の倍率（0.5なら半分の窓でジャスト判定）
 
     // カーソル円と重なった時の速度ボーナス
     float cursorOverlapBonus = 0.4f;   // +40%
@@ -351,34 +354,35 @@ private:
     {
         char buffer[64];
 
-        // ジャスト（±timingJustWindowSec 以内）
-        if (timeToZone_ >= -7.0f && timeToZone_ <= timingJustWindowSec)
+        float effectiveJustWindow = isInsideCourse
+            ? timingJustWindowSec * insideCourseJustWindowScale
+            : timingJustWindowSec;
+
+        if (isInsideCourse)
         {
-            snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just)\n", timeToZone_);
-            OutputDebugStringA(buffer);
-            return 1.1f;
+            // インコースの時のジャスト判定窓（下限を-2.0fに縛って、早打ち側も少し厳しくする）
+            if (timeToZone_ >= -2.0f && timeToZone_ <= timingJustWindowSec)
+            {
+                snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just/Inside)\n", timeToZone_);
+                OutputDebugStringA(buffer);
+                return 1.1f;
+            }
+        }
+        else
+        {
+            // アウトコースの時のジャスト判定窓（今まで通り）
+            if (timeToZone_ >= -7.0f && timeToZone_ <= effectiveJustWindow)
+            {
+                snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just/Outside)\n", timeToZone_);
+                OutputDebugStringA(buffer);
+                return 1.1f;
+            }
         }
 
-  //      // 少し早い（ジャストより早いが timingSlightWindowSec 以内）
-  //      if (timeToZone_ > -7.0f && timeToZone_ <= timingSlightWindowSec)
-  //      {
-  //          snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Slight Early)\n", timeToZone_);
-  //          OutputDebugStringA(buffer);
-  //          return 0.9f;
-  //      }
-
-  //      // 少し遅い（ジャストより遅いが timingSlightWindowSec 以内）
-  //      if (timeToZone_ < -timingJustWindowSec && timeToZone_ >= -timingSlightWindowSec)
-  //      {
-  //          snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Slight Late)\n", timeToZone_);
-  //          OutputDebugStringA(buffer);
-  //          return 0.9f;
-  //      }
-
-		// 早すぎ or 遅すぎ
+        // 早すぎ or 遅すぎ
         snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Too Early/Late)\n", timeToZone_);
         OutputDebugStringA(buffer);
-		return 0.8f;
+        return 0.8f;
     }
 
     // ---- 内部状態 ----
@@ -439,7 +443,12 @@ public:
             // DrawGUI
             ImGui::Text(u8"カーソル重なり: %s", hj.IsCursorOverlapping() ? "YES" : "no");
 
-            ImGui::Text(u8"カーソル重なり率: %.2f", hj.overlapResult_.cursorOverlapRatio); 
+            ImGui::Text(u8"カーソル重なり率: %.2f", hj.overlapResult_.cursorOverlapRatio);
+
+            //インサイドかどうか
+			ImGui::Text(u8"インコース: %s", hj.isInsideCourse ? "YES" : "no");
+			//インサイドジャスト判定窓の倍率
+			ImGui::DragFloat(u8"インサイドジャスト判定窓の倍率", &hj.insideCourseJustWindowScale, 0.01f, 0.0f, 1.0f);
             ImGui::Separator();
 
             ImGui::DragFloat(u8"ヒットの有効時間 (前)", &hj.hitWindowBeforeSec, 0.01f, 0.0f, 1.0f);

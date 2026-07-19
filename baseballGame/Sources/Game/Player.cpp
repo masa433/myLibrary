@@ -288,7 +288,11 @@ void Player::Update(float elapsedTime)
         bool isBallZone = (ballCenter.x < szTopLeft.x || ballCenter.x > szBottomRight.x ||
             ballCenter.y < szTopLeft.y || ballCenter.y > szBottomRight.y);
 
+		float zoneCenterX = (szTopLeft.x + szBottomRight.x) * 0.5f;
+		bool isInsideCourse = IsRightBatter() ? (ballCenter.x < zoneCenterX) : (ballCenter.x > zoneCenterX);
+
         HitJudge2D::Instance().isBallZone = isBallZone; // 後述のメンバ
+        HitJudge2D::Instance().isInsideCourse = isInsideCourse; // 後述のメンバ
 
         HitJudge2D::Instance().Update(
             ballCenter, batCenter, batSize, batRotPhysics, cursorCenter, estTime);

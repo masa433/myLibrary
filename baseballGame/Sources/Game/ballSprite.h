@@ -190,7 +190,7 @@ public:
 		case Pitcher::Power::C: return 1.0f;  // 基準
 		case Pitcher::Power::B: return 0.97f;
 		case Pitcher::Power::A: return 0.94f;
-		case Pitcher::Power::S: return 0.88f; // 弾き返しにくい（重い球）
+		case Pitcher::Power::S: return 0.9f; // 弾き返しにくい（重い球）
 		default: return 1.0f;
 		}
 	}
