@@ -43,7 +43,7 @@ public:
 
 	void render(ID3D11DeviceContext* immediate_context, float dx, float dy, float dw, float dh);
 
-	sprite_batch(ID3D11Device* device, const wchar_t* filename,size_t max_sprites);
+	sprite_batch(ID3D11Device* device, ID3D11DeviceContext* immediate_context, const wchar_t* filename,size_t max_sprites);
 	~sprite_batch();
 
 	//unit9

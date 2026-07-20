@@ -22,6 +22,8 @@ void TextureManager::Initialize(ID3D11Device* device, const wchar_t* directory)
 {
 	Clear();
 
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+
 	std::filesystem::path root(directory);
 	if (!std::filesystem::exists(root))
 	{
@@ -36,7 +38,7 @@ void TextureManager::Initialize(ID3D11Device* device, const wchar_t* directory)
 		}
 
 		auto path = entry.path();
-		auto loadedSprite = std::make_unique<sprite>(device, path.c_str());
+		auto loadedSprite = std::make_unique<sprite>(device, context, path.c_str());
 
 		TextureAsset asset{};
 		asset.path = path.wstring();

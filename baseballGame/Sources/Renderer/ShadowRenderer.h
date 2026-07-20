@@ -12,8 +12,8 @@
 class ShadowRenderer
 {
 	// シャドウマップのサイズ定数
-	static constexpr UINT ShadowmapSize = 2048;
-	static constexpr UINT SpotShadowmapSize = 2048;
+	static constexpr UINT ShadowmapSize = 4096;
+	static constexpr UINT SpotShadowmapSize = 4096;
 	static constexpr float ShadowmapDrawRect = 60.0f;
 	static constexpr int ShadowBufferSize = 4; // カスケードシャドウマップの数
 	static constexpr int SpotShadowCount = 4; // スポットシャドウマップの数

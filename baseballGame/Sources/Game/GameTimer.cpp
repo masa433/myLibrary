@@ -4,6 +4,8 @@
 
 void GameTimer::Initialize(ID3D11Device* device)
 {
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -21,7 +23,7 @@ void GameTimer::Initialize(ID3D11Device* device)
 	timerSpriteData->size = { 100.0f, 50.0f };
 	timerSpriteData->rotation = 0.0f;
 	timerSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	timerSprite = std::make_unique<sprite>(device, timerSpriteData->texturePath.c_str());
+	timerSprite = std::make_unique<sprite>(device, context, timerSpriteData->texturePath.c_str());
 
 	// フォントレンダラーの初期化
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());

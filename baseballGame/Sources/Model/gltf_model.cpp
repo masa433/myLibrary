@@ -5,6 +5,7 @@
 #include <stack>
 #include "shader.h"
 #include "texture.h"
+#include "Graphics.h"
 
 
 
@@ -669,11 +670,12 @@ void gltf_model::fetch_textures(ID3D11Device* device, const tinygltf::Model& glt
 		}
 		else
 		{
+			ID3D11DeviceContext* immediate_context = Graphics::Instance().GetDeviceContext();
 			const std::filesystem::path path(filename);
 			ID3D11ShaderResourceView* shader_resource_view{};
 			D3D11_TEXTURE2D_DESC texture2d_desc;
 			std::wstring filename{ path.parent_path().concat(L"/").wstring() + std::wstring(gltf_image.uri.begin(), gltf_image.uri.end()) };
-			hr = load_texture_from_file(device, filename.c_str(), &shader_resource_view, &texture2d_desc);
+			hr = load_texture_from_file(device, immediate_context, filename.c_str(), &shader_resource_view, &texture2d_desc);
 			if (hr == S_OK)
 			{
 				texture_resource_views.emplace_back().Attach(shader_resource_view);

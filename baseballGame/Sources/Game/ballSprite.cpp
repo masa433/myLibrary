@@ -242,6 +242,8 @@ void ballSprite::GetBallZoneScreenBounds(DirectX::XMFLOAT2& outTopLeft, DirectX:
 
 void ballSprite::Initialize(ID3D11Device* device)
 {
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -259,7 +261,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 	strikeZoneSpriteData->size = { 200.0f, 300.0f };
 	strikeZoneSpriteData->rotation = 0.0f;
 	strikeZoneSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	strikeZoneSprite = std::make_unique<sprite>(device, strikeZoneSpriteData->texturePath.c_str());
+	strikeZoneSprite = std::make_unique<sprite>(device, context, strikeZoneSpriteData->texturePath.c_str());
 
 	//ボールの初期化
 	ballDebugSpriteData = std::make_unique<Sprite>();
@@ -268,7 +270,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 	ballDebugSpriteData->size = { 30.0f, 30.0f };
 	ballDebugSpriteData->rotation = 0.0f;
 	ballDebugSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	ballDebugSprite = std::make_unique<sprite>(device, ballDebugSpriteData->texturePath.c_str());
+	ballDebugSprite = std::make_unique<sprite>(device, context, ballDebugSpriteData->texturePath.c_str());
 
 	//ボールボードの初期化
 	ballBoardSpriteData = std::make_unique<Sprite>();
@@ -277,7 +279,16 @@ void ballSprite::Initialize(ID3D11Device* device)
 	ballBoardSpriteData->size = { 200.0f, 300.0f };
 	ballBoardSpriteData->rotation = 0.0f;
 	ballBoardSpriteData->color = { 1.0f, 1.0f, 1.0f, 0.7f };
-	ballBoardSprite = std::make_unique<sprite>(device, ballBoardSpriteData->texturePath.c_str());
+	ballBoardSprite = std::make_unique<sprite>(device, context, ballBoardSpriteData->texturePath.c_str());
+
+	//ボールターゲットスプライトの初期化
+	ballTargetSpriteData = std::make_unique<Sprite>();
+	ballTargetSpriteData->texturePath = L".\\resources\\textures\\ballTarget.png";
+	ballTargetSpriteData->position = { 1100.0f, 400.0f };
+	ballTargetSpriteData->size = { 30.0f, 30.0f };
+	ballTargetSpriteData->rotation = 0.0f;
+	ballTargetSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	ballTargetSprite = std::make_unique<sprite>(device, context, ballTargetSpriteData->texturePath.c_str());
 
 	// added: pitch info font init (日本語対応版)
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
@@ -313,6 +324,7 @@ void ballSprite::Uninitialize()
 	ballDebugSpriteData.reset();
 	ballBoardSprite.reset();
 	ballBoardSpriteData.reset();
+	ballTargetSprite.reset();
 	pitchInfoFont.Uninitialize();
 	TrackingData::Instance().Uninitialize();
 }
@@ -352,6 +364,12 @@ void ballSprite::Update(float elapsedTime)
 		{
 			ballDebugSpriteData->position.x = currentScreenPos.x - ballDebugSpriteData->size.x * 0.5f;
 			ballDebugSpriteData->position.y = currentScreenPos.y - ballDebugSpriteData->size.y * 0.5f;
+		};
+
+	auto ApplyTagetSpritePosition = [&](const DirectX::XMFLOAT2& currentScreenPos)
+		{
+			ballTargetSpriteData->position.x = currentScreenPos.x - ballTargetSpriteData->size.x * 0.5f;
+			ballTargetSpriteData->position.y = currentScreenPos.y - ballTargetSpriteData->size.y * 0.5f;
 		};
 
 	auto GetPitchProgress = [&]()
@@ -471,7 +489,9 @@ void ballSprite::Update(float elapsedTime)
 		ApplyBallSpritePosition(snapPos);
 		ballTrail2D.clear();
 
+		display = BallDisplayMode::Target;
 
+		ApplyTagetSpritePosition(snapPos);
 	}
 	prevPitchingState = pitchingState;
 
@@ -481,6 +501,8 @@ void ballSprite::Update(float elapsedTime)
 		strikeJudgeDone = false;
 		
 		Ball::Instance().SetHasCollidedWithBat(false);
+
+		display = BallDisplayMode::Ball;
 	}
 	prevThrown = nowThrown;
 
@@ -530,11 +552,14 @@ void ballSprite::Update(float elapsedTime)
 
 		AddTrailPoint(currentScreenPos);
 		ApplyBallSpritePosition(currentScreenPos);
+		ApplyTagetSpritePosition(finalScreenPos);
 	}
 
 	if (pitchingState && wp.z < -0.5f && wp.z > -0.7f && !strikeJudgeDone)
 	{
 		strikeJudgeDone = true;
+
+		display = BallDisplayMode::Target;
 
 		DirectX::XMFLOAT2 ballCenter = {
 			ballDebugSpriteData->position.x + ballDebugSpriteData->size.x * 0.5f,
@@ -562,6 +587,7 @@ void ballSprite::Update(float elapsedTime)
 	{
 		stopBallOnHit = true;
 		TrackingData::Instance().Update(elapsedTime);
+		display = BallDisplayMode::Ball;
 	}
 
 	//3Dボールのポジションzが0.0fの時またはボールとバットが当たった時に、BallBoardを表示する
@@ -613,16 +639,31 @@ void ballSprite::Render()
 				strikeZoneSpriteData->rotation);
 		}
 
-
-		if (ballDebugSprite && ballDebugSpriteData)
+		if(display == BallDisplayMode::Ball)
 		{
-			ballDebugSprite->render(dc,
-				ballDebugSpriteData->position.x, ballDebugSpriteData->position.y,
-				ballDebugSpriteData->size.x, ballDebugSpriteData->size.y,
-				ballDebugSpriteData->color.x, ballDebugSpriteData->color.y,
-				ballDebugSpriteData->color.z, ballDebugSpriteData->color.w,
-				ballDebugSpriteData->rotation);
+			if (ballDebugSprite && ballDebugSpriteData)
+			{
+				ballDebugSprite->render(dc,
+					ballDebugSpriteData->position.x, ballDebugSpriteData->position.y,
+					ballDebugSpriteData->size.x, ballDebugSpriteData->size.y,
+					ballDebugSpriteData->color.x, ballDebugSpriteData->color.y,
+					ballDebugSpriteData->color.z, ballDebugSpriteData->color.w,
+					ballDebugSpriteData->rotation);
+			}
 		}
+		else if(display == BallDisplayMode::Target)
+		{
+			if(ballTargetSprite && ballTargetSpriteData && hasAITarget)
+			{
+				ballTargetSprite->render(dc,
+					ballTargetSpriteData->position.x, ballTargetSpriteData->position.y,
+					ballTargetSpriteData->size.x, ballTargetSpriteData->size.y,
+					ballTargetSpriteData->color.x, ballTargetSpriteData->color.y,
+					ballTargetSpriteData->color.z, ballTargetSpriteData->color.w,
+					ballTargetSpriteData->rotation);
+			}
+		}
+		
 	}
 
 	if(ballBoardSprite && ballBoardSpriteData && showBallBoard)

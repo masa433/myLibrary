@@ -314,9 +314,10 @@ void ShadowRenderer::RenderShadowMap(float elapsedTime)
         DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat4(&directional_light_direction);
         LightPosition = DirectX::XMVectorScale(LightPosition, -50);
 
+        // ライトのターゲットを固定位置（ワールド中心）に設定して、影がカメラと一緒に動かないようにする
         DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(LightPosition,
-            DirectX::XMVectorSet(camera.GetFocus().x, camera.GetFocus().y, camera.GetFocus().z, 1.0f),
-            DirectX::XMVectorSet(camera.GetUp().x, camera.GetUp().y, camera.GetUp().z, 0.0f));
+            DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
+            DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 
         // シャドウマップに描画したい範囲の射影行列を生成
         DirectX::XMMATRIX P = DirectX::XMMatrixOrthographicLH(ShadowmapDrawRect, ShadowmapDrawRect,
@@ -398,9 +399,10 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
     //ライトからの位置から見たビュー・プロジェクション行列
     DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat4(&directional_light_direction);
     LightPosition = DirectX::XMVectorScale(LightPosition, -50.0f);
+    // ライトのターゲットを固定位置（ワールド中心）に設定して、影がカメラと一緒に動かないようにする
     DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(LightPosition,
-        DirectX::XMVectorSet(camera.GetFocus().x, camera.GetFocus().y, camera.GetFocus().z, 1.0f),
-        DirectX::XMVectorSet(camera.GetUp().x, camera.GetUp().y, camera.GetUp().z, 0.0f));
+        DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
+        DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 
 
     // カスケード分割距離テーブル

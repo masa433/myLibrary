@@ -30,7 +30,7 @@ public:
 
 	void render(ID3D11DeviceContext* immediate_context, float dx, float dy, float dw, float dh);
 
-	sprite(ID3D11Device* device, const wchar_t* filename);
+	sprite(ID3D11Device* device, ID3D11DeviceContext* immediate_context, const wchar_t* filename);
 	sprite(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shader_resource_view);
 	~sprite();
 

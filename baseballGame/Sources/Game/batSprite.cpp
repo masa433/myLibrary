@@ -10,6 +10,8 @@
 
 void BatSprite::Initialize(ID3D11Device* device)
 {
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -26,7 +28,7 @@ void BatSprite::Initialize(ID3D11Device* device)
 	batSpriteData->size = { 230.0f, 40.0f };
 	batSpriteData->rotation = 0.0f;
 	batSpriteData->color = { 1.0f, 1.0f, 1.0f, 0.7f };
-	batSprite = std::make_unique<sprite>(device, batSpriteData->texturePath.c_str());
+	batSprite = std::make_unique<sprite>(device, context, batSpriteData->texturePath.c_str());
 
 	batCursorSpriteData = std::make_unique<Sprite>();
 	batCursorSpriteData->texturePath = L".\\resources\\textures\\batCursor.png";
@@ -34,7 +36,7 @@ void BatSprite::Initialize(ID3D11Device* device)
 	batCursorSpriteData->size = { 30.0f, 30.0f };
 	batCursorSpriteData->rotation = 0.0f;
 	batCursorSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	batCursorSprite = std::make_unique<sprite>(device, batCursorSpriteData->texturePath.c_str());
+	batCursorSprite = std::make_unique<sprite>(device, context, batCursorSpriteData->texturePath.c_str());
 
 #ifndef _DEBUG
 	ShowCursor(FALSE);

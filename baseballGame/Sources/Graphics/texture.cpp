@@ -3,7 +3,8 @@
 #include "DDSTextureLoader.h"
 
 static map<wstring, ComPtr<ID3D11ShaderResourceView>> resources;
-HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* filename, ID3D11ShaderResourceView** shader_resource_view, D3D11_TEXTURE2D_DESC* texture2d_desc)
+HRESULT load_texture_from_file(ID3D11Device* device, ID3D11DeviceContext* immediate_context,
+	const wchar_t* filename, ID3D11ShaderResourceView** shader_resource_view, D3D11_TEXTURE2D_DESC* texture2d_desc)
 {
 	HRESULT hr{ S_OK };
 	ComPtr<ID3D11Resource> resource;
@@ -27,7 +28,7 @@ HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* filename, ID
 		}
 		else
 		{
-			hr = CreateWICTextureFromFile(device, filename, resource.GetAddressOf(), shader_resource_view);
+			hr = CreateWICTextureFromFile(device, immediate_context, filename, resource.GetAddressOf(), shader_resource_view);
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		}
 		resources.insert(make_pair(filename, *shader_resource_view));

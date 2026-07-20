@@ -9,10 +9,11 @@ using namespace DirectX;
 //カラーテーブル
 
 // 時刻に応じた空の色を計算
-// 時刻は0.0f～1.0fの範囲で、0.0fが夜、0.5fが昼、1.0fが再び夜を表す
+// テーブル上の t は 0.0f～1.0f の正規化時刻（0.0fが夜、0.5fが昼、1.0fが再び夜）
+// ※ time_of_day（0～24時）からはNormalizedTimeOfDay()で変換してから参照する
 struct SkyColorKey
 {
-	float t;// 時刻
+	float t;// 時刻（正規化 0.0f～1.0f）
 	XMFLOAT3 zenith;// 天頂の色
 	XMFLOAT3 horizon;// 地平線の色
 	XMFLOAT3 ground;// 地面の色（今回は使用しない）
@@ -23,15 +24,15 @@ struct SkyColorKey
 // 時刻と対応する空の色のキー
 static const SkyColorKey kColorTable[] =
 {
-    { 0.00f, {0.00f,0.00f,0.05f},  {0.02f,0.02f,0.08f},  {0.02f,0.01f,0.00f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // midnight
-    { 0.18f, {0.01f,0.01f,0.10f},  {0.05f,0.05f,0.12f},  {0.03f,0.02f,0.01f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // pre-dawn
-    { 0.22f, {0.05f,0.05f,0.20f},  {0.40f,0.20f,0.10f},  {0.10f,0.06f,0.03f},  {1.0f ,0.5f ,0.1f }, 0.6f },  // sunrise
-    { 0.30f, {0.15f,0.30f,0.65f},  {0.70f,0.60f,0.40f},  {0.12f,0.10f,0.07f},  {1.0f ,0.8f ,0.5f }, 1.0f },  // morning
-    { 0.50f, {0.10f,0.30f,0.75f},  {0.55f,0.65f,0.80f},  {0.15f,0.12f,0.10f},  {1.0f ,0.97f,0.9f }, 1.4f },  // noon
-    { 0.70f, {0.12f,0.28f,0.70f},  {0.65f,0.55f,0.35f},  {0.12f,0.10f,0.07f},  {1.0f ,0.8f ,0.5f }, 1.0f },  // afternoon
-    { 0.78f, {0.05f,0.05f,0.20f},  {0.55f,0.25f,0.10f},  {0.10f,0.06f,0.03f},  {1.0f ,0.5f ,0.1f }, 0.6f },  // sunset
-    { 0.85f, {0.01f,0.01f,0.10f},  {0.07f,0.05f,0.12f},  {0.03f,0.02f,0.01f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // dusk
-    { 1.00f, {0.00f,0.00f,0.05f},  {0.02f,0.02f,0.08f},  {0.02f,0.01f,0.00f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // midnight again
+	{ 0.00f, {0.00f,0.00f,0.05f},  {0.02f,0.02f,0.08f},  {0.02f,0.01f,0.00f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // midnight
+	{ 0.18f, {0.01f,0.01f,0.10f},  {0.05f,0.05f,0.12f},  {0.03f,0.02f,0.01f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // pre-dawn
+	{ 0.22f, {0.05f,0.05f,0.20f},  {0.40f,0.20f,0.10f},  {0.10f,0.06f,0.03f},  {1.0f ,0.5f ,0.1f }, 0.6f },  // sunrise
+	{ 0.30f, {0.15f,0.30f,0.65f},  {0.70f,0.60f,0.40f},  {0.12f,0.10f,0.07f},  {1.0f ,0.8f ,0.5f }, 1.0f },  // morning
+	{ 0.50f, {0.10f,0.30f,0.75f},  {0.55f,0.65f,0.80f},  {0.15f,0.12f,0.10f},  {1.0f ,0.97f,0.9f }, 1.4f },  // noon
+	{ 0.70f, {0.12f,0.28f,0.70f},  {0.65f,0.55f,0.35f},  {0.12f,0.10f,0.07f},  {1.0f ,0.8f ,0.5f }, 1.0f },  // afternoon
+	{ 0.78f, {0.05f,0.05f,0.20f},  {0.55f,0.25f,0.10f},  {0.10f,0.06f,0.03f},  {1.0f ,0.5f ,0.1f }, 0.6f },  // sunset
+	{ 0.85f, {0.01f,0.01f,0.10f},  {0.07f,0.05f,0.12f},  {0.03f,0.02f,0.01f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // dusk
+	{ 1.00f, {0.00f,0.00f,0.05f},  {0.02f,0.02f,0.08f},  {0.02f,0.01f,0.00f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // midnight again
 };
 
 // 線形補間関数
@@ -40,10 +41,23 @@ static XMFLOAT3 LerpFloat3(const XMFLOAT3& a, const XMFLOAT3& b, float t)
 	return { a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t };
 }
 
-// 時刻に応じた空の色を計算
+// time_of_day（0～24時）を 0.0f～1.0f の正規化時刻に変換
+// 内部の色テーブルや太陽方向の計算は従来通り0～1の値を前提にしているため、
+// 外部からは24時間表記で扱いつつ、参照する直前だけここで変換する
+float SkyRenderer::NormalizedTimeOfDay() const
+{
+	constexpr float kHoursPerDay = 24.0f;
+
+	float t = fmodf(time_of_day, kHoursPerDay) / kHoursPerDay;
+	if (t < 0.0f) t += 1.0f; // 負の値の場合は正の範囲に変換
+	return t;
+}
+
+// 時刻に応じた太陽の方向を計算
 XMFLOAT3 SkyRenderer::ComputeSunDirection() const
 {
-	float angle = (time_of_day * 2.0f - 0.5f) * XM_PI;// 時刻を角度に変換（0.0fが夜、0.5fが昼、1.0fが再び夜）
+	float normalized = NormalizedTimeOfDay();
+	float angle = (normalized * 2.0f - 0.5f) * XM_PI;// 時刻を角度に変換（0.0fが夜、0.5fが昼、1.0fが再び夜）
 
 	// 太陽の方向を計算（z軸を中心に回転）
 	float sun_x = cosf(angle);
@@ -66,8 +80,7 @@ XMFLOAT4 SkyRenderer::GetSunDirectionToLight() const
 // 時刻に応じた空の色を計算
 void SkyRenderer::ComputeSkyColors(sky_constants& out) const
 {
-	float t = fmodf(time_of_day, 1.0f); // 時刻を0.0f～1.0fの範囲に収める
-	if (t < 0.0f) t += 1.0f; // 負の値の場合は正の範囲に変換
+	float t = NormalizedTimeOfDay(); // 0.0f～1.0fの範囲に正規化された時刻
 
 	int count = (int)(sizeof(kColorTable) / sizeof(kColorTable[0]));// カラーテーブルのエントリ数
 
@@ -92,11 +105,11 @@ void SkyRenderer::ComputeSkyColors(sky_constants& out) const
 
 	auto ToFloat4 = [](const XMFLOAT3& v, float w) -> XMFLOAT4 {
 		return { v.x, v.y, v.z, w };
-	};
+		};
 
-	out.sky_zenith_color = ToFloat4(LerpFloat3(a.zenith,    b.zenith,    alpha), 1.0f);
-	out.sky_horizon_color = ToFloat4(LerpFloat3(a.horizon,   b.horizon,   alpha), 1.0f);
-	out.sky_ground_color = ToFloat4(LerpFloat3(a.ground,    b.ground,    alpha), 1.0f);
+	out.sky_zenith_color = ToFloat4(LerpFloat3(a.zenith, b.zenith, alpha), 1.0f);
+	out.sky_horizon_color = ToFloat4(LerpFloat3(a.horizon, b.horizon, alpha), 1.0f);
+	out.sky_ground_color = ToFloat4(LerpFloat3(a.ground, b.ground, alpha), 1.0f);
 
 	XMFLOAT3 sun_rgb = LerpFloat3(a.sun_color, b.sun_color, alpha);
 	float sun_intensity = a.sun_intensity + (b.sun_intensity - a.sun_intensity) * alpha;
@@ -104,7 +117,7 @@ void SkyRenderer::ComputeSkyColors(sky_constants& out) const
 
 	XMFLOAT3 sun_dir = ComputeSunDirection();
 	out.sun_direction = { sun_dir.x, sun_dir.y, sun_dir.z, 0.0f };
-	out.time_of_day = time_of_day;
+	out.time_of_day = t; // シェーダー側は従来通り0.0f～1.0fの正規化時刻を受け取る
 	out.sun_size = sun_size;
 	out.sun_bloom_size = sun_bloom_size;
 	out.sky_dummy = 0.0f; // パディング
@@ -117,7 +130,7 @@ void SkyRenderer::Initialize(ID3D11Device* device)
 
 	// Load shaders (adjust paths to match your project layout)
 	hr = create_vs_from_cso(device, ".\\resources\\shader\\sky_vs.cso", vertex_shader.GetAddressOf(), nullptr, nullptr, 0);
-	if (FAILED(hr)) return ;
+	if (FAILED(hr)) return;
 
 	hr = create_ps_from_cso(device, ".\\resources\\shader\\sky_ps.cso", pixel_shader.GetAddressOf());
 	if (FAILED(hr)) return;
@@ -128,16 +141,20 @@ void SkyRenderer::Initialize(ID3D11Device* device)
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	hr = device->CreateBuffer(&bd, nullptr, constant_buffer.GetAddressOf());
-	if (FAILED(hr)) return ;
+	if (FAILED(hr)) return;
 
 }
 
 //更新
 void SkyRenderer::Update(float elapsedTime)
 {
+	constexpr float kHoursPerDay = 24.0f;
+
 	if (auto_advance_time)
 	{
-		time_of_day = fmodf(time_of_day + elapsedTime * time_speed, 1.0f);
+		// time_speed は「1秒あたり何時間進めるか」を表す
+		time_of_day = fmodf(time_of_day + elapsedTime * time_speed, kHoursPerDay);
+		if (time_of_day < 0.0f) time_of_day += kHoursPerDay;
 	}
 }
 
@@ -173,21 +190,18 @@ void SkyRenderer::DrawGUI()
 #ifdef USE_IMGUI
 	if (ImGui::CollapsingHeader("Sky & Sun"))
 	{
-		ImGui::SliderFloat("Time of Day", &time_of_day, 0.0f, 1.0f);
+		// time_of_day は 0.0f(0時)～24.0f(24時) で表示・編集する
+		ImGui::SliderFloat("Time of Day (h)", &time_of_day, 0.0f, 24.0f, "%.2f h");
 		ImGui::Checkbox("Auto Advance", &auto_advance_time);
 		if (auto_advance_time)
-			ImGui::SliderFloat("Time Speed", &time_speed, 0.001f, 0.2f);
-
-		ImGui::Separator();
-		ImGui::SliderFloat("Sun Size", &sun_size, 0.005f, 0.1f);
-		ImGui::SliderFloat("Sun Bloom", &sun_bloom_size, 0.02f, 0.4f);
+			ImGui::SliderFloat("Time Speed (h/sec)", &time_speed, 0.001f, 5.0f);
 
 		// Show computed sun direction
 		XMFLOAT3 d = ComputeSunDirection();
 		ImGui::Text("Sun Dir: (%.2f, %.2f, %.2f)", d.x, d.y, d.z);
 
-		// Time labels
-		float t = time_of_day;
+		// Time labels（判定は従来通り正規化時刻 0～1 ベースで行う）
+		float t = NormalizedTimeOfDay();
 		const char* label =
 			(t < 0.15f || t > 0.90f) ? "Night" :
 			(t < 0.23f) ? "Pre-Dawn" :
@@ -196,14 +210,14 @@ void SkyRenderer::DrawGUI()
 			(t < 0.55f) ? "Noon" :
 			(t < 0.72f) ? "Afternoon" :
 			(t < 0.80f) ? "Sunset" : "Dusk";
-		ImGui::Text("Phase: %s", label);
+		ImGui::Text("Phase: %s  (%02d:%02d)", label, (int)time_of_day, (int)((time_of_day - (int)time_of_day) * 60.0f));
 	}
 #endif
 }
 
 void SkyRenderer::SaveToJson(json& j)
 {
-	j["time_of_day"] = time_of_day;
+	j["time_of_day"] = time_of_day; // 0.0f～24.0fの時刻として保存
 	j["time_speed"] = time_speed;
 	j["auto_advance_time"] = auto_advance_time;
 	j["sun_size"] = sun_size;
@@ -218,3 +232,4 @@ void SkyRenderer::LoadFromJson(const json& j)
 	if (j.contains("sun_size")) sun_size = j["sun_size"].get<float>();
 	if (j.contains("sun_bloom_size")) sun_bloom_size = j["sun_bloom_size"].get<float>();
 }
+

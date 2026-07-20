@@ -6,6 +6,8 @@
 
 void FoulSprite::Initialize(ID3D11Device* device)
 {
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -22,7 +24,7 @@ void FoulSprite::Initialize(ID3D11Device* device)
 	foulSprite->size = { 300.0f, 100.0f };
 	foulSprite->rotation = 0.0f;
 	foulSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	foulSpriteRenderer = std::make_unique<sprite>(device, foulSprite->texturePath.c_str());
+	foulSpriteRenderer = std::make_unique<sprite>(device, context, foulSprite->texturePath.c_str());
 }
 
 void FoulSprite::Uninitialize()

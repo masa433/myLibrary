@@ -4,6 +4,8 @@
 
 void HomeRunCount::Initialize(ID3D11Device* device)
 {
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+
 	// シェーダーの読み込み
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
@@ -23,7 +25,7 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 	homeRunCountSpriteData->size = { 200.0f, 50.0f };
 	homeRunCountSpriteData->rotation = 0.0f;
 	homeRunCountSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	homeRunCountSprite = std::make_unique<sprite>(device, homeRunCountSpriteData->texturePath.c_str());
+	homeRunCountSprite = std::make_unique<sprite>(device, context, homeRunCountSpriteData->texturePath.c_str());
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 	// ホームラン数表示に必要な文字だけをベイクする

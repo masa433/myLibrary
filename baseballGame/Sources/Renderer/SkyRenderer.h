@@ -46,6 +46,8 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
+	float NormalizedTimeOfDay() const;
+
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constant_buffer; // 定数バッファ
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader; // 頂点シェーダー

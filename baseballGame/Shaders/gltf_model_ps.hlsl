@@ -394,8 +394,16 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
         // 既存のambient_color / 半球ライトはIBLと併用（要求どおり加算）
         float3 legacy_ambient = ambient;
 
-        float3 indirect_lighting = (ibl_diffuse + legacy_ambient * diffuse_color) * ao;
+        // 
+        float indirect_shadow_scale = lerp(0.8f, 1.0f, shadow_factor);
 
+
+        float3 indirect_lighting = (ibl_diffuse + legacy_ambient * diffuse_color) * ao * indirect_shadow_scale;
+
+        // 完全な黒つぶれ防止：最低限のアンビエントフロアを保証する
+        float3 ambient_floor = diffuse_color * 0.03f; // 好みで 0.02～0.05 あたりに調整
+        indirect_lighting = max(indirect_lighting, ambient_floor);
+        
         color.rgb = direct_lighting + indirect_lighting + emmisive;
     }
 

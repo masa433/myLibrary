@@ -11,6 +11,7 @@
 void Wind::Initialize()
 {
 	ID3D11Device* device = Graphics::Instance().GetDevice();
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
@@ -29,7 +30,7 @@ void Wind::Initialize()
 	windDirectionSprite->size = { 50.0f, 70.0f };
 	windDirectionSprite->rotation = 0.0f;
 	windDirectionSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	windDirectionSpriteRenderer = std::make_unique<sprite>(device, windDirectionSprite->texturePath.c_str());
+	windDirectionSpriteRenderer = std::make_unique<sprite>(device, context, windDirectionSprite->texturePath.c_str());
 
 	windGroundSprite = std::make_unique<Sprite>();
 	windGroundSprite->texturePath = L".\\resources\\textures\\ground.png";
@@ -37,7 +38,7 @@ void Wind::Initialize()
 	windGroundSprite->size = { 150.0f, 100.0f };
 	windGroundSprite->rotation = 0.0f;
 	windGroundSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	windGroundSpriteRenderer = std::make_unique<sprite>(device, windGroundSprite->texturePath.c_str());
+	windGroundSpriteRenderer = std::make_unique<sprite>(device, context, windGroundSprite->texturePath.c_str());
 
 	windBoardSprite = std::make_unique<Sprite>();
 	windBoardSprite->texturePath = L".\\resources\\textures\\windBoard.png";
@@ -45,7 +46,7 @@ void Wind::Initialize()
 	windBoardSprite->size = { 150.0f, 100.0f };
 	windBoardSprite->rotation = 0.0f;
 	windBoardSprite->color = { 1.0f, 1.0f, 1.0f, 0.8f };
-	windBoardSpriteRenderer = std::make_unique<sprite>(device, windBoardSprite->texturePath.c_str());
+	windBoardSpriteRenderer = std::make_unique<sprite>(device, context, windBoardSprite->texturePath.c_str());
 
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());

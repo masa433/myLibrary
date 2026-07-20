@@ -5,6 +5,7 @@
 
 void TrackingData::Initialize(ID3D11Device* device)
 {
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
@@ -24,7 +25,7 @@ void TrackingData::Initialize(ID3D11Device* device)
 	trackingDataSpriteData->size = { 300.0f, 100.0f };
 	trackingDataSpriteData->rotation = 0.0f;
 	trackingDataSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	trackingDataSprite = std::make_unique<sprite>(device, trackingDataSpriteData->texturePath.c_str());
+	trackingDataSprite = std::make_unique<sprite>(device, context, trackingDataSpriteData->texturePath.c_str());
 
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());

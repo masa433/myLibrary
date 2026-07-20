@@ -6,7 +6,7 @@
 #include "shader.h"
 
 //コンストラクタ
-sprite_batch::sprite_batch(ID3D11Device* device, const wchar_t* filename, size_t max_sprites)
+sprite_batch::sprite_batch(ID3D11Device* device, ID3D11DeviceContext* immediate_context, const wchar_t* filename, size_t max_sprites)
 	:max_vertices(max_sprites * 6)
 {
 	HRESULT hr{ S_OK };
@@ -36,7 +36,7 @@ sprite_batch::sprite_batch(ID3D11Device* device, const wchar_t* filename, size_t
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", pixel_shader.GetAddressOf());
 
 	// UNIT.10
-	load_texture_from_file(device, filename, shader_resource_view.GetAddressOf(), &texture2d_desc);
+	load_texture_from_file(device, immediate_context, filename, shader_resource_view.GetAddressOf(), &texture2d_desc);
 }
 
 void sprite_batch::render(ID3D11DeviceContext* immediate_context,

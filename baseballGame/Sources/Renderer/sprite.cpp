@@ -7,7 +7,7 @@
 
 
 //コンストラクタ
-sprite::sprite(ID3D11Device* device, const wchar_t* filename)
+sprite::sprite(ID3D11Device* device,ID3D11DeviceContext* immediate_context, const wchar_t* filename)
 {
 	HRESULT hr{ S_OK };
 
@@ -34,7 +34,7 @@ sprite::sprite(ID3D11Device* device, const wchar_t* filename)
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	
-	load_texture_from_file(device, filename, shader_resource_view.GetAddressOf(), &texture2d_desc);
+	load_texture_from_file(device, immediate_context, filename, shader_resource_view.GetAddressOf(), &texture2d_desc);
 }
 
 sprite::sprite(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shader_resource_view)
