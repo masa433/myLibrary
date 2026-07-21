@@ -9,7 +9,6 @@
 #include "RenderContext.h"
 #include "sprite.h"
 #include "ModelRenderer.h"
-#include "TextureManager.h"
 #include "SkyRenderer.h"
 #include "ShadowRenderer.h"
 #include "FreeCameraController.h"

@@ -31,9 +31,6 @@
     <ClCompile Include="Sources\Graphics\texture.cpp">
       <Filter>Sources\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\Graphics\TextureManager.cpp">
-      <Filter>Sources\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\Camera\camera.cpp">
       <Filter>Sources\Camera</Filter>
     </ClCompile>
@@ -181,6 +178,9 @@
     <ClCompile Include="Sources\Shader\Hextransitioneffect.cpp">
       <Filter>Sources\Shader</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\ballDistance.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -214,9 +214,6 @@
       <Filter>Sources\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Graphics\texture.h">
-      <Filter>Sources\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Graphics\TextureManager.h">
       <Filter>Sources\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Camera\camera.h">
@@ -380,6 +377,9 @@
     </ClInclude>
     <ClInclude Include="Sources\Shader\Hextransitioneffect.h">
       <Filter>Sources\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\ballDistance.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

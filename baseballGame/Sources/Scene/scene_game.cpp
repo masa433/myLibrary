@@ -21,6 +21,7 @@
 #include "HomeRunCount.h"
 #include "FoulSprite.h"
 #include "catcher.h"
+#include "ballDistance.h"
 #include <fstream>
 #include <string>
 
@@ -140,8 +141,8 @@ void scene_game::initialize()
 
     Catcher::Instance().Initialize();
 
-    // テクスチャマネージャーの初期化
-    textureManager.Initialize(device, L"./resources/texture");
+    // ボール距離の初期化
+    BallDistance::Instance().Initialize(device);
 
     shadowRenderer.Initialize();
 
@@ -478,6 +479,8 @@ void scene_game::update(float elapsed_time)
 
     Catcher::Instance().Update(elapsed_time);
 
+	BallDistance::Instance().Update(elapsed_time);
+
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
 
@@ -766,6 +769,8 @@ void scene_game::render(float elapsedTime)
 
     FoulSprite::Instance().Render();
 
+	BallDistance::Instance().Render();
+
     // ShapeRenderer の描画実行
 
     if (showPhysxDebug)
@@ -804,8 +809,6 @@ void scene_game::render(float elapsedTime)
     dc->CopyResource(dstRes, srcRes);
     srcRes->Release();
     dstRes->Release();
-
-    textureManager.Render(dc);
 
     //	ぼかした結果を加算合成
     if (enableBloom)
@@ -1037,7 +1040,7 @@ void scene_game::uninitialize()
     Player::Instance().Uninitialize();
     stage::Instance().uninitialize();
     Pitcher::Instance().Uninitialize();
-    textureManager.Clear();
+    BallDistance::Instance().Uninitialize();
     Physics::Instance().Finalize();
 }
 
@@ -1089,6 +1092,8 @@ void scene_game::DrawGUI()
     if (ImGui::CollapsingHeader("Home Run Count")) { HomeRunCount::Instance().DrawGUI(); }
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Catcher")) { Catcher::Instance().DrawGUI(); }
+	ImGui::Separator();
+    if(ImGui::CollapsingHeader("Ball Distance")) { BallDistance::Instance().DrawGUI(); }
 
     ImGui::End();
 
@@ -1380,12 +1385,7 @@ void scene_game::DrawGUI()
             ImGui::SetTooltip("Disable for better FPS");
     }
 
-    // ── Texture Manager ──
-    if (ImGui::CollapsingHeader("Textures"))
-    {
-        textureManager.DrawGUI();
-    }
-
+  
     ImGui::End();
 
     // ════════════════════════════════════════════════════
@@ -1567,6 +1567,7 @@ void scene_game::SaveSetting()
     GameTimer::Instance().SaveToJson(j["gameTimer"]);
     HomeRunCount::Instance().SaveToJson(j["homeRunCount"]);
     Catcher::Instance().SaveToJson(j["catcher"]);
+	BallDistance::Instance().SaveToJson(j["ballDistance"]);
 
     // ファイルに保存
     std::ofstream file("resources\\setting\\settings.json");
@@ -1737,5 +1738,6 @@ void scene_game::LoadSetting()
     if (j.contains("gameTimer")) GameTimer::Instance().LoadFromJson(j["gameTimer"]);
     if (j.contains("homeRunCount")) HomeRunCount::Instance().LoadFromJson(j["homeRunCount"]);
     if (j.contains("catcher")) Catcher::Instance().LoadFromJson(j["catcher"]);
+	if (j.contains("ballDistance")) BallDistance::Instance().LoadFromJson(j["ballDistance"]);
     consoleLog.push_back("[Info] Settings loaded.");
 }

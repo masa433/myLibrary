@@ -10,7 +10,6 @@
 #include "RenderContext.h"
 #include "sprite.h"
 #include "ModelRenderer.h"
-#include "TextureManager.h"
 #include "SkyRenderer.h"
 #include "ShadowRenderer.h"
 #include "FreeCameraController.h"
@@ -209,8 +208,6 @@ private:
     Microsoft::WRL::ComPtr<ID3D11Buffer> post_effect_constant_buffer;
 
     float timeScale = 1.0f;
-
-    TextureManager textureManager;
 
 	bool showPhysxDebug = true;
 	bool physxRenderSimpleShapesOnly = true;

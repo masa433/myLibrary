@@ -12,6 +12,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\camera_controller
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\FreeCameraController.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\FreeCameraController.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Collision\collision.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\collision.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Ball.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Ball.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballDistance.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ballDistance.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballSprite.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ballSprite.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\batSprite.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\batSprite.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\catcher.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\catcher.obj
@@ -29,7 +30,6 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Graphics\GpuResourceUtil
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Graphics\Graphics.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Graphics.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Graphics\RenderState.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\RenderState.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Graphics\texture.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\texture.obj
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Graphics\TextureManager.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\TextureManager.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Input\game_pad.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\game_pad.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Input\input.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\input.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Input\mouse.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\mouse.obj
