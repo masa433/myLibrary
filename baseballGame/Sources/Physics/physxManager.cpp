@@ -728,6 +728,12 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				Ball::Instance().SetHasCollidedWithFence(true);
 				Ball::Instance().SetHasCollidedWithGround(true);
 
+				//フェアの状態で1度グラウンドについたら、その後のファウル判定と飛距離計算はしない
+				if(Ball::Instance().GetHasCollidedWithGround() && !Ball::Instance().GetIsFoulConfirmed())
+				{
+					return;
+				}
+
 				physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 				if (ballCollider)
 				{
@@ -1149,7 +1155,6 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				else if (originalAngleDeg < 0.0f)       hitResult = u8"レフト方向";//-15～-45
 				else                                     hitResult = u8"ライト方向";//+15～+45
 			}
-
 
 			float finalExitVelocityKmh = newBallVelocity.magnitude() * 3.6f;
 

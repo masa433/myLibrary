@@ -552,7 +552,7 @@ void ballSprite::Update(float elapsedTime)
 
 		AddTrailPoint(currentScreenPos);
 		ApplyBallSpritePosition(currentScreenPos);
-		ApplyTagetSpritePosition(finalScreenPos);
+		ApplyTagetSpritePosition(currentScreenPos);
 	}
 
 	if (pitchingState && wp.z < -0.5f && wp.z > -0.7f && !strikeJudgeDone)

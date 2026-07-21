@@ -340,15 +340,45 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 				//レフト方向のカメラを選択
 				if (originalDirection >= -45.0f && originalDirection <= -15.0f)
 				{
-					activeCameraIndex = 2;//1塁側カメラ
+					//1塁側かバックネットのどちらかにする
+					int randomIndex = rand() % 2;
+
+					if (randomIndex == 0)
+					{
+						activeCameraIndex = 1;//バックネットカメラ
+					}
+					else
+					{
+						activeCameraIndex = 2;//1塁側カメラ
+					}
 				}
 				else if (originalDirection >= 15.0f && originalDirection <= 45.0f)
 				{
-					activeCameraIndex = 5;//3塁側カメラ
+					//3塁側かバックネットのどちらかにする
+					int randomIndex = rand() % 2;
+
+					if (randomIndex == 0)
+					{
+						activeCameraIndex = 1;//バックネットカメラ
+					}
+					else
+					{
+						activeCameraIndex = 5;//3塁側カメラ
+					}
 				}
 				else
 				{
-					activeCameraIndex = 1;//バックネットカメラ
+					//2つのヒットカメラからランダムに選択
+					int randomIndex = rand() % 2;
+
+					if (randomIndex == 0)
+					{
+						activeCameraIndex = 1;//バックネットカメラ
+					}
+					else
+					{
+						activeCameraIndex = 2;//1塁側カメラ
+					}				
 				}
 			}
 		}
@@ -379,15 +409,46 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 					//レフト方向のカメラを選択
 					if(originalDirection >=-45.0f && originalDirection <=-15.0f)
 					{
-						activeCameraIndex = 2;//1塁側カメラ
+						//1塁側かバックネットのどちらかにする
+						int randomIndex = rand() % 2;
+
+						if(randomIndex == 0)
+						{
+							activeCameraIndex = 1;//バックネットカメラ
+						}
+						else
+						{
+							activeCameraIndex = 2;//1塁側カメラ
+						}
 					}
 					else if(originalDirection >=15.0f && originalDirection <=45.0f)
 					{
-						activeCameraIndex = 5;//3塁側カメラ
+						//3塁側かバックネットのどちらかにする
+						int randomIndex = rand() % 2;
+
+						if(randomIndex == 0)
+						{
+							activeCameraIndex = 1;//バックネットカメラ
+						}
+						else
+						{
+							activeCameraIndex = 5;//3塁側カメラ
+						}
 					}
 					else
 					{
-						activeCameraIndex = 1;//バックネットカメラ
+						//2つのヒットカメラからランダムに選択
+						int randomIndex = rand() % 2;
+
+						if(randomIndex == 0)
+						{
+							activeCameraIndex = 1;//バックネットカメラ
+						}
+						else
+						{
+							activeCameraIndex = 2;//1塁側カメラ
+						}
+						
 					}
 				}
 			}

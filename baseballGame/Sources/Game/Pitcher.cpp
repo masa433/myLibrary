@@ -333,7 +333,7 @@ void Pitcher::Update(float elapsedTime)
 			// z=19.5未満の間だけ監視（超えたらもうフェア確定ゾーン）
 			if (ballPos.z < 19.5f)
 			{
-				bool isFair = (ballPos.z >= 1.0f) &&
+				bool isFair = (ballPos.z >= 0.0f) &&
 					(std::fabs(ballPos.x) <= ballPos.z);
 
 				if (!isFair)
