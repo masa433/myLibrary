@@ -47,8 +47,7 @@ void FreeCameraController::SyncControllerToCamera(Camera& camera)
 
 void FreeCameraController::Update(float elapsedTime)
 {
-    if (!isGameViewHovered) return;
-
+   
     ImGuiIO io = ImGui::GetIO();
     float moveX = io.MouseDelta.x * 0.02f;
     float moveY = io.MouseDelta.y * 0.02f;

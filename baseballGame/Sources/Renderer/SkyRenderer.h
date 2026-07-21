@@ -47,6 +47,7 @@ public:
 	void LoadFromJson(const json& j);
 
 	float NormalizedTimeOfDay() const;
+	DirectX::XMFLOAT3 ComputeSunDirection() const; // 太陽光の方向を計算
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constant_buffer; // 定数バッファ
@@ -54,5 +55,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixel_shader; // ピクセルシェーダー
 
 	void ComputeSkyColors(sky_constants& out) const; // 空の色を計算
-	DirectX::XMFLOAT3 ComputeSunDirection() const; // 太陽光の方向を計算
+	
 };

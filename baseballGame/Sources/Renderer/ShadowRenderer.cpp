@@ -249,7 +249,7 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
         XMVECTOR up = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
         if (fabsf(XMVectorGetY(dir)) > 0.99f)
             up = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-        XMMATRIX V = XMMatrixLookToLH(pos, dir, up);
+        XMMATRIX V = XMMatrixLookAtLH(pos, dir, up);
 
         // ライトプロジェクション行列（outerCorn の2倍をFovYに）
         float fovY = spotLights[i].outerCorn * 2.0f; // outerCorn はラジアン半角
@@ -267,6 +267,7 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
         stage::Instance().render(rc, modelRenderer);
         Pitcher::Instance().Render(rc, modelRenderer);
         Player::Instance().Render(rc, modelRenderer);
+		Catcher::Instance().Render(rc, modelRenderer, nullptr);
     }
 }
 
@@ -280,6 +281,13 @@ void ShadowRenderer::RenderShadowMap(float elapsedTime)
     RenderContext rc;
     rc.deviceContext = dc;
     rc.renderState = renderState;
+
+	float sunHeight = directional_light_direction.y;
+	constexpr float kShadowStartHeight = -0.1f; // 影の開始高さ
+	constexpr float kShadowEndHeight = -0.2f;   // 影の終了高さ
+
+	shadow_day_factor = (sunHeight - kShadowStartHeight) / (kShadowEndHeight - kShadowStartHeight);// 0.0～1.0の範囲に正規化
+	shadow_day_factor = std::clamp(shadow_day_factor, 0.0f, 1.0f); // 0.0～1.0の範囲に制限
 
     HRESULT hr = S_OK;
     //シャドウマップ生成処理
@@ -308,10 +316,23 @@ void ShadowRenderer::RenderShadowMap(float elapsedTime)
         dc->VSSetShader(shadowmap_caster_vertex_shader.Get(), nullptr, 0);
         dc->PSSetShader(nullptr, nullptr, 0);
 
+		//シャドウマップを描画しない
+        if(shadow_day_factor <= 0.0f || shadow_day_factor >= 1.0f)
+        {
+            return;
+		}
+
         Camera& camera = Camera::Instance();
 
+        //ライト方向のy成分を最低値でクランプ
+		DirectX::XMFLOAT4 clampedLightDir = directional_light_direction;
+        if(clampedLightDir.y < 0.05f)
+        {
+            clampedLightDir.y = 0.05f;
+		}
+
         //ライトのビュー射影行列の計算
-        DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat4(&directional_light_direction);
+        DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat4(&clampedLightDir);
         LightPosition = DirectX::XMVectorScale(LightPosition, -50);
 
         // ライトのターゲットを固定位置（ワールド中心）に設定して、影がカメラと一緒に動かないようにする
@@ -354,6 +375,7 @@ void ShadowRenderer::RenderShadowMap(float elapsedTime)
         // プレイヤーの描画
         Player::Instance().Render(rc, modelRenderer);
 
+        Catcher::Instance().Render(rc, modelRenderer, nullptr);
 
         // プレイヤー描画後、元のカリング状態に戻しておく
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
@@ -385,6 +407,24 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
         dc->RSSetViewports(1, &scene_viewport);
     }
 
+    //昼夜係数を計算
+	float sunHeight = directional_light_direction.y;
+	constexpr float kShadowStartHeight = -0.1f; // 影の開始高さ
+	constexpr float kShadowEndHeight = -0.2f;   // 影の終了高さ
+	shadow_day_factor = (sunHeight - kShadowStartHeight) / (kShadowEndHeight - kShadowStartHeight);// 0.0～1.0の範囲に正規化
+	shadow_day_factor = std::clamp(shadow_day_factor, 0.0f, 1.0f); // 0.0～1.0の範囲に制限
+
+	//夜間はすべてのカスケードを描画しない
+    if (shadow_day_factor <= 0.0f)
+    {
+        for(int index = 0; index < ShadowBufferSize; ++index)
+        {
+            //SRVのバインドを解除
+			dc->ClearDepthStencilView(cascade_shadowmap_depth_stencil_views[index].Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		}
+        return;
+    }
+
     dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
     dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
@@ -395,6 +435,8 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
     DirectX::XMVECTOR CameraFront = DirectX::XMLoadFloat3(&camera.GetFront());
     DirectX::XMVECTOR CameraPosition = DirectX::XMLoadFloat3(&camera.GetEye());
 
+    //ライト方向をクランプ
+	
 
     //ライトからの位置から見たビュー・プロジェクション行列
     DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat4(&directional_light_direction);
@@ -579,6 +621,8 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
         Pitcher::Instance().Render(rc, modelRenderer);
         // プレイヤーの描画
         Player::Instance().Render(rc, modelRenderer);
+
+		Catcher::Instance().Render(rc, modelRenderer, nullptr);
     }
 }
 
@@ -599,7 +643,7 @@ void ShadowRenderer::BindShadowResources(ID3D11DeviceContext* dc) const
 {
     shadowmap_constants sm{};
     sm.light_view_projection = light_view_projection;
-    sm.shadow_attenuation = shadow_attenuation;
+    sm.shadow_attenuation = shadow_attenuation * shadow_day_factor;
     sm.shadow_bias = shadow_bias;
     sm.use_cascade = use_cascade_shadow_map;
     dc->UpdateSubresource(shadowmap_constant_buffer.Get(), 0, 0, &sm, 0, 0);

@@ -6,6 +6,7 @@
 #include "Player.h"
 #include "Pitcher.h"
 #include "stage.h"
+#include "catcher.h"
 #include "RenderContext.h"
 #include "ModelRenderer.h"
 
@@ -111,9 +112,9 @@ public:
     float  shadow_attenuation = 0.5f;
     int    spot_shadow_update_interval = 3;
     int    spot_shadow_frame_count = 0;
+	bool shadow_enabled_this_frame = true; 
+	float shadow_day_factor = 1.0f; // 日中の影の強さを調整するための係数
     cascade_shadowmap_constants cascade_shadow_constant;
-
-    
 
 private:
         //GPU リソース

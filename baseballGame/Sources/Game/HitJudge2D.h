@@ -360,8 +360,8 @@ private:
 
         if (isInsideCourse)
         {
-            // インコースの時のジャスト判定窓（下限を-2.0fに縛って、早打ち側も少し厳しくする）
-            if (timeToZone_ >= -2.0f && timeToZone_ <= timingJustWindowSec)
+            // インコースの時のジャスト判定窓（下限を0.0fに縛って、早打ち側も少し厳しくする）
+            if (timeToZone_ >= 0.0f && timeToZone_ <= timingJustWindowSec)
             {
                 snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just/Inside)\n", timeToZone_);
                 OutputDebugStringA(buffer);

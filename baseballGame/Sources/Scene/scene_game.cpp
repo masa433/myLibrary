@@ -554,6 +554,7 @@ void scene_game::render(float elapsedTime)
         // shadowRenderer にカメラ位置を渡す
     shadowRenderer.SetCameraPosition(cameraPosition);
 
+	
     // 3本の描画呼び出し（関数名だけ変わる）
     if (enableShadows)
     {
@@ -567,6 +568,7 @@ void scene_game::render(float elapsedTime)
         {
             shadowRenderer.RenderSpotShadowMap(elapsedTime);
             shadowRenderer.spot_shadow_frame_count = 0;
+
         }
     }
 
@@ -1049,139 +1051,53 @@ void scene_game::DrawGUI()
     const float H = io.DisplaySize.y;
 
     // ── パネル幅・高さ定数 ──────────────────────────────
-    const float LEFT_W = 300.0f;   // 左パネル（Player / Pitcher）
+    const float LEFT_W = 320.0f;   // 左パネル（Player / Pitcher）
     const float RIGHT_W = 320.0f;   // 右パネル（Debug）
     const float BOTTOM_H = 250.0f;   // 下パネル（Console）
-    const float CENTER_W = W - LEFT_W - RIGHT_W;
-    const float CENTER_H = H - BOTTOM_H;
 
-    // ウィンドウフラグ共通（移動・リサイズ・折りたたみ禁止）
-    const ImGuiWindowFlags FIXED =
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoCollapse;
+    const float PANEL_ALPHA = 0.5f;
 
+	//移動とリサイズを許可するウィンドウフラグ
+    const ImGuiWindowFlags FLOAT_FLAGS = 
+        ImGuiWindowFlags_NoCollapse|
+        ImGuiWindowFlags_NoMove|
+        ImGuiWindowFlags_NoResize;
 
+   
     // ════════════════════════════════════════════════════
     //  左パネル ── Player / Pitcher
     // ════════════════════════════════════════════════════
-    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-    ImGui::SetNextWindowSize(ImVec2(LEFT_W, H));
-    ImGui::Begin("## Left", nullptr, FIXED | ImGuiWindowFlags_NoTitleBar);
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(LEFT_W, H * 0.8f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowBgAlpha(PANEL_ALPHA);
+    ImGui::Begin("## Left", nullptr, FLOAT_FLAGS);
 
-    // ── Player ──
-    if (ImGui::CollapsingHeader("Player"))
-    {
-
-        Player::Instance().DrawGUI();   // 既存の DrawGUI をそのまま流用
-
-    }
-
+    if (ImGui::CollapsingHeader("Player")) { Player::Instance().DrawGUI(); }
     ImGui::Separator();
-
-    // ── Pitcher ──
-    if (ImGui::CollapsingHeader("Pitcher"))
-    {
-
-        Pitcher::Instance().DrawGUI();
-
-    }
-
+    if (ImGui::CollapsingHeader("Pitcher")) { Pitcher::Instance().DrawGUI(); }
     ImGui::Separator();
-
-    // ―― Stage ――
-    if (ImGui::CollapsingHeader("Stage"))
-    {
-        stage::Instance().DrawGUI();
-    }
-
+    if (ImGui::CollapsingHeader("Stage")) { stage::Instance().DrawGUI(); }
     ImGui::Separator();
-
-    // ── Sky ──
-    if (ImGui::CollapsingHeader("Sky & Time"))
-    {
-        skyRenderer.DrawGUI();
-    }
-
+    if (ImGui::CollapsingHeader("Sky & Time")) { skyRenderer.DrawGUI(); }
     ImGui::Separator();
-
-    //ボールスプライト
-    if (ImGui::CollapsingHeader("Ball Sprite"))
-    {
-        ballSprite::Instance().DrawGUI();
-    }
-
+    if (ImGui::CollapsingHeader("Ball Sprite")) { ballSprite::Instance().DrawGUI(); }
     ImGui::Separator();
-
-    //バットスプライト
-    if (ImGui::CollapsingHeader("Bat Sprite"))
-    {
-        BatSprite::Instance().DrawGUI();
-
-    }
-
+    if (ImGui::CollapsingHeader("Bat Sprite")) { BatSprite::Instance().DrawGUI(); }
     ImGui::Separator();
-
-    // ゲームタイマー
-    if (ImGui::CollapsingHeader("Timer"))
-    {
-        GameTimer::Instance().DrawGUI();
-    }
-
+    if (ImGui::CollapsingHeader("Timer")) { GameTimer::Instance().DrawGUI(); }
     ImGui::Separator();
-
-    if (ImGui::CollapsingHeader("Home Run Count"))
-    {
-        HomeRunCount::Instance().DrawGUI();
-    }
-
+    if (ImGui::CollapsingHeader("Home Run Count")) { HomeRunCount::Instance().DrawGUI(); }
     ImGui::Separator();
-
-    if (ImGui::CollapsingHeader("Catcher"))
-    {
-        Catcher::Instance().DrawGUI();
-    }
+    if (ImGui::CollapsingHeader("Catcher")) { Catcher::Instance().DrawGUI(); }
 
     ImGui::End();
 
     // ════════════════════════════════════════════════════
     //  中央上 ── Game View
     // ════════════════════════════════════════════════════
-    ImGui::SetNextWindowPos(ImVec2(LEFT_W, 0.0f));
-    ImGui::SetNextWindowSize(ImVec2(CENTER_W, CENTER_H));
-    ImGui::Begin("Game View", nullptr,
-        FIXED |
-        ImGuiWindowFlags_NoScrollbar |
-        ImGuiWindowFlags_NoScrollWithMouse);
+    
     {
-        // ImGui::IsWindowHovered() でマウスオーバーを検知して、カメラコントローラーに伝える
-        freeCameraController.SetIsGameViewHovered(ImGui::IsWindowHovered());
-
-        // タイトルバー分を除いたコンテンツ領域
-        ImVec2 avail = ImGui::GetContentRegionAvail();
-
-        // アスペクト比を保ってフィット（16:9 想定）
-        const float aspect = Graphics::Instance().GetScreenWidth()
-            / Graphics::Instance().GetScreenHeight();
-        float dispW = avail.x;
-        float dispH = avail.x / aspect;
-        if (dispH > avail.y) { dispH = avail.y; dispW = avail.y * aspect; }
-
-        // センタリング
-        float offX = (avail.x - dispW) * 0.5f;
-        float offY = (avail.y - dispH) * 0.5f;
-        ImGui::SetCursorPos(ImVec2(
-            ImGui::GetCursorPosX() + offX,
-            ImGui::GetCursorPosY() + offY));
-
-        // 画像が実際に描画されるスクリーン座標(左上)を取得 
-        ImVec2 imageScreenPos = ImGui::GetCursorScreenPos();
-
-        // scene_shader_resource_view = シーンのカラーバッファ SRV
-        ImGui::Image(
-            ImTextureRef(scene_shader_resource_view.Get()),
-            ImVec2(dispW, dispH));
-
+       
         // ── フェンスライン編集ツールの更新 ──
         Camera& camera = Camera::Instance();
         DirectX::XMFLOAT4X4 view = camera.GetView();          // ※名称が違う場合は合わせてください
@@ -1190,38 +1106,37 @@ void scene_game::DrawGUI()
         stage::Instance().UpdateLineEditor(
             stage::Instance().homerunLineEditor,
             view, proj,
-            imageScreenPos.x, imageScreenPos.y,
-            dispW, dispH);
+            0.0f, 0.0f,
+            W, H);
         stage::Instance().UpdateLineEditor(
             stage::Instance().foulLineEditor,
             view, proj,
-            imageScreenPos.x, imageScreenPos.y,
-            dispW, dispH);
+            0.0f, 0.0f,
+            W, H);
 
         // ── 打った点をその場でつないで見せる(Rebuildする前のプレビュー) ──
         // ホームランフェンス：赤系
-        stage::Instance().DrawLineOverlay(
-            stage::Instance().homerunLineEditor,
-            view, proj,
-            imageScreenPos.x, imageScreenPos.y,
-            dispW, dispH, IM_COL32(255, 60, 60, 255), IM_COL32(255, 255, 0, 255)); // 赤線・黄点
+        //stage::Instance().DrawLineOverlay(
+        //    stage::Instance().homerunLineEditor,
+        //    view, proj,
+        //    0.0f, 0.0f,
+        //    W, H, IM_COL32(255, 60, 60, 255), IM_COL32(255, 255, 0, 255)); // 赤線・黄点
 
-        // ファウルライン：青系
-        stage::Instance().DrawLineOverlay(
-            stage::Instance().foulLineEditor,
-            view, proj,
-            imageScreenPos.x, imageScreenPos.y,
-            dispW, dispH, IM_COL32(60, 60, 255, 255), IM_COL32(0, 255, 255, 255)); // 青線・水色点
+        //// ファウルライン：青系
+        //stage::Instance().DrawLineOverlay(
+        //    stage::Instance().foulLineEditor,
+        //    view, proj,
+        //    0.0f, 0.0f,
+        //    W, H, IM_COL32(60, 60, 255, 255), IM_COL32(0, 255, 255, 255)); // 青線・水色点
     }
-    ImGui::End();
-
+   
     // ════════════════════════════════════════════════════
     //  右パネル ── Debug
     // ════════════════════════════════════════════════════
-    ImGui::SetNextWindowPos(ImVec2(LEFT_W + CENTER_W, 0.0f));
-    ImGui::SetNextWindowSize(ImVec2(RIGHT_W, H));
-    ImGui::Begin("Debug", nullptr, FIXED);
-
+    ImGui::SetNextWindowPos(ImVec2(W - RIGHT_W, 0.0f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(RIGHT_W, H * 0.8f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowBgAlpha(PANEL_ALPHA);
+    ImGui::Begin("Debug", nullptr, FLOAT_FLAGS);
     // ── Camera ──
     if (ImGui::CollapsingHeader("Camera"))
     {
@@ -1476,9 +1391,10 @@ void scene_game::DrawGUI()
     // ════════════════════════════════════════════════════
     //  下パネル ── Console
     // ════════════════════════════════════════════════════
-    ImGui::SetNextWindowPos(ImVec2(LEFT_W, CENTER_H));
-    ImGui::SetNextWindowSize(ImVec2(CENTER_W, BOTTOM_H));
-    ImGui::Begin("Console", nullptr, FIXED);
+    ImGui::SetNextWindowPos(ImVec2(LEFT_W, H - BOTTOM_H), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(W - LEFT_W - RIGHT_W, BOTTOM_H), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowBgAlpha(PANEL_ALPHA);
+    ImGui::Begin("Console", nullptr, FLOAT_FLAGS);
     {
         // ── ログ表示エリア ──────────────────────────────
         // consoleLog は scene_game のメンバーとして追加推奨:

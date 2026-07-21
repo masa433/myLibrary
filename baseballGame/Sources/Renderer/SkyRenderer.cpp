@@ -211,6 +211,18 @@ void SkyRenderer::DrawGUI()
 			(t < 0.72f) ? "Afternoon" :
 			(t < 0.80f) ? "Sunset" : "Dusk";
 		ImGui::Text("Phase: %s  (%02d:%02d)", label, (int)time_of_day, (int)((time_of_day - (int)time_of_day) * 60.0f));
+
+		//デーゲームとナイターをボタンで設定
+		if (ImGui::Button("Set Daytime (14:00)"))
+		{
+			time_of_day = 14.0f;
+			auto_advance_time = false;
+		}
+		if (ImGui::Button("Set Nighttime (20:00)"))
+		{
+			time_of_day = 20.0f;
+			auto_advance_time = false;
+		}
 	}
 #endif
 }

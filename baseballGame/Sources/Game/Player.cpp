@@ -289,7 +289,11 @@ void Player::Update(float elapsedTime)
             ballCenter.y < szTopLeft.y || ballCenter.y > szBottomRight.y);
 
 		float zoneCenterX = (szTopLeft.x + szBottomRight.x) * 0.5f;
-		bool isInsideCourse = IsRightBatter() ? (ballCenter.x < zoneCenterX) : (ballCenter.x > zoneCenterX);
+		float zoneWidth = szBottomRight.x - szTopLeft.x;
+
+		float insideCourseMargin = zoneWidth * 0.2f; // コース内のマージン（px）
+
+		bool isInsideCourse = IsRightBatter() ? (ballCenter.x < zoneCenterX - insideCourseMargin) : (ballCenter.x > zoneCenterX + insideCourseMargin);
 
         HitJudge2D::Instance().isBallZone = isBallZone; // 後述のメンバ
         HitJudge2D::Instance().isInsideCourse = isInsideCourse; // 後述のメンバ
