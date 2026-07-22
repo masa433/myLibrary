@@ -1,6 +1,7 @@
 #include "ballDistance.h"
 #include "Graphics.h"
 #include "Ball.h"
+#include "physxManager.h"
 #include <imgui.h>
 
 void BallDistance::Initialize(ID3D11Device* device)
@@ -30,7 +31,20 @@ void BallDistance::Uninitialize()
 
 void BallDistance::Update(float elapsedTime)
 {
-	if (Ball::Instance().GetHasCollidedWithBat())
+	if(!Ball::Instance().GetHasCollidedWithBat())
+	{
+		hasDistanceText = false;
+		isDistanceLocked = false;
+		return;
+	}
+
+	// ボールがバットに当たった後、地面またはフェンスに当たるまでの間、距離を表示する
+	bool isFinished = Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround();
+
+	// ボールが地面またはフェンスに当たったら、距離をロックする
+	if (isDistanceLocked) return;
+
+	if (!isFinished)
 	{
 		DirectX::XMFLOAT3 ballPosition = Ball::Instance().GetWorldPosition();
 
@@ -38,13 +52,21 @@ void BallDistance::Update(float elapsedTime)
 		currentDistance = sqrtf(
 			ballPosition.x * ballPosition.x +
 			ballPosition.z * ballPosition.z);
+		
+		//ボールが地面につくかフェンスに当たったら、その位置の距離を表示する
 
 		snprintf(distanceText, sizeof(distanceText), "%.fm", currentDistance);
 		hasDistanceText = true;
 	}
 	else 
 	{
-		hasDistanceText = false;
+		currentDistance = Physics::Instance().GetLastDistanceWasTotal()
+			? Physics::Instance().GetBallTotalDistance()
+			: Physics::Instance().GetBallHorizontalDistance();
+
+		snprintf(distanceText, sizeof(distanceText), "%.fm", currentDistance);
+		hasDistanceText = true;
+		isDistanceLocked = true; // 以後は加算・更新しない
 	}
 }
 

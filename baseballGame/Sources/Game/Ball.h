@@ -137,6 +137,11 @@ public:
 	void SetHasCollidedWithGround(bool collided) { hasCollidedWithGround = collided; }
 	bool GetHasCollidedWithGround() const { return hasCollidedWithGround; }
 
+	//ポールとの衝突
+	bool hasCollidedWithPole = false;
+	void SetHasCollidedWithPole(bool collided) { hasCollidedWithPole = collided; }
+	bool GetHasCollidedWithPole() const { return hasCollidedWithPole; }
+
 	// バット衝突時の位置を記録
 	DirectX::XMFLOAT3 ballHitPosition = { 0.0f, 0.0f, 0.0f };
 	void SetBallHitPosition(const DirectX::XMFLOAT3& pos) { ballHitPosition = pos; }

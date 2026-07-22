@@ -112,7 +112,7 @@ public:
 		float extraHeight = 40.0f; // フェンス上端からさらに上へ判定を伸ばす高さ
 
 		std::string triggerName;
-		std::string raycastTargetName;
+		std::vector<std::string> raycastTargetNames;
 	};
 
 	LineTriggerEditor homerunLineEditor; // ホームランラインの編集用データ

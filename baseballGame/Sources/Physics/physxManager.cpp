@@ -537,6 +537,40 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 	{
 		const physx::PxContactPair& pair = pairs[i];
 
+		bool ballIsActor0 = (pairHeader.actors[0] == Ball::Instance().GetBallCollider());
+		bool ballIsActor1 = (pairHeader.actors[1] == Ball::Instance().GetBallCollider());
+		const char* otherName = ballIsActor0 ? pairHeader.actors[1]->getName()
+			: ballIsActor1 ? pairHeader.actors[0]->getName() : nullptr;
+
+		if ((ballIsActor0 || ballIsActor1) && otherName && strcmp(otherName, "Pole") == 0)
+		{
+			if (!Ball::Instance().GetHasCollidedWithFence() && !Ball::Instance().GetHasCollidedWithGround())
+			{
+				Ball::Instance().SetHasCollidedWithPole(true);
+				Ball::Instance().SetHasCollidedWithFence(true);
+				Ball::Instance().SetHasCollidedWithGround(true);
+				Ball::Instance().SetIsFoulConfirmed(false); // 念のため明示的にファウルを打ち消す
+
+				OutputDebugStringA("ホームラン！：ポールに衝突");
+				if (consoleLog)
+					consoleLog->push_back(u8"[Hit] ホームラン！：ポールに衝突");
+
+				HomeRunCount::Instance().IncrementCount();
+			}
+			break;
+		}
+	}
+
+	for (physx::PxU32 i = 0; i < nbPairs; i++)
+	{
+
+		const physx::PxContactPair& pair = pairs[i];
+
+		if (Ball::Instance().GetHasCollidedWithPole())
+		{
+			continue;
+		}
+
 		// エンタイトルツーベース以外でホームラントリガーをダイレクトで通過した場合、
 		// 以降どのオブジェクトに衝突しても無条件でホームランにする
 		if (Ball::Instance().GetHasPassedHomeRunZone() && !Ball::Instance().GetHasCollidedWithFence())
@@ -546,7 +580,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 			if (ballIsActor0 || ballIsActor1)
 			{
-				
+
 				Ball::Instance().SetHasCollidedWithFence(true);
 				Ball::Instance().SetHasCollidedWithGround(true);
 
@@ -605,11 +639,11 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						totalDistance);
 					OutputDebugStringA(debugMessage);
 
+					bool isGround = (otherName && strcmp(otherName, "Ground") == 0);
+
 					if (consoleLog)
 					{
 						//グラウンドなら実測飛距離、スタンドなら総飛距離を表示
-
-						bool isGround = (otherName && strcmp(otherName, "Ground") == 0);
 
 						char logBuf[512];
 						snprintf(logBuf, sizeof(logBuf),
@@ -620,6 +654,18 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 					//ホームランカウントを１増やす
 					HomeRunCount::Instance().IncrementCount();
+
+					//グラウンドなら実測飛距離、スタンドなら総飛距離を保存
+					if(isGround)
+					{
+						ballHorizontalDistance = horizontalDistance;
+						lastDistanceWasTotal = false;
+					}
+					else
+					{
+						ballTotalDistance = totalDistance;
+						lastDistanceWasTotal = true;
+					}
 				}
 
 				continue; // このペアはホームランとして処理済みなので以降の個別判定はスキップ
@@ -631,7 +677,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Ground") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Ground"))
 		{
-			
+
 			// キューに速度変更リクエストを追加
 			{
 				std::lock_guard<std::mutex> lock(queueMutex);
@@ -662,7 +708,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 							// フェンス衝突なし: 通常の摩擦ベース減衰
 							physx::PxMaterial* stageMaterial = Physics::Instance().GetMaterial();
 							float friction = stageMaterial->getDynamicFriction();
-							dampingFactor = 1.0f - (friction * 0.005f);
+							dampingFactor = 1.0f - (friction * 0.001f);
 						}
 
 						velocity *= dampingFactor;
@@ -715,6 +761,9 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 							horizontalDistance);
 						consoleLog->push_back(logBuf);
 					}
+
+					ballHorizontalDistance = horizontalDistance;
+					lastDistanceWasTotal = false; // グラウンド着地時は実測飛距離として扱う
 				}
 			}
 		}
@@ -725,11 +774,13 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		{
 			if (!Ball::Instance().GetHasCollidedWithFence())
 			{
+				bool wasAlreadyGrounded = Ball::Instance().GetHasCollidedWithGround();
+
 				Ball::Instance().SetHasCollidedWithFence(true);
 				Ball::Instance().SetHasCollidedWithGround(true);
 
 				//フェアの状態で1度グラウンドについたら、その後のファウル判定と飛距離計算はしない
-				if(Ball::Instance().GetHasCollidedWithGround() && !Ball::Instance().GetIsFoulConfirmed())
+				if (wasAlreadyGrounded && !Ball::Instance().GetIsFoulConfirmed())
 				{
 					return;
 				}
@@ -742,7 +793,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					// フェア/ファウル判定（ホームベースから見た角度が±45度以内ならフェア）
 					float standAngleDeg = std::atan2(ballPosition.x, ballPosition.z) * (180.0f / 3.14159265359f);
 					bool isFairAtStand = (ballPosition.z >= 0.0f) && (std::fabs(standAngleDeg) <= 45.0f);
-					if(!isFairAtStand)
+					if (!isFairAtStand)
 					{
 						Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
 
@@ -784,83 +835,28 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						DirectX::XMFLOAT3 ballHitPos = Ball::Instance().GetBallHitPosition();
 
 						float distanceX = ballFencePosition.x - ballHitPos.x;
-						float distanceY = ballFencePosition.y - ballHitPos.y;
 						float distanceZ = ballFencePosition.z - ballHitPos.z;
 						float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
 
-						physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
-						float exitVelocity = ballVelocity.magnitude();
-						float estimatedDistance = 0.0f;
-
-						if (exitVelocity > 0.1f)
-						{
-							float launchAngle = std::atan2(ballVelocity.y,
-								sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z));
-
-							float initialHeight = ballHitPos.y;
-							float v_y = exitVelocity * sinf(launchAngle);
-							float a = 0.5f * 9.81f;
-							float b = -v_y;
-							float c = -initialHeight;
-							float discriminant = b * b - 4.0f * a * c;
-
-							if (discriminant >= 0.0f)
-							{
-								float t = (-b + sqrtf(discriminant)) / (2.0f * a);
-								if (t > 0.0f)
-								{
-									estimatedDistance = exitVelocity * cosf(launchAngle) * t;
-								}
-							}
-						}
-
-						float totalDistance = horizontalDistance + estimatedDistance;
-
-						char debugMessage[768];
-						snprintf(debugMessage, sizeof(debugMessage),
-							"=== ボールがフェンスに入った ===\n"
-							"水平飛距離（実測）: %.2f m\n"
-							"推定飛距離（スタンドなしでグラウンド着地）: %.2f m\n"
-							"総飛距離: %.2f m\n",
-							horizontalDistance,
-							estimatedDistance,
-							totalDistance);
-						OutputDebugStringA(debugMessage);
 						if (consoleLog)
 						{
 							char logBuf[512];
 							snprintf(logBuf, sizeof(logBuf),
 								u8"[Hit] ボールがフェンスに入った！ 飛距離: %.1f m",
-								totalDistance);
+								horizontalDistance);
 							consoleLog->push_back(logBuf);
 						}
-					} 
+
+						ballHorizontalDistance = horizontalDistance;
+						lastDistanceWasTotal = false; // フェンス衝突時は実測飛距離として扱う
+					}
 				}
 			}
 		}
 
-
-		//ボールとポールの衝突を検知
-		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Pole") ||
-			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Pole"))
-		{
-			Ball::Instance().SetHasCollidedWithGround(true); // 地面衝突フラグを設定
-
-			//ポールに当たったら無条件でホームラン判定
-			// 初回のみ判定（スタンド衝突済みの場合はスキップ）
-			if (!Ball::Instance().GetHasCollidedWithFence())
-			{
-				Ball::Instance().SetHasCollidedWithFence(true);
-
-				OutputDebugStringA("ホームラン！：ポールに衝突");
-				if (consoleLog)
-					consoleLog->push_back(u8"[Hit] ホームラン！：ポールに衝突");
-
-				//ホームランカウントを増やす
-				HomeRunCount::Instance().IncrementCount();
-			}
-		}
 	}
+
+		
 }
 
 inline float PowerToExitVelocityScale(float power)
@@ -892,6 +888,11 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 		if (pair.flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER |
 			physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
 			continue;
+
+		if(Ball::Instance().GetHasCollidedWithPole() || Ball::Instance().GetHasCollidedWithGround() || Ball::Instance().GetHasCollidedWithFence())
+		{
+			continue; // ポールに衝突済みなら以降の判定は不要
+		}
 
 		// ボールが HomeRunTrigger に入った瞬間
 		if (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)

@@ -42,4 +42,6 @@ private:
 	float currentDistance = 0.0f;
 	char distanceText[32] = "";
 	bool hasDistanceText = false;
+	bool isDistanceLocked = false;
+	
 };

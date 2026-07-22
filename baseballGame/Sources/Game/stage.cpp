@@ -94,12 +94,12 @@ void stage::initialize()
 	poleAngle = { 0.0f, 0.0f, 0.0f };
 
 	homerunLineEditor.triggerName = "HomeRunTrigger";
-	homerunLineEditor.raycastTargetName = "Stand";
+	homerunLineEditor.raycastTargetNames = { "Stand" };
 	homerunLineEditor.thickness = 0.5f;
 	homerunLineEditor.extraHeight = 40.0f;
 
 	foulLineEditor.triggerName = "FoulTrigger";
-	foulLineEditor.raycastTargetName = "Stand";  // ※ファウルラインをクリックする対象。地面が"Ground"という名前で登録されているか要確認
+	foulLineEditor.raycastTargetNames = { "Stand", "Ground" };  //ファウルラインはスタンドとグラウンドの両方に当たる可能性があるため、両方を指定
 	foulLineEditor.thickness = 0.5f;
 	foulLineEditor.extraHeight = 3.0f;
 
@@ -215,10 +215,18 @@ void stage::UpdateLineEditor(LineTriggerEditor& editor,
 	if (hit && hitBuffer.hasBlock)
 	{
 		physx::PxRigidActor* actor = hitBuffer.block.actor;
-		if (actor && actor->getName() && std::string(actor->getName()) == editor.raycastTargetName)
+		if (actor && actor->getName())
 		{
-			physx::PxVec3 p = hitBuffer.block.position;
-			editor.linePoints.push_back({ p.x, p.y, p.z });
+			std::string actorName(actor->getName());
+			for (const auto& targetName : editor.raycastTargetNames)
+			{
+				if (actorName == targetName)
+				{
+					physx::PxVec3 p = hitBuffer.block.position;
+					editor.linePoints.push_back({ p.x, p.y, p.z });
+					break;
+				}
+			}
 		}
 	}
 }

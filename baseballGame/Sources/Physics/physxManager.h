@@ -122,14 +122,21 @@ public:
 	float GetBallAngle() const { return outAngle; }
 	float GetBallDirection() const { return outDirection; }
 	float GetBallOriginalDirection() const { return outOriginalDirection; }
+	float GetBallHorizontalDistance() const { return ballHorizontalDistance; }
+	float GetBallTotalDistance() const { return ballTotalDistance; }
 
 	float outSpeed = 0.0f; //打球速度
 	float outAngle = 0.0f; //打球角度
 	float outDirection = 0.0f; //打球方向
 	float outOriginalDirection = 0.0f; //打球方向（元の方向）
+	float ballHorizontalDistance = 0.0f; //打球の水平距離
+	float ballTotalDistance = 0.0f; //打球の総距離
 
 	//確信ホームランかどうかを判定する変数とゲッター
 	bool isHomeRun = false;
 	bool GetIsHomeRun() const { return isHomeRun; }
 	void SetIsHomeRun(bool value) { isHomeRun = value; }
+
+	bool lastDistanceWasTotal = false; //前回の距離が総距離だったかどうかを判定する変数
+	bool GetLastDistanceWasTotal() const { return lastDistanceWasTotal; }
 };
