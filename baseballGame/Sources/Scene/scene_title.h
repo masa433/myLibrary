@@ -14,6 +14,7 @@
 #include "FreeCameraController.h"
 #include "Hextransitioneffect.h"
 #include "json.hpp"
+#include "ButtonManager.h" 
 
 using json = nlohmann::json;
 
@@ -130,4 +131,7 @@ private:
 
 	post_effect_constants post_effect_constant;
 	shadow_quality_constants shadow_quality_constant;
+
+	private:
+		std::unique_ptr<ButtonManager> startButton;
 };

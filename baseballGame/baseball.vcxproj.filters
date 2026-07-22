@@ -76,9 +76,6 @@
     <ClCompile Include="Sources\Renderer\sprite_batch.cpp">
       <Filter>Sources\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\Renderer\UIEasing.cpp">
-      <Filter>Sources\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\Physics\physxManager.cpp">
       <Filter>Sources\Physics</Filter>
     </ClCompile>
@@ -181,6 +178,12 @@
     <ClCompile Include="Sources\Game\ballDistance.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\UI\UIEasing.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\UI\ButtonManager.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -265,9 +268,6 @@
       <Filter>Sources\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Renderer\sprite_batch.h">
-      <Filter>Sources\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Renderer\UiEasing.h">
       <Filter>Sources\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Physics\physxManager.h">
@@ -380,6 +380,12 @@
     </ClInclude>
     <ClInclude Include="Sources\Game\ballDistance.h">
       <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\UI\UiEasing.h">
+      <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\UI\ButtonManager.h">
+      <Filter>Sources\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -590,6 +596,9 @@
     </Filter>
     <Filter Include="imgui">
       <UniqueIdentifier>{9cd9027c-6af9-4aff-b409-0824fabee4ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI">
+      <UniqueIdentifier>{301a6216-c2b9-42a9-a426-36a8f125caa8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

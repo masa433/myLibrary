@@ -121,7 +121,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\Json;.\resources\shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\resources\shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -177,7 +177,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\Json;.\resources\shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\resources\shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -298,9 +298,6 @@
     <ClCompile Include="Sources\Renderer\sprite_batch.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="Sources\Renderer\UIEasing.cpp">
-      <DeploymentContent>false</DeploymentContent>
-    </ClCompile>
     <ClCompile Include="Sources\Scene\sceneManager.cpp" />
     <ClCompile Include="Sources\Scene\scene_game.cpp">
       <DeploymentContent>false</DeploymentContent>
@@ -327,6 +324,10 @@
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="Sources\System\main.cpp">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
+    <ClCompile Include="Sources\UI\ButtonManager.cpp" />
+    <ClCompile Include="Sources\UI\UIEasing.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
   </ItemGroup>
@@ -439,9 +440,6 @@
     <ClInclude Include="Sources\Renderer\sprite_batch.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="Sources\Renderer\UiEasing.h">
-      <DeploymentContent>false</DeploymentContent>
-    </ClInclude>
     <ClInclude Include="Sources\Scene\scene.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
@@ -477,6 +475,10 @@
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Sources\System\misc.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="Sources\UI\ButtonManager.h" />
+    <ClInclude Include="Sources\UI\UiEasing.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
   </ItemGroup>

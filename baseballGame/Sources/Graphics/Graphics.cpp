@@ -92,6 +92,12 @@ void Graphics::Initialize(HWND hWnd)
 	}
 #endif
 
+	Microsoft::WRL::ComPtr<ID3D10Multithread> multithread;
+	if (SUCCEEDED(device.As(&multithread)))
+	{
+		multithread->SetMultithreadProtected(TRUE);
+	}
+
 	// レンダーターゲットビューの生成
 	{
 		// スワップチェーンからバックバッファテクスチャを取得する。

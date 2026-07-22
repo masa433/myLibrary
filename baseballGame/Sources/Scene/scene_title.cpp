@@ -71,6 +71,7 @@ void SceneTitle::initialize()
 	hexTransitionEffect.Initialize();
 	isChangingScene = false;
 
+	startButton = std::make_unique<ButtonManager>();
 }
 
 void SceneTitle::update(float elapsed_time)
@@ -219,6 +220,8 @@ void SceneTitle::render(float elapsed_time)
 	//	ステージ描画
 	stage::Instance().render(rc, modelRenderer);
 
+	if (startButton) startButton->Render();
+
 	if (isChangingScene)
 	{
 		hexTransitionEffect.Render();
@@ -245,6 +248,8 @@ void SceneTitle::DrawGUI()
 	ImGui::ColorEdit4("Ambient", &ambient_color.x);
 	ImGui::SliderFloat("Dir Intensity", &directional_light_intensity, 0.0f, 5.0f);
 	ImGui::End();
+
+	if (startButton) startButton->DrawGUI();
 #endif
 #endif
 }
