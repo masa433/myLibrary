@@ -828,28 +828,28 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 							if (consoleLog)
 								consoleLog->push_back(u8"[Hit] フェンス直撃！：スタンドに衝突");
 						}
-
-
-						// ===== 飛距離計算 =====
-						physx::PxVec3 ballFencePosition = ballCollider->getGlobalPose().p;
-						DirectX::XMFLOAT3 ballHitPos = Ball::Instance().GetBallHitPosition();
-
-						float distanceX = ballFencePosition.x - ballHitPos.x;
-						float distanceZ = ballFencePosition.z - ballHitPos.z;
-						float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
-
-						if (consoleLog)
-						{
-							char logBuf[512];
-							snprintf(logBuf, sizeof(logBuf),
-								u8"[Hit] ボールがフェンスに入った！ 飛距離: %.1f m",
-								horizontalDistance);
-							consoleLog->push_back(logBuf);
-						}
-
-						ballHorizontalDistance = horizontalDistance;
-						lastDistanceWasTotal = false; // フェンス衝突時は実測飛距離として扱う
+						
 					}
+
+					// ===== 飛距離計算 =====
+					physx::PxVec3 ballFencePosition = ballCollider->getGlobalPose().p;
+					DirectX::XMFLOAT3 ballHitPos = Ball::Instance().GetBallHitPosition();
+
+					float distanceX = ballFencePosition.x - ballHitPos.x;
+					float distanceZ = ballFencePosition.z - ballHitPos.z;
+					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
+
+					if (consoleLog)
+					{
+						char logBuf[512];
+						snprintf(logBuf, sizeof(logBuf),
+							u8"[Hit] ボールがフェンスに入った！ 飛距離: %.1f m",
+							horizontalDistance);
+						consoleLog->push_back(logBuf);
+					}
+
+					ballHorizontalDistance = horizontalDistance;
+					lastDistanceWasTotal = false; // フェンス衝突時は実測飛距離として扱う
 				}
 			}
 		}
