@@ -496,11 +496,11 @@ void Pitcher::DrawGUI()
 		{
 			const char* realPitcherNames[] = {
 				u8"なし",
-				u8"戸郷翔征", u8"才木浩人", u8"東克樹", u8"宮城大弥", u8"伊藤大海",
-				u8"床田寛樹", u8"石川雅規", u8"九里亜蓮",
-				u8"大谷翔平", u8"山本由伸", u8"今永昇太", u8"菊池雄星", u8"千賀滉大",
-				u8"大勢",u8"藤川球児",u8"ライデル・マルティネス",u8"石井大智",u8"ビエイラ",
-				u8"高梨雄平",u8"松山晋也",u8"大竹耕太郎"
+				u8"中川", u8"向井", u8"阿部", u8"森田", u8"伊藤",
+				u8"福原", u8"石川", u8"高岡",
+				u8"織田", u8"近藤", u8"西", u8"菊池", u8"大久保",
+				u8"水野",u8"藤川",u8"渡邊",u8"石井",u8"木下",
+				u8"増田",u8"松山",u8"井上"
 			};
 			int realPitcherIndex = static_cast<int>(selectedRealPitcher);
 			if (ImGui::Combo(u8"実在投手", &realPitcherIndex, realPitcherNames, IM_ARRAYSIZE(realPitcherNames)))
@@ -1246,8 +1246,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 
 	switch (rp)
 	{
-	case RealPitcher::Togo://戸郷翔征
-		outName = u8"戸郷翔征";
+	case RealPitcher::Nakagawa:
+		outName = u8"中川";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,			 53.2f, 146.7f, BreakGrade::C , Power::C },
@@ -1258,8 +1258,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Saiki://才木浩人
-		outName = u8"才木浩人";
+	case RealPitcher::Mukai:
+		outName = u8"向井";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,   51.4f, 151.0f, BreakGrade::C , Power::A },
@@ -1269,8 +1269,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Azuma: // 東克樹
-		outName = u8"東克樹";
+	case RealPitcher::Abe: 
+		outName = u8"阿部";
 		outIsRight = false;
 		outArsenal = {
 			{ PitchType::Fastball,   26.2f, 143.0f, BreakGrade::C , Power::B },
@@ -1283,8 +1283,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Miyagi://宮城大弥
-		outName = u8"宮城大弥";
+	case RealPitcher::Morita:
+		outName = u8"森田";
 		outIsRight = false;
 		outArsenal = {
 			{ PitchType::Fastball,   42.7f, 147.4f, BreakGrade::C , Power::A },
@@ -1296,8 +1296,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Ito: // 伊藤大海
-		outName = u8"伊藤大海";
+	case RealPitcher::Ito:
+		outName = u8"伊藤";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,   35.4f, 148.0f, BreakGrade::C , Power::A },
@@ -1312,8 +1312,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Tokoda: // 床田寛樹
-		outName = u8"床田寛樹";
+	case RealPitcher::Fukuhara:
+		outName = u8"福原";
 		outIsRight = false;
 		outArsenal = {
 			{ PitchType::CutFastball,30.1f, 143.1f, BreakGrade::C , Power::B },
@@ -1326,8 +1326,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Ishikawa://石川雅規
-		outName = u8"石川雅規";
+	case RealPitcher::Ishikawa:
+		outName = u8"石川";
 		outIsRight = false;
 		outArsenal = {
 			{ PitchType::Fastball,   27.2f, 129.0f, BreakGrade::C , Power::E },
@@ -1335,13 +1335,13 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Slider,     17.4f, 118.2f, BreakGrade::B , Power::C },
 			{ PitchType::Cutter,     14.7f, 126.2f, BreakGrade::C , Power::C },
 			{ PitchType::Shooter,    10.8f, 128.0f, BreakGrade::E , Power::D },
-			{ PitchType::Curveball,   6.2f, 110.0f, BreakGrade::B , Power::D }, // カツオカーブ
+			{ PitchType::Curveball,   6.2f, 110.0f, BreakGrade::B , Power::D }, 
 			{ PitchType::Changeup,    4.4f, 110.2f, BreakGrade::E , Power::D },
 		};
 		return true;
 
-	case RealPitcher::Kuri://九里亜蓮
-		outName = u8"九里亜蓮";
+	case RealPitcher::Takaoka:
+		outName = u8"高岡";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Changeup,    27.5f, 126.9f, BreakGrade::C , Power::D },
@@ -1355,8 +1355,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Ohtani://大谷翔平
-		outName = u8"大谷翔平";
+	case RealPitcher::Oda:
+		outName = u8"織田";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,     45.3f, 157.7f, BreakGrade::C , Power::B },
@@ -1369,8 +1369,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Yamamoto: // 山本由伸
-		outName = u8"山本由伸";
+	case RealPitcher::Kondo:
+		outName = u8"近藤";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,   27.1f, 154.5f, BreakGrade::C , Power::A },
@@ -1382,8 +1382,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Imanaga: // 今永昇太
-		outName = u8"今永昇太";
+	case RealPitcher::Nishi:
+		outName = u8"西";
 		outIsRight = false;
 		outArsenal = {
 			{ PitchType::Fastball,   43.5f, 147.8f, BreakGrade::C , Power::B },
@@ -1394,8 +1394,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Kikuchi: // 菊池雄星
-		outName = u8"菊池雄星";
+	case RealPitcher::Kikuchi:
+		outName = u8"菊池";
 		outIsRight = false;
 		outArsenal = {
 			{ PitchType::Fastball,   28.3f, 153.5f, BreakGrade::C , Power::C },
@@ -1407,8 +1407,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Senga: // 千賀滉大
-		outName = u8"千賀滉大";
+	case RealPitcher::Okubo:
+		outName = u8"大久保";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,   37.7f, 154.6f, BreakGrade::C , Power::C },
@@ -1420,8 +1420,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Taisei: //大勢
-		outName = u8"大勢";
+	case RealPitcher::Mizuno:
+		outName = u8"水野";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::NaturalShoot,60.2f, 153.1f, BreakGrade::C , Power::B },
@@ -1430,8 +1430,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Fujikawa: //藤川球児
-		outName = u8"藤川球児";
+	case RealPitcher::Fujikawa:
+		outName = u8"藤川";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::BlazingFastball,   65.3f, 150.0f, BreakGrade::C , Power::S },
@@ -1441,8 +1441,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Martinez: //マルティネス
-		outName = u8"マルティネス";
+	case RealPitcher::Watanabe:
+		outName = u8"渡邊";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,     65.3f, 153.7f, BreakGrade::C , Power::A },
@@ -1453,8 +1453,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Ishi: //石井大智
-		outName = u8"石井大智";
+	case RealPitcher::Ishi: 
+		outName = u8"石井";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,      59.8f, 149.2f, BreakGrade::C , Power::A },
@@ -1465,8 +1465,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Vieira: //ビエイラ
-		outName = u8"ビエイラ";
+	case RealPitcher::Kinoshita:
+		outName = u8"木下";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,      69.5f, 162.0f, BreakGrade::C , Power::B },
@@ -1476,8 +1476,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Takanashi: //高梨雄平
-		outName = u8"高梨雄平";
+	case RealPitcher::Masuda:
+		outName = u8"増田";
 		outIsRight = false;
 		outArsenal = {
 			{ PitchType::Slider,        58.6f, 126.5f, BreakGrade::S , Power::B },
@@ -1486,8 +1486,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Matsuyama: //松山晋也
-		outName = u8"松山晋也";
+	case RealPitcher::Matsuyama: //松山
+		outName = u8"松山";
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,      58.8f, 153.9f, BreakGrade::C , Power::B },
@@ -1496,8 +1496,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		};
 		return true;
 
-	case RealPitcher::Ohtake:  //大竹耕太郎
-		outName = u8"大竹耕太郎";
+	case RealPitcher::Inoue:
+		outName = u8"井上";
 		outIsRight = false;
 		outArsenal = {
 			{ PitchType::Fastball,      39.1f, 137.5f, BreakGrade::C , Power::C },

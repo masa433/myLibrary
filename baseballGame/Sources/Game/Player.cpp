@@ -497,11 +497,11 @@ void Player::DrawGUI()
     {
         const char* realBatterNames[] = {
                 u8"なし",
-                u8"森下翔太", u8"佐藤輝明", u8"岡本和真", u8"坂本勇人", u8"牧秀悟",
-                u8"筒香嘉智", u8"村上宗隆", u8"山田哲人",
-                u8"鈴木誠也", u8"坂倉将吾", u8"細川成也", u8"上林誠知", u8"柳田悠岐",
-                u8"山川穂高",u8"大谷翔平",u8"万波中正",u8"吉田正尚",u8"ブーマー",
-                u8"山口航輝",u8"ソト",u8"浅村栄斗",u8"ボイト",u8"中村剛也",u8"ネビン"
+                u8"石山", u8"佐藤", u8"岡村", u8"坂本", u8"小田倉",
+                u8"川野", u8"村上", u8"山田",
+                u8"鈴木", u8"浅野", u8"木村", u8"松田", u8"村井",
+                u8"佐々木",u8"武田",u8"長谷川",u8"西村",u8"小島",
+                u8"西野",u8"田村",u8"清水",u8"山下",u8"中村",u8"上田"
         };
         int realBatterIndex = static_cast<int>(selectedRealBatter);
         if (ImGui::Combo(u8"実在打者", &realBatterIndex, realBatterNames, IM_ARRAYSIZE(realBatterNames)))
@@ -914,8 +914,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 
     switch (rb)
     {
-    case RealBatter::Morisita:
-        outName = u8"森下翔太";
+    case RealBatter::Ishiyama:
+        outName = u8"石山";
 		outIsRight = true;
         outArsenal =
         {
@@ -924,7 +924,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
         return true;
 
     case RealBatter::Sato:
-		outName = u8"佐藤輝明";
+		outName = u8"佐藤";
         outIsRight = false;
         outArsenal =
         {
@@ -932,8 +932,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
 		return true;
 
-    case RealBatter::Okamoto:
-		outName = u8"岡本和真";
+    case RealBatter::Okamura:
+		outName = u8"岡村";
 		outIsRight = true;
         outArsenal =
         {
@@ -942,7 +942,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
         return true;
 
     case RealBatter::Sakamoto:
-		outName = u8"坂本勇人";
+		outName = u8"坂本";
 		outIsRight = true;
         outArsenal =
         {
@@ -950,8 +950,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
         };
 		return true;
 
-    case RealBatter::Maki:
-		outName = u8"牧秀悟";
+    case RealBatter::Odakura:
+		outName = u8"小田倉";
         outIsRight = true;
         outArsenal =
         {
@@ -959,8 +959,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
 		return true;
 
-    case RealBatter::Tsutsugo:
-		outName = u8"筒香嘉智";
+    case RealBatter::Kawano:
+		outName = u8"川野";
 		outIsRight = false;
         outArsenal =
         {
@@ -969,7 +969,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		return true;
 
     case RealBatter::Murakami:
-		outName = u8"村上宗隆";
+		outName = u8"村上";
         outIsRight = false;
         outArsenal =
         {
@@ -978,7 +978,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		return true;
 
     case RealBatter::Yamada:
-		outName = u8"山田哲人";
+		outName = u8"山田";
         outIsRight = true;
         outArsenal =
         {
@@ -987,7 +987,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		return true;
 
     case RealBatter::Suzuki:
-        outName =  u8"鈴木誠也";
+        outName =  u8"鈴木";
         outIsRight = true;
         outArsenal =
         {
@@ -995,8 +995,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
         };
 		return true;
 
-    case RealBatter::Sakakura:
-        outName = u8"坂倉将吾";
+    case RealBatter::Asano:
+        outName = u8"浅野";
         outIsRight = false;
         outArsenal =
         {
@@ -1004,8 +1004,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
         };
 		return true;
 
-    case RealBatter::Hosokawa:
-        outName = u8"細川成也";
+    case RealBatter::Kimura:
+        outName = u8"木村";
         outIsRight = true;
         outArsenal =
         {
@@ -1013,8 +1013,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
 		return true;
 
-    case RealBatter::Uebayashi:
-        outName = u8"上林誠知";
+    case RealBatter::Matsuda:
+        outName = u8"松田";
         outIsRight = false;
         outArsenal =
         {
@@ -1022,8 +1022,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
         return true;
 
-    case RealBatter::Yanagita:
-        outName = u8"柳田悠岐";
+    case RealBatter::Murai:
+        outName = u8"村井";
         outIsRight = false;
         outArsenal =
         {
@@ -1031,8 +1031,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
         };
 		return true;
 
-    case RealBatter::Yamakawa:
-        outName = u8"山川穂高";
+    case RealBatter::Sasaki:
+        outName = u8"佐々木";
         outIsRight = true;
         outArsenal =
         {
@@ -1040,8 +1040,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
 		return true;
 
-    case RealBatter::Ohtani:
-        outName = u8"大谷翔平";
+    case RealBatter::Takeda:
+        outName = u8"武田";
         outIsRight = false;
         outArsenal =
         {
@@ -1049,8 +1049,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
         return true;
 
-    case RealBatter::Mannami:
-        outName = u8"万波中正";
+    case RealBatter::Hasegawa:
+        outName = u8"長谷川";
         outIsRight = true;
         outArsenal =
         {
@@ -1058,8 +1058,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
         };
 		return true;
 
-    case RealBatter::Yoshida:
-        outName = u8"吉田正尚";
+    case RealBatter::Nishimura:
+        outName = u8"西村";
         outIsRight = false;
         outArsenal =
         {
@@ -1067,8 +1067,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
         return true;
 
-    case RealBatter::Boomer:
-        outName = u8"ブーマー";
+    case RealBatter::Kojima:
+        outName = u8"小島";
         outIsRight = true;
         outArsenal =
         {
@@ -1076,8 +1076,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
         };
 		return true;
 
-    case RealBatter::Yamaguchi:
-        outName = u8"山口航輝";
+    case RealBatter::Nishino:
+        outName = u8"西野";
         outIsRight = true;
         outArsenal =
         {
@@ -1085,8 +1085,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
         return true;
 
-    case RealBatter::Soto:
-        outName = u8"ソト";
+    case RealBatter::Tamura:
+        outName = u8"田村";
         outIsRight = true;
         outArsenal =
         {
@@ -1094,8 +1094,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
 		return true;
 
-    case RealBatter::Asamura:
-        outName = u8"浅村栄斗";
+    case RealBatter::Shimizu:
+        outName = u8"清水";
         outIsRight = true;
         outArsenal =
         {
@@ -1103,8 +1103,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
         return true;
 
-    case RealBatter::Voit:
-        outName = u8"ボイト";
+    case RealBatter::Yamashita:
+        outName = u8"山下";
         outIsRight = true;
         outArsenal =
         {
@@ -1113,7 +1113,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		return true;
 
     case RealBatter::Nakamura:
-        outName = u8"中村剛也";
+        outName = u8"中村";
 		outIsRight = true;
         outArsenal =
         {
@@ -1121,8 +1121,8 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		};
         return true;
 
-    case RealBatter::Nevin:
-        outName = u8"ネビン";
+    case RealBatter::Ueda:
+        outName = u8"上田";
         outIsRight = true;
         outArsenal =
         {

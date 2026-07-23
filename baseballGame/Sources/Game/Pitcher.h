@@ -264,27 +264,27 @@ public:
 	enum class RealPitcher
 	{
 		None,
-		Togo, //戸郷翔征
-		Saiki, //才木浩人
-		Azuma, //東克樹
-		Miyagi, //宮城大弥
-		Ito, //伊藤大海
-		Tokoda, //床田寛樹
-		Ishikawa,// 石川雅規
-		Kuri,//九里亜蓮
-		Ohtani,//大谷翔平
-		Yamamoto,//山本由伸
-		Imanaga,//今永昇太
-		Kikuchi,//菊池雄星
-		Senga,//千賀滉大
-		Taisei,//大勢
-		Fujikawa,//藤川球児
-		Martinez,//マルティネス
-		Ishi,//石井大智
-		Vieira,//ビエイラ
-		Takanashi,//高梨雄平
-		Matsuyama,//松山晋也
-		Ohtake,//大竹耕太郎
+		Nakagawa, //中川
+		Mukai, //向井
+		Abe, //阿部
+		Morita, //森田
+		Ito, //伊藤
+		Fukuhara, //福原
+		Ishikawa,// 石川
+		Takaoka,//高岡
+		Oda,//織田
+		Kondo,//近藤
+		Nishi,//西
+		Kikuchi,//菊池
+		Okubo,//大久保
+		Mizuno,//水野
+		Fujikawa,//藤川
+		Watanabe,//渡邊
+		Ishi,//石井
+		Kinoshita,//木下
+		Masuda,//増田
+		Matsuyama,//松山
+		Inoue,//井上
 		Count,//カウント
 	};
 

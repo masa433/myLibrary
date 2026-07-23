@@ -133,5 +133,5 @@ private:
 	shadow_quality_constants shadow_quality_constant;
 
 	private:
-		std::unique_ptr<ButtonManager> startButton;
+		ButtonManager buttonManager;
 };

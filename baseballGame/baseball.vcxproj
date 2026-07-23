@@ -197,6 +197,8 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="External\devmidi-master\devmidi.cpp" />
+    <ClCompile Include="External\devmidi-master\midi_wrap.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
@@ -298,6 +300,7 @@
     <ClCompile Include="Sources\Renderer\sprite_batch.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Scene\batterSelectScene.cpp" />
     <ClCompile Include="Sources\Scene\sceneManager.cpp" />
     <ClCompile Include="Sources\Scene\scene_game.cpp">
       <DeploymentContent>false</DeploymentContent>
@@ -332,6 +335,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="External\devmidi-master\devmidi.h" />
+    <ClInclude Include="External\devmidi-master\devmidi_custom.h" />
+    <ClInclude Include="External\devmidi-master\midi_wrap.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_dx11.h">
@@ -440,6 +446,7 @@
     <ClInclude Include="Sources\Renderer\sprite_batch.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Scene\batterSelectScene.h" />
     <ClInclude Include="Sources\Scene\scene.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

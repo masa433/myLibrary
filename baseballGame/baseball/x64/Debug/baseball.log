@@ -1,2 +1,21 @@
-﻿  ButtonManager.cpp
+﻿  Pitcher.cpp
+  Player.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.cpp(515,16): warning C4244: '初期化中': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.cpp(518,44): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+  ballSprite.cpp
+  batSprite.cpp
+  catcher.cpp
+  physxManager.cpp
+  ShadowRenderer.cpp
+  scene_game.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(318,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(319,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(345,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(346,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(582,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+  scene_title.cpp
+  framework.cpp
+  main.cpp
+  ButtonManager.cpp
+  コードを生成中...
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

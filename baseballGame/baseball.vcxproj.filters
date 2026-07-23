@@ -184,6 +184,15 @@
     <ClCompile Include="Sources\UI\ButtonManager.cpp">
       <Filter>Sources\UI</Filter>
     </ClCompile>
+    <ClCompile Include="External\devmidi-master\devmidi.cpp">
+      <Filter>midi</Filter>
+    </ClCompile>
+    <ClCompile Include="External\devmidi-master\midi_wrap.cpp">
+      <Filter>midi</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Scene\batterSelectScene.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -386,6 +395,18 @@
     </ClInclude>
     <ClInclude Include="Sources\UI\ButtonManager.h">
       <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="External\devmidi-master\devmidi.h">
+      <Filter>midi</Filter>
+    </ClInclude>
+    <ClInclude Include="External\devmidi-master\devmidi_custom.h">
+      <Filter>midi</Filter>
+    </ClInclude>
+    <ClInclude Include="External\devmidi-master\midi_wrap.h">
+      <Filter>midi</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Scene\batterSelectScene.h">
+      <Filter>Sources\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -599,6 +620,9 @@
     </Filter>
     <Filter Include="Sources\UI">
       <UniqueIdentifier>{301a6216-c2b9-42a9-a426-36a8f125caa8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="midi">
+      <UniqueIdentifier>{f7d8df72-fc4d-423e-b00f-66587d108522}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

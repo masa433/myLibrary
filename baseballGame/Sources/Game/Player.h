@@ -160,30 +160,30 @@ public:
     enum class RealBatter
     {
         None,
-        Morisita,//森下翔太
-		Sato,//佐藤輝明
-		Okamoto,//岡本和真
-		Sakamoto,//坂本勇人
-		Maki,//牧秀悟
-		Tsutsugo,//筒香嘉智
-		Murakami,//村上宗隆
-		Yamada,//山田哲人
-		Suzuki,//鈴木誠也
-		Sakakura,//坂倉将吾
-		Hosokawa,//細川成也
-		Uebayashi,//上林誠知
-		Yanagita,//柳田悠岐
-		Yamakawa,//山川穂高
-		Ohtani,//大谷翔平
-		Mannami,//万波中正
-		Yoshida,//吉田正尚
-		Boomer,//ブーマー
-		Yamaguchi,//山口航輝
-		Soto,//ソト
-		Asamura,//浅村栄斗
-		Voit,//ボイト
+        Ishiyama,//石山
+		Sato,//佐藤
+		Okamura,//岡村
+		Sakamoto,//坂本
+		Odakura,//小田倉
+		Kawano,//川野
+		Murakami,//村上
+		Yamada,//山田
+		Suzuki,//鈴木
+		Asano,//浅野
+		Kimura,//木村
+		Matsuda,//松田
+		Murai,//村井
+		Sasaki,//佐々木
+		Takeda,//武田
+		Hasegawa,//長谷川
+		Nishimura,//西村
+		Kojima,//小島
+		Nishino,//西野
+		Tamura,//田村
+		Shimizu,//清水
+		Yamashita,//山下
         Nakamura,//中村剛也
-		Nevin,//ネビン
+		Ueda,//上田
         Count
     };
 

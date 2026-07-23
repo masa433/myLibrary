@@ -8,6 +8,10 @@
 #include "sceneManager.h"
 #include "scene_game.h"
 #include "scene_loading.h"
+#include <fstream>
+#include <string>
+#include "../../External/devmidi-master/devmidi.h"
+
 
 void SceneTitle::initialize()
 {
@@ -71,11 +75,22 @@ void SceneTitle::initialize()
 	hexTransitionEffect.Initialize();
 	isChangingScene = false;
 
-	startButton = std::make_unique<ButtonManager>();
+	buttonManager.Initialize();
+
+	devmidiInit();
+
+	LoadSetting();
 }
 
 void SceneTitle::update(float elapsed_time)
 {
+	// Ctrl + S で設定保存
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S))
+	{
+		SaveSetting();
+	}
+
 	Camera& camera = Camera::Instance();
 	float screenWidth = static_cast<float>(Graphics::Instance().GetScreenWidth());
 	float screenHeight = static_cast<float>(Graphics::Instance().GetScreenHeight());
@@ -93,22 +108,16 @@ void SceneTitle::update(float elapsed_time)
 
 	stage::Instance().update(elapsed_time);
 
-	//とりあえずなにかボタンを押したらゲームシーンに遷移する
-	GamePad& pad = Input::Instance().GetGamePad();
-	
-	const GamePadButton anyButton =
-		GamePad::BTN_A 
-	  | GamePad::BTN_B 
-	  | GamePad::BTN_X
-	  | GamePad::BTN_Y;
+	buttonManager.Update(elapsed_time);
+
 
 	if(!isChangingScene)
 	{
-		if (pad.GetButtonDown() & anyButton)
+		if (buttonManager.IsStartRequested())
 		{
 			isChangingScene = true;
 			hexTransitionEffect.Start(1.0f);
-			
+			buttonManager.ResetStartRequest();
 		}
 	}
 	else
@@ -120,7 +129,8 @@ void SceneTitle::update(float elapsed_time)
 			sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
 		}
 	}
-		
+	
+	devmidiUpdate();
 }
 
 void SceneTitle::render(float elapsed_time)
@@ -220,7 +230,8 @@ void SceneTitle::render(float elapsed_time)
 	//	ステージ描画
 	stage::Instance().render(rc, modelRenderer);
 
-	if (startButton) startButton->Render();
+	
+	buttonManager.Render();
 
 	if (isChangingScene)
 	{
@@ -232,6 +243,7 @@ void SceneTitle::uninitialize()
 {
 	stage::Instance().uninitialize();
 	Physics::Instance().Finalize();
+	devmidiTerm();
 }
 
 void SceneTitle::DrawGUI()
@@ -249,10 +261,35 @@ void SceneTitle::DrawGUI()
 	ImGui::SliderFloat("Dir Intensity", &directional_light_intensity, 0.0f, 5.0f);
 	ImGui::End();
 
-	if (startButton) startButton->DrawGUI();
+	ImGui::Begin("MIDI Keyboard");
+	drawMidiKeyboard("main_kb");
+	ImGui::End();
+
+	buttonManager.DrawGUI();
+
+
 #endif
 #endif
 }
 
-void SceneTitle::SaveSetting() {}
-void SceneTitle::LoadSetting() {}
+void SceneTitle::SaveSetting()
+{
+	json j;
+	buttonManager.SaveToJson(j);
+	// JSONをファイルに保存する処理を追加
+	// ファイルに保存
+	std::ofstream file("resources\\setting\\titleSettings.json");
+	file << j.dump(4);
+	
+}
+
+void SceneTitle::LoadSetting()
+{
+	std::ifstream file("resources\\setting\\titleSettings.json");
+	
+
+	json j;
+	file >> j;
+	// JSONファイルから読み込む処理を追加
+	buttonManager.LoadFromJson(j);
+}

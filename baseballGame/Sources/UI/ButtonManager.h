@@ -16,13 +16,30 @@ class ButtonManager
 {
 public:
 
-	ButtonManager();
+	ButtonManager() {};
 	~ButtonManager() {};
+	void Initialize();
 	void Update(float elapsedTime);
 	void Render();
 	void DrawGUI();
 	void SaveToJson(nlohmann::json& j);
 	void LoadFromJson(const nlohmann::json& j);
+	void ResetStartRequest() { isStartRequested = false; }
+	bool IsStartRequested() const { return isStartRequested; }
+	//マウスカーソルがボタン上にあるかどうかを判定する関数
+	bool IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const DirectX::XMFLOAT2& buttonPos, const DirectX::XMFLOAT2& buttonSize);
+
+	//ボタンの種類
+	enum class ButtonType
+	{
+		None,
+		Start,//スタートボタン
+		Settings,//設定ボタン
+		Quit,//終了ボタン
+		Pose,//ポーズボタン
+		Return,//戻るボタン
+		Count
+	};
 
 	
 
@@ -39,6 +56,7 @@ private:
 		DirectX::XMFLOAT4 color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 		std::string label;
 		char labelBuffer[256] = "Button";
+		ButtonType buttonType = ButtonType::None;
 	};
 	
 	std::unique_ptr<std::vector<ButtonSprite>> buttonSpriteData;
@@ -57,4 +75,6 @@ private:
 	std::wstring OpenTextureFileDialog();
 	void LoadButtonTexture(ButtonSprite& button, const std::wstring& path);
 	static std::string WideToUtf8(const std::wstring& wide);
+
+	bool isStartRequested = false;
 };

@@ -4,11 +4,14 @@
 #include "imgui.h"
 #include <Windows.h>
 #include <commdlg.h>
-#include <WICTextureLoader.h> // DirectXTK。プロジェクトで既に使っていればそのまま流用でOK
+#include <WICTextureLoader.h>
+#include "input.h"
+#include "scene_game.h"
+#include "scene_loading.h"
 
 #pragma comment(lib, "Comdlg32.lib")
 
-ButtonManager::ButtonManager()
+void ButtonManager::Initialize()
 {
 	HRESULT hr = S_OK;
 	ID3D11Device* device = Graphics::Instance().GetDevice();
@@ -24,6 +27,7 @@ ButtonManager::ButtonManager()
 	defaultButton.rotation = 0.0f;
 	defaultButton.color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	defaultButton.label = "Button";
+	defaultButton.buttonType = ButtonType::None;
 	strcpy_s(defaultButton.labelBuffer, "Button");// ラベルの初期値を設定
 	buttonSpriteData->push_back(std::move(defaultButton));
 
@@ -48,8 +52,7 @@ ButtonManager::ButtonManager()
 		u8"ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
 		u8"abcdefghijklmnopqrstuvwxyz{|}~"
 		u8"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょっー"
-		u8"アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンャュョッー"
-		u8"失投ストレートスライダーカーブチェンジアップフォークツーシームカットボールシンカースクリュー縦スプリットスローカーブシュートナックルボールスイーパーパームナチュラルシュート真っスラ火の玉"
+		u8"アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンャュョッー"	
 	);
 
 	// 日本語グリフを持つフォントを用意して配置する
@@ -65,7 +68,66 @@ ButtonManager::ButtonManager()
 void ButtonManager::Update(float elapsedTime)
 {
 	//ボタンの更新処理
-	//必要に応じてボタンの状態を更新するコードをここに追加
+	//マウスの位置を取得
+	POINT mousePos;
+	GetCursorPos(&mousePos);
+	ScreenToClient(Graphics::Instance().GetHwnd(), &mousePos);
+
+	
+	//ボタンのクリック判定
+	//マウスの位置がボタンの範囲内かどうかの判定
+	if(buttonSpriteData && !buttonSpriteData->empty())
+	{
+		for (auto& button : *buttonSpriteData)
+		{
+			if (IsMouseOverButton({ static_cast<float>(mousePos.x), static_cast<float>(mousePos.y) },
+				button.position, button.size))
+			{
+				//ボタンの種類によって処理を分ける
+				switch (button.buttonType)
+				{
+					case ButtonType::Start:
+						//スタートボタンがクリックされた場合の処理
+						//ボタンがクリックされた場合の処理
+						if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+						{
+							isStartRequested = true;
+						}
+						break;
+					case ButtonType::Settings:
+						//設定ボタンがクリックされた場合の処理
+						OutputDebugStringA("Settings button clicked!\n");
+						break;
+					case ButtonType::Quit:
+						//終了ボタンがクリックされた場合の処理
+						OutputDebugStringA("Quit button clicked!\n");
+						break;
+					case ButtonType::Pose:
+						//ポーズボタンがクリックされた場合の処理
+						OutputDebugStringA("Pose button clicked!\n");
+						break;
+					default:
+						break;
+				}
+
+				
+			}
+		}
+	}
+}
+
+bool ButtonManager::IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const DirectX::XMFLOAT2& buttonPos, const DirectX::XMFLOAT2& buttonSize)
+{
+	// マウスの位置がボタンの範囲内にあるかどうかを判定
+	//あれば、ボタンのサイズを少し大きくする
+
+	if(mousePos.x >= buttonPos.x && mousePos.x <= buttonPos.x + buttonSize.x &&
+		mousePos.y >= buttonPos.y && mousePos.y <= buttonPos.y + buttonSize.y)
+	{
+		
+		return true;
+	}
+	return false;
 }
 
 void ButtonManager::Render()
@@ -179,7 +241,6 @@ void ButtonManager::LoadButtonTexture(ButtonSprite& button, const std::wstring& 
 
 std::string ButtonManager::WideToUtf8(const std::wstring& wide)
 {
-	// misc.h 側に既存のUTF-8変換関数があればそちらに置き換えてください（重複防止）
 	if (wide.empty()) return {};
 	int size = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), -1, nullptr, 0, nullptr, nullptr);
 	std::string utf8(size, 0);
@@ -225,7 +286,7 @@ void ButtonManager::DrawGUI()
 				}
 			}
 
-			// ★追加: ボタンに表示するテキストを手打ち編集
+			// ボタンに表示するテキストを手打ち編集
 			if (ImGui::InputText((u8"表示テキスト##" + std::to_string(i)).c_str(),
 				btn.labelBuffer, sizeof(btn.labelBuffer)))
 			{
@@ -235,6 +296,12 @@ void ButtonManager::DrawGUI()
 			ImGui::DragFloat2(u8"フォント位置", &fontPosition.x, 1.0f);
 			ImGui::DragFloat(u8"フォントサイズ", &fontSize, 0.01f, 0.1f, 10.0f);
 			ImGui::ColorEdit4(u8"フォント色", &fontColor.x);
+
+			//ボタンタイプを選択
+			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return" };
+			int currentTypeIndex = static_cast<int>(btn.buttonType);
+			ImGui::Combo(u8"ボタンタイプ", &currentTypeIndex, buttonTypeItems, IM_ARRAYSIZE(buttonTypeItems));
+			btn.buttonType = static_cast<ButtonManager::ButtonType>(currentTypeIndex);
 
 			ImGui::DragFloat2((u8"位置##" + std::to_string(i)).c_str(), &btn.position.x, 1.0f);
 			ImGui::DragFloat2((u8"サイズ##" + std::to_string(i)).c_str(), &btn.size.x, 1.0f, 0.0f, 4096.0f);
@@ -256,4 +323,43 @@ void ButtonManager::DrawGUI()
 	ImGui::End();
 #endif
 #endif
+}
+
+void ButtonManager::SaveToJson(nlohmann::json& j)
+{
+	if (!buttonSpriteData) return;
+	j["buttons"] = nlohmann::json::array();
+	for (const auto& button : *buttonSpriteData)
+	{
+		nlohmann::json buttonJson;
+		buttonJson["texturePath"] = WideToUtf8(button.texturePath);
+		buttonJson["position"] = { button.position.x, button.position.y };
+		buttonJson["size"] = { button.size.x, button.size.y };
+		buttonJson["rotation"] = button.rotation;
+		buttonJson["color"] = { button.color.x, button.color.y, button.color.z, button.color.w };
+		buttonJson["label"] = button.label;
+		buttonJson["buttonType"] = static_cast<int>(button.buttonType);
+		j["buttons"].push_back(buttonJson);
+	}
+}
+
+void ButtonManager::LoadFromJson(const nlohmann::json& j)
+{
+	if (!buttonSpriteData) return;
+	buttonSpriteData->clear();
+	for (const auto& buttonJson : j["buttons"])
+	{
+		ButtonSprite button;
+		std::string texturePathUtf8 = buttonJson.value("texturePath", "");
+		button.texturePath = std::wstring(texturePathUtf8.begin(), texturePathUtf8.end());
+		LoadButtonTexture(button, button.texturePath);
+		button.position = { buttonJson["position"][0], buttonJson["position"][1] };
+		button.size = { buttonJson["size"][0], buttonJson["size"][1] };
+		button.rotation = buttonJson.value("rotation", 0.0f);
+		button.color = { buttonJson["color"][0], buttonJson["color"][1], buttonJson["color"][2], buttonJson["color"][3] };
+		button.label = buttonJson.value("label", "");
+		strcpy_s(button.labelBuffer, button.label.c_str());
+		button.buttonType = static_cast<ButtonType>(buttonJson.value("buttonType", 0));
+		buttonSpriteData->push_back(std::move(button));
+	}
 }
