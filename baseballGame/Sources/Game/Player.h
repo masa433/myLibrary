@@ -235,5 +235,6 @@ private:
     RealBatter selectedRealBatter = RealBatter::None;
 	std::vector<RealArsenalInfo> realBatterInfo;
 
+public:
     static bool GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo>& outArsenal, bool& outIsRight, const char*& outName);
 };

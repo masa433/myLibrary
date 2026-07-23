@@ -184,14 +184,17 @@
     <ClCompile Include="Sources\UI\ButtonManager.cpp">
       <Filter>Sources\UI</Filter>
     </ClCompile>
-    <ClCompile Include="External\devmidi-master\devmidi.cpp">
-      <Filter>midi</Filter>
-    </ClCompile>
-    <ClCompile Include="External\devmidi-master\midi_wrap.cpp">
-      <Filter>midi</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\Scene\batterSelectScene.cpp">
       <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="midi\devmidi.cpp">
+      <Filter>midi</Filter>
+    </ClCompile>
+    <ClCompile Include="midi\midi_wrap.cpp">
+      <Filter>midi</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\UI\ScrollView.cpp">
+      <Filter>Sources\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -396,17 +399,20 @@
     <ClInclude Include="Sources\UI\ButtonManager.h">
       <Filter>Sources\UI</Filter>
     </ClInclude>
-    <ClInclude Include="External\devmidi-master\devmidi.h">
-      <Filter>midi</Filter>
-    </ClInclude>
-    <ClInclude Include="External\devmidi-master\devmidi_custom.h">
-      <Filter>midi</Filter>
-    </ClInclude>
-    <ClInclude Include="External\devmidi-master\midi_wrap.h">
-      <Filter>midi</Filter>
-    </ClInclude>
     <ClInclude Include="Sources\Scene\batterSelectScene.h">
       <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="midi\devmidi.h">
+      <Filter>midi</Filter>
+    </ClInclude>
+    <ClInclude Include="midi\devmidi_custom.h">
+      <Filter>midi</Filter>
+    </ClInclude>
+    <ClInclude Include="midi\midi_wrap.h">
+      <Filter>midi</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\UI\ScrollView.h">
+      <Filter>Sources\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

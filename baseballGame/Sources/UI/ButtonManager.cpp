@@ -46,7 +46,7 @@ void ButtonManager::Initialize()
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
-	// 球種名と球速表示に必要な文字だけをベイクする
+	
 	std::vector<int> codepoints = FontRenderer::Utf8ToCodepoints(
 		u8" !\"#$%&'()*+,-./0123456789:;<=>?@"
 		u8"ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"

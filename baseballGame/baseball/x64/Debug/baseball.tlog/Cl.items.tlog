@@ -1,5 +1,3 @@
-C:\Users\2240021\Desktop\myLibrary\baseballGame\External\devmidi-master\devmidi.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\devmidi.obj
-C:\Users\2240021\Desktop\myLibrary\baseballGame\External\devmidi-master\midi_wrap.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\midi_wrap.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_demo.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_demo.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_draw.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_draw.obj
@@ -8,6 +6,8 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_impl_win32.cpp;C:\Us
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_ja_gryph_ranges.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_ja_gryph_ranges.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_tables.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_tables.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_widgets.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_widgets.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\midi\devmidi.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\devmidi.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\midi\midi_wrap.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\midi_wrap.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\BroadcastCamera.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\BroadcastCamera.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\camera.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\camera.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\camera_controller.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\camera_controller.obj
@@ -61,4 +61,5 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\System\framework.cpp;C:\
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\System\fullscreen_quad.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\fullscreen_quad.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\System\main.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\main.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\UI\ButtonManager.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ButtonManager.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\UI\ScrollView.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ScrollView.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\UI\UIEasing.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\UIEasing.obj

@@ -10,7 +10,7 @@
 #include "scene_loading.h"
 #include <fstream>
 #include <string>
-#include "../../External/devmidi-master/devmidi.h"
+#include "devmidi.h"
 
 
 void SceneTitle::initialize()

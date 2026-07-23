@@ -13,6 +13,8 @@
 #include "../Model/gltf_model.h"
 #include "scene_game.h"
 #include "scene_title.h"
+#include "batterSelectScene.h"
+#include "scene_loading.h"
 #include "sceneManager.h"
 #include "Graphics.h"
 

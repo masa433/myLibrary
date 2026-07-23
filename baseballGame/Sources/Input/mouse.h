@@ -40,6 +40,8 @@ public:
 	// マウスカーソルY座標取得
 	int GetPositionY() const { return positionY[0]; }
 
+	int GetPosition() const { return MAKELONG(positionX[0], positionY[0]); }
+
 	// 前回のマウスカーソルX座標取得
 	int GetOldPositionX() const { return positionX[1]; }
 
