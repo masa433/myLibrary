@@ -38,7 +38,7 @@ void batterSelectScene::initialize()
 
 	// スクロールビューの初期化
 	ID3D11Device* device = Graphics::Instance().GetDevice();
-	playerScrollView = std::make_unique<ScrollView>(device, ".\\resources\\textures\\batterSelectBack.png",0.0f, 0.0f, 1920.0f, 1080.0f);
+	playerScrollView = std::make_unique<ScrollView>(device, 200.0f, 540.0f, 335.0f, 1000.0f);
 
 	buttonManager.Initialize();
 
@@ -74,16 +74,22 @@ void batterSelectScene::initialize()
 		input_element_desc, _countof(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", pixel_shader.GetAddressOf());
 
-	batterParamData = std::make_unique<BatterParamSpriteData>();
+	batterParamData = std::make_unique<BatterSelectSpriteData>();
 	batterParamData->texturePath = L".\\resources\\textures\\batterParam(Ohtani).png";
 	batterParamData->position = { 100.0f, 100.0f };
 	batterParamData->size = { 500.0f, 400.0f };
 	batterParamData->rotation = 0.0f;
 	batterParamData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	
-	batterParamSprite = std::make_unique<sprite>(device, context, batterParamData->texturePath.c_str());
+	//batterParamSprite = std::make_unique<sprite>(device, context, batterParamData->texturePath.c_str());
 
-
+	backGroundData = std::make_unique<BatterSelectSpriteData>();
+	backGroundData->texturePath = L".\\resources\\textures\\batterSelectBack.png";
+	backGroundData->position = { 0.0f, 0.0f };
+	backGroundData->size = { 1920.0f, 1080.0f };
+	backGroundData->rotation = 0.0f;	
+	backGroundData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	backGroundSprite = std::make_unique<sprite>(device, context, backGroundData->texturePath.c_str());
 }
 
 void batterSelectScene::update(float elapsed_time)
@@ -101,6 +107,15 @@ void batterSelectScene::render(float elapsedTime)
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
 	dc->IASetInputLayout(input_layout.Get());
+
+	if (backGroundData && backGroundSprite)
+	{
+		
+		backGroundSprite->render(dc, backGroundData->position.x, backGroundData->position.y,
+			backGroundData->size.x, backGroundData->size.y,
+			backGroundData->color.x, backGroundData->color.y, backGroundData->color.z, backGroundData->color.w,
+			backGroundData->rotation);
+	}
 
 	if (playerScrollView)
 	{
@@ -131,18 +146,20 @@ void batterSelectScene::render(float elapsedTime)
 		fontColor.x, fontColor.y, fontColor.z, fontColor.w);
 
 	// --- batterParamSpriteの描画 ---
-	if (batterParamData && batterParamSprite)
-	{
-		// 念のため直前でも再度バインド(フォント描画がシェーダーを変えている場合の保険)
-		dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
-		dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
-		dc->IASetInputLayout(input_layout.Get());
+	//if (batterParamData && batterParamSprite)
+	//{
+	//	// 念のため直前でも再度バインド(フォント描画がシェーダーを変えている場合の保険)
+	//	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
+	//	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
+	//	dc->IASetInputLayout(input_layout.Get());
 
-		batterParamSprite->render(dc, batterParamData->position.x, batterParamData->position.y,
-			batterParamData->size.x, batterParamData->size.y,
-			batterParamData->color.x, batterParamData->color.y, batterParamData->color.z, batterParamData->color.w,
-			batterParamData->rotation);
-	}
+	//	batterParamSprite->render(dc, batterParamData->position.x, batterParamData->position.y,
+	//		batterParamData->size.x, batterParamData->size.y,
+	//		batterParamData->color.x, batterParamData->color.y, batterParamData->color.z, batterParamData->color.w,
+	//		batterParamData->rotation);
+	//}
+
+	
 
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -172,4 +189,22 @@ void batterSelectScene::DrawGUI()
 	}
 	// ボタンマネージャーのGUI描画
 	buttonManager.DrawGUI();
+
+	ImGui::Begin("ScrollView");
+
+	bool isChanged = false;
+	isChanged |= ImGui::DragFloat2("ScrollView Position", &scrollViewPosition.x, 1.0f);
+	isChanged |= ImGui::DragFloat2("ScrollView Size", &scrollViewSize.x, 1.0f);
+
+	if (isChanged && playerScrollView)
+	{
+		// 背景の中心位置に合わせて渡す（必要に応じて計算を調整してください）
+		playerScrollView->SetBackGroundTransform(
+			scrollViewPosition.x + scrollViewSize.x / 2.0f,
+			scrollViewPosition.y + scrollViewSize.y / 2.0f,
+			scrollViewSize.x,
+			scrollViewSize.y
+		);
+	}
+	ImGui::End();
 }

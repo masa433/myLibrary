@@ -45,7 +45,7 @@ private:
 	float fontSize = 2.0f;
 	DirectX::XMFLOAT4 fontColor = { 1.0f,1.0f,1.0f,1.0f };
 
-	struct BatterParamSpriteData
+	struct BatterSelectSpriteData
 	{
 		std::wstring texturePath;
 		DirectX::XMFLOAT2 position;
@@ -54,8 +54,13 @@ private:
 		DirectX::XMFLOAT4 color;
 	};
 
-	std::unique_ptr<BatterParamSpriteData> batterParamData;
+	std::unique_ptr<BatterSelectSpriteData> batterParamData;
 	std::unique_ptr<sprite> batterParamSprite;
+	std::unique_ptr<BatterSelectSpriteData> backGroundData;
+	std::unique_ptr<sprite> backGroundSprite;
+
+	DirectX::XMFLOAT2 scrollViewPosition = { 100.0f, 100.0f };
+	DirectX::XMFLOAT2 scrollViewSize = { 400.0f, 400.0f };
 
 	//シェーダー関係
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader;

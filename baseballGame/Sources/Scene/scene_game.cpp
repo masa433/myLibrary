@@ -1058,7 +1058,7 @@ void scene_game::DrawGUI()
     const float RIGHT_W = 320.0f;   // 右パネル（Debug）
     const float BOTTOM_H = 250.0f;   // 下パネル（Console）
 
-    const float PANEL_ALPHA = 0.5f;
+    const float PANEL_ALPHA = 0.9f;
 
 	//移動とリサイズを許可するウィンドウフラグ
     const ImGuiWindowFlags FLOAT_FLAGS = 

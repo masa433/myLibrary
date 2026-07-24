@@ -182,7 +182,7 @@ public:
 		Tamura,//田村
 		Shimizu,//清水
 		Yamashita,//山下
-        Nakamura,//中村剛也
+        Nakamura,//中村
 		Ueda,//上田
         Count
     };
