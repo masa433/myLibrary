@@ -46,22 +46,6 @@ void batterSelectScene::initialize()
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
-	std::vector<int> codepoints = FontRenderer::Utf8ToCodepoints(
-		u8" !\"#$%&'()*+,-./0123456789:;<=>?@"
-		u8"ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
-		u8"abcdefghijklmnopqrstuvwxyz{|}~"
-		u8"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょっー"
-		u8"アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンャュョッー"
-	);
-
-	// 日本語グリフを持つフォントを用意して配置する
-	fontRenderer.Initialize(device,
-		L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf",
-		28.0f,
-		screenWidth, screenHeight,
-		512, 512,
-		&codepoints);
-
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -90,6 +74,7 @@ void batterSelectScene::initialize()
 	backGroundData->rotation = 0.0f;	
 	backGroundData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	backGroundSprite = std::make_unique<sprite>(device, context, backGroundData->texturePath.c_str());
+
 }
 
 void batterSelectScene::update(float elapsed_time)
@@ -131,19 +116,6 @@ void batterSelectScene::render(float elapsedTime)
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
-	// --- フォント描画(これは別のシェーダーをfontRenderer内部で使うはずなので、この位置で問題なし) ---
-	auto centerTextPosition = [&](const std::string& text, float fontSize, float x, float y) -> DirectX::XMFLOAT2
-		{
-			float textWidth = 0.0f;
-			float textHeight = 0.0f;
-			fontRenderer.MeasureText(text.c_str(), fontSize, textWidth, textHeight);
-			return { x - textWidth / 2.0f, y - textHeight / 2.0f };
-		};
-
-	DirectX::XMFLOAT2 fontPos = centerTextPosition(text, fontSize, fontPosition.x, fontPosition.y);
-
-	fontRenderer.DrawTextW(dc, text, fontPos.x, fontPos.y, fontSize,
-		fontColor.x, fontColor.y, fontColor.z, fontColor.w);
 
 	// --- batterParamSpriteの描画 ---
 	//if (batterParamData && batterParamSprite)

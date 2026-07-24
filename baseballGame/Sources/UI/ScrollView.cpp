@@ -160,13 +160,14 @@ void ScrollView::Update(float elapsedTime)
 	   input.GetMouse().GetPositionY() <= scrollBackgroundSpriteData[0].position.y + scrollBackgroundSpriteData[0].size.y / 2.0f)
 	{
 		//マウスホイールを動かすとボタンがスクロールする
+		//下にスクロールするとボタンは下にスクロール、上にスクロールするとボタンは上にスクロールする
 		int wheel = ImGui::GetIO().MouseWheel;
 		if (wheel != 0)
 		{
-			scrollOffsetY += wheel * 50.0f; // ホイールの回転量に応じてスクロールオフセットを変更
-			if (scrollOffsetY < 0.0f) scrollOffsetY = 0.0f; // 上限チェック
+			scrollOffsetY -= wheel * 50.0f; // スクロール量を調整
+			if (scrollOffsetY < 0.0f) scrollOffsetY = 0.0f; // 下限チェック
 			float maxScroll = buttonCount * buttonHeight - buttonHeight * 8.0f; // 最大スクロール量
-			if (scrollOffsetY > maxScroll) scrollOffsetY = maxScroll; // 下限チェック
+			if (scrollOffsetY > maxScroll) scrollOffsetY = maxScroll; // 上限チェック
 		}
 	}
 
@@ -183,6 +184,13 @@ void ScrollView::Update(float elapsedTime)
 
 		//　ボタンが押されたときの処理(長押しはロックする)
 		if (hovered && input.GetMouse().GetButtonDown())
+		{
+			playerButtonDataList[i].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色に変更
+			selectedIndex = (int)i; // 選択されたボタンのインデックスを更新
+		}
+
+		//一番最初のボタンをデフォルトで選択状態にする
+		if (selectedIndex == -1 && i == 0)
 		{
 			playerButtonDataList[i].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色に変更
 			selectedIndex = (int)i; // 選択されたボタンのインデックスを更新
