@@ -67,8 +67,22 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 			std::make_unique<sprite>(device, context, data.texturePath.c_str())
 		);
 	}
-	// シェーダーの作成
 
+	for(int i = 0; i < ParamCount; ++i)
+	{
+		BatterParamData data;
+		data.texturePath = L".\\resources\\textures\\batterParameter\\batterParameter" + std::to_wstring(i + 1) + L".png";
+		data.position = { 700.0f,540.0f };
+		data.size = { 600.0f, 400.0f };
+		data.rotation = 0.0f;
+		data.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		batterParamDataList.push_back(data);
+		batterParamSprites.push_back(
+			std::make_unique<sprite>(device, context, data.texturePath.c_str())
+		);
+	}
+
+	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -133,6 +147,21 @@ void ScrollView::Render()
 					playerButtonDataList[i].color.z, playerButtonDataList[i].color.w,
 					playerButtonDataList[i].rotation);
 			}
+		}
+	}
+
+	// 選択中の選手のパラメータ画像だけを描画する
+	if (selectedIndex >= 0 && selectedIndex < (int)batterParamDataList.size())
+	{
+		if (batterParamSprites[selectedIndex])
+		{
+			batterParamSprites[selectedIndex]->render(dc,
+				batterParamDataList[selectedIndex].position.x - batterParamDataList[selectedIndex].size.x / 2.0f,
+				batterParamDataList[selectedIndex].position.y - batterParamDataList[selectedIndex].size.y / 2.0f,
+				batterParamDataList[selectedIndex].size.x, batterParamDataList[selectedIndex].size.y,
+				batterParamDataList[selectedIndex].color.x, batterParamDataList[selectedIndex].color.y,
+				batterParamDataList[selectedIndex].color.z, batterParamDataList[selectedIndex].color.w,
+				batterParamDataList[selectedIndex].rotation);
 		}
 	}
 

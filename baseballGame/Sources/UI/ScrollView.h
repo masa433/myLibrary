@@ -52,6 +52,19 @@ private:
 	std::vector<PlayerButtonData> playerButtonDataList;
 	std::vector<std::unique_ptr<sprite>> playerButtonSprites;
 
+	struct BatterParamData
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+
+	std::vector<BatterParamData> batterParamDataList;
+	std::vector<std::unique_ptr<sprite>> batterParamSprites;
+	int ParamCount = 24; // ƒpƒ‰ƒ[ƒ^‚Ì”
+
 	struct ArrowData
 	{
 		std::wstring texturePath;

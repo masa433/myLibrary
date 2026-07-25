@@ -1094,10 +1094,10 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 
     case RealBatter::Tamura:
         outName = u8"田村";
-        outIsRight = true;
+        outIsRight = false;
         outArsenal =
         {
-			{ 77 , 70 } // power（威力）, contact（ミート）
+			{ 77 , 64 } // power（威力）, contact（ミート）
 		};
 		return true;
 
@@ -1112,10 +1112,10 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 
     case RealBatter::Yamashita:
         outName = u8"山下";
-        outIsRight = true;
+        outIsRight = false;
         outArsenal =
         {
-			{ 78 , 72 } // power（威力）, contact（ミート）
+			{ 80 , 76 } // power（威力）, contact（ミート）
         };
 		return true;
 
