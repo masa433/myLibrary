@@ -4,6 +4,8 @@
 #include <string>
 #include <DirectXMath.h>
 #include <memory>
+#include "UiEasing.h"
+#include "input.h"
 
 class ScrollView
 {
@@ -50,7 +52,28 @@ private:
 	std::vector<PlayerButtonData> playerButtonDataList;
 	std::vector<std::unique_ptr<sprite>> playerButtonSprites;
 
+	struct ArrowData
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+	ArrowData topArrowData;
+	ArrowData bottomArrowData;
+	std::unique_ptr<sprite> topArrowSprite;
+	std::unique_ptr<sprite> bottomArrowSprite;
 
+	bool showTopArrow = false;
+	bool showBottomArrow = false;
+
+	float arrowAnimationTime = 0.0f; // 矢印のアニメーション時間
+	const float arrowAnimationDuration = 1.0f; // 矢印のアニメーションの周期（秒）
+
+	//元の矢印のサイズ
+	const DirectX::XMFLOAT2 originalArrowSize = { 100.0f, 50.0f };
+	const DirectX::XMFLOAT2 targetArrowSize = { 120.0f, 60.0f }; // 拡大後のサイズ
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixel_shader;

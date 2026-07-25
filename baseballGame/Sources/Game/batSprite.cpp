@@ -90,6 +90,26 @@ void BatSprite::Update(float elapsedTime)
 	//}
 }
 
+void BatSprite::UpdateCursorSizeByContact(int contact)
+{
+	//0～99の範囲を0～1にクランプ
+	float t = (std::max)(0, (std::min)(99,contact)) / 99.0f;
+
+	// クランプされた値を使ってカーソルサイズを更新
+	float scale = minCursorScale * (maxCursorScale - minCursorScale) * t;
+
+	if (batCursorSpriteData)
+	{
+		batCursorSpriteData->size =
+		{
+			originalCursorSize.x * scale,
+			originalCursorSize.y * scale,
+		};
+	}
+
+	HitJudge2D::Instance().cursorRadius = batCursorSpriteData->size.x * 0.5f;
+}
+
 void BatSprite::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();

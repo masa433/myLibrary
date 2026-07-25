@@ -210,9 +210,33 @@ public:
 			return BatterPowerRank::C; //Cランクに統一
     }
 
+    enum class BatterContactRank
+	{
+        C, // Cランク
+		B,
+		A,
+		S
+	};
+
+    inline BatterContactRank GetContactRank(int contact)
+    {
+        //90～99はSランク、80以上はAランク、70以上はBランク、60以上はCランク、それ以下はFランク
+        if(contact >= 90)
+            return BatterContactRank::S;
+        else if (contact >= 80)
+            return BatterContactRank::A;
+        else if (contact >= 70)
+            return BatterContactRank::B;
+        else if (contact >= 60)
+            return BatterContactRank::C;
+		else
+            return BatterContactRank::C; //Cランクに統一
+	}
+
     struct RealArsenalInfo
     {
 		int power = 0; // 威力
+        int contact = 0; // ミート
     };
 
 	void SelectRealBatter(RealBatter batter);
@@ -229,6 +253,18 @@ public:
     {
         if (realBatterInfo.empty()) return;
         realBatterInfo[0].power = power; // 仮に1つ目の情報を設定
+    }
+
+    int GetSelectedRealBatterContact() const
+    {
+        if (realBatterInfo.empty()) return 70;
+        return realBatterInfo[0].contact; // 仮に1つ目の情報を返す
+    }
+
+    void SetSelectedRealBatterContact(int contact)
+    {
+        if (realBatterInfo.empty()) return;
+        realBatterInfo[0].contact = contact; // 仮に1つ目の情報を設定
     }
 
 private:

@@ -2,7 +2,7 @@
 #include "Graphics.h"
 #include <shader.h>
 #include <imgui.h>
-#include "input.h"
+
 
 ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width, float height)
 {
@@ -30,6 +30,20 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	bottomCapData.rotation = 0.0f;
 	bottomCapData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	bottomCapSprite = std::make_unique<sprite>(device, context, bottomCapData.texturePath.c_str());
+
+	topArrowData.texturePath = L".\\resources\\textures\\Arrow.png";
+	topArrowData.position = { topX, topY - height / 2.0f + capHeight / 7.0f };
+	topArrowData.size = { 100.0f, 50.0f };
+	topArrowData.rotation = 0.0f;
+	topArrowData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	topArrowSprite = std::make_unique<sprite>(device, context, topArrowData.texturePath.c_str());
+
+	bottomArrowData.texturePath = L".\\resources\\textures\\Arrow.png";
+	bottomArrowData.position = { topX, topY + height / 2.0f - capHeight / 7.0f };
+	bottomArrowData.size = { 100.0f, 50.0f };
+	bottomArrowData.rotation = 180.0f; // 矢印を逆向きにする
+	bottomArrowData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	bottomArrowSprite = std::make_unique<sprite>(device, context, bottomArrowData.texturePath.c_str());
 
 	playerButtonDataList.clear();
 	playerButtonSprites.clear();
@@ -141,6 +155,32 @@ void ScrollView::Render()
 			bottomCapData.rotation);
 	}
 
+	if(topArrowData.texturePath != L"")
+	{
+		if (topArrowSprite && showTopArrow)
+		{
+			topArrowSprite->render(dc,
+				topArrowData.position.x - topArrowData.size.x / 2.0f,
+				topArrowData.position.y - topArrowData.size.y / 2.0f,
+				topArrowData.size.x, topArrowData.size.y,
+				topArrowData.color.x, topArrowData.color.y, topArrowData.color.z, topArrowData.color.w,
+				topArrowData.rotation);
+		}
+	}
+
+	if(bottomArrowData.texturePath != L"")
+	{
+		if (bottomArrowSprite && showBottomArrow)
+		{
+			bottomArrowSprite->render(dc,
+				bottomArrowData.position.x - bottomArrowData.size.x / 2.0f,
+				bottomArrowData.position.y - bottomArrowData.size.y / 2.0f,
+				bottomArrowData.size.x, bottomArrowData.size.y,
+				bottomArrowData.color.x, bottomArrowData.color.y, bottomArrowData.color.z, bottomArrowData.color.w,
+				bottomArrowData.rotation);
+		}
+	}
+
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
 	dc->IASetInputLayout(nullptr);
@@ -151,53 +191,138 @@ void ScrollView::Render()
 
 void ScrollView::Update(float elapsedTime)
 {
+
 	// スクロールビューの更新処理
 	//マウスカーソルの位置がスクロールビューの背景の範囲内にあるかどうか
 	Input& input = Input::Instance();
-	if(input.GetMouse().GetPositionX() >= scrollBackgroundSpriteData[0].position.x - scrollBackgroundSpriteData[0].size.x / 2.0f &&
-	   input.GetMouse().GetPositionX() <= scrollBackgroundSpriteData[0].position.x + scrollBackgroundSpriteData[0].size.x / 2.0f &&
-	   input.GetMouse().GetPositionY() >= scrollBackgroundSpriteData[0].position.y - scrollBackgroundSpriteData[0].size.y / 2.0f &&
-	   input.GetMouse().GetPositionY() <= scrollBackgroundSpriteData[0].position.y + scrollBackgroundSpriteData[0].size.y / 2.0f)
+	if (input.GetMouse().GetPositionX() >= scrollBackgroundSpriteData[0].position.x - scrollBackgroundSpriteData[0].size.x / 2.0f &&
+		input.GetMouse().GetPositionX() <= scrollBackgroundSpriteData[0].position.x + scrollBackgroundSpriteData[0].size.x / 2.0f &&
+		input.GetMouse().GetPositionY() >= scrollBackgroundSpriteData[0].position.y - scrollBackgroundSpriteData[0].size.y / 2.0f &&
+		input.GetMouse().GetPositionY() <= scrollBackgroundSpriteData[0].position.y + scrollBackgroundSpriteData[0].size.y / 2.0f)
 	{
-		//マウスホイールを動かすとボタンがスクロールする
-		//下にスクロールするとボタンは下にスクロール、上にスクロールするとボタンは上にスクロールする
 		int wheel = ImGui::GetIO().MouseWheel;
 		if (wheel != 0)
 		{
-			scrollOffsetY -= wheel * 50.0f; // スクロール量を調整
-			if (scrollOffsetY < 0.0f) scrollOffsetY = 0.0f; // 下限チェック
-			float maxScroll = buttonCount * buttonHeight - buttonHeight * 8.0f; // 最大スクロール量
-			if (scrollOffsetY > maxScroll) scrollOffsetY = maxScroll; // 上限チェック
+			scrollOffsetY -= wheel * 50.0f; // スクロール処理
 		}
 	}
 
-	//ボタンを押したら、テクスチャを黄色くする
-	for (size_t i = 0; i < playerButtonDataList.size(); ++i)
+	// 2. スクロール範囲のクランプ（下限・上限の制御）
+	float maxScroll = buttonCount * buttonHeight - buttonHeight * 8.0f;
+	if (maxScroll < 0.0f) maxScroll = 0.0f; // 要素数が少なくスクロール不要な場合の考慮
+
+	if (scrollOffsetY < 0.0f)
 	{
-		float buttonTopY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY - playerButtonDataList[i].size.y / 2.0f;
-		float buttonBottomY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY + playerButtonDataList[i].size.y / 2.0f;
-
-		bool hovered = input.GetMouse().GetPositionX() >= playerButtonDataList[i].position.x - playerButtonDataList[i].size.x / 2.0f &&
-			input.GetMouse().GetPositionX() <= playerButtonDataList[i].position.x + playerButtonDataList[i].size.x / 2.0f &&
-			input.GetMouse().GetPositionY() >= buttonTopY &&
-			input.GetMouse().GetPositionY() <= buttonBottomY;
-
-		//　ボタンが押されたときの処理(長押しはロックする)
-		if (hovered && input.GetMouse().GetButtonDown())
-		{
-			playerButtonDataList[i].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色に変更
-			selectedIndex = (int)i; // 選択されたボタンのインデックスを更新
-		}
-
-		//一番最初のボタンをデフォルトで選択状態にする
-		if (selectedIndex == -1 && i == 0)
-		{
-			playerButtonDataList[i].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色に変更
-			selectedIndex = (int)i; // 選択されたボタンのインデックスを更新
-		}
-			
+		scrollOffsetY = 0.0f; // 最上部
 	}
+	else if (scrollOffsetY > maxScroll)
+	{
+		scrollOffsetY = maxScroll; // 最下部
+	}
+
 	
+	showTopArrow = (scrollOffsetY > 0.0f);
+	showBottomArrow = (scrollOffsetY < maxScroll);
+
+	bool topHovered =
+		input.GetMouse().GetPositionX() >= topArrowData.position.x - originalArrowSize.x / 2.0f &&
+		input.GetMouse().GetPositionX() <= topArrowData.position.x + originalArrowSize.x / 2.0f &&
+		input.GetMouse().GetPositionY() >= topArrowData.position.y - originalArrowSize.y / 2.0f &&
+		input.GetMouse().GetPositionY() <= topArrowData.position.y + originalArrowSize.y / 2.0f;
+
+	bool bottomHovered =
+		input.GetMouse().GetPositionX() >= bottomArrowData.position.x - originalArrowSize.x / 2.0f &&
+		input.GetMouse().GetPositionX() <= bottomArrowData.position.x + originalArrowSize.x / 2.0f &&
+		input.GetMouse().GetPositionY() >= bottomArrowData.position.y - originalArrowSize.y / 2.0f &&
+		input.GetMouse().GetPositionY() <= bottomArrowData.position.y + originalArrowSize.y / 2.0f;
+
+
+	bool topPressed = topHovered && input.GetMouse().GetButton(); // 押しっぱなし判定
+	bool bottomPressed = bottomHovered && input.GetMouse().GetButton();
+
+	if (showTopArrow)
+		topArrowData.size = topPressed ? originalArrowSize : (topHovered ? targetArrowSize : originalArrowSize);
+
+	if (showBottomArrow)
+		bottomArrowData.size = bottomPressed ? originalArrowSize : (bottomHovered ? targetArrowSize : originalArrowSize);
+
+
+	//矢印を押したときのスクロール処理
+	//このときはボタンは押せないようにする
+	bool arrowClicked = false;
+	if(input.GetMouse().GetButtonDown() && showTopArrow)
+	{
+		bool isHovered = input.GetMouse().GetPositionX() >= topArrowData.position.x - topArrowData.size.x / 2.0f &&
+			input.GetMouse().GetPositionX() <= topArrowData.position.x + topArrowData.size.x / 2.0f &&
+			input.GetMouse().GetPositionY() >= topArrowData.position.y - topArrowData.size.y / 2.0f &&
+			input.GetMouse().GetPositionY() <= topArrowData.position.y + topArrowData.size.y / 2.0f;
+		if(isHovered)
+		{
+			scrollOffsetY -= 50.0f; // 上方向にスクロール
+			arrowClicked = true;
+		}
+	}
+
+	if(input.GetMouse().GetButtonDown() && showBottomArrow)
+	{
+		bool isHovered = input.GetMouse().GetPositionX() >= bottomArrowData.position.x - bottomArrowData.size.x / 2.0f &&
+			input.GetMouse().GetPositionX() <= bottomArrowData.position.x + bottomArrowData.size.x / 2.0f &&
+			input.GetMouse().GetPositionY() >= bottomArrowData.position.y - bottomArrowData.size.y / 2.0f &&
+			input.GetMouse().GetPositionY() <= bottomArrowData.position.y + bottomArrowData.size.y / 2.0f;
+		if(isHovered)
+		{
+			scrollOffsetY += 50.0f; // 下方向にスクロール
+			arrowClicked = true;
+		}
+	}
+
+	//capの範囲にあるボタンは押せないようにする
+	bool isInCapArea = false;
+
+	if(input.GetMouse().GetPositionX() >= topCapData.position.x - topCapData.size.x / 2.0f &&
+		input.GetMouse().GetPositionX() <= topCapData.position.x + topCapData.size.x / 2.0f &&
+		input.GetMouse().GetPositionY() >= topCapData.position.y - topCapData.size.y / 2.0f &&
+		input.GetMouse().GetPositionY() <= topCapData.position.y + topCapData.size.y / 2.0f ||
+		input.GetMouse().GetPositionX() >= bottomCapData.position.x - bottomCapData.size.x / 2.0f &&
+		input.GetMouse().GetPositionX() <= bottomCapData.position.x + bottomCapData.size.x / 2.0f &&
+		input.GetMouse().GetPositionY() >= bottomCapData.position.y - bottomCapData.size.y / 2.0f &&
+		input.GetMouse().GetPositionY() <= bottomCapData.position.y + bottomCapData.size.y / 2.0f)
+	{
+		isInCapArea = true;
+	}
+
+
+
+	if (!arrowClicked && !isInCapArea)
+	{
+		//ボタンの押下処理
+		//ボタンを押したら、テクスチャを黄色くする
+		for (size_t i = 0; i < playerButtonDataList.size(); ++i)
+		{
+			float buttonTopY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY - playerButtonDataList[i].size.y / 2.0f;
+			float buttonBottomY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY + playerButtonDataList[i].size.y / 2.0f;
+
+			bool hovered = input.GetMouse().GetPositionX() >= playerButtonDataList[i].position.x - playerButtonDataList[i].size.x / 2.0f &&
+				input.GetMouse().GetPositionX() <= playerButtonDataList[i].position.x + playerButtonDataList[i].size.x / 2.0f &&
+				input.GetMouse().GetPositionY() >= buttonTopY &&
+				input.GetMouse().GetPositionY() <= buttonBottomY;
+
+			//　ボタンが押されたときの処理(長押しはロックする)
+			if (hovered && input.GetMouse().GetButtonDown())
+			{
+				playerButtonDataList[i].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色に変更
+				selectedIndex = (int)i; // 選択されたボタンのインデックスを更新
+			}
+
+			//一番最初のボタンをデフォルトで選択状態にする
+			if (selectedIndex == -1 && i == 0)
+			{
+				playerButtonDataList[i].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色に変更
+				selectedIndex = (int)i; // 選択されたボタンのインデックスを更新
+			}
+
+		}
+	}
 	
 	//選択されたボタン以外は白色に戻す
 	for (size_t i = 0; i < playerButtonDataList.size(); ++i)

@@ -60,4 +60,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
 
 	bool cursorClipped = false;
+
+	DirectX::XMFLOAT2 originalCursorSize = { 100.0f,100.0f };
+	float minCursorScale = 0.7f;
+	float maxCursorScale = 1.3f;
+
+public:
+	void UpdateCursorSizeByContact(int contact);
 };

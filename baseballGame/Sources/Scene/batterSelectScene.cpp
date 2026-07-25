@@ -154,6 +154,9 @@ void batterSelectScene::uninitialize()
 
 void batterSelectScene::DrawGUI()
 {
+#ifdef _DEBUG
+
+
 	// ƒXƒNƒ[ƒ‹ƒrƒ…[‚ÌGUI•`‰æ
 	if (playerScrollView)
 	{
@@ -170,7 +173,7 @@ void batterSelectScene::DrawGUI()
 
 	if (isChanged && playerScrollView)
 	{
-		// ”wŒi‚Ì’†SˆÊ’u‚É‡‚í‚¹‚Ä“n‚·i•K—v‚É‰ž‚¶‚ÄŒvŽZ‚ð’²®‚µ‚Ä‚­‚¾‚³‚¢j
+		// ”wŒi‚Ì’†SˆÊ’u‚É‡‚í‚¹‚Ä“n‚·
 		playerScrollView->SetBackGroundTransform(
 			scrollViewPosition.x + scrollViewSize.x / 2.0f,
 			scrollViewPosition.y + scrollViewSize.y / 2.0f,
@@ -179,4 +182,5 @@ void batterSelectScene::DrawGUI()
 		);
 	}
 	ImGui::End();
+#endif // !_DEBUG
 }
