@@ -1307,7 +1307,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Cutter,      7.0f, 144.9f, BreakGrade::C , Power::B },
 			{ PitchType::Curveball,   5.5f, 121.6f, BreakGrade::D , Power::D },
 			{ PitchType::Changeup,    3.4f, 134.5f, BreakGrade::C , Power::D },
-			{ PitchType::SlowBall,	  1.6f,  90.0f, BreakGrade::D , Power::E },
+			{ PitchType::SlowBall,	  1.6f,  90.0f, BreakGrade::F , Power::E },
 		};
 		return true;
 
@@ -1490,8 +1490,8 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outIsRight = true;
 		outArsenal = {
 			{ PitchType::Fastball,      58.8f, 153.9f, BreakGrade::C , Power::B },
-			{ PitchType::Forkball,      40.6f, 145.2f, BreakGrade::B , Power::A },
-			{ PitchType::Cutter,         0.6f, 152.0f, BreakGrade::E , Power::D },
+			{ PitchType::Forkball,      40.6f, 141.2f, BreakGrade::B , Power::A },
+			{ PitchType::Cutter,         0.6f, 146.0f, BreakGrade::E , Power::D },
 		};
 		return true;
 
