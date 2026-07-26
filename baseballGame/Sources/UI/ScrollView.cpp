@@ -73,7 +73,7 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 		BatterParamData data;
 		data.texturePath = L".\\resources\\textures\\batterParameter\\batterParameter" + std::to_wstring(i + 1) + L".png";
 		data.position = { 700.0f,540.0f };
-		data.size = { 600.0f, 400.0f };
+		data.size = { 600.0f, 500.0f };
 		data.rotation = 0.0f;
 		data.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		batterParamDataList.push_back(data);
