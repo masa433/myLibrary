@@ -28,21 +28,17 @@ void Pitcher::Initialize()
 	ID3D11Device* device = Graphics::Instance().GetDevice();
 
 	//モデルの読み込み
-	if(IsRightPitcher())
-	{
-		pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\rightPitcher.glb");
-	}
-	else
-	{
-		pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
-	}
 
+	rightPitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\rightPitcher.glb");
+	leftPitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
+		
 	position = { 0.0f,0.22f,18.15f };
 	scale = { 1.0f,1.0f,1.0f };
 	angle = { 0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f};
 
 	// アニメーション用のノードをコピー
-	animated_nodes = pitcher->nodes;
+	animated_nodes = rightPitcher->nodes;
+	animated_nodes = leftPitcher->nodes;
 
 	Ball::Instance().Initialize();
 
@@ -53,7 +49,8 @@ void Pitcher::Initialize()
 	boxPosition = { 0.0f, 0.8f, 0.0f }; // ストライクゾーンの位置を設定
 	boxSize = { 0.43f, 0.6f, 0.2f }; // ストライクゾーンのサイズを設定
 
-	pitcher->build_static_batches(device);
+	rightPitcher->build_static_batches(device);
+	leftPitcher->build_static_batches(device);
 
 	// ホームラン判定用トリガーの作成
 	{
@@ -80,7 +77,8 @@ void Pitcher::Initialize()
 
 	InitializePitchSettings();
 	SelectPitchType();
-
+	SelectRealPitcher(selectedRealPitcher);
+	UpdatePitcherModel();
 }
 
 //ピッチセッティングの初期化
@@ -181,7 +179,7 @@ void Pitcher::Update(float elapsedTime)
 		UpdateAnimation(elapsedTime);
 
 		// アニメーションが終了したら球種選択状態に遷移
-		if (animation_time >= pitcher->animations[current_animation_index].duration)
+		if (animation_time >= currentPitcher->animations[current_animation_index].duration)
 		{
 			animation_time = 0.0f; // アニメーション時間をリセット
 			
@@ -408,7 +406,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
-	pitcher->render_batched(rc.deviceContext, transform, animated_nodes);
+	currentPitcher->render_batched(rc.deviceContext, transform, animated_nodes);
 	Ball::Instance().Render(rc, renderer, isBallThrown);
 
 	Wind::Instance().Render(rc);
@@ -418,21 +416,28 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 
 void Pitcher::UpdatePitcherModel()
 {
-
-	// モデルの切り替え
 	ID3D11Device* device = Graphics::Instance().GetDevice();
-	const char* modelPath = isRightPitcher ? ".\\resources\\pitcher\\rightPitcher.glb" : ".\\resources\\pitcher\\leftPitcher.glb";
+	
+	// 現在の投手モデルを更新
+	currentPitcher = isRightPitcher ? rightPitcher.get() : leftPitcher.get();
 
-	pitcher = std::make_unique<gltf_model>(device, modelPath);
+	// アニメーション用のノードを更新
+	if(currentPitcher)
+	{
+		currentPitcher->build_static_batches(device);
+		animated_nodes = currentPitcher->nodes;
+		animation_time = 0.0f;
+	}
+
+	// 投手の位置をリセット
 	position = { 0.0f, 0.22f, 18.15f };
 
+	// 投手の角度を設定
 	float angleZ = isRightPitcher ? DirectX::XMConvertToRadians(180.0f) : 0.0f;
 	Ball::Instance().SetBallPosition({ 0.0f, 0.0f, 0.05f });
 	Ball::Instance().SetBallAngle({ 0.0f, 0.0f, angleZ });
 
-	pitcher->build_static_batches(device);
-	animated_nodes = pitcher->nodes;
-	animation_time = 0.0f;
+	
 }
 
 void Pitcher::DrawGUI()
@@ -964,7 +969,7 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 // 投球開始時にタイマーをリセット
 void Pitcher::UpdateAnimation(float elapsedTime)
 {
-	if (!pitcher || pitcher->animations.empty())
+	if (!currentPitcher || currentPitcher->animations.empty())
 	{
 		return;
 	}
@@ -978,12 +983,12 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 
 		animation_time += elapsedTime;
 
-		if (current_animation_index < 0 || current_animation_index >= static_cast<int>(pitcher->animations.size()))
+		if (current_animation_index < 0 || current_animation_index >= static_cast<int>(currentPitcher->animations.size()))
 		{
 			current_animation_index = 0;
 		}
 
-		float animation_duration = pitcher->animations[current_animation_index].duration;
+		float animation_duration = currentPitcher->animations[current_animation_index].duration;
 
 		if (!isBallThrown)
 		{
@@ -1023,7 +1028,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			OutputDebugStringA(debugMessage);
 		}
 
-		pitcher->animate(current_animation_index, animation_time, animated_nodes);
+		currentPitcher->animate(current_animation_index, animation_time, animated_nodes);
 	}
 }
 
@@ -1276,7 +1281,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Fastball,   26.2f, 143.0f, BreakGrade::C , Power::B },
 			{ PitchType::Slider,     23.5f, 126.8f, BreakGrade::B , Power::B },
 			{ PitchType::Changeup,   21.7f, 124.8f, BreakGrade::A , Power::B },
-			{ PitchType::TwoSeam,    19.2f, 142.7f, BreakGrade::C , Power::C },
+			{ PitchType::TwoSeam,    19.2f, 142.7f, BreakGrade::E , Power::C },
 			{ PitchType::Cutter,      4.6f, 135.3f, BreakGrade::C , Power::C },
 			{ PitchType::Curveball,   3.6f, 109.2f, BreakGrade::D , Power::D },
 			{ PitchType::Shooter,     1.3f, 141.8f, BreakGrade::C , Power::C },
@@ -1303,7 +1308,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Fastball,   35.4f, 148.0f, BreakGrade::C , Power::A },
 			{ PitchType::Slider,     13.2f, 134.5f, BreakGrade::B , Power::B },
 			{ PitchType::Splitter,   12.7f, 140.4f, BreakGrade::C , Power::B },
-			{ PitchType::TwoSeam,     9.4f, 146.3f, BreakGrade::C , Power::E },
+			{ PitchType::TwoSeam,     9.4f, 146.3f, BreakGrade::E , Power::E },
 			{ PitchType::Cutter,      7.0f, 144.9f, BreakGrade::C , Power::B },
 			{ PitchType::Curveball,   5.5f, 121.6f, BreakGrade::D , Power::D },
 			{ PitchType::Changeup,    3.4f, 134.5f, BreakGrade::C , Power::D },
@@ -1317,7 +1322,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outArsenal = {
 			{ PitchType::CutFastball,30.1f, 143.1f, BreakGrade::C , Power::B },
 			{ PitchType::Cutter,     19.4f, 136.3f, BreakGrade::C , Power::B },
-			{ PitchType::TwoSeam,    17.6f, 135.9f, BreakGrade::C , Power::C },
+			{ PitchType::TwoSeam,    17.6f, 135.9f, BreakGrade::D , Power::C },
 			{ PitchType::Slider,     15.8f, 125.3f, BreakGrade::D , Power::D },
 			{ PitchType::Changeup,    8.7f, 126.0f, BreakGrade::C , Power::D },
 			{ PitchType::Curveball,   5.9f, 118.0f, BreakGrade::D , Power::D },
@@ -1331,9 +1336,9 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outArsenal = {
 			{ PitchType::Fastball,   27.2f, 129.0f, BreakGrade::C , Power::E },
 			{ PitchType::Sinker,     19.3f, 119.0f, BreakGrade::C , Power::B }, //左投げなので表示はスクリュー
-			{ PitchType::Slider,     17.4f, 118.2f, BreakGrade::B , Power::C },
+			{ PitchType::Slider,     17.4f, 118.2f, BreakGrade::C , Power::C },
 			{ PitchType::Cutter,     14.7f, 126.2f, BreakGrade::C , Power::C },
-			{ PitchType::Shooter,    10.8f, 128.0f, BreakGrade::F , Power::D },
+			{ PitchType::Shooter,    10.8f, 128.0f, BreakGrade::D , Power::D },
 			{ PitchType::Curveball,   6.2f, 105.0f, BreakGrade::D , Power::D }, 
 			{ PitchType::Changeup,    4.4f, 110.2f, BreakGrade::E , Power::D },
 		};
@@ -1362,7 +1367,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Sweeper,      29.5f, 136.7f, BreakGrade::A , Power::S },
 			{ PitchType::Curveball,    10.4f, 121.0f, BreakGrade::C , Power::D },
 			{ PitchType::Splitter,      8.8f, 143.2f, BreakGrade::B , Power::B },
-			{ PitchType::TwoSeam,       4.1f, 155.2f, BreakGrade::C , Power::D },
+			{ PitchType::TwoSeam,       4.1f, 155.2f, BreakGrade::F , Power::D },
 			{ PitchType::VerticalSlider,1.2f, 141.6f, BreakGrade::B , Power::C },
 			{ PitchType::Cutter,        0.7f, 148.7f, BreakGrade::D , Power::E },
 		};
@@ -1435,7 +1440,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outArsenal = {
 			{ PitchType::BlazingFastball,   65.3f, 150.0f, BreakGrade::C , Power::S },
 			{ PitchType::Splitter,          20.0f, 138.3f, BreakGrade::B , Power::C },
-			{ PitchType::TwoSeam,			10.0f, 147.0f, BreakGrade::D , Power::D },
+			{ PitchType::TwoSeam,			10.0f, 147.0f, BreakGrade::E , Power::D },
 			{ PitchType::Curveball,			 5.0f, 116.0f, BreakGrade::C , Power::D },
 		};
 		return true;
@@ -1446,7 +1451,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outArsenal = {
 			{ PitchType::Fastball,     65.3f, 153.7f, BreakGrade::C , Power::A },
 			{ PitchType::Splitter,     21.9f, 145.0f, BreakGrade::A , Power::A },
-			{ PitchType::TwoSeam,       5.2f, 152.6f, BreakGrade::C , Power::D },
+			{ PitchType::TwoSeam,       5.2f, 152.6f, BreakGrade::D , Power::D },
 			{ PitchType::VerticalSlider,4.6f, 141.1f, BreakGrade::E , Power::C },
 			{ PitchType::Curveball,     3.0f, 130.3f, BreakGrade::C , Power::C },
 		};
@@ -1470,7 +1475,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 		outArsenal = {
 			{ PitchType::Fastball,      69.5f, 162.0f, BreakGrade::C , Power::B },
 			{ PitchType::VerticalSlider,20.1f, 139.7f, BreakGrade::A , Power::A },
-			{ PitchType::TwoSeam,        7.3f, 156.2f, BreakGrade::C , Power::C },
+			{ PitchType::TwoSeam,        7.3f, 156.2f, BreakGrade::F , Power::C },
 			{ PitchType::Splitter,       1.5f, 148.3f, BreakGrade::E , Power::F },
 		};
 		return true;
@@ -1502,7 +1507,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Fastball,      39.1f, 137.5f, BreakGrade::C , Power::C },
 			{ PitchType::Changeup,      25.6f, 116.4f, BreakGrade::B , Power::B },
 			{ PitchType::Cutter,		13.3f, 131.3f, BreakGrade::C , Power::B },
-			{ PitchType::TwoSeam,        8.8f, 131.1f, BreakGrade::D , Power::E },
+			{ PitchType::TwoSeam,        8.8f, 131.1f, BreakGrade::E , Power::E },
 			{ PitchType::Slider,         8.1f, 117.4f, BreakGrade::C , Power::D },
 			{ PitchType::SlowBall,       2.3f,  85.0f, BreakGrade::F , Power::D },
 			{ PitchType::Curveball,      2.0f, 105.5f, BreakGrade::D , Power::D },
@@ -1735,7 +1740,12 @@ const char* Pitcher::GetPitchTypeName(PitchType pitchType) const
 
 void Pitcher::SelectPitchType() 
 {
-	
+	if (pitchParameters.empty()) {
+		if (consoleLog) {
+			consoleLog->push_back("Error: pitchParameters is empty!\n");
+		}
+		return;
+	}
 
 	int index =  static_cast<int>(selectedPitchType);
 
@@ -1846,19 +1856,7 @@ void Pitcher::LoadFromJson(const json& j)
 	{
 		isRightPitcher = j["is_right_pitcher"];
 		ID3D11Device* device = Graphics::Instance().GetDevice();
-		if (isRightPitcher)
-		{
-			pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\rightPitcher.glb");
-			position = { -0.1f, 0.22f, 18.15f };
-		}
-		else
-		{
-			pitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
-			position = { 0.1f, 0.22f, 18.15f };
-		}
-		pitcher->build_static_batches(device);
-		animated_nodes = pitcher->nodes;
-		animation_time = 0.0f;
+		UpdatePitcherModel();
 	}
 
 	// ストライクゾーンのPhysX更新
@@ -1903,15 +1901,16 @@ void Pitcher::LoadFromJson(const json& j)
 		}
 	}
 
-	if (j.contains("selected_real_pitcher"))
+	/*if (j.contains("selected_real_pitcher"))
 	{
 		int rpIndex = j["selected_real_pitcher"];
 		if (rpIndex > 0 && rpIndex < static_cast<int>(RealPitcher::Count))
 		{
 			SelectRealPitcher(static_cast<RealPitcher>(rpIndex));
 		}
-	}
+	}*/
 
 	// 現在選択中のパラメータを再適用
 	SelectPitchType();
+	SelectRealPitcher(selectedRealPitcher);
 }

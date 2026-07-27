@@ -10,13 +10,7 @@
 #include "ButtonManager.h"
 #include "FontRenderer.h"
 #include "sprite.h"
-
-struct BatterEntry
-{
-	std::string name;
-	int power;
-	bool isRightBatter;
-};
+#include "Pitcher.h"
 
 class batterSelectScene : public scene
 {
@@ -28,16 +22,12 @@ public:
 	void render(float elapsedTime) override;
 	void uninitialize() override;
 	void DrawGUI() override;
-	//スクロールビュー
-	void DrawPlayerScrollView();
 
 private:
 
 	//	選手のリスト
-	std::vector<BatterEntry> playerList;
 	std::unique_ptr<ScrollView> playerScrollView;
-	int selectedPlayerIndex = -1; // 選択された選手のインデックス
-
+	
 	ButtonManager buttonManager; // ボタンマネージャーのインスタンス
 	FontRenderer fontRenderer;
 	char text[32] = "batter";
@@ -66,5 +56,28 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixel_shader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout;
+
+	//ピッチャーのスプライト
+	struct PitcherSpriteData
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+
+	int pitcherCount = 21; // ピッチャーの数
+
+	//21人のピッチャーのスプライトデータを保持する配列
+	std::unique_ptr<PitcherSpriteData> pitcherSpriteDataArray[21];
+	std::unique_ptr<sprite> pitcherSprites[21];
+
 	
+	Pitcher::RealPitcher selectedPitcher = Pitcher::RealPitcher::None; // 選択されたピッチャーの初期値をNoneに設定
+	size_t selectedPitcherIndex = 0; // 選択されたピッチャーのインデックスを保持する変数
+
+public:
+	void SelectRandomPitcher(); // ランダムにピッチャーを選択する関数
+
 };

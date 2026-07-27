@@ -13,6 +13,7 @@
 #include "sprite.h"
 #include "Ball.h"
 #include "json.hpp"
+#include <unordered_map>
 
 using json = nlohmann::json;
 
@@ -84,7 +85,9 @@ public:
 
 private:
 	// モデル関連
-	std::unique_ptr<gltf_model> pitcher;
+	std::unique_ptr<gltf_model> rightPitcher;
+	std::unique_ptr<gltf_model> leftPitcher;
+	gltf_model* currentPitcher = nullptr;
 	std::vector<gltf_model::node> animated_nodes;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_context;
 	// アニメーション関連
@@ -349,5 +352,29 @@ public:
 	//outName: 該当投手の表示名を返す
 	static bool GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalEntry>& outArsenal, bool& outIsRight, const char*& outName);
 
+	inline static const std::unordered_map<RealPitcher, int> pitcherToSpriteIndexTable =
+	{
+		{ RealPitcher::Nakagawa,  0 },
+		{ RealPitcher::Mukai,     1 },
+		{ RealPitcher::Abe,       2 },
+		{ RealPitcher::Morita,    3 },
+		{ RealPitcher::Ito,       4 },
+		{ RealPitcher::Fukuhara,  5 },
+		{ RealPitcher::Ishikawa,  6 },
+		{ RealPitcher::Takaoka,   7 },
+		{ RealPitcher::Oda,       8 },
+		{ RealPitcher::Kondo,     9 },
+		{ RealPitcher::Nishi,     10 },
+		{ RealPitcher::Kikuchi,   11 },
+		{ RealPitcher::Okubo,     12 },
+		{ RealPitcher::Mizuno,    13 },
+		{ RealPitcher::Fujikawa,  14 },
+		{ RealPitcher::Watanabe,  15 },
+		{ RealPitcher::Ishi,      16 },
+		{ RealPitcher::Kinoshita, 17 },
+		{ RealPitcher::Masuda,    18 },
+		{ RealPitcher::Matsuyama, 19 },
+		{ RealPitcher::Inoue,     20 },
+	};
 
 };

@@ -18,10 +18,8 @@ void Player::Initialize()
 {
     ID3D11Device* device = Graphics::Instance().GetDevice();
     // モデルの読み込み
-    if (IsRightBatter())
-        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
-    else
-        batter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
+    rightBatter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
+    leftBatter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
 
 
     if (IsRightBatter())
@@ -39,7 +37,9 @@ void Player::Initialize()
     angle = { 0.0f, 0.0f, 0.0f };
 
     // アニメーション用のノードをコピー
-    animated_nodes = batter->nodes;
+
+    animated_nodes = rightBatter->nodes;
+    animated_nodes = leftBatter->nodes;
 
     //ステートごとのアニメーションインデックス設定
     animation_indices[static_cast<int>(State::BattingIdle)] = 0;      // Idleアニメーション
@@ -58,7 +58,8 @@ void Player::Initialize()
 
     meshScale = { 0.03f,0.012f,0.03f };
 
-    batter->build_static_batches(device);
+    rightBatter->build_static_batches(device);
+    leftBatter->build_static_batches(device);
     batModel->build_static_batches(device);
 
     //バット型の凸形状のメッシュ作成
@@ -151,6 +152,9 @@ void Player::Initialize()
         pxScene->addActor(*pxBatRigidBody);
     }
 
+	SelectRealBatter(selectedRealBatter);
+	UpdateBatterModel();
+
 }
 
 // 解放
@@ -169,19 +173,21 @@ void Player::Uninitialize()
 
 void Player::UpdateBatterModel()
 {
-    // モデルの切り替え
-    ID3D11Device* device = Graphics::Instance().GetDevice();
-    const char* modelPath = isRightBatter ? ".\\resources\\batter\\rightBatter.glb" : ".\\resources\\batter\\leftBatter.glb";
+    // currentBatter を利き手に合わせて切り替え (.get() で生ポインタを取得)
+	currentBatter = isRightBatter ? rightBatter.get() : leftBatter.get();
 
-    batter = std::make_unique<gltf_model>(device, modelPath);
-	position = isRightBatter ? DirectX::XMFLOAT3(-1.0f, 0.01f, -0.4f) : DirectX::XMFLOAT3(1.0f, 0.01f, -0.4f);
-	batPosition = isRightBatter ? DirectX::XMFLOAT3(-0.08f, 0.0f, 0.05f) : DirectX::XMFLOAT3(0.08f, 0.0f, 0.05f);
-	batAngle = isRightBatter ? DirectX::XMFLOAT3(0.0f, 0.0f, -1.6f) : DirectX::XMFLOAT3(0.0f, 0.0f, 1.6f);
+    // currentBatter が有効なら、ノード情報をコピーしアニメーション時間をリセット
+    if (currentBatter)
+    {
+        animated_nodes = currentBatter->nodes;
+        animation_time = 0.0f;
+        current_animation_index = animation_indices[static_cast<int>(current_state)];
+    }
 
-	batter->build_static_batches(device);
-	animated_nodes = batter->nodes;
-	animation_time = 0.0f;
-    current_animation_index = animation_indices[static_cast<int>(current_state)];
+    // 立ち位置やバット位置の調整
+    position = isRightBatter ? DirectX::XMFLOAT3(-1.0f, 0.01f, -0.4f) : DirectX::XMFLOAT3(1.0f, 0.01f, -0.4f);
+    batPosition = isRightBatter ? DirectX::XMFLOAT3(-0.08f, 0.0f, 0.05f) : DirectX::XMFLOAT3(0.08f, 0.0f, 0.05f);
+    batAngle = isRightBatter ? DirectX::XMFLOAT3(0.0f, 0.0f, -1.6f) : DirectX::XMFLOAT3(0.0f, 0.0f, 1.6f);
 }
 
 
@@ -346,7 +352,7 @@ void Player::UpdateLookAt(const DirectX::XMFLOAT3& targetPosition)
     DirectX::XMStoreFloat4x4(&world, S * R * T);
 
     // 首ノードのインデックスを取得
-    int neck_joint_index = batter->GetNodeIndex("mixamorig:Head");
+    int neck_joint_index = currentBatter->GetNodeIndex("mixamorig:Head");
     if (neck_joint_index < 0) return; // 首ノードが存在しない場合は処理しない
 
     gltf_model::node& node = animated_nodes.at(neck_joint_index);
@@ -433,7 +439,7 @@ void Player::Render(const RenderContext& rc, ModelRenderer* renderer)
 
 void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
 {
-    batter->render_batched(rc.deviceContext, transform, animated_nodes);
+    currentBatter->render_batched(rc.deviceContext, transform, animated_nodes);
 
 }
 
@@ -614,7 +620,7 @@ void Player::AttachBatToHand()
 // ステートマシン更新
 void Player::UpdateAnimation(float elapsedTime)
 {
-    if (animation_playing && batter && !batter->animations.empty())
+    if (animation_playing && currentBatter&& !currentBatter->animations.empty())
     {
         //アニメーションの開始位置をどれくらい進めるか（秒単位で指定）
         // 例：最初の0.1秒をカットして、0.1秒の時点から再生を始める場合
@@ -644,7 +650,7 @@ void Player::UpdateAnimation(float elapsedTime)
             if (isBezierPitching && Ball::Instance().IsBezierFlying())
             {
                 float bezierT = Ball::Instance().GetBezierT();
-                float animation_duration = batter->animations[current_animation_index].duration;
+                float animation_duration = currentBatter->animations[current_animation_index].duration;
 
                 // ベジェ曲線の進行度に基づいてアニメーション時間を計算
                 // bezierT = 0.0 の時は animation_time = beforeSwingStartTime
@@ -659,17 +665,16 @@ void Player::UpdateAnimation(float elapsedTime)
         }
 
         // 現在のアニメーションを再生
-        batter->animate(current_animation_index, animation_time, animated_nodes);
+        currentBatter->animate(current_animation_index, animation_time, animated_nodes);
 
         // アニメーションの長さを取得
-        float animation_duration = batter->animations[current_animation_index].duration;
-
+        float animation_duration = currentBatter->animations[current_animation_index].duration;
 
         
         if (current_state == State::BeforeSwing)
         {
             // BeforeSwingアニメーションが終了したらBattingIdleに戻す
-            if (animation_time >= batter->animations[current_animation_index].duration + beforeSwingStartTime)
+            if (animation_time >= currentBatter->animations[current_animation_index].duration + beforeSwingStartTime)
             {
                 ChangeState(State::BattingIdle);
                 ThrowingStateTime = 0.0f;  // ThrowingStateTimeをリセット
@@ -801,7 +806,7 @@ void Player::ChangeState(State newState)
     int new_index = animation_indices[static_cast<int>(newState)];
 
     // インデックスが有効範囲内かチェック
-    if (batter && new_index >= 0 && new_index < batter->animations.size())
+    if (currentBatter && new_index >= 0 && new_index < currentBatter->animations.size())
     {
         current_animation_index = new_index;
         animation_time = 0.0f;  // アニメーション時間をリセット
@@ -829,13 +834,13 @@ void Player::ModifyArmBones()
     if (IsRightBatter())
     {
         // 右打者：右腕がメイン
-        int rightArmIndex = batter->GetNodeIndex("mixamorig:RightArm");
+        int rightArmIndex = currentBatter->GetNodeIndex("mixamorig:RightArm");
         if (rightArmIndex < 0) return;
         DirectX::XMMATRIX additionalRotation = DirectX::XMMatrixRotationX(armAngleOffset);
         UpdateNodeTransform(rightArmIndex, additionalRotation);
         UpdateChildrenRecursive(rightArmIndex);
 
-        int leftShoulderIndex = batter->GetNodeIndex("mixamorig:LeftShoulder");
+        int leftShoulderIndex = currentBatter->GetNodeIndex("mixamorig:LeftShoulder");
         if (leftShoulderIndex < 0) return;
         additionalRotation = DirectX::XMMatrixRotationY(armAngleOffset);
         UpdateNodeTransform(leftShoulderIndex, additionalRotation);
@@ -844,13 +849,13 @@ void Player::ModifyArmBones()
     else
     {
         // 左打者：左腕がメイン
-        int leftArmIndex = batter->GetNodeIndex("mixamorig:LeftArm");
+        int leftArmIndex = currentBatter->GetNodeIndex("mixamorig:LeftArm");
         if (leftArmIndex < 0) return;
         DirectX::XMMATRIX additionalRotation = DirectX::XMMatrixRotationX(armAngleOffset);
         UpdateNodeTransform(leftArmIndex, additionalRotation);
         UpdateChildrenRecursive(leftArmIndex);
 
-        int rightShoulderIndex = batter->GetNodeIndex("mixamorig:RightShoulder");
+        int rightShoulderIndex = currentBatter->GetNodeIndex("mixamorig:RightShoulder");
         if (rightShoulderIndex < 0) return;
         additionalRotation = DirectX::XMMatrixRotationY(-armAngleOffset);
         UpdateNodeTransform(rightShoulderIndex, additionalRotation);
@@ -1238,7 +1243,7 @@ void Player::LoadFromJson(const json& j)
 	HitJudge2D::Instance().LoadFromJson(j["HitJudge2D"]); // HitJudge2Dの状態も読み込む
 
     // 選択された実在打者の情報を読み込む
-    if (j.contains("selectedRealBatter"))
+    /*if (j.contains("selectedRealBatter"))
     {
         int rbIndex = j["selectedRealBatter"];
         if (rbIndex >= 0 && rbIndex < static_cast<int>(RealBatter::Count))
@@ -1249,5 +1254,7 @@ void Player::LoadFromJson(const json& j)
         {
             SelectRealBatter(RealBatter::None);
         }
-    }
+    }*/
+
+	SelectRealBatter(selectedRealBatter); // 選択された実在打者の情報を反映
 }

@@ -6,6 +6,7 @@
 #include <memory>
 #include "UiEasing.h"
 #include "input.h"
+#include "Player.h"
 
 class ScrollView
 {
@@ -101,6 +102,12 @@ private:
 	float scrollOffsetY = 0.0f; // スクロールのオフセットY
 
 	int selectedIndex = -1; // 選択されたボタンのインデックス
+
+	Player::RealBatter selectedBatter = Player::RealBatter::None; // 選択されたバッターの種類
+	int selectedBatterIndex = -1; // 選択されたバッターのインデックス
+
+	//選択されたボタンとバッターを一致させる関数
+	void MatchSelectedButtonAndBatter();
 
 public:
 	void SetBackGroundTransform(float x, float y, float width, float height)

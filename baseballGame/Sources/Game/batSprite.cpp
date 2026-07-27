@@ -92,6 +92,8 @@ void BatSprite::Update(float elapsedTime)
 
 void BatSprite::UpdateCursorSizeByContact(int contact)
 {
+	if (batCursorSpriteData == nullptr) return;
+
 	//0～99の範囲を0～1にクランプ
 	float t = (std::max)(0, (std::min)(99,contact)) / 99.0f;
 

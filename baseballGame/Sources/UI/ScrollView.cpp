@@ -2,7 +2,29 @@
 #include "Graphics.h"
 #include <shader.h>
 #include <imgui.h>
+#include <functional>
 
+void ScrollView::MatchSelectedButtonAndBatter()
+{
+	//Player::batterToSpriteIndexTableを使う
+	char buffer[256];
+	if(selectedIndex >= 0 && selectedIndex < buttonCount)
+	{
+		selectedBatter = static_cast<Player::RealBatter>(selectedIndex + 1); // インデックスに対応するバッターを設定
+
+		snprintf(buffer, sizeof(buffer), "Selected Index: %d, Selected Batter: %d", selectedIndex, static_cast<int>(selectedBatter));
+		OutputDebugStringA(buffer);
+	}
+	else
+	{
+		selectedBatter = Player::RealBatter::None; // インデックスが範囲外の場合はNoneに設定
+
+		snprintf(buffer, sizeof(buffer), "Selected Index: %d, Selected Batter: None", selectedIndex);
+		OutputDebugStringA(buffer);
+	}
+
+	Player::Instance().SelectRealBatter(selectedBatter); // Playerクラスに選択されたバッターを設定
+}
 
 ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width, float height)
 {
@@ -341,6 +363,7 @@ void ScrollView::Update(float elapsedTime)
 			{
 				playerButtonDataList[i].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色に変更
 				selectedIndex = (int)i; // 選択されたボタンのインデックスを更新
+				MatchSelectedButtonAndBatter(); // 選択されたボタンとバッターを一致させる
 			}
 
 			//一番最初のボタンをデフォルトで選択状態にする
@@ -348,6 +371,7 @@ void ScrollView::Update(float elapsedTime)
 			{
 				playerButtonDataList[i].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色に変更
 				selectedIndex = (int)i; // 選択されたボタンのインデックスを更新
+				MatchSelectedButtonAndBatter(); // 選択されたボタンとバッターを一致させる
 			}
 
 		}
