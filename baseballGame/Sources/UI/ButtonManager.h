@@ -19,8 +19,8 @@ public:
 	ButtonManager() {};
 	~ButtonManager() {};
 	void Initialize();
-	void Update(float elapsedTime);
-	void Render();
+	void Update(float elapsedTime, float alpha = 1.0f);
+	void Render(float alpha = 1.0f);
 	void DrawGUI();
 	void SaveToJson(nlohmann::json& j);
 	void LoadFromJson(const nlohmann::json& j);
@@ -28,6 +28,10 @@ public:
 	bool IsStartRequested() const { return isStartRequested; }
 	//マウスカーソルがボタン上にあるかどうかを判定する関数
 	bool IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const DirectX::XMFLOAT2& buttonPos, const DirectX::XMFLOAT2& buttonSize);
+
+
+	void ResetOKRequest(bool requested) { isOKRequested = requested; }
+	bool IsOKRequested() const { return isOKRequested; }
 
 	//ボタンの種類
 	enum class ButtonType
@@ -38,6 +42,7 @@ public:
 		Quit,//終了ボタン
 		Pose,//ポーズボタン
 		Return,//戻るボタン
+		OK,//決定ボタン
 		Count
 	};
 
@@ -77,4 +82,5 @@ private:
 	static std::string WideToUtf8(const std::wstring& wide);
 
 	bool isStartRequested = false;
+	bool isOKRequested = false;
 };

@@ -65,15 +65,21 @@ void ButtonManager::Initialize()
 		&codepoints);
 }
 
-void ButtonManager::Update(float elapsedTime)
+void ButtonManager::Update(float elapsedTime, float alpha)
 {
+	//アルファ値が0.001以下の場合は更新処理をスキップ
+	if (alpha <= 0.001f)
+	{
+		return;
+	}
+
 	//ボタンの更新処理
 	//マウスの位置を取得
 	POINT mousePos;
 	GetCursorPos(&mousePos);
 	ScreenToClient(Graphics::Instance().GetHwnd(), &mousePos);
 
-	
+
 	//ボタンのクリック判定
 	//マウスの位置がボタンの範囲内かどうかの判定
 	if(buttonSpriteData && !buttonSpriteData->empty())
@@ -106,6 +112,21 @@ void ButtonManager::Update(float elapsedTime)
 						//ポーズボタンがクリックされた場合の処理
 						OutputDebugStringA("Pose button clicked!\n");
 						break;
+
+					case ButtonType::Return:
+						//戻るボタンがクリックされた場合の処理
+						OutputDebugStringA("Return button clicked!\n");
+						break;
+
+					case ButtonType::OK:
+						//決定ボタンがクリックされた場合の処理
+						if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+						{
+							isOKRequested = true;
+							OutputDebugStringA("OK button clicked!\n");
+						}
+						
+						break;
 					default:
 						break;
 				}
@@ -130,8 +151,10 @@ bool ButtonManager::IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const D
 	return false;
 }
 
-void ButtonManager::Render()
+void ButtonManager::Render(float alpha)
 {
+
+
 	//ボタンの描画処理
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
@@ -156,7 +179,7 @@ void ButtonManager::Render()
 				button.spriteObj->render(context,
 					button.position.x, button.position.y,
 					button.size.x, button.size.y,
-					button.color.x, button.color.y, button.color.z, button.color.w,
+					button.color.x, button.color.y, button.color.z, button.color.w * alpha,
 					button.rotation);
 			}
 
@@ -181,7 +204,7 @@ void ButtonManager::Render()
 			);
 
 			fontRenderer->DrawText(context, button.labelBuffer,
-				fontPos.x, fontPos.y, fontSize, fontColor.x, fontColor.y, fontColor.z, fontColor.w);
+				fontPos.x, fontPos.y, fontSize, fontColor.x, fontColor.y, fontColor.z, fontColor.w * alpha);
 		}
 	}
 
@@ -298,7 +321,7 @@ void ButtonManager::DrawGUI()
 			ImGui::ColorEdit4(u8"フォント色", &fontColor.x);
 
 			//ボタンタイプを選択
-			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return" };
+			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK" };
 			int currentTypeIndex = static_cast<int>(btn.buttonType);
 			ImGui::Combo(u8"ボタンタイプ", &currentTypeIndex, buttonTypeItems, IM_ARRAYSIZE(buttonTypeItems));
 			btn.buttonType = static_cast<ButtonManager::ButtonType>(currentTypeIndex);

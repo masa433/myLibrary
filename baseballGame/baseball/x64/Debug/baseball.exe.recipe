@@ -16,6 +16,12 @@
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\blur_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\burstEffect_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\burstEffect_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\cascade_shadowmap_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>

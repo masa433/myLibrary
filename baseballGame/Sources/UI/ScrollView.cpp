@@ -35,33 +35,33 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	scrollBackgroundSpriteData[0].position = { topX, topY }; // 中心位置に設定
 	scrollBackgroundSpriteData[0].size = { width, height }; // 幅と高さを設定
 	scrollBackgroundSpriteData[0].rotation = 0.0f; // 回転なし
-	scrollBackgroundSpriteData[0].color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 白色
+	scrollBackgroundSpriteData[0].color = { 1.0f, 1.0f, 1.0f, 0.7f }; // 白色
 	scrollBackgroundSprite.push_back(std::make_unique<sprite>(device, context, scrollBackgroundSpriteData[0].texturePath.c_str()));
 
 	float capHeight = 90.0f; // 上下のフタの高さ
 	topCapData.texturePath = L".\\resources\\textures\\scrollViewBack.png";
-	topCapData.position = { topX, topY - height / 2.0f + capHeight / 7.0f };
+	topCapData.position = { 550.0f, 260.0f };
 	topCapData.size = { width, capHeight };
 	topCapData.rotation = 0.0f;
 	topCapData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	topCapSprite = std::make_unique<sprite>(device, context, topCapData.texturePath.c_str());
 
 	bottomCapData.texturePath = L".\\resources\\textures\\scrollViewBack.png";
-	bottomCapData.position = { topX, topY + height / 2.0f - capHeight / 7.0f };
+	bottomCapData.position = { 550.0f, 900.0f };
 	bottomCapData.size = { width, capHeight };
 	bottomCapData.rotation = 0.0f;
 	bottomCapData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	bottomCapSprite = std::make_unique<sprite>(device, context, bottomCapData.texturePath.c_str());
 
 	topArrowData.texturePath = L".\\resources\\textures\\Arrow.png";
-	topArrowData.position = { topX, topY - height / 2.0f + capHeight / 7.0f };
+	topArrowData.position = { 550.0f, 260.0f };
 	topArrowData.size = { 100.0f, 50.0f };
 	topArrowData.rotation = 0.0f;
 	topArrowData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	topArrowSprite = std::make_unique<sprite>(device, context, topArrowData.texturePath.c_str());
 
 	bottomArrowData.texturePath = L".\\resources\\textures\\Arrow.png";
-	bottomArrowData.position = { topX, topY + height / 2.0f - capHeight / 7.0f };
+	bottomArrowData.position = { 550.0f, 900.0f };
 	bottomArrowData.size = { 100.0f, 50.0f };
 	bottomArrowData.rotation = 180.0f; // 矢印を逆向きにする
 	bottomArrowData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -73,11 +73,10 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	for (int i = 0; i < buttonCount; ++i)
 	{
 		// Y座標を「1つ目のY位置 + i * (高さ + 隙間)」で下方向に計算
-		float currentY = startPosY + i * (buttonHeight + buttonSpacing);
-
+		
 		PlayerButtonData data;
 		data.texturePath = L".\\resources\\textures\\batterButton\\batterButton" + std::to_wstring(i + 1) + L".png";
-		data.position = { startPosX, currentY };
+		data.position = { startPosX, startPosY + i * (buttonHeight + buttonSpacing) };
 		data.size = { buttonWidth, buttonHeight };
 		data.rotation = 0.0f;
 		data.color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -94,7 +93,7 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	{
 		BatterParamData data;
 		data.texturePath = L".\\resources\\textures\\batterParameter\\batterParameter" + std::to_wstring(i + 1) + L".png";
-		data.position = { 700.0f,540.0f };
+		data.position = { 1300.0f,500.0f };
 		data.size = { 600.0f, 500.0f };
 		data.rotation = 0.0f;
 		data.color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -103,6 +102,14 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 			std::make_unique<sprite>(device, context, data.texturePath.c_str())
 		);
 	}
+
+	batterListData = std::make_unique<BatterListData>();
+	batterListData->texturePath = L".\\resources\\textures\\batterList.png";
+	batterListData->position = { Graphics::Instance().GetScreenWidth() / 2.0f, Graphics::Instance().GetScreenHeight() / 2.0f };
+	batterListData->size = { 1700.0f, 900.0f };
+	batterListData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	batterListData->rotation = 0.0f;
+	batterListSprite = std::make_unique<sprite>(device, context, batterListData->texturePath.c_str());
 
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -116,7 +123,7 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 }
 
 
-void ScrollView::Render()
+void ScrollView::Render(float alpha)
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
@@ -128,6 +135,17 @@ void ScrollView::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
+	if(batterListData && batterListSprite)
+	{
+		batterListSprite->render(dc,
+			batterListData->position.x - batterListData->size.x / 2.0f,
+			batterListData->position.y - batterListData->size.y / 2.0f,
+			batterListData->size.x, batterListData->size.y,
+			batterListData->color.x, batterListData->color.y, batterListData->color.z, batterListData->color.w * alpha,
+			batterListData->rotation);
+	}
+
+
 	if (!scrollBackgroundSprite.empty() && scrollBackgroundSprite[0])
 	{
 		ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
@@ -137,7 +155,7 @@ void ScrollView::Render()
 			scrollBackgroundSpriteData[0].size.x,
 			scrollBackgroundSpriteData[0].size.y,
 			scrollBackgroundSpriteData[0].color.x, scrollBackgroundSpriteData[0].color.y,
-			scrollBackgroundSpriteData[0].color.z, scrollBackgroundSpriteData[0].color.w,
+			scrollBackgroundSpriteData[0].color.z, scrollBackgroundSpriteData[0].color.w * alpha,
 			scrollBackgroundSpriteData[0].rotation);
 	}
 
@@ -166,7 +184,7 @@ void ScrollView::Render()
 					playerButtonDataList[i].size.x,
 					playerButtonDataList[i].size.y,
 					playerButtonDataList[i].color.x, playerButtonDataList[i].color.y,
-					playerButtonDataList[i].color.z, playerButtonDataList[i].color.w,
+					playerButtonDataList[i].color.z, playerButtonDataList[i].color.w * alpha,
 					playerButtonDataList[i].rotation);
 			}
 		}
@@ -182,7 +200,7 @@ void ScrollView::Render()
 				batterParamDataList[selectedIndex].position.y - batterParamDataList[selectedIndex].size.y / 2.0f,
 				batterParamDataList[selectedIndex].size.x, batterParamDataList[selectedIndex].size.y,
 				batterParamDataList[selectedIndex].color.x, batterParamDataList[selectedIndex].color.y,
-				batterParamDataList[selectedIndex].color.z, batterParamDataList[selectedIndex].color.w,
+				batterParamDataList[selectedIndex].color.z, batterParamDataList[selectedIndex].color.w * alpha,
 				batterParamDataList[selectedIndex].rotation);
 		}
 	}
@@ -193,7 +211,7 @@ void ScrollView::Render()
 			topCapData.position.x - topCapData.size.x / 2.0f,
 			topCapData.position.y - topCapData.size.y / 2.0f,
 			topCapData.size.x, topCapData.size.y,
-			topCapData.color.x, topCapData.color.y, topCapData.color.z, topCapData.color.w,
+			topCapData.color.x, topCapData.color.y, topCapData.color.z, topCapData.color.w * alpha,
 			topCapData.rotation);
 	}
 	if (bottomCapSprite)
@@ -202,7 +220,7 @@ void ScrollView::Render()
 			bottomCapData.position.x - bottomCapData.size.x / 2.0f,
 			bottomCapData.position.y - bottomCapData.size.y / 2.0f,
 			bottomCapData.size.x, bottomCapData.size.y,
-			bottomCapData.color.x, bottomCapData.color.y, bottomCapData.color.z, bottomCapData.color.w,
+			bottomCapData.color.x, bottomCapData.color.y, bottomCapData.color.z, bottomCapData.color.w * alpha,
 			bottomCapData.rotation);
 	}
 
@@ -214,7 +232,7 @@ void ScrollView::Render()
 				topArrowData.position.x - topArrowData.size.x / 2.0f,
 				topArrowData.position.y - topArrowData.size.y / 2.0f,
 				topArrowData.size.x, topArrowData.size.y,
-				topArrowData.color.x, topArrowData.color.y, topArrowData.color.z, topArrowData.color.w,
+				topArrowData.color.x, topArrowData.color.y, topArrowData.color.z, topArrowData.color.w * alpha,
 				topArrowData.rotation);
 		}
 	}
@@ -227,7 +245,7 @@ void ScrollView::Render()
 				bottomArrowData.position.x - bottomArrowData.size.x / 2.0f,
 				bottomArrowData.position.y - bottomArrowData.size.y / 2.0f,
 				bottomArrowData.size.x, bottomArrowData.size.y,
-				bottomArrowData.color.x, bottomArrowData.color.y, bottomArrowData.color.z, bottomArrowData.color.w,
+				bottomArrowData.color.x, bottomArrowData.color.y, bottomArrowData.color.z, bottomArrowData.color.w * alpha,
 				bottomArrowData.rotation);
 		}
 	}
@@ -254,12 +272,12 @@ void ScrollView::Update(float elapsedTime)
 		int wheel = ImGui::GetIO().MouseWheel;
 		if (wheel != 0)
 		{
-			scrollOffsetY -= wheel * 50.0f; // スクロール処理
+			scrollOffsetY -= wheel * 110.0f; // スクロール処理
 		}
 	}
 
 	// 2. スクロール範囲のクランプ（下限・上限の制御）
-	float maxScroll = buttonCount * buttonHeight - buttonHeight * 8.0f;
+	float maxScroll = 2090.0f;
 	if (maxScroll < 0.0f) maxScroll = 0.0f; // 要素数が少なくスクロール不要な場合の考慮
 
 	if (scrollOffsetY < 0.0f)
@@ -309,7 +327,7 @@ void ScrollView::Update(float elapsedTime)
 			input.GetMouse().GetPositionY() <= topArrowData.position.y + topArrowData.size.y / 2.0f;
 		if(isHovered)
 		{
-			scrollOffsetY -= 50.0f; // 上方向にスクロール
+			scrollOffsetY -= 110.0f; // 上方向にスクロール
 			arrowClicked = true;
 		}
 	}
@@ -322,7 +340,7 @@ void ScrollView::Update(float elapsedTime)
 			input.GetMouse().GetPositionY() <= bottomArrowData.position.y + bottomArrowData.size.y / 2.0f;
 		if(isHovered)
 		{
-			scrollOffsetY += 50.0f; // 下方向にスクロール
+			scrollOffsetY += 110.0f; // 下方向にスクロール
 			arrowClicked = true;
 		}
 	}
@@ -430,6 +448,105 @@ void ScrollView::DrawGUI()
 				}
 			}
 		}
+
+		if(ImGui::CollapsingHeader("Arrow Settings"))
+		{
+			ImGui::DragFloat2("Top Arrow Position", &topArrowData.position.x, 1.0f);
+			ImGui::DragFloat2("Top Arrow Size", &topArrowData.size.x, 1.0f);
+			ImGui::DragFloat2("Bottom Arrow Position", &bottomArrowData.position.x, 1.0f);
+			ImGui::DragFloat2("Bottom Arrow Size", &bottomArrowData.size.x, 1.0f);
+		}
+
+		if(ImGui::CollapsingHeader("Cap Settings"))
+		{
+			ImGui::DragFloat2("Top Cap Position", &topCapData.position.x, 1.0f);
+			ImGui::DragFloat2("Top Cap Size", &topCapData.size.x, 1.0f);
+			ImGui::DragFloat2("Bottom Cap Position", &bottomCapData.position.x, 1.0f);
+			ImGui::DragFloat2("Bottom Cap Size", &bottomCapData.size.x, 1.0f);	
+		}
+
+		if(ImGui::CollapsingHeader("Scroll Offset"))
+		{
+			ImGui::DragFloat("Scroll Offset Y", &scrollOffsetY, 1.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Batter Param"))
+		{
+			for(size_t i = 0; i < batterParamDataList.size(); ++i)
+			{
+				ImGui::Text("Batter Param %zu", i);
+				ImGui::DragFloat2(("Position##" + std::to_string(i)).c_str(), &batterParamDataList[i].position.x, 1.0f);
+				ImGui::DragFloat2(("Size##" + std::to_string(i)).c_str(), &batterParamDataList[i].size.x, 1.0f);
+				ImGui::DragFloat(("Rotation##" + std::to_string(i)).c_str(), &batterParamDataList[i].rotation, 1.0f);
+				ImGui::ColorEdit4(("Color##" + std::to_string(i)).c_str(), &batterParamDataList[i].color.x);
+			}
+
+		}
 	}
 #endif // _DEBUG
+}
+
+void ScrollView::SaveToJson(nlohmann::json& json)
+{
+	// スクロールビューの設定をJSONに保存
+	json["ScrollView"] = {
+		{"scrollOffsetY", scrollOffsetY},
+		{"buttonCount", buttonCount},
+		{"startPosX", startPosX},
+		{"startPosY", startPosY},
+		{"buttonWidth", buttonWidth},
+		{"buttonHeight", buttonHeight},
+		{"buttonSpacing", buttonSpacing}
+	};
+	// ボタンの位置とサイズを保存
+	for (size_t i = 0; i < playerButtonDataList.size(); ++i)
+	{
+		json["PlayerButtons"][i] = {
+			{"position", {playerButtonDataList[i].position.x, playerButtonDataList[i].position.y}},
+			{"size", {playerButtonDataList[i].size.x, playerButtonDataList[i].size.y}},
+			{"color", {playerButtonDataList[i].color.x, playerButtonDataList[i].color.y, playerButtonDataList[i].color.z, playerButtonDataList[i].color.w}}
+		};
+	}
+}
+
+void ScrollView::LoadFromJson(const nlohmann::json& json)
+{
+	// JSONからスクロールビューの設定を読み込む
+	if (json.contains("ScrollView"))
+	{
+		const auto& scrollViewJson = json["ScrollView"];
+		scrollOffsetY = scrollViewJson.value("scrollOffsetY", 0.0f);
+		buttonCount = scrollViewJson.value("buttonCount", 10);
+		startPosX = scrollViewJson.value("startPosX", 550.0f);
+		startPosY = scrollViewJson.value("startPosY", 300.0f);
+		buttonWidth = scrollViewJson.value("buttonWidth", 400.0f);
+		buttonHeight = scrollViewJson.value("buttonHeight", 100.0f);
+		buttonSpacing = scrollViewJson.value("buttonSpacing", 20.0f);
+	}
+	// ボタンの位置とサイズを読み込む
+	if (json.contains("PlayerButtons"))
+	{
+		const auto& buttonsJson = json["PlayerButtons"];
+		for (size_t i = 0; i < buttonsJson.size() && i < playerButtonDataList.size(); ++i)
+		{
+			const auto& buttonJson = buttonsJson[i];
+			if (buttonJson.contains("position"))
+			{
+				playerButtonDataList[i].position.x = buttonJson["position"][0].get<float>();
+				playerButtonDataList[i].position.y = buttonJson["position"][1].get<float>();
+			}
+			if (buttonJson.contains("size"))
+			{
+				playerButtonDataList[i].size.x = buttonJson["size"][0].get<float>();
+				playerButtonDataList[i].size.y = buttonJson["size"][1].get<float>();
+			}
+			if (buttonJson.contains("color"))
+			{
+				playerButtonDataList[i].color.x = buttonJson["color"][0].get<float>();
+				playerButtonDataList[i].color.y = buttonJson["color"][1].get<float>();
+				playerButtonDataList[i].color.z = buttonJson["color"][2].get<float>();
+				playerButtonDataList[i].color.w = buttonJson["color"][3].get<float>();
+			}
+		}
+	}
 }

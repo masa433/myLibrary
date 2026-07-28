@@ -7,6 +7,9 @@
 #include "UiEasing.h"
 #include "input.h"
 #include "Player.h"
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 class ScrollView
 {
@@ -14,10 +17,11 @@ public:
 	ScrollView(ID3D11Device* device, float topX, float topY, float width, float height);
 	//ScrollView(ID3D11Device* device, const char* filePath, float topX, float topY, float width, float height);
 	~ScrollView() {}
-	void Render();
+	void Render(float alpha = 1.0f);
 	void Update(float elapsedTime);
 	void DrawGUI();
-
+	void SaveToJson(json& j);
+	void LoadFromJson(const json& j);
 	
 
 private:
@@ -39,6 +43,18 @@ private:
 	std::unique_ptr<sprite> topCapSprite;
 	std::unique_ptr<sprite> bottomCapSprite;
 
+
+	struct BatterListData
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+
+	std::unique_ptr<BatterListData> batterListData;
+	std::unique_ptr<sprite> batterListSprite;
 
 	//スクロールビューのプレイヤーボタンデータ
 	struct PlayerButtonData
@@ -94,10 +110,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout;
 
 	int buttonCount = 24; // プレイヤーボタンの数
-	float startPosX = 200.0f; // プレイヤーボタンの開始位置X
-	float startPosY = 150.0f; // プレイヤーボタンの開始位置Y
-	float buttonWidth = 300.0f; // プレイヤーボタンの幅
-	float buttonHeight = 80.0f; // プレイヤーボタンの高さ
+	float startPosX = 550.0f; // プレイヤーボタンの開始位置X
+	float startPosY = 360.0f; // プレイヤーボタンの開始位置Y
+	float buttonWidth = 400.0f; // プレイヤーボタンの幅
+	float buttonHeight = 100.0f; // プレイヤーボタンの高さ
 	float buttonSpacing = 10.0f; // プレイヤーボタンの間隔
 	float scrollOffsetY = 0.0f; // スクロールのオフセットY
 

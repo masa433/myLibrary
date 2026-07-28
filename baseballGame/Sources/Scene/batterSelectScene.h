@@ -11,6 +11,9 @@
 #include "FontRenderer.h"
 #include "sprite.h"
 #include "Pitcher.h"
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 class batterSelectScene : public scene
 {
@@ -22,6 +25,8 @@ public:
 	void render(float elapsedTime) override;
 	void uninitialize() override;
 	void DrawGUI() override;
+	void SaveSetting();
+	void LoadSetting();
 
 private:
 
@@ -80,4 +85,46 @@ private:
 public:
 	void SelectRandomPitcher(); // ランダムにピッチャーを選択する関数
 
+
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> burstVertexShader;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> burstPixelShader;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> burstTransformBuffer; // VS用
+	Microsoft::WRL::ComPtr<ID3D11Buffer> burstColorBuffer;     // PS用
+
+	struct BurstTransformBuffer
+	{
+		DirectX::XMFLOAT2 center;
+		DirectX::XMFLOAT2 size;
+		DirectX::XMFLOAT2 screenSize;
+		DirectX::XMFLOAT2 padding; // 16バイト境界に合わせるためのパディング
+	};
+
+	struct BurstBuffer
+	{
+		float time;
+		float aspectRatio;
+		float progress;
+		float padding; // 16バイト境界に合わせるためのパディング
+	};
+
+	
+	float burstElapsedTime = 0.0f;
+
+private:
+
+	enum class SequenceState
+	{
+		Selecting,// 選手選択中
+		Transition,// 決定ボタン押下後のフェード演出
+		Finished,// 遷移準備完了
+	};
+
+	SequenceState currentState = SequenceState::Selecting;
+
+	float transitionTimer = 0.0f;// 遷移演出の経過時間
+	const float transitionDuration = 1.0f; // 遷移演出の総時間(秒)
+
+	float uiAlpha = 1.0f; // UIの透明度(0.0f:完全透明, 1.0f:完全不透明)
+	float burstAlpha = 0.0f; // バーストエフェクトの透明度(0.0f:完全透明, 1.0f:完全不透明)
+	
 };
