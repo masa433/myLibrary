@@ -115,7 +115,11 @@ void ButtonManager::Update(float elapsedTime, float alpha)
 
 					case ButtonType::Return:
 						//戻るボタンがクリックされた場合の処理
-						OutputDebugStringA("Return button clicked!\n");
+						if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+						{
+							isReturnRequested = true;
+							OutputDebugStringA("Return button clicked!\n");
+						}
 						break;
 
 					case ButtonType::OK:
@@ -151,22 +155,33 @@ bool ButtonManager::IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const D
 	return false;
 }
 
-void ButtonManager::Render(float alpha)
+void ButtonManager::Render(float alpha, ButtonType buttonType)
 {
-
+	if(alpha <= 0.001f && !buttonSpriteData)
+	{
+		return;
+	}
 
 	//ボタンの描画処理
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
-	//シェーダーの設定
-	context->IASetInputLayout(spriteInputLayout.Get());
-	context->VSSetShader(spriteVS.Get(), nullptr, 0);
-	context->PSSetShader(spritePS.Get(), nullptr, 0);
-
-	context->OMSetDepthStencilState(
-		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+	
 	for (const auto& button : *buttonSpriteData)
 	{
+
+		//シェーダーの設定
+		context->IASetInputLayout(spriteInputLayout.Get());
+		context->VSSetShader(spriteVS.Get(), nullptr, 0);
+		context->PSSetShader(spritePS.Get(), nullptr, 0);
+
+		context->OMSetDepthStencilState(
+			renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+		if(buttonType != ButtonType::None && button.buttonType != buttonType)
+		{
+			continue;
+		}
+
 		if (button.textureSRV)
 		{
 			context->PSSetShaderResources(0, 1, button.textureSRV.GetAddressOf());

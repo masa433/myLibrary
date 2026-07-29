@@ -6,7 +6,7 @@
 #include "stage.h"
 #include "input.h"
 #include "sceneManager.h"
-#include "scene_game.h"
+#include "batterSelectScene.h"
 #include "scene_loading.h"
 #include <fstream>
 #include <string>
@@ -126,7 +126,7 @@ void SceneTitle::update(float elapsed_time)
 
 		if (hexTransitionEffect.IsFinished())
 		{
-			sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
+			sceneManager::Instance().ChangeScene(new scene_loading(new batterSelectScene()));
 		}
 	}
 	

@@ -16,23 +16,6 @@ class ButtonManager
 {
 public:
 
-	ButtonManager() {};
-	~ButtonManager() {};
-	void Initialize();
-	void Update(float elapsedTime, float alpha = 1.0f);
-	void Render(float alpha = 1.0f);
-	void DrawGUI();
-	void SaveToJson(nlohmann::json& j);
-	void LoadFromJson(const nlohmann::json& j);
-	void ResetStartRequest() { isStartRequested = false; }
-	bool IsStartRequested() const { return isStartRequested; }
-	//マウスカーソルがボタン上にあるかどうかを判定する関数
-	bool IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const DirectX::XMFLOAT2& buttonPos, const DirectX::XMFLOAT2& buttonSize);
-
-
-	void ResetOKRequest(bool requested) { isOKRequested = requested; }
-	bool IsOKRequested() const { return isOKRequested; }
-
 	//ボタンの種類
 	enum class ButtonType
 	{
@@ -46,6 +29,30 @@ public:
 		Count
 	};
 
+
+	ButtonManager() {};
+	~ButtonManager() {};
+	void Initialize();
+	void Update(float elapsedTime, float alpha = 1.0f);
+	void Render(float alpha = 1.0f, ButtonType buttonType = ButtonType::None);
+	void DrawGUI();
+	void SaveToJson(nlohmann::json& j);
+	void LoadFromJson(const nlohmann::json& j);
+	
+	//マウスカーソルがボタン上にあるかどうかを判定する関数
+	bool IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const DirectX::XMFLOAT2& buttonPos, const DirectX::XMFLOAT2& buttonSize);
+
+	void ResetStartRequest() { isStartRequested = false; }
+	bool IsStartRequested() const { return isStartRequested; }
+
+	void ResetOKRequest(bool requested) { isOKRequested = requested; }
+	bool IsOKRequested() const { return isOKRequested; }
+
+	void ResetReturnRequest(bool requested) { isReturnRequested = requested; }
+	bool IsReturnRequested() const { return isReturnRequested; }
+
+	//すべてのボタンを描画するか指定されたボタンタイプのボタンのみ描画するかを制御するフラグ
+	bool renderAllButtons = true;
 	
 
 private:
@@ -83,4 +90,5 @@ private:
 
 	bool isStartRequested = false;
 	bool isOKRequested = false;
+	bool isReturnRequested = false;
 };

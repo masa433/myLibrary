@@ -12,6 +12,7 @@
 #include "sprite.h"
 #include "Pitcher.h"
 #include "json.hpp"
+#include "Hextransitioneffect.h"
 
 using json = nlohmann::json;
 
@@ -29,6 +30,8 @@ public:
 	void LoadSetting();
 
 private:
+
+	HexTransitionEffect hexTransitionEffect; // ヘックス遷移エフェクトのインスタンス
 
 	//	選手のリスト
 	std::unique_ptr<ScrollView> playerScrollView;
@@ -126,6 +129,7 @@ private:
 		Selecting,// 選手選択中
 		Transition,// 決定ボタン押下後のフェード演出
 		Finished,// 遷移準備完了
+		Reverting,// 戻るボタン押下後のフェード演出
 	};
 
 	SequenceState currentState = SequenceState::Selecting;
@@ -135,8 +139,11 @@ private:
 
 	float uiAlpha = 1.0f; // UIの透明度(0.0f:完全透明, 1.0f:完全不透明)
 	float burstAlpha = 0.0f; // バーストエフェクトの透明度(0.0f:完全透明, 1.0f:完全不透明)
+	float returnAlpha = 1.0f; // 戻るボタンの透明度(0.0f:完全透明, 1.0f:完全不透明)
 
 	DirectX::XMFLOAT2 burstPosition = { 960.0f, 540.0f }; // バーストエフェクトの中心位置
 	DirectX::XMFLOAT2 burstSize = { 1920.0f, 1080.0f }; // バーストエフェクトのサイズ
 	
+
+	bool isChangingScene = false; // 設定がロードされたかどうかのフラグ
 };

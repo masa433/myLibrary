@@ -103,6 +103,7 @@ void batterSelectScene::initialize()
 	currentState = SequenceState::Selecting;
 	uiAlpha = 1.0f;
 	burstAlpha = 0.0f;
+	returnAlpha = 0.0f;
 	transitionTimer = 0.0f;
 
 	burstList = {
@@ -110,6 +111,8 @@ void batterSelectScene::initialize()
 		{ {300.0f, 550.0f}, {700.0f, 700.0f}, 1.0f, 0.5f }
 	};
 
+	hexTransitionEffect.Initialize();
+	isChangingScene = false;
 
 	SelectRandomPitcher(); // ランダムにピッチャーを選択
 	LoadSetting(); // 設定をロード
@@ -123,7 +126,15 @@ void batterSelectScene::update(float elapsed_time)
 		SaveSetting();
 	}
 
-	buttonManager.Update(elapsed_time, uiAlpha);
+	float currentMaxAlpha = (std::max)(uiAlpha, returnAlpha);
+
+	//遷移中はボタンの入力を無効化する
+	if(currentState == SequenceState::Transition || currentState == SequenceState::Reverting)
+	{
+		buttonManager.Update(elapsed_time, 0.0f); // 遷移中はボタンの入力を無効化
+	}
+	else
+	buttonManager.Update(elapsed_time, currentMaxAlpha);
 
 	//ステートに応じた処理
 	switch (currentState)
@@ -131,6 +142,7 @@ void batterSelectScene::update(float elapsed_time)
 	case SequenceState::Selecting:
 	{
 		uiAlpha = 1.0f;
+		returnAlpha = 0.0f;
 		for (auto& effect : burstList)
 		{
 			effect.alpha = 0.0f; // 選択中はエフェクトを非表示
@@ -156,6 +168,7 @@ void batterSelectScene::update(float elapsed_time)
 		// 前半: UIのフェードアウト (0 ～ uiFadeDuration)
 		float uiProgress = std::clamp(transitionTimer / uiFadeDuration, 0.0f, 1.0f);
 		uiAlpha = 1.0f - uiProgress;
+		
 
 		// 後半: UIが消え終わってから光エフェクトをフェードイン
 		float burstProgress = std::clamp((transitionTimer - uiFadeDuration) / burstFadeDuration, 0.0f, 1.0f);
@@ -163,7 +176,7 @@ void batterSelectScene::update(float elapsed_time)
 		{
 			effect.alpha = burstProgress;
 		}
-
+		returnAlpha = burstProgress;
 		if (transitionTimer >= uiFadeDuration + burstFadeDuration)
 		{
 			currentState = SequenceState::Finished;
@@ -174,34 +187,72 @@ void batterSelectScene::update(float elapsed_time)
 	{
 		// 遷移完了後の処理
 		uiAlpha = 0.0f;
-
+		returnAlpha = 1.0f;
 		for (auto& effect : burstList)
 		{
 			effect.alpha = 1.0f; // 光エフェクトを完全に表示
 		}
 
+		if (buttonManager.IsReturnRequested())
+		{
+			currentState = SequenceState::Reverting;
+			buttonManager.ResetReturnRequest(false);
+			transitionTimer = 0.0f; // 遷移演出のタイマーをリセット
+		}
+
+		break;
+	}
+	case SequenceState::Reverting:
+	{
+		transitionTimer += elapsed_time;
+		const float uiFadeDuration = 0.4f;    // UIがフェードアウトする時間
+		const float burstFadeDuration = 0.4f; // 光エフェクトがフェードインする時間
+		// 前半: 光エフェクトのフェードアウト (0 ～ burstFadeDuration)
+		float burstProgress = std::clamp(transitionTimer / burstFadeDuration, 0.0f, 1.0f);
+		for (auto& effect : burstList)
+		{
+			effect.alpha = 1.0f - burstProgress;
+		}
+		returnAlpha = 1.0f - burstProgress;
+		// 後半: 光エフェクトが消え終わってからUIをフェードイン
+		float uiProgress = std::clamp((transitionTimer - burstFadeDuration) / uiFadeDuration, 0.0f, 1.0f);
+		uiAlpha = uiProgress;
+		if (transitionTimer >= uiFadeDuration + burstFadeDuration)
+		{
+			currentState = SequenceState::Selecting;
+			uiAlpha = 1.0f;
+			returnAlpha = 0.0f;
+			for (auto& effect : burstList)
+			{
+				effect.alpha = 0.0f; // 選択中はエフェクトを非表示
+			}
+		}
 		break;
 	}
 	}
 
-	//GamePad& pad = Input::Instance().GetGamePad();
-
-	//const GamePadButton anyButton =
-	//	GamePad::BTN_A
-	//	| GamePad::BTN_B
-	//	| GamePad::BTN_X
-	//	| GamePad::BTN_Y;
-	//
-	//if (anyButton & pad.GetButtonDown())
-	//{
-	//	// 選手が選択されたらゲームシーンに遷移
-	//	sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
-	//}
-
-
 	for(auto& effect : burstList)
 	{
 		effect.time += elapsed_time;
+	}
+
+	if (!isChangingScene)
+	{
+		if (buttonManager.IsStartRequested())
+		{
+			isChangingScene = true;
+			hexTransitionEffect.Start(1.0f);
+			buttonManager.ResetStartRequest();
+		}
+	}
+	else
+	{
+		hexTransitionEffect.Update(elapsed_time);
+
+		if (hexTransitionEffect.IsFinished())
+		{
+			sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
+		}
 	}
 
 }
@@ -233,17 +284,9 @@ void batterSelectScene::render(float elapsedTime)
 			playerScrollView->Render(uiAlpha); // この中でVS/PS/InputLayoutがnullptrに戻る
 		}
 
-		buttonManager.Render(uiAlpha);
+		buttonManager.Render(uiAlpha, ButtonManager::ButtonType::OK);
 
 	}
-
-
-	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
-	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
-	dc->IASetInputLayout(input_layout.Get());
-	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
-	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
-
 
 	dc->VSSetShader(burstVertexShader.Get(), nullptr, 0);
 	dc->PSSetShader(burstPixelShader.Get(), nullptr, 0);
@@ -251,6 +294,8 @@ void batterSelectScene::render(float elapsedTime)
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	dc->VSSetConstantBuffers(0, 1, burstTransformBuffer.GetAddressOf());
 	dc->PSSetConstantBuffers(0, 1, burstColorBuffer.GetAddressOf());
+
+	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
 
 	for(const auto& effect : burstList )
@@ -287,6 +332,11 @@ void batterSelectScene::render(float elapsedTime)
 	}
 
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Return);
+	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Start);
+
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
 	dc->IASetInputLayout(input_layout.Get());
@@ -301,7 +351,10 @@ void batterSelectScene::render(float elapsedTime)
 			pitcherSpriteDataArray[selectedPitcherIndex]->rotation);
 	}*/
 
-
+	if (isChangingScene)
+	{
+		hexTransitionEffect.Render();
+	}
 
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -377,14 +430,18 @@ void batterSelectScene::SaveSetting()
 	// JSONをファイルに保存する処理を追加
 	
 	//BurstEffectの設定も保存
-	for (size_t i = 0; i < burstList.size(); ++i)
+
+	j["burstEffect"] = json::array(); 
+	for(auto& effect : burstList)
 	{
-		std::string effectKey = "burstEffect" + std::to_string(i);
-		j[effectKey]["position"] = { burstList[i].position.x, burstList[i].position.y };
-		j[effectKey]["size"] = { burstList[i].size.x, burstList[i].size.y };
-		j[effectKey]["alpha"] = burstList[i].alpha;
-		j[effectKey]["time"] = burstList[i].time;
+		json effectJson;
+		effectJson["position"] = { effect.position.x, effect.position.y };
+		effectJson["size"] = { effect.size.x, effect.size.y };
+		effectJson["alpha"] = effect.alpha;
+		effectJson["time"] = 0.0f;
+		j["burstEffect"].push_back(effectJson);
 	}
+
 
 	// ファイルに保存
 	std::ofstream file("resources\\setting\\batterSelectSettings.json");
@@ -403,18 +460,32 @@ void batterSelectScene::LoadSetting()
 	buttonManager.LoadFromJson(j);
 	playerScrollView->LoadFromJson(j);
 
-	if (j.contains("burstEffect"))
+	if (j.contains("burstEffect") && j["burstEffect"].is_array())
 	{
-		auto& burstEffect = j["burstEffect"];
-		if (burstEffect.contains("position") && burstEffect["position"].is_array() && burstEffect["position"].size() == 2)
+		burstList.clear();// 既存のバーストエフェクトをクリア
+
+		for(const auto& effectJson : j["burstEffect"])
 		{
-			burstPosition.x = burstEffect["position"][0].get<float>();
-			burstPosition.y = burstEffect["position"][1].get<float>();
-		}
-		if (burstEffect.contains("size") && burstEffect["size"].is_array() && burstEffect["size"].size() == 2)
-		{
-			burstSize.x = burstEffect["size"][0].get<float>();
-			burstSize.y = burstEffect["size"][1].get<float>();
+			BurstEffectParam effect;
+			if (effectJson.contains("position") && effectJson["position"].is_array() && effectJson["position"].size() == 2)
+			{
+				effect.position.x = effectJson["position"][0].get<float>();
+				effect.position.y = effectJson["position"][1].get<float>();
+			}
+			if (effectJson.contains("size") && effectJson["size"].is_array() && effectJson["size"].size() == 2)
+			{
+				effect.size.x = effectJson["size"][0].get<float>();
+				effect.size.y = effectJson["size"][1].get<float>();
+			}
+			if (effectJson.contains("alpha"))
+			{
+				effect.alpha = effectJson["alpha"].get<float>();
+			}
+			if (effectJson.contains("time"))
+			{
+				effect.time = effectJson["time"].get<float>();
+			}
+			burstList.push_back(effect);
 		}
 	}
 }
