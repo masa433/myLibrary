@@ -65,20 +65,19 @@ void ButtonManager::Initialize()
 		&codepoints);
 }
 
-void ButtonManager::Update(float elapsedTime, float alpha)
+void ButtonManager::Update(float elapsedTime)
 {
-	//アルファ値が0.001以下の場合は更新処理をスキップ
-	if (alpha <= 0.001f)
-	{
-		return;
-	}
-
+	
+	
 	//ボタンの更新処理
 	//マウスの位置を取得
-	POINT mousePos;
-	GetCursorPos(&mousePos);
-	ScreenToClient(Graphics::Instance().GetHwnd(), &mousePos);
+	Input& input = Input::Instance();
 
+	bool isMouseDown = input.GetMouse().GetButton();
+	bool mouseDownEdge = isMouseDown && !prevMouseDown;
+	bool mouseUpEdge = !isMouseDown && prevMouseDown;
+
+	
 
 	//ボタンのクリック判定
 	//マウスの位置がボタンの範囲内かどうかの判定
@@ -86,59 +85,97 @@ void ButtonManager::Update(float elapsedTime, float alpha)
 	{
 		for (auto& button : *buttonSpriteData)
 		{
-			if (IsMouseOverButton({ static_cast<float>(mousePos.x), static_cast<float>(mousePos.y) },
-				button.position, button.size))
+			button.size = button.originalSize;
+			
+			//アルファ値が0に近い値なら反応しない
+			if(button.currentAlpha <=0.001f)
 			{
-				//ボタンの種類によって処理を分ける
-				switch (button.buttonType)
+				continue;
+			}
+
+			bool isHovered = IsMouseOverButton({ static_cast<float>(input.GetMouse().GetPositionX()), static_cast<float>(input.GetMouse().GetPositionY()) },
+				button.position, button.originalSize);
+
+			const float scaleFactor = 1.15f; // 拡大率（例: 1.15倍）
+			DirectX::XMFLOAT2 targetSize = { button.originalSize.x * scaleFactor, button.originalSize.y * scaleFactor };
+
+			float offsetX = (targetSize.x - button.originalSize.x) * 0.5f;
+			float offsetY = (targetSize.y - button.originalSize.y) * 0.5f;
+
+			bool isPressed = isHovered && input.GetMouse().GetButton();//押しっぱなし判定
+
+			button.size = isPressed ? button.originalSize : (isHovered ? targetSize : button.originalSize);
+		}
+
+		if (mouseDownEdge)
+		{
+			for (auto& button : *buttonSpriteData)
+			{
+				if (button.currentAlpha <= 0.001f) continue;
+
+				bool isHovered = IsMouseOverButton(
+					{ static_cast<float>(input.GetMouse().GetPositionX()), static_cast<float>(input.GetMouse().GetPositionY()) },
+					button.position, button.originalSize);
+
+				if (isHovered)
 				{
+					pressedButton = &button; // このフレームでホバーしていたボタンだけをロック
+					break; // 1つ見つかったら終了(重なりがなければ十分)
+				}
+
+				else
+				{
+					//ボタンを元のサイズに戻す
+					button.size = button.originalSize;
+				}
+			}
+		}
+
+		if(mouseUpEdge)
+		{
+
+			
+			if (pressedButton != nullptr)
+			{
+				bool stillHovered = IsMouseOverButton(
+					{ static_cast<float>(input.GetMouse().GetPositionX()), static_cast<float>(input.GetMouse().GetPositionY()) },
+					pressedButton->position, pressedButton->originalSize);
+
+				if (stillHovered)
+				{
+					switch (pressedButton->buttonType)
+					{
 					case ButtonType::Start:
-						//スタートボタンがクリックされた場合の処理
-						//ボタンがクリックされた場合の処理
-						if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
-						{
-							isStartRequested = true;
-						}
+						isStartRequested = true;
 						break;
 					case ButtonType::Settings:
-						//設定ボタンがクリックされた場合の処理
 						OutputDebugStringA("Settings button clicked!\n");
 						break;
 					case ButtonType::Quit:
-						//終了ボタンがクリックされた場合の処理
 						OutputDebugStringA("Quit button clicked!\n");
 						break;
 					case ButtonType::Pose:
-						//ポーズボタンがクリックされた場合の処理
 						OutputDebugStringA("Pose button clicked!\n");
 						break;
-
 					case ButtonType::Return:
-						//戻るボタンがクリックされた場合の処理
-						if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
-						{
-							isReturnRequested = true;
-							OutputDebugStringA("Return button clicked!\n");
-						}
+						isReturnRequested = true;
+						OutputDebugStringA("Return button clicked!\n");
 						break;
-
 					case ButtonType::OK:
-						//決定ボタンがクリックされた場合の処理
-						if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
-						{
-							isOKRequested = true;
-							OutputDebugStringA("OK button clicked!\n");
-						}
-						
+						isOKRequested = true;
+						OutputDebugStringA("OK button clicked!\n");
 						break;
 					default:
 						break;
+					}
 				}
-
-				
 			}
+
+			pressedButton = nullptr; // 離したら必ずリセット
 		}
 	}
+
+	prevMouseDown = isMouseDown; // 次フレーム比較用に保存
 }
 
 bool ButtonManager::IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const DirectX::XMFLOAT2& buttonPos, const DirectX::XMFLOAT2& buttonSize)
@@ -157,17 +194,22 @@ bool ButtonManager::IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const D
 
 void ButtonManager::Render(float alpha, ButtonType buttonType)
 {
-	if(alpha <= 0.001f && !buttonSpriteData)
-	{
-		return;
-	}
-
+	
 	//ボタンの描画処理
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 	
-	for (const auto& button : *buttonSpriteData)
+	for (auto& button : *buttonSpriteData)
 	{
+
+		
+		if (buttonType != ButtonType::None && button.buttonType != buttonType)
+		{
+			continue;
+		}
+
+		//alphaを保存
+		button.currentAlpha = alpha;
 
 		//シェーダーの設定
 		context->IASetInputLayout(spriteInputLayout.Get());
@@ -177,10 +219,7 @@ void ButtonManager::Render(float alpha, ButtonType buttonType)
 		context->OMSetDepthStencilState(
 			renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-		if(buttonType != ButtonType::None && button.buttonType != buttonType)
-		{
-			continue;
-		}
+		
 
 		if (button.textureSRV)
 		{
@@ -191,8 +230,14 @@ void ButtonManager::Render(float alpha, ButtonType buttonType)
 			// ここでは、ボタンの位置、サイズ、回転、色などを使用して描画する処理を実装する必要があります
 			if (button.spriteObj && buttonSpriteData)
 			{
+				//positionを中心にずらす
+
+				float offsetX = button.position.x - (button.size.x - button.originalSize.x) * 0.5f;
+				float offsetY = button.position.y - (button.size.y - button.originalSize.y) * 0.5f;
+
+
 				button.spriteObj->render(context,
-					button.position.x, button.position.y,
+					offsetX,offsetY,
 					button.size.x, button.size.y,
 					button.color.x, button.color.y, button.color.z, button.color.w * alpha,
 					button.rotation);
@@ -342,7 +387,10 @@ void ButtonManager::DrawGUI()
 			btn.buttonType = static_cast<ButtonManager::ButtonType>(currentTypeIndex);
 
 			ImGui::DragFloat2((u8"位置##" + std::to_string(i)).c_str(), &btn.position.x, 1.0f);
-			ImGui::DragFloat2((u8"サイズ##" + std::to_string(i)).c_str(), &btn.size.x, 1.0f, 0.0f, 4096.0f);
+			if(ImGui::DragFloat2((u8"サイズ##" + std::to_string(i)).c_str(), &btn.size.x, 1.0f)) 
+			{
+				btn.originalSize = btn.size;
+			}
 			ImGui::DragFloat((u8"回転##" + std::to_string(i)).c_str(), &btn.rotation, 0.01f);
 			ImGui::ColorEdit4((u8"色##" + std::to_string(i)).c_str(), &btn.color.x);
 
@@ -393,6 +441,7 @@ void ButtonManager::LoadFromJson(const nlohmann::json& j)
 		LoadButtonTexture(button, button.texturePath);
 		button.position = { buttonJson["position"][0], buttonJson["position"][1] };
 		button.size = { buttonJson["size"][0], buttonJson["size"][1] };
+		button.originalSize = button.size;
 		button.rotation = buttonJson.value("rotation", 0.0f);
 		button.color = { buttonJson["color"][0], buttonJson["color"][1], buttonJson["color"][2], buttonJson["color"][3] };
 		button.label = buttonJson.value("label", "");

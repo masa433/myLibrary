@@ -14,6 +14,8 @@
 #include "json.hpp"
 #include "Hextransitioneffect.h"
 
+#define PITCHER_IMAGE_COUNT 4 // ピッチャー画像の数
+
 using json = nlohmann::json;
 
 class batterSelectScene : public scene
@@ -81,6 +83,21 @@ private:
 	std::unique_ptr<PitcherSpriteData> pitcherSpriteDataArray[21];
 	std::unique_ptr<sprite> pitcherSprites[21];
 
+	
+	//ピッチャー画像のスプライトデータ
+	struct PitcherImageSpriteData
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+
+	
+	std::unique_ptr<PitcherImageSpriteData> pitcherImageSpriteDataArray[PITCHER_IMAGE_COUNT];
+	std::unique_ptr<sprite> pitcherImageSprites[PITCHER_IMAGE_COUNT];
+	int randomPitcherImageIndex = 0;
 	
 	Pitcher::RealPitcher selectedPitcher = Pitcher::RealPitcher::None; // 選択されたピッチャーの初期値をNoneに設定
 	size_t selectedPitcherIndex = 0; // 選択されたピッチャーのインデックスを保持する変数

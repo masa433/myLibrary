@@ -33,7 +33,7 @@ public:
 	ButtonManager() {};
 	~ButtonManager() {};
 	void Initialize();
-	void Update(float elapsedTime, float alpha = 1.0f);
+	void Update(float elapsedTime);
 	void Render(float alpha = 1.0f, ButtonType buttonType = ButtonType::None);
 	void DrawGUI();
 	void SaveToJson(nlohmann::json& j);
@@ -64,13 +64,20 @@ private:
 		std::unique_ptr<sprite> spriteObj;
 		DirectX::XMFLOAT2 position = {100.0f, 100.0f};
 		DirectX::XMFLOAT2 size = {100.0f, 100.0f};
+		DirectX::XMFLOAT2 originalSize = { 100.0f, 100.0f };
 		float rotation = 0.0f;
 		DirectX::XMFLOAT4 color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 		std::string label;
 		char labelBuffer[256] = "Button";
 		ButtonType buttonType = ButtonType::None;
+		float currentAlpha = 0.0f;
+		bool isPressing = false;
+		//押されているボタンの記録用
+		
 	};
-	
+	bool prevMouseDown = false;      // 前フレームでマウスが押されていたか
+	ButtonSprite* pressedButton = nullptr; // 現在押し始めているボタン
+
 	std::unique_ptr<std::vector<ButtonSprite>> buttonSpriteData;
 	std::unique_ptr<FontRenderer> fontRenderer;
 
@@ -91,4 +98,5 @@ private:
 	bool isStartRequested = false;
 	bool isOKRequested = false;
 	bool isReturnRequested = false;
+
 };

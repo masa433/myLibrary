@@ -31,6 +31,9 @@ void batterSelectScene::SelectRandomPitcher()
 	snprintf(buffer, sizeof(buffer), "Selected Pitcher: %d (Index: %zu)", static_cast<int>(selectedPitcher), selectedPitcherIndex);
 	OutputDebugStringA(buffer);
 
+	if (Pitcher::Instance().IsRightPitcher()) randomPitcherImageIndex = 2 + rand() % 2; //3か4
+	else randomPitcherImageIndex = rand() % 2;//0か1
+
 
 	burstElapsedTime = 0.0f; // バーストエフェクトの経過時間をリセット
 }
@@ -82,6 +85,18 @@ void batterSelectScene::initialize()
 
 	}
 
+	//ピッチャー画像のスプライトデータを初期化
+	for (size_t i = 0; i < PITCHER_IMAGE_COUNT; ++i)
+	{
+		pitcherImageSpriteDataArray[i] = std::make_unique<PitcherImageSpriteData>();
+		pitcherImageSpriteDataArray[i]->texturePath = L".\\resources\\textures\\pitcherImage\\pitcherImage" + std::to_wstring(i + 1) + L".png";
+		pitcherImageSpriteDataArray[i]->position = { 550.0f, 75.0f };
+		pitcherImageSpriteDataArray[i]->size = { 300.0f, 500.0f };
+		pitcherImageSpriteDataArray[i]->rotation = 0.0f;
+		pitcherImageSpriteDataArray[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		pitcherImageSprites[i] = std::make_unique<sprite>(device, context, pitcherImageSpriteDataArray[i]->texturePath.c_str());
+	}
+
 	//バーストエフェクト
 	{
 		create_vs_from_cso(device, ".\\resources\\shader\\burstEffect_vs.cso", burstVertexShader.GetAddressOf(), nullptr, nullptr, 0);
@@ -126,15 +141,11 @@ void batterSelectScene::update(float elapsed_time)
 		SaveSetting();
 	}
 
-	float currentMaxAlpha = (std::max)(uiAlpha, returnAlpha);
-
-	//遷移中はボタンの入力を無効化する
-	if(currentState == SequenceState::Transition || currentState == SequenceState::Reverting)
+	if(currentState != SequenceState::Transition && currentState != SequenceState::Reverting)
 	{
-		buttonManager.Update(elapsed_time, 0.0f); // 遷移中はボタンの入力を無効化
+		buttonManager.Update(elapsed_time);
 	}
-	else
-	buttonManager.Update(elapsed_time, currentMaxAlpha);
+	
 
 	//ステートに応じた処理
 	switch (currentState)
@@ -277,16 +288,16 @@ void batterSelectScene::render(float elapsedTime)
 			backGroundData->rotation);
 	}
 
+
 	if (uiAlpha > 0.001f)
 	{
 		if (playerScrollView)
 		{
 			playerScrollView->Render(uiAlpha); // この中でVS/PS/InputLayoutがnullptrに戻る
 		}
-
-		buttonManager.Render(uiAlpha, ButtonManager::ButtonType::OK);
-
 	}
+
+	buttonManager.Render(uiAlpha, ButtonManager::ButtonType::OK);
 
 	dc->VSSetShader(burstVertexShader.Get(), nullptr, 0);
 	dc->PSSetShader(burstPixelShader.Get(), nullptr, 0);
@@ -342,7 +353,18 @@ void batterSelectScene::render(float elapsedTime)
 	dc->IASetInputLayout(input_layout.Get());
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	//選択されたピッチャーのスプライトを描画
+
+	//ピッチャーの利き手が右投げならimage3か4、左投げならimage1か2を描画する
+	if (randomPitcherImageIndex >= 0)
+	{
+		pitcherImageSprites[randomPitcherImageIndex]->render(dc, pitcherImageSpriteDataArray[randomPitcherImageIndex]->position.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->position.y,
+			pitcherImageSpriteDataArray[randomPitcherImageIndex]->size.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->size.y,
+			pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.y, 
+			pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.z, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.w,
+			pitcherImageSpriteDataArray[randomPitcherImageIndex]->rotation);
+	}
+
+	////選択されたピッチャーのスプライトを描画
 	/*if (selectedPitcherIndex < pitcherCount && pitcherSprites[selectedPitcherIndex] && pitcherSpriteDataArray[selectedPitcherIndex])
 	{
 		pitcherSprites[selectedPitcherIndex]->render(dc, pitcherSpriteDataArray[selectedPitcherIndex]->position.x, pitcherSpriteDataArray[selectedPitcherIndex]->position.y,
