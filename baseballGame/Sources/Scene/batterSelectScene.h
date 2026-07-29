@@ -107,8 +107,17 @@ public:
 		float padding; // 16バイト境界に合わせるためのパディング
 	};
 
+	struct BurstEffectParam
+	{
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float alpha;
+		float time;
+	};
 	
 	float burstElapsedTime = 0.0f;
+
+	std::vector<BurstEffectParam> burstList; // バーストエフェクトのパラメータを格納するベクター
 
 private:
 
@@ -126,5 +135,8 @@ private:
 
 	float uiAlpha = 1.0f; // UIの透明度(0.0f:完全透明, 1.0f:完全不透明)
 	float burstAlpha = 0.0f; // バーストエフェクトの透明度(0.0f:完全透明, 1.0f:完全不透明)
+
+	DirectX::XMFLOAT2 burstPosition = { 960.0f, 540.0f }; // バーストエフェクトの中心位置
+	DirectX::XMFLOAT2 burstSize = { 1920.0f, 1080.0f }; // バーストエフェクトのサイズ
 	
 };

@@ -105,6 +105,12 @@ void batterSelectScene::initialize()
 	burstAlpha = 0.0f;
 	transitionTimer = 0.0f;
 
+	burstList = {
+		{ {1500.0f, 550.0f}, {700.0f, 700.0f}, 1.0f, 0.0f },
+		{ {300.0f, 550.0f}, {700.0f, 700.0f}, 1.0f, 0.5f }
+	};
+
+
 	SelectRandomPitcher(); // ランダムにピッチャーを選択
 	LoadSetting(); // 設定をロード
 }
@@ -125,7 +131,10 @@ void batterSelectScene::update(float elapsed_time)
 	case SequenceState::Selecting:
 	{
 		uiAlpha = 1.0f;
-		burstAlpha = 0.0f; // 選択中はエフェクトを非表示
+		for (auto& effect : burstList)
+		{
+			effect.alpha = 0.0f; // 選択中はエフェクトを非表示
+		}
 
 		playerScrollView->Update(elapsed_time);
 
@@ -150,7 +159,10 @@ void batterSelectScene::update(float elapsed_time)
 
 		// 後半: UIが消え終わってから光エフェクトをフェードイン
 		float burstProgress = std::clamp((transitionTimer - uiFadeDuration) / burstFadeDuration, 0.0f, 1.0f);
-		burstAlpha = burstProgress;
+		for (auto& effect : burstList)
+		{
+			effect.alpha = burstProgress;
+		}
 
 		if (transitionTimer >= uiFadeDuration + burstFadeDuration)
 		{
@@ -162,7 +174,11 @@ void batterSelectScene::update(float elapsed_time)
 	{
 		// 遷移完了後の処理
 		uiAlpha = 0.0f;
-		burstAlpha = 1.0f; // 完了状態ではエフェクトを全開表示（1.0）で保持する
+
+		for (auto& effect : burstList)
+		{
+			effect.alpha = 1.0f; // 光エフェクトを完全に表示
+		}
 
 		break;
 	}
@@ -183,7 +199,10 @@ void batterSelectScene::update(float elapsed_time)
 	//}
 
 
-	burstElapsedTime += elapsed_time;
+	for(auto& effect : burstList)
+	{
+		effect.time += elapsed_time;
+	}
 
 }
 
@@ -225,44 +244,53 @@ void batterSelectScene::render(float elapsedTime)
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
-	if (burstAlpha > 0.001f)
+
+	dc->VSSetShader(burstVertexShader.Get(), nullptr, 0);
+	dc->PSSetShader(burstPixelShader.Get(), nullptr, 0);
+	dc->IASetInputLayout(nullptr); // 頂点バッファ不使用なのでレイアウトも不要
+	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	dc->VSSetConstantBuffers(0, 1, burstTransformBuffer.GetAddressOf());
+	dc->PSSetConstantBuffers(0, 1, burstColorBuffer.GetAddressOf());
+	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
+
+	for(const auto& effect : burstList )
+
 	{
+		if (effect.alpha > 0.001f)
+		{
 
 
-		D3D11_MAPPED_SUBRESOURCE mapped;
+			D3D11_MAPPED_SUBRESOURCE mapped;
 
-		dc->Map(burstTransformBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+			dc->Map(burstTransformBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
-		// バーストエフェクトの中心位置をスクリーン座標に変換
-		auto* tcb = reinterpret_cast<BurstTransformBuffer*>(mapped.pData);
-		tcb->center = { 1250.0f + 300.0f, 75.0f + 450.0f };
-		tcb->size = { 700.0f, 700.0f };
-		tcb->screenSize = { static_cast<float>(Graphics::Instance().GetScreenWidth()), static_cast<float>(Graphics::Instance().GetScreenHeight()) };
-		dc->Unmap(burstTransformBuffer.Get(), 0);
+			// バーストエフェクトの中心位置をスクリーン座標に変換
+			auto* tcb = reinterpret_cast<BurstTransformBuffer*>(mapped.pData);
+			tcb->center = effect.position;
+			tcb->size = effect.size;
+			tcb->screenSize = { static_cast<float>(Graphics::Instance().GetScreenWidth()), static_cast<float>(Graphics::Instance().GetScreenHeight()) };
+			dc->Unmap(burstTransformBuffer.Get(), 0);
 
-		dc->Map(burstColorBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-		auto* ccb = reinterpret_cast<BurstBuffer*>(mapped.pData);
-		ccb->time = burstElapsedTime;
-		ccb->aspectRatio = 1.0f; // アスペクト比を1.0に設定
-		ccb->progress = burstAlpha;
-		dc->Unmap(burstColorBuffer.Get(), 0);
+			dc->Map(burstColorBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+			auto* ccb = reinterpret_cast<BurstBuffer*>(mapped.pData);
+			ccb->time = effect.time;
+			ccb->aspectRatio = 1.0f; // アスペクト比を1.0に設定
+			ccb->progress = effect.alpha;
+			dc->Unmap(burstColorBuffer.Get(), 0);
 
-		dc->VSSetShader(burstVertexShader.Get(), nullptr, 0);
-		dc->PSSetShader(burstPixelShader.Get(), nullptr, 0);
-		dc->IASetInputLayout(nullptr); // 頂点バッファ不使用なのでレイアウトも不要
-		dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-		dc->VSSetConstantBuffers(0, 1, burstTransformBuffer.GetAddressOf());
-		dc->PSSetConstantBuffers(0, 1, burstColorBuffer.GetAddressOf());
-		dc->OMSetBlendState(renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
 
-		dc->Draw(4, 0); // 頂点バッファなしで4頂点描画（トライアングルストリップ）
 
-		dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
-		dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
-		dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
-		dc->IASetInputLayout(input_layout.Get());
-		dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			dc->Draw(4, 0); // 頂点バッファなしで4頂点描画（トライアングルストリップ）
+
+			
+		}
 	}
+
+	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
+	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
+	dc->IASetInputLayout(input_layout.Get());
+	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	//選択されたピッチャーのスプライトを描画
 	/*if (selectedPitcherIndex < pitcherCount && pitcherSprites[selectedPitcherIndex] && pitcherSpriteDataArray[selectedPitcherIndex])
@@ -307,21 +335,6 @@ void batterSelectScene::DrawGUI()
 
 	ImGui::Begin("ScrollView");
 
-	bool isChanged = false;
-	isChanged |= ImGui::DragFloat2("ScrollView Position", &scrollViewPosition.x, 1.0f);
-	isChanged |= ImGui::DragFloat2("ScrollView Size", &scrollViewSize.x, 1.0f);
-
-	if (isChanged && playerScrollView)
-	{
-		// 背景の中心位置に合わせて渡す
-		playerScrollView->SetBackGroundTransform(
-			scrollViewPosition.x + scrollViewSize.x / 2.0f,
-			scrollViewPosition.y + scrollViewSize.y / 2.0f,
-			scrollViewSize.x,
-			scrollViewSize.y
-		);
-	}
-
 	if (ImGui::CollapsingHeader("pitcherInfo"))
 	{
 		ImGui::DragFloat2("pitcherInfo Position", &pitcherSpriteDataArray[selectedPitcherIndex]->position.x, 1.0f);
@@ -334,6 +347,23 @@ void batterSelectScene::DrawGUI()
 		SelectRandomPitcher();
 	}
 
+	if(ImGui::CollapsingHeader("Burst Effect"))
+	{
+		for(auto& effect : burstList)
+		{
+			std::string label = "Burst Effect " + std::to_string(&effect - &burstList[0]);
+			if (ImGui::TreeNode(label.c_str()))
+			{
+				ImGui::DragFloat2("Position", &effect.position.x, 1.0f);
+				ImGui::DragFloat2("Size", &effect.size.x, 1.0f);
+				ImGui::DragFloat("Alpha", &effect.alpha, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("Time", &effect.time, 0.01f);
+				ImGui::TreePop();
+			}
+		}
+	}
+
+
 	ImGui::End();
 #endif // !_DEBUG
 }
@@ -345,6 +375,17 @@ void batterSelectScene::SaveSetting()
 	buttonManager.SaveToJson(j);
 	playerScrollView->SaveToJson(j);
 	// JSONをファイルに保存する処理を追加
+	
+	//BurstEffectの設定も保存
+	for (size_t i = 0; i < burstList.size(); ++i)
+	{
+		std::string effectKey = "burstEffect" + std::to_string(i);
+		j[effectKey]["position"] = { burstList[i].position.x, burstList[i].position.y };
+		j[effectKey]["size"] = { burstList[i].size.x, burstList[i].size.y };
+		j[effectKey]["alpha"] = burstList[i].alpha;
+		j[effectKey]["time"] = burstList[i].time;
+	}
+
 	// ファイルに保存
 	std::ofstream file("resources\\setting\\batterSelectSettings.json");
 	file << j.dump(4);
@@ -361,4 +402,19 @@ void batterSelectScene::LoadSetting()
 	// JSONファイルから読み込む処理を追加
 	buttonManager.LoadFromJson(j);
 	playerScrollView->LoadFromJson(j);
+
+	if (j.contains("burstEffect"))
+	{
+		auto& burstEffect = j["burstEffect"];
+		if (burstEffect.contains("position") && burstEffect["position"].is_array() && burstEffect["position"].size() == 2)
+		{
+			burstPosition.x = burstEffect["position"][0].get<float>();
+			burstPosition.y = burstEffect["position"][1].get<float>();
+		}
+		if (burstEffect.contains("size") && burstEffect["size"].is_array() && burstEffect["size"].size() == 2)
+		{
+			burstSize.x = burstEffect["size"][0].get<float>();
+			burstSize.y = burstEffect["size"][1].get<float>();
+		}
+	}
 }
