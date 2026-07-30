@@ -90,8 +90,8 @@ void batterSelectScene::initialize()
 	{
 		pitcherImageSpriteDataArray[i] = std::make_unique<PitcherImageSpriteData>();
 		pitcherImageSpriteDataArray[i]->texturePath = L".\\resources\\textures\\pitcherImage\\pitcherImage" + std::to_wstring(i + 1) + L".png";
-		pitcherImageSpriteDataArray[i]->position = { 550.0f, 75.0f };
-		pitcherImageSpriteDataArray[i]->size = { 300.0f, 500.0f };
+		pitcherImageSpriteDataArray[i]->position = { 1150.0f, 100.0f };
+		pitcherImageSpriteDataArray[i]->size = { 600.0f, 800.0f };
 		pitcherImageSpriteDataArray[i]->rotation = 0.0f;
 		pitcherImageSpriteDataArray[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		pitcherImageSprites[i] = std::make_unique<sprite>(device, context, pitcherImageSpriteDataArray[i]->texturePath.c_str());
@@ -119,6 +119,7 @@ void batterSelectScene::initialize()
 	uiAlpha = 1.0f;
 	burstAlpha = 0.0f;
 	returnAlpha = 0.0f;
+	batterImageAlpha = 0.0f;
 	transitionTimer = 0.0f;
 
 	burstList = {
@@ -154,6 +155,7 @@ void batterSelectScene::update(float elapsed_time)
 	{
 		uiAlpha = 1.0f;
 		returnAlpha = 0.0f;
+		batterImageAlpha = 0.0f;
 		for (auto& effect : burstList)
 		{
 			effect.alpha = 0.0f; // 選択中はエフェクトを非表示
@@ -188,6 +190,7 @@ void batterSelectScene::update(float elapsed_time)
 			effect.alpha = burstProgress;
 		}
 		returnAlpha = burstProgress;
+		batterImageAlpha = burstProgress;
 		if (transitionTimer >= uiFadeDuration + burstFadeDuration)
 		{
 			currentState = SequenceState::Finished;
@@ -199,6 +202,7 @@ void batterSelectScene::update(float elapsed_time)
 		// 遷移完了後の処理
 		uiAlpha = 0.0f;
 		returnAlpha = 1.0f;
+		batterImageAlpha = 1.0f;
 		for (auto& effect : burstList)
 		{
 			effect.alpha = 1.0f; // 光エフェクトを完全に表示
@@ -225,6 +229,7 @@ void batterSelectScene::update(float elapsed_time)
 			effect.alpha = 1.0f - burstProgress;
 		}
 		returnAlpha = 1.0f - burstProgress;
+		batterImageAlpha = 1.0f - burstProgress;
 		// 後半: 光エフェクトが消え終わってからUIをフェードイン
 		float uiProgress = std::clamp((transitionTimer - burstFadeDuration) / uiFadeDuration, 0.0f, 1.0f);
 		uiAlpha = uiProgress;
@@ -233,6 +238,7 @@ void batterSelectScene::update(float elapsed_time)
 			currentState = SequenceState::Selecting;
 			uiAlpha = 1.0f;
 			returnAlpha = 0.0f;
+			batterImageAlpha = 0.0f;
 			for (auto& effect : burstList)
 			{
 				effect.alpha = 0.0f; // 選択中はエフェクトを非表示
@@ -354,13 +360,18 @@ void batterSelectScene::render(float elapsedTime)
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
+	if(batterImageAlpha > 0.001f)
+	{
+		playerScrollView->RenderBatterImage(dc, batterImageAlpha); // この中でVS/PS/InputLayoutがnullptrに戻る
+	}
+
 	//ピッチャーの利き手が右投げならimage3か4、左投げならimage1か2を描画する
 	if (randomPitcherImageIndex >= 0)
 	{
 		pitcherImageSprites[randomPitcherImageIndex]->render(dc, pitcherImageSpriteDataArray[randomPitcherImageIndex]->position.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->position.y,
 			pitcherImageSpriteDataArray[randomPitcherImageIndex]->size.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->size.y,
 			pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.y, 
-			pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.z, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.w,
+			pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.z, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.w * batterImageAlpha,
 			pitcherImageSpriteDataArray[randomPitcherImageIndex]->rotation);
 	}
 

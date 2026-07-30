@@ -583,6 +583,9 @@
     <FxCompile Include="Shaders\burstEffect_vs.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\gltf_model_vs_instanced.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">

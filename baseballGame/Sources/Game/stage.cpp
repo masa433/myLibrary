@@ -420,6 +420,9 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 		}
 	}
 
+	std::vector<DirectX::XMFLOAT4X4> visibleTowerTransforms;
+	visibleTowerTransforms.reserve(TOWER_COUNT);// 4箇所のライトタワーの変換行列を格納するベクターを確保
+
 	// ライトタワーをスポットライトの位置に4箇所配置
 	for (int i = 0; i < TOWER_COUNT; i++)
 	{
@@ -437,6 +440,19 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 			isVisible = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, towerTransform);
 		}
 		if (isVisible)
+		{
+			//lightTower2->render_batched(rc.deviceContext, towerTransform, {});
+			visibleTowerTransforms.push_back(towerTransform); // フラスタムカリングに入っている場合のみ描画するため、変換行列を格納
+		}
+	}
+
+	if(!visibleTowerTransforms.empty() && isInstancingEnabled)
+	{
+		lightTower2->render_batched_instanced(rc.deviceContext, visibleTowerTransforms);
+	}
+	else if(!isInstancingEnabled)
+	{
+		for (const auto& towerTransform : visibleTowerTransforms)
 		{
 			lightTower2->render_batched(rc.deviceContext, towerTransform, {});
 		}
@@ -556,6 +572,8 @@ void stage::DrawGUI()
 		ImGui::DragFloat("Extra Height (Foul)", &foulLineEditor.extraHeight, 0.5f);
 		ImGui::DragFloat("Thickness (Foul)", &foulLineEditor.thickness, 0.1f);
 	}
+
+	ImGui::Checkbox("Enable Instancing for Light Towers", &isInstancingEnabled);
 
 #endif //  USE_IMGUI
 }

@@ -67,6 +67,25 @@ gltf_model::gltf_model(ID3D11Device* device, const std::string& filename) : file
 	};
 	create_vs_from_cso(device, ".\\resources\\shader\\gltf_model_vs.cso", vertex_shader.ReleaseAndGetAddressOf(), input_layout.ReleaseAndGetAddressOf(), input_element_desc, _countof(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\gltf_model_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
+
+	D3D11_INPUT_ELEMENT_DESC instanced_input_element_desc[]
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "JOINTS", 0, DXGI_FORMAT_R16G16B16A16_UINT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "WEIGHTS", 0,DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+		//インスタンシング用
+		{"INSTANCE_WORLD",0, DXGI_FORMAT_R32G32B32A32_FLOAT, 6, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{"INSTANCE_WORLD",1, DXGI_FORMAT_R32G32B32A32_FLOAT, 6, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{"INSTANCE_WORLD",2, DXGI_FORMAT_R32G32B32A32_FLOAT, 6, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{"INSTANCE_WORLD",3, DXGI_FORMAT_R32G32B32A32_FLOAT, 6, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+	};
+
+	create_vs_from_cso(device, ".\\resources\\shader\\gltf_model_vs_instanced.cso", instanced_vertex_shader.ReleaseAndGetAddressOf(), instanced_input_layout.ReleaseAndGetAddressOf(), instanced_input_element_desc, _countof(instanced_input_element_desc));
+
 	//UNIT.37
 	//ボーン行列の定数バッファを生成する
 	D3D11_BUFFER_DESC buffer_desc{};
@@ -1332,4 +1351,109 @@ void gltf_model::CalculateBounds()
 	// バウンディングスフィアの中心と半径を計算
 	boundingSphere.center = boundingBox.GetCenter();
 	boundingSphere.radius = boundingBox.GetRadius();
+}
+
+void gltf_model::render_batched_instanced(
+	ID3D11DeviceContext* immediate_context,
+	const std::vector<DirectX::XMFLOAT4X4>& worlds)
+{
+	if (worlds.empty()) return;
+
+	UINT instance_count = static_cast<UINT>(worlds.size());
+
+	//インスタンスバッファの更新
+	if (!instance_buffer || instance_buffer_capacity < instance_count)
+	{
+		instance_buffer.Reset();
+		instance_buffer_capacity = instance_count;
+
+		//インスタンバッファの生成
+		D3D11_BUFFER_DESC bd{};
+		bd.Usage = D3D11_USAGE_DYNAMIC;
+		bd.ByteWidth = sizeof(instance_data) * instance_buffer_capacity;
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+
+		ID3D11Device* device = nullptr;
+		immediate_context->GetDevice(&device);
+		device->CreateBuffer(&bd, nullptr, instance_buffer.GetAddressOf());
+		device->Release();
+	}
+
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	if (SUCCEEDED(immediate_context->Map(instance_buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+	{
+		memcpy(mapped.pData, worlds.data(), sizeof(DirectX::XMFLOAT4X4) * instance_count);
+		immediate_context->Unmap(instance_buffer.Get(), 0);
+	}
+
+	//シェーダーをセット(インスタンス用)
+	immediate_context->VSSetShader(instanced_vertex_shader.Get(), nullptr, 0);
+	immediate_context->PSSetShader(pixel_shader.Get(), nullptr, 0);
+	immediate_context->IASetInputLayout(instanced_input_layout.Get());
+	immediate_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//バッチの描画ループ
+	for (const auto& bp : batched_primitives)
+	{
+		const material& mat{ materials.at(bp.material) };
+
+		immediate_context->PSSetShaderResources(0, 1, material_resource_view.GetAddressOf());
+
+
+		const int tex_indices[]
+		{
+			mat.data.pbr_metallic_roughness.basecolor_texture.index,
+			mat.data.pbr_metallic_roughness.metallic_roughness_texture.index,
+			mat.data.normal_texture.index,
+			mat.data.emissive_texture.index,
+			mat.data.occlusion_texture.index,
+		};
+		ID3D11ShaderResourceView* null_srv{};
+		std::vector<ID3D11ShaderResourceView*> srvs(_countof(tex_indices));
+		for (int i = 0; i < (int)srvs.size(); ++i)
+			srvs[i] = tex_indices[i] > -1
+			? texture_resource_views.at(textures.at(tex_indices[i]).source).Get()
+			: null_srv;
+		immediate_context->PSSetShaderResources(1, (UINT)srvs.size(), srvs.data());
+
+		
+		if (primitive_cbuffer)
+		{
+			primitive_constants options{};
+			options.material = bp.material;
+			options.has_tangent = bp.tangent_buffer ? 1 : 0;
+			options.skin = -1;
+			DirectX::XMStoreFloat4x4(&options.world, DirectX::XMMatrixIdentity());
+
+			immediate_context->UpdateSubresource(primitive_cbuffer.Get(), 0, nullptr, &options, 0, 0);
+			immediate_context->VSSetConstantBuffers(0, 1, primitive_cbuffer.GetAddressOf());
+			immediate_context->PSSetConstantBuffers(0, 1, primitive_cbuffer.GetAddressOf());
+		}
+
+
+		ID3D11Buffer* vbs[] =
+		{
+			bp.position_buffer.Get(),
+			bp.normal_buffer.Get(),
+			bp.tangent_buffer.Get(),
+			bp.texcoord_buffer.Get(),
+			bp.joint_buffer.Get(),
+			bp.weight_buffer.Get(),
+			instance_buffer.Get(),
+		};
+
+		UINT strides[] = { 12, 12, 16, 8, 8, 16, sizeof(instance_data) };
+		UINT offsets[] = { 0, 0, 0, 0, 0, 0, 0 };
+
+		immediate_context->IASetVertexBuffers(0, 7, vbs, strides, offsets);
+		immediate_context->IASetIndexBuffer(bp.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+		immediate_context->DrawIndexedInstanced(
+			bp.index_count,
+			instance_count, // まとめて描画する個数
+			0, 0, 0
+		);
+	}
 }

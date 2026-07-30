@@ -9,6 +9,8 @@
 #include "Player.h"
 #include "json.hpp"
 
+#define BATTER_IMAGE_COUNT 6
+
 using json = nlohmann::json;
 
 class ScrollView
@@ -23,6 +25,7 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 	
+	void RenderBatterImage(ID3D11DeviceContext* dc, float alpha = 1.0f);
 
 private:
 	//スクロール背景スプライトデータ
@@ -95,6 +98,19 @@ private:
 	std::unique_ptr<sprite> topArrowSprite;
 	std::unique_ptr<sprite> bottomArrowSprite;
 
+
+	struct batterImageData
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+	std::unique_ptr<batterImageData> imageDataArray[BATTER_IMAGE_COUNT];
+	std::unique_ptr<sprite> imageData[BATTER_IMAGE_COUNT];
+	int randomBatterImageIndex = 0; // ランダムに選ばれたバッターのインデックス
+
 	bool showTopArrow = false;
 	bool showBottomArrow = false;
 
@@ -121,6 +137,8 @@ private:
 
 	Player::RealBatter selectedBatter = Player::RealBatter::None; // 選択されたバッターの種類
 	int selectedBatterIndex = -1; // 選択されたバッターのインデックス
+
+	bool showBatterButton = false;
 
 	//選択されたボタンとバッターを一致させる関数
 	void MatchSelectedButtonAndBatter();

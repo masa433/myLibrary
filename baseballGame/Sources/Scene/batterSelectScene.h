@@ -156,7 +156,8 @@ private:
 
 	float uiAlpha = 1.0f; // UIの透明度(0.0f:完全透明, 1.0f:完全不透明)
 	float burstAlpha = 0.0f; // バーストエフェクトの透明度(0.0f:完全透明, 1.0f:完全不透明)
-	float returnAlpha = 1.0f; // 戻るボタンの透明度(0.0f:完全透明, 1.0f:完全不透明)
+	float returnAlpha = 0.0f; // 戻るボタンの透明度(0.0f:完全透明, 1.0f:完全不透明)
+	float batterImageAlpha = 0.0f;
 
 	DirectX::XMFLOAT2 burstPosition = { 960.0f, 540.0f }; // バーストエフェクトの中心位置
 	DirectX::XMFLOAT2 burstSize = { 1920.0f, 1080.0f }; // バーストエフェクトのサイズ

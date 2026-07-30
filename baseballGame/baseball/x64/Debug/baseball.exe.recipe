@@ -40,6 +40,9 @@
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_vs_instanced.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\HextransitionPS.cso</FullPath>
     </ContentFile>
     <ContentFile>

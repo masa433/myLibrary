@@ -81,6 +81,8 @@ private:
 		{  160.0f, 0.0f,  40.0f },
 		{  80.0f, 0.0f,  140.0f },
 		{ -80.0f, 0.0f,  140.0f },
+
+		
 	};
 
 	DirectX::XMFLOAT3 towerAngle[TOWER_COUNT] = {	
@@ -88,7 +90,9 @@ private:
 		{ 0.0f, DirectX::XMConvertToRadians(90.0f), 0.0f },
 		{ 0.0f, DirectX::XMConvertToRadians(-90.0f), 0.0f },
 		{ 0.0f, DirectX::XMConvertToRadians(-145.0f), 0.0f },
-		{ 0.0f, DirectX::XMConvertToRadians(145.0f), 0.0f }
+		{ 0.0f, DirectX::XMConvertToRadians(145.0f), 0.0f },
+
+		
 	};
 
 	DirectX::XMFLOAT3 lightScale[TOWER_COUNT] =
@@ -97,8 +101,11 @@ private:
 		{ 5.0f, 3.0f, 3.0f },
 		{ 5.0f, 3.0f, 3.0f },
 		{ 5.0f, 2.5f, 3.0f },
-		{ 5.0f, 2.5f, 3.0f }
+		{ 5.0f, 2.5f, 3.0f },
+		
 	};
+
+	bool isInstancingEnabled = true; // インスタンシング描画の有効/無効
 
 public:
 	

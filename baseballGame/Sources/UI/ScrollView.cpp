@@ -23,6 +23,15 @@ void ScrollView::MatchSelectedButtonAndBatter()
 		OutputDebugStringA(buffer);
 	}
 
+	if(Player::Instance().IsRightBatter())
+	{
+		randomBatterImageIndex = 3 + rand() % 3; // 右打者の場合は3か4か5
+	}
+	else
+	{
+		randomBatterImageIndex = rand() % 3; // 左打者の場合は0か1か2
+	}
+
 	Player::Instance().SelectRealBatter(selectedBatter); // Playerクラスに選択されたバッターを設定
 }
 
@@ -110,6 +119,17 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	batterListData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	batterListData->rotation = 0.0f;
 	batterListSprite = std::make_unique<sprite>(device, context, batterListData->texturePath.c_str());
+
+	for (int i = 0; i < BATTER_IMAGE_COUNT; ++i)
+	{
+		imageDataArray[i] = std::make_unique<batterImageData>();
+		imageDataArray[i]->texturePath = L".\\resources\\textures\\batterimage\\batterimage" + std::to_wstring(i + 1) + L".png";
+		imageDataArray[i]->position = { 150.0f,100.0f };
+		imageDataArray[i]->size = { 600.0f, 800.0f };
+		imageDataArray[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		imageDataArray[i]->rotation = 0.0f;
+		imageData[i] = std::make_unique<sprite>(device, context, imageDataArray[i]->texturePath.c_str());
+	}
 
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -250,12 +270,33 @@ void ScrollView::Render(float alpha)
 		}
 	}
 
+	
+
+
+
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
 	dc->IASetInputLayout(nullptr);
 
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+}
+
+void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
+{
+	if (randomBatterImageIndex >= 0 && randomBatterImageIndex < BATTER_IMAGE_COUNT)
+	{
+		if (imageData[randomBatterImageIndex])
+		{
+			imageData[randomBatterImageIndex]->render(dc,
+				imageDataArray[randomBatterImageIndex]->position.x,
+				imageDataArray[randomBatterImageIndex]->position.y,
+				imageDataArray[randomBatterImageIndex]->size.x, imageDataArray[randomBatterImageIndex]->size.y,
+				imageDataArray[randomBatterImageIndex]->color.x, imageDataArray[randomBatterImageIndex]->color.y, 
+				imageDataArray[randomBatterImageIndex]->color.z, imageDataArray[randomBatterImageIndex]->color.w * alpha,
+				imageDataArray[randomBatterImageIndex]->rotation);
+		}
+	}
 }
 
 void ScrollView::Update(float elapsedTime)
@@ -364,6 +405,10 @@ void ScrollView::Update(float elapsedTime)
 
 	if (!arrowClicked && !isInCapArea)
 	{
+		//ボタンを押すことができる範囲の設定
+		float visibleMinY = topCapData.position.y + topCapData.size.y / 2.0f;
+		float visibleMaxY = bottomCapData.position.y - bottomCapData.size.y / 2.0f;
+
 		//ボタンの押下処理
 		//ボタンを押したら、テクスチャを黄色くする
 		for (size_t i = 0; i < playerButtonDataList.size(); ++i)
@@ -371,10 +416,20 @@ void ScrollView::Update(float elapsedTime)
 			float buttonTopY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY - playerButtonDataList[i].size.y / 2.0f;
 			float buttonBottomY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY + playerButtonDataList[i].size.y / 2.0f;
 
+			bool isVisible = (buttonBottomY >= visibleMinY) && (buttonTopY <= visibleMaxY);
+
+			if (!isVisible)
+			{
+				continue;
+			}
+			
+
 			bool hovered = input.GetMouse().GetPositionX() >= playerButtonDataList[i].position.x - playerButtonDataList[i].size.x / 2.0f &&
 				input.GetMouse().GetPositionX() <= playerButtonDataList[i].position.x + playerButtonDataList[i].size.x / 2.0f &&
 				input.GetMouse().GetPositionY() >= buttonTopY &&
 				input.GetMouse().GetPositionY() <= buttonBottomY;
+
+			
 
 			//　ボタンが押されたときの処理(長押しはロックする)
 			if (hovered && input.GetMouse().GetButtonDown())

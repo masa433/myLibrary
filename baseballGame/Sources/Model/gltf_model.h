@@ -288,4 +288,24 @@ public:
 private:
 	BoundingBox boundingBox;
 	BoundingSphere boundingSphere;
+
+public:
+	// インスタンスデータ用構造体
+	struct instance_data
+	{
+		DirectX::XMFLOAT4X4 world;
+	};
+
+	// インスタンス描画用のバッファと容量
+	Microsoft::WRL::ComPtr<ID3D11Buffer> instance_buffer;
+	UINT instance_buffer_capacity = 0;
+
+	// インスタンス専用の Vertex Shader と Input Layout (既存のものと2本立てにする)
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> instanced_vertex_shader;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout>  instanced_input_layout;
+
+	// 静的バッチング（batched_primitives）を使ったインスタンシング描画関数
+	void render_batched_instanced(
+		ID3D11DeviceContext* immediate_context,
+		const std::vector<DirectX::XMFLOAT4X4>& worlds);
 };
