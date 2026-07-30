@@ -32,6 +32,9 @@ public:
 	void SaveSetting();
 	void LoadSetting();
 
+	int GetCurrentChangePitcherCount() const { return currentChangePitcherCount; }
+	int GetMaxChangePitcherCount() const { return maxChangePitcherCount; }
+
 private:
 
 	HexTransitionEffect hexTransitionEffect; // ヘックス遷移エフェクトのインスタンス
@@ -156,4 +159,9 @@ private:
 
 	DirectX::XMFLOAT2 modalBurstPosition = { 600.0f,550.0f };
 	DirectX::XMFLOAT2 modalBurstSize = { 700.0f,700.0f };
+
+	int currentChangePitcherCount = 0;
+	int maxChangePitcherCount = 3;
+
+	
 };

@@ -240,6 +240,25 @@ void batterSelectScene::update(float elapsed_time)
 				transitionTimer = 0.0f; // 遷移演出のタイマーをリセット
 			}
 
+			if (buttonManager.IsRerollRequested())
+			{			
+				buttonManager.ResetRerollRequest(false);
+
+
+				//3回まで投手変更をできる
+				if (currentChangePitcherCount < maxChangePitcherCount)
+				{
+					SelectRandomPitcher();
+					currentChangePitcherCount++;
+					
+					//ボタンの色をグレーにする
+					if (currentChangePitcherCount >= maxChangePitcherCount)
+					{
+						buttonManager.ChangeColor(DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), ButtonManager::ButtonType::Reroll); // ボタンをグレーアウト
+					}
+				}
+			}
+
 			//imageAlphaが0.0の時はピッチャーのパラメータ画像を表示しない
 			if (batterImageAlpha > 0.0f)
 			{
@@ -446,6 +465,7 @@ void batterSelectScene::render(float elapsedTime)
 
 	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Return);
 	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Start);
+	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Reroll);
 
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);

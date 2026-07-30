@@ -27,6 +27,7 @@ public:
 		Return,//戻るボタン
 		OK,//決定ボタン
 		Close,//閉じるボタン
+		Reroll,//振り直しボタン
 		Count
 	};
 
@@ -55,9 +56,14 @@ public:
 	void ResetCloseRequest(bool requested) { isCloseRequested = requested; }
 	bool IsCloseRequested() const { return isCloseRequested; }
 
+	void ResetRerollRequest(bool requested) { isRerollRequested = requested; }
+	bool IsRerollRequested() const { return isRerollRequested; }
+
 	//すべてのボタンを描画するか指定されたボタンタイプのボタンのみ描画するかを制御するフラグ
 	bool renderAllButtons = true;
 	
+	//ボタンの色を変える関数
+	void ChangeColor(DirectX::XMFLOAT4 color, ButtonType buttonType = ButtonType::None);
 
 private:
 	//ボタンのスプライトデータ
@@ -103,5 +109,5 @@ private:
 	bool isOKRequested = false;
 	bool isReturnRequested = false;
 	bool isCloseRequested = false;
-
+	bool isRerollRequested = false;
 };

@@ -114,7 +114,7 @@ void scene_game::initialize()
         skyRenderer.Initialize(device);
 
         // 初期の昼間設定（正午）
-        skyRenderer.time_of_day = 0.5f;
+        skyRenderer.time_of_day = 12.0f;
         skyRenderer.auto_advance_time = false;
         skyRenderer.time_speed = 0.02f;
     }
@@ -431,12 +431,13 @@ void scene_game::update(float elapsed_time)
     else
     {
         broadcastCamera.SyncToCamera(camera, screenWidth / screenHeight, camera_near_z, camera_far_z);
+        enableShadows = true;
     }
     cameraPosition = camera.GetEye();
 
     if (broadcastCamera.IsTrackingBall())
     {
-        //enableShadows = false;
+        enableShadows = false;
         const auto& vel = Ball::Instance().GetVelocity();
         float speed = sqrtf(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
         if (speed < 1.0f)
@@ -489,7 +490,7 @@ void scene_game::update(float elapsed_time)
     directional_light_direction = skyRenderer.GetSunDirectionToLight();
 
     //時刻が6時から16時の時はポイントライトとスポットライトを消す
-    if (skyRenderer.time_of_day >= 6.0f && skyRenderer.time_of_day <= 16.0f)
+    if (skyRenderer.time_of_day >= 6.0f && skyRenderer.time_of_day <= 17.0f)
     {
         directional_light_intensity = 2.0f;
         ambient_color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -724,14 +725,12 @@ void scene_game::render(float elapsedTime)
     Pitcher::Instance().Render(rc, modelRenderer);
     Player::Instance().RenderPlayer(rc, modelRenderer);
     Catcher::Instance().Render(rc, modelRenderer, enableFrustumCulling ? &frustumCulling : nullptr);
-    BatSprite::Instance().Render();
     
-
     // バットだけ ambient を 0 にして描画
     {
         light_constants noAmbientLight = lightConstants;  //  lightConstantsをメンバ変数に昇格する必要あり
         //バットも時刻が6時以上16時以下の時に強くする
-        if (skyRenderer.time_of_day >= 6.0f && skyRenderer.time_of_day <= 16.0f)
+        if (skyRenderer.time_of_day >= 6.0f && skyRenderer.time_of_day <= 17.0f)
         {
             noAmbientLight.ambient_color = { 1.0f, 1.0f, 1.0f, 1.0f };
         }
@@ -763,6 +762,7 @@ void scene_game::render(float elapsedTime)
 
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
+    BatSprite::Instance().Render();
     ballSprite::Instance().Render();
 
     GameTimer::Instance().Render();

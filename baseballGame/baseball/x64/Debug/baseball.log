@@ -1,7 +1,2 @@
-﻿  scene_game.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(318,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(319,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(345,67): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(346,69): warning C4244: '=': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(582,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+﻿  ButtonManager.cpp
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

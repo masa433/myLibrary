@@ -69,6 +69,8 @@ void ButtonManager::Update(float elapsedTime)
 {
 	
 	
+
+
 	//ボタンの更新処理
 	//マウスの位置を取得
 	Input& input = Input::Instance();
@@ -76,8 +78,6 @@ void ButtonManager::Update(float elapsedTime)
 	bool isMouseDown = input.GetMouse().GetButton();
 	bool mouseDownEdge = isMouseDown && !prevMouseDown;
 	bool mouseUpEdge = !isMouseDown && prevMouseDown;
-
-	
 
 	//ボタンのクリック判定
 	//マウスの位置がボタンの範囲内かどうかの判定
@@ -87,6 +87,12 @@ void ButtonManager::Update(float elapsedTime)
 		{
 			button.size = button.originalSize;
 			
+			//グレーになったボタンは反応しないようにする
+			if(button.color.x <= 0.5f && button.color.y <= 0.5f && button.color.z <= 0.5f)
+			{
+				continue;
+			}
+
 			//アルファ値が0に近い値なら反応しない
 			if(button.currentAlpha <=0.001f)
 			{
@@ -112,6 +118,8 @@ void ButtonManager::Update(float elapsedTime)
 			for (auto& button : *buttonSpriteData)
 			{
 				if (button.currentAlpha <= 0.001f) continue;
+
+				if (button.color.x <= 0.5f && button.color.y <= 0.5f && button.color.z <= 0.5f) continue;
 
 				bool isHovered = IsMouseOverButton(
 					{ static_cast<float>(input.GetMouse().GetPositionX()), static_cast<float>(input.GetMouse().GetPositionY()) },
@@ -141,6 +149,17 @@ void ButtonManager::Update(float elapsedTime)
 					{ static_cast<float>(input.GetMouse().GetPositionX()), static_cast<float>(input.GetMouse().GetPositionY()) },
 					pressedButton->position, pressedButton->originalSize);
 
+
+				if(pressedButton->currentAlpha <= 0.001f)
+				{
+					stillHovered = false; // アルファ値が0に近い場合はクリック判定を無効化
+				}
+
+				if(pressedButton->color.x <= 0.5f && pressedButton->color.y <= 0.5f && pressedButton->color.z <= 0.5f)
+				{
+					stillHovered = false; // グレーアウトされている場合はクリック判定を無効化
+				}
+
 				if (stillHovered)
 				{
 					switch (pressedButton->buttonType)
@@ -169,6 +188,11 @@ void ButtonManager::Update(float elapsedTime)
 						isCloseRequested = true;
 						OutputDebugStringA("Close button clicked!\n");
 						break;
+					case ButtonType::Reroll:
+						isRerollRequested = true;
+						OutputDebugStringA("Reroll button clicked!\n");
+						break;
+
 					default:
 						break;
 					}
@@ -336,6 +360,29 @@ std::string ButtonManager::WideToUtf8(const std::wstring& wide)
 	return utf8;
 }
 
+//ボタンの色を変える関数
+void ButtonManager::ChangeColor(DirectX::XMFLOAT4 color,ButtonType buttonType)
+{
+	//指定されたボタンタイプのボタンの色を変更する
+	if(buttonType == ButtonType::None)
+	{
+		for(auto& button : *buttonSpriteData)
+		{
+			button.color = color;
+		}
+	}
+	else
+	{
+		for(auto& button : *buttonSpriteData)
+		{
+			if(button.buttonType == buttonType)
+			{
+				button.color = color;
+			}
+		}
+	}
+}
+
 void ButtonManager::DrawGUI()
 {
 #ifdef _DEBUG
@@ -385,7 +432,7 @@ void ButtonManager::DrawGUI()
 			ImGui::ColorEdit4(u8"フォント色", &fontColor.x);
 
 			//ボタンタイプを選択
-			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" };
+			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" , "Reroll"};
 			int currentTypeIndex = static_cast<int>(btn.buttonType);
 			ImGui::Combo(u8"ボタンタイプ", &currentTypeIndex, buttonTypeItems, IM_ARRAYSIZE(buttonTypeItems));
 			btn.buttonType = static_cast<ButtonManager::ButtonType>(currentTypeIndex);
