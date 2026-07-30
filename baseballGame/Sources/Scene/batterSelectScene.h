@@ -15,6 +15,7 @@
 #include "Hextransitioneffect.h"
 
 #define PITCHER_IMAGE_COUNT 4 // ピッチャー画像の数
+#define PITCHER_COUNT 21 // ピッチャーの数
 
 using json = nlohmann::json;
 
@@ -67,40 +68,29 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixel_shader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout;
 
-	//ピッチャーのスプライト
-	struct PitcherSpriteData
-	{
-		std::wstring texturePath;
-		DirectX::XMFLOAT2 position;
-		DirectX::XMFLOAT2 size;
-		float rotation;
-		DirectX::XMFLOAT4 color;
-	};
-
-	int pitcherCount = 21; // ピッチャーの数
-
+	
 	//21人のピッチャーのスプライトデータを保持する配列
-	std::unique_ptr<PitcherSpriteData> pitcherSpriteDataArray[21];
-	std::unique_ptr<sprite> pitcherSprites[21];
-
+	std::unique_ptr<BatterSelectSpriteData> pitcherSpriteDataArray[PITCHER_COUNT];
+	std::unique_ptr<sprite> pitcherSprites[PITCHER_COUNT];
 	
-	//ピッチャー画像のスプライトデータ
-	struct PitcherImageSpriteData
-	{
-		std::wstring texturePath;
-		DirectX::XMFLOAT2 position;
-		DirectX::XMFLOAT2 size;
-		float rotation;
-		DirectX::XMFLOAT4 color;
-	};
+	std::unique_ptr<BatterSelectSpriteData> pitcherNameSpriteData[PITCHER_COUNT];
+	std::unique_ptr<sprite> pitcherNameSprite[PITCHER_COUNT];
+	DirectX::XMFLOAT2 pitcherNamePosition = { 960.0f, 100.0f };
+	DirectX::XMFLOAT2 pitcherNameSize = { 400.0f, 100.0f };
+	DirectX::XMFLOAT4 pitcherNameColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-	
-	std::unique_ptr<PitcherImageSpriteData> pitcherImageSpriteDataArray[PITCHER_IMAGE_COUNT];
+	std::unique_ptr<BatterSelectSpriteData> closeButtonData;
+	std::unique_ptr<sprite> closeButtonSprite;
+
+	std::unique_ptr<BatterSelectSpriteData> pitcherImageSpriteDataArray[PITCHER_IMAGE_COUNT];
 	std::unique_ptr<sprite> pitcherImageSprites[PITCHER_IMAGE_COUNT];
 	int randomPitcherImageIndex = 0;
 	
 	Pitcher::RealPitcher selectedPitcher = Pitcher::RealPitcher::None; // 選択されたピッチャーの初期値をNoneに設定
 	size_t selectedPitcherIndex = 0; // 選択されたピッチャーのインデックスを保持する変数
+
+	std::unique_ptr<BatterSelectSpriteData> pitcherParamBackGroundData; // 選択されたピッチャーのパラメータ画像データを保持するポインタ
+	std::unique_ptr<sprite> pitcherParamBackGroundSprite; // 選択されたピッチャーのパラメータ画像スプライトを保持するスマートポインタ
 
 public:
 	void SelectRandomPitcher(); // ランダムにピッチャーを選択する関数
@@ -134,10 +124,10 @@ public:
 		float alpha;
 		float time;
 	};
-	
-	float burstElapsedTime = 0.0f;
 
 	std::vector<BurstEffectParam> burstList; // バーストエフェクトのパラメータを格納するベクター
+
+	bool isNameTagClicked = false;// 名前タグがクリックされたかどうかのフラグ
 
 private:
 
@@ -147,21 +137,23 @@ private:
 		Transition,// 決定ボタン押下後のフェード演出
 		Finished,// 遷移準備完了
 		Reverting,// 戻るボタン押下後のフェード演出
+		ShowPitcherParam,// ピッチャーのパラメータ表示中
 	};
 
 	SequenceState currentState = SequenceState::Selecting;
 
 	float transitionTimer = 0.0f;// 遷移演出の経過時間
-	const float transitionDuration = 1.0f; // 遷移演出の総時間(秒)
 
-	float uiAlpha = 1.0f; // UIの透明度(0.0f:完全透明, 1.0f:完全不透明)
-	float burstAlpha = 0.0f; // バーストエフェクトの透明度(0.0f:完全透明, 1.0f:完全不透明)
-	float returnAlpha = 0.0f; // 戻るボタンの透明度(0.0f:完全透明, 1.0f:完全不透明)
+	float uiAlpha = 1.0f; // UIの透明度
+	float returnAlpha = 0.0f; // 戻るボタンの透明度
 	float batterImageAlpha = 0.0f;
-
-	DirectX::XMFLOAT2 burstPosition = { 960.0f, 540.0f }; // バーストエフェクトの中心位置
-	DirectX::XMFLOAT2 burstSize = { 1920.0f, 1080.0f }; // バーストエフェクトのサイズ
-	
+	float paramImageAlpha = 0.0f; // パラメータ画像の透明度
 
 	bool isChangingScene = false; // 設定がロードされたかどうかのフラグ
+
+	DirectX::XMFLOAT2 modalPitcherPos = { 300.0f,100.0f };
+	DirectX::XMFLOAT2 modalPitcherSize = { 600.0f,800.0f };
+
+	DirectX::XMFLOAT2 modalBurstPosition = { 600.0f,550.0f };
+	DirectX::XMFLOAT2 modalBurstSize = { 700.0f,700.0f };
 };

@@ -10,6 +10,7 @@
 #include "json.hpp"
 
 #define BATTER_IMAGE_COUNT 6
+#define BATTER_COUNT 24
 
 using json = nlohmann::json;
 
@@ -84,6 +85,12 @@ private:
 	std::vector<BatterParamData> batterParamDataList;
 	std::vector<std::unique_ptr<sprite>> batterParamSprites;
 	int ParamCount = 24; // パラメータの数
+
+	std::unique_ptr<BatterParamData> batterNameTagData[BATTER_COUNT];
+	std::unique_ptr<sprite> batterNameTagSprite[BATTER_COUNT];
+	DirectX::XMFLOAT2 batterNameTagSize = { 200.0f, 50.0f }; // バッター名タグのサイズ
+	DirectX::XMFLOAT2 batterNameTagPosition = { 600.0f, 300.0f }; // バッター名タグの位置
+	DirectX::XMFLOAT4 batterNameTagColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // バッター名タグの色
 
 	struct ArrowData
 	{

@@ -165,6 +165,10 @@ void ButtonManager::Update(float elapsedTime)
 						isOKRequested = true;
 						OutputDebugStringA("OK button clicked!\n");
 						break;
+					case ButtonType::Close:
+						isCloseRequested = true;
+						OutputDebugStringA("Close button clicked!\n");
+						break;
 					default:
 						break;
 					}
@@ -381,7 +385,7 @@ void ButtonManager::DrawGUI()
 			ImGui::ColorEdit4(u8"フォント色", &fontColor.x);
 
 			//ボタンタイプを選択
-			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK" };
+			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" };
 			int currentTypeIndex = static_cast<int>(btn.buttonType);
 			ImGui::Combo(u8"ボタンタイプ", &currentTypeIndex, buttonTypeItems, IM_ARRAYSIZE(buttonTypeItems));
 			btn.buttonType = static_cast<ButtonManager::ButtonType>(currentTypeIndex);

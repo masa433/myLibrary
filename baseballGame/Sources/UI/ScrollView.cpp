@@ -131,6 +131,17 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 		imageData[i] = std::make_unique<sprite>(device, context, imageDataArray[i]->texturePath.c_str());
 	}
 
+	for(int i = 0; i < BATTER_COUNT; ++i)
+	{
+		batterNameTagData[i] = std::make_unique<BatterParamData>();
+		batterNameTagData[i]->texturePath = L".\\resources\\textures\\batterNameTag\\batterNameTag" + std::to_wstring(i + 1) + L".png";
+		batterNameTagData[i]->position = { batterNameTagPosition.x, batterNameTagPosition.y };
+		batterNameTagData[i]->size = { batterNameTagSize.x, batterNameTagSize.y };
+		batterNameTagData[i]->rotation = 0.0f;
+		batterNameTagData[i]->color = { batterNameTagColor.x, batterNameTagColor.y, batterNameTagColor.z, batterNameTagColor.w };
+		batterNameTagSprite[i] = std::make_unique<sprite>(device, context, batterNameTagData[i]->texturePath.c_str());
+	}
+
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
@@ -223,6 +234,8 @@ void ScrollView::Render(float alpha)
 				batterParamDataList[selectedIndex].color.z, batterParamDataList[selectedIndex].color.w * alpha,
 				batterParamDataList[selectedIndex].rotation);
 		}
+
+		
 	}
 
 	if (topCapSprite)
@@ -295,6 +308,19 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 				imageDataArray[randomBatterImageIndex]->color.x, imageDataArray[randomBatterImageIndex]->color.y, 
 				imageDataArray[randomBatterImageIndex]->color.z, imageDataArray[randomBatterImageIndex]->color.w * alpha,
 				imageDataArray[randomBatterImageIndex]->rotation);
+		}
+	}
+
+	if (selectedIndex >= 0 && selectedIndex < BATTER_COUNT)
+	{
+		if (batterNameTagSprite[selectedIndex])
+		{
+			batterNameTagSprite[selectedIndex]->render(dc,
+				batterNameTagPosition.x, batterNameTagPosition.y,
+				batterNameTagSize.x, batterNameTagSize.y,
+				batterNameTagColor.x, batterNameTagColor.y,
+				batterNameTagColor.z, batterNameTagColor.w * alpha,
+				batterNameTagData[selectedIndex]->rotation);
 		}
 	}
 }
@@ -537,6 +563,25 @@ void ScrollView::DrawGUI()
 			}
 
 		}
+
+		if(ImGui::CollapsingHeader("Batter Image"))
+		{
+			for(size_t i = 0; i < BATTER_IMAGE_COUNT; ++i)
+			{
+				ImGui::Text("Batter Image %zu", i);
+				ImGui::DragFloat2(("Position##" + std::to_string(i)).c_str(), &imageDataArray[i]->position.x, 1.0f);
+				ImGui::DragFloat2(("Size##" + std::to_string(i)).c_str(), &imageDataArray[i]->size.x, 1.0f);
+				ImGui::DragFloat(("Rotation##" + std::to_string(i)).c_str(), &imageDataArray[i]->rotation, 1.0f);
+				ImGui::ColorEdit4(("Color##" + std::to_string(i)).c_str(), &imageDataArray[i]->color.x);
+			}
+		}
+
+		if(ImGui::CollapsingHeader("Batter Name Tag"))
+		{
+			ImGui::DragFloat2("Batter Name Tag Position", &batterNameTagPosition.x, 1.0f);
+			ImGui::DragFloat2("Batter Name Tag Size", &batterNameTagSize.x, 1.0f);
+			ImGui::ColorEdit4("Batter Name Tag Color", &batterNameTagColor.x);
+		}
 	}
 #endif // _DEBUG
 }
@@ -560,6 +605,28 @@ void ScrollView::SaveToJson(nlohmann::json& json)
 			{"position", {playerButtonDataList[i].position.x, playerButtonDataList[i].position.y}},
 			{"size", {playerButtonDataList[i].size.x, playerButtonDataList[i].size.y}},
 			{"color", {playerButtonDataList[i].color.x, playerButtonDataList[i].color.y, playerButtonDataList[i].color.z, playerButtonDataList[i].color.w}}
+		};
+	}
+
+	//バッター画像とネームタグの設定を保存
+	for(size_t i = 0; i < BATTER_IMAGE_COUNT; ++i)
+	{
+		json["BatterImages"][i] = {
+			{"position", {imageDataArray[i]->position.x, imageDataArray[i]->position.y}},
+			{"size", {imageDataArray[i]->size.x, imageDataArray[i]->size.y}},
+			{"rotation", imageDataArray[i]->rotation},
+			{"color", {imageDataArray[i]->color.x, imageDataArray[i]->color.y, imageDataArray[i]->color.z, imageDataArray[i]->color.w}}
+		};
+	}
+
+	json["BatterNameTags"] = nlohmann::json::array();
+	for(size_t i = 0; i < BATTER_COUNT; ++i)
+	{
+		json["BatterNameTags"][i] = {
+			{"position", {batterNameTagPosition.x, batterNameTagPosition.y}},
+			{"size", {batterNameTagSize.x, batterNameTagSize.y}},
+			{"rotation", batterNameTagData[i]->rotation},
+			{"color", {batterNameTagColor.x, batterNameTagColor.y, batterNameTagColor.z, batterNameTagColor.w}}
 		};
 	}
 }
@@ -604,4 +671,67 @@ void ScrollView::LoadFromJson(const nlohmann::json& json)
 			}
 		}
 	}
+
+	//バッター画像とネームタグの設定を読み込む
+
+	if (json.contains("BatterImages"))
+	{
+		const auto& imagesJson = json["BatterImages"];
+		for (size_t i = 0; i < imagesJson.size() && i < BATTER_IMAGE_COUNT; ++i)
+		{
+			const auto& imageJson = imagesJson[i];
+			if (imageJson.contains("position"))
+			{
+				imageDataArray[i]->position.x = imageJson["position"][0].get<float>();
+				imageDataArray[i]->position.y = imageJson["position"][1].get<float>();
+			}
+			if (imageJson.contains("size"))
+			{
+				imageDataArray[i]->size.x = imageJson["size"][0].get<float>();
+				imageDataArray[i]->size.y = imageJson["size"][1].get<float>();
+			}
+			if (imageJson.contains("rotation"))
+			{
+				imageDataArray[i]->rotation = imageJson["rotation"].get<float>();
+			}
+			if (imageJson.contains("color"))
+			{
+				imageDataArray[i]->color.x = imageJson["color"][0].get<float>();
+				imageDataArray[i]->color.y = imageJson["color"][1].get<float>();
+				imageDataArray[i]->color.z = imageJson["color"][2].get<float>();
+				imageDataArray[i]->color.w = imageJson["color"][3].get<float>();
+			}
+		}
+	}
+
+	if(json.contains("BatterNameTags"))
+	{
+		const auto& nameTagsJson = json["BatterNameTags"];
+		for(size_t i = 0; i < nameTagsJson.size() && i < BATTER_COUNT; ++i)
+		{
+			const auto& nameTagJson = nameTagsJson[i];
+			if(nameTagJson.contains("position"))
+			{
+				batterNameTagPosition.x = nameTagJson["position"][0].get<float>();
+				batterNameTagPosition.y = nameTagJson["position"][1].get<float>();
+			}
+			if(nameTagJson.contains("size"))
+			{
+				batterNameTagSize.x = nameTagJson["size"][0].get<float>();
+				batterNameTagSize.y = nameTagJson["size"][1].get<float>();
+			}
+			if(nameTagJson.contains("rotation"))
+			{
+				batterNameTagData[i]->rotation = nameTagJson["rotation"].get<float>();
+			}
+			if(nameTagJson.contains("color"))
+			{
+				batterNameTagColor.x = nameTagJson["color"][0].get<float>();
+				batterNameTagColor.y = nameTagJson["color"][1].get<float>();
+				batterNameTagColor.z = nameTagJson["color"][2].get<float>();
+				batterNameTagColor.w = nameTagJson["color"][3].get<float>();
+			}
+		}
+	}
+
 }

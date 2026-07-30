@@ -117,7 +117,7 @@ void SceneTitle::update(float elapsed_time)
 		{
 			isChangingScene = true;
 			hexTransitionEffect.Start(1.0f);
-			buttonManager.ResetStartRequest();
+			buttonManager.ResetStartRequest(false);
 		}
 	}
 	else

@@ -725,7 +725,7 @@ void scene_game::render(float elapsedTime)
     Player::Instance().RenderPlayer(rc, modelRenderer);
     Catcher::Instance().Render(rc, modelRenderer, enableFrustumCulling ? &frustumCulling : nullptr);
     BatSprite::Instance().Render();
-    ballSprite::Instance().Render();
+    
 
     // バットだけ ambient を 0 にして描画
     {
@@ -762,6 +762,8 @@ void scene_game::render(float elapsedTime)
     }
 
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
+
+    ballSprite::Instance().Render();
 
     GameTimer::Instance().Render();
 

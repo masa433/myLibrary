@@ -26,6 +26,7 @@ public:
 		Pose,//ポーズボタン
 		Return,//戻るボタン
 		OK,//決定ボタン
+		Close,//閉じるボタン
 		Count
 	};
 
@@ -42,7 +43,7 @@ public:
 	//マウスカーソルがボタン上にあるかどうかを判定する関数
 	bool IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const DirectX::XMFLOAT2& buttonPos, const DirectX::XMFLOAT2& buttonSize);
 
-	void ResetStartRequest() { isStartRequested = false; }
+	void ResetStartRequest(bool requested) { isStartRequested = requested; }
 	bool IsStartRequested() const { return isStartRequested; }
 
 	void ResetOKRequest(bool requested) { isOKRequested = requested; }
@@ -50,6 +51,9 @@ public:
 
 	void ResetReturnRequest(bool requested) { isReturnRequested = requested; }
 	bool IsReturnRequested() const { return isReturnRequested; }
+
+	void ResetCloseRequest(bool requested) { isCloseRequested = requested; }
+	bool IsCloseRequested() const { return isCloseRequested; }
 
 	//すべてのボタンを描画するか指定されたボタンタイプのボタンのみ描画するかを制御するフラグ
 	bool renderAllButtons = true;
@@ -98,5 +102,6 @@ private:
 	bool isStartRequested = false;
 	bool isOKRequested = false;
 	bool isReturnRequested = false;
+	bool isCloseRequested = false;
 
 };
