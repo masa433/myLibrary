@@ -7,9 +7,13 @@
 #include <shader.h>
 #include "FontRenderer.h"
 #include "TrackingData.h"
+#include <ctime>
 
 void Wind::Initialize()
 {
+	srand(static_cast<unsigned int>(time(nullptr))); // 乱数の初期化
+
+
 	ID3D11Device* device = Graphics::Instance().GetDevice();
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
@@ -85,6 +89,30 @@ void Wind::Initialize()
 
 	windHeight = 20.0f; // 風の流線の高さ
 	windThickness = 50.0f; // 風の流線の厚み
+
+	//風の向きと強さを毎回ランダムで決定
+	windDirection.x = static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f; // -1.0f ～ 1.0f
+	windDirection.y = 0.0f; // Y軸方向は固定
+	windDirection.z = static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f; // -1.0f ～ 1.0f
+
+	// 風向きベクトルを正規化
+	float length = std::sqrt(windDirection.x * windDirection.x + windDirection.y * windDirection.y + windDirection.z * windDirection.z);
+	if (length > 0.0001f)
+	{
+		windDirection.x /= length;
+		windDirection.y /= length;
+		windDirection.z /= length;
+	}
+	else
+	{
+		windDirection.x = 0.0f;
+		windDirection.y = 0.0f;
+		windDirection.z = -1.0f; // デフォルトの風向き
+	}
+
+	// 風の強さをランダムで決定
+
+	windStrength = static_cast<float>(rand()) / RAND_MAX * 10.0f; // 0.0f ～ 10.0f
 }
 
 void Wind::Uninitialize()
@@ -318,8 +346,8 @@ void Wind::SaveToJson(json& j)
 
 void Wind::LoadFromJson(const json& j)
 {
-	if (j.contains("direction"))  windDirection = { j["direction"][0], j["direction"][1], j["direction"][2] };
-	if (j.contains("strength"))   windStrength = j["strength"];
+	/*if (j.contains("direction"))  windDirection = { j["direction"][0], j["direction"][1], j["direction"][2] };
+	if (j.contains("strength"))   windStrength = j["strength"];*/
 	if (j.contains("height"))     windHeight = j["height"];
 	if (j.contains("thickness"))  windThickness = j["thickness"];
 

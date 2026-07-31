@@ -58,8 +58,7 @@ private:
 		DirectX::XMFLOAT4 color;
 	};
 
-	std::unique_ptr<BatterSelectSpriteData> batterParamData;
-	std::unique_ptr<sprite> batterParamSprite;
+
 	std::unique_ptr<BatterSelectSpriteData> backGroundData;
 	std::unique_ptr<sprite> backGroundSprite;
 
@@ -94,6 +93,13 @@ private:
 
 	std::unique_ptr<BatterSelectSpriteData> pitcherParamBackGroundData; // 選択されたピッチャーのパラメータ画像データを保持するポインタ
 	std::unique_ptr<sprite> pitcherParamBackGroundSprite; // 選択されたピッチャーのパラメータ画像スプライトを保持するスマートポインタ
+
+	std::unique_ptr<BatterSelectSpriteData> VSSpriteData; // 選択されたピッチャーのパラメータ画像データを保持するポインタ
+	std::unique_ptr<sprite> VSSprite; // 選択されたピッチャーのパラメータ画像スプライトを保持するスマートポインタ
+
+	DirectX::XMFLOAT2 VSPosition = { 960.0f, 540.0f };
+	DirectX::XMFLOAT2 VSSize = { 400.0f, 100.0f };
+	DirectX::XMFLOAT4 VSColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 public:
 	void SelectRandomPitcher(); // ランダムにピッチャーを選択する関数
@@ -163,5 +169,6 @@ private:
 	int currentChangePitcherCount = 0;
 	int maxChangePitcherCount = 3;
 
-	
+	int currentPitcherIndex = 0; // 現在のピッチャーのインデックスを保持する変数
+	int previousPitcherIndex = -1; // 前回のピッチャーのインデックスを保持する変数
 };

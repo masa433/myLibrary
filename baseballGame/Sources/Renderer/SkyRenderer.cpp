@@ -218,9 +218,9 @@ void SkyRenderer::DrawGUI()
 			time_of_day = 14.0f;
 			auto_advance_time = false;
 		}
-		if (ImGui::Button("Set Nighttime (20:00)"))
+		if (ImGui::Button("Set Nighttime (21:00)"))
 		{
-			time_of_day = 20.0f;
+			time_of_day = 21.0f;
 			auto_advance_time = false;
 		}
 	}

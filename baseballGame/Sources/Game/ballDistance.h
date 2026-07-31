@@ -6,6 +6,7 @@
 #include "FontRenderer.h"
 #include <memory>
 #include "json.hpp"
+#include "sprite.h"
 
 using json = nlohmann::json;
 
@@ -44,4 +45,25 @@ private:
 	bool hasDistanceText = false;
 	bool isDistanceLocked = false;
 	
+	struct DistanceBackData
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+
+	std::unique_ptr<DistanceBackData> distanceBackData;
+	std::unique_ptr<sprite> distanceBackSprite;
+
+
+	DirectX::XMFLOAT2 distanceBackSize = { 200.0f, 50.0f };
+	DirectX::XMFLOAT2 distanceBackPosition = { 0.5f, 0.1f }; // 画面中央上部
+	DirectX::XMFLOAT4 distanceBackColor = { 1.0f, 1.0f, 1.0f, 0.8f }; // 半透明黒
+
+	// シェーダー関連
+	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
 };

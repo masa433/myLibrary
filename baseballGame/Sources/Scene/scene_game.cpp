@@ -24,6 +24,7 @@
 #include "ballDistance.h"
 #include <fstream>
 #include <string>
+#include <random>
 
 
 using json = nlohmann::json;
@@ -114,9 +115,15 @@ void scene_game::initialize()
         skyRenderer.Initialize(device);
 
         // 初期の昼間設定（正午）
-        skyRenderer.time_of_day = 12.0f;
+        //skyRenderer.time_of_day = 12.0f;
         skyRenderer.auto_advance_time = false;
         skyRenderer.time_speed = 0.02f;
+
+		//初期時間を昼なら14時、夜なら21時に設定
+        static std::mt19937 rng(std::random_device{}());
+        std::uniform_int_distribution<int> dist(0, 1);
+
+		skyRenderer.time_of_day = (dist(rng) == 0) ? 14.0f : 21.0f;
     }
 
     //物理システムの初期化
@@ -1734,7 +1741,7 @@ void scene_game::LoadSetting()
     if (j.contains("player")) Player::Instance().LoadFromJson(j["player"]);
     if (j.contains("wind")) Wind::Instance().LoadFromJson(j["wind"]);
     if (j.contains("ball")) Ball::Instance().LoadFromJson(j["ball"]);
-    if (j.contains("sky")) skyRenderer.LoadFromJson(j["sky"]);
+    //if (j.contains("sky")) skyRenderer.LoadFromJson(j["sky"]);
     if (j.contains("ball_sprite")) ballSprite::Instance().LoadFromJson(j["ball_sprite"]);
     if (j.contains("stage")) stage::Instance().LoadFromJson(j["stage"]);
     if (j.contains("gameTimer")) GameTimer::Instance().LoadFromJson(j["gameTimer"]);

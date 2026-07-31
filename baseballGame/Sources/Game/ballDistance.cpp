@@ -3,9 +3,12 @@
 #include "Ball.h"
 #include "physxManager.h"
 #include <imgui.h>
+#include <shader.h>
 
 void BallDistance::Initialize(ID3D11Device* device)
 {
+	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
@@ -21,6 +24,24 @@ void BallDistance::Initialize(ID3D11Device* device)
 		screenWidth, screenHeight,
 		512, 512,
 		&pitchInfoCodepoints);
+
+	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.GetAddressOf(), spriteInputLayout.GetAddressOf(),
+		input_element_desc, _countof(input_element_desc));
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
+
+	distanceBackData = std::make_unique<DistanceBackData>();
+	distanceBackData->texturePath = L".\\resources\\textures\\distanceBack.png";
+	distanceBackData->position = { distanceBackPosition.x, distanceBackPosition.y };
+	distanceBackData->size = { distanceBackSize.x, distanceBackSize.y };
+	distanceBackData->rotation = 0.0f;
+	distanceBackData->color = { distanceBackColor.x, distanceBackColor.y, distanceBackColor.z, distanceBackColor.w };
+	distanceBackSprite = std::make_unique<sprite>(device, dc, distanceBackData->texturePath.c_str());
 
 }
 
@@ -74,9 +95,31 @@ void BallDistance::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	
+	RenderState* renderState = Graphics::Instance().GetRenderState();
+
+	// Wind と同じようにシェーダーをセット
+	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+	dc->PSSetShader(spritePS.Get(), nullptr, 0);
+	dc->IASetInputLayout(spriteInputLayout.Get());
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
 	// ボールがバットに当たったら、距離を表示する(ボールの位置でリアルタイムに更新する)
 	
 	if (!hasDistanceText) return;
+
+	if(distanceBackData && distanceBackSprite)
+	{
+		distanceBackSprite->render(dc,
+			distanceBackPosition.x - distanceBackSize.x / 2.0f,
+			distanceBackPosition.y - distanceBackSize.y / 2.0f,
+			distanceBackSize.x, distanceBackSize.y,
+			distanceBackColor.x, distanceBackColor.y,
+			distanceBackColor.z, distanceBackColor.w,
+			distanceBackData->rotation);
+	}
+
 
 	//中央ぞろえにするヘルパー関数
 	auto centerTextPosition = [&](const std::string& text, float fontSize, float x, float y) -> DirectX::XMFLOAT2
@@ -91,6 +134,14 @@ void BallDistance::Render()
 
 	ballDistanceFont.DrawTextW(dc, distanceText, fontPos.x, fontPos.y, fontSize,
 		fontColor.x, fontColor.y, fontColor.z, fontColor.w);
+
+	// 後始末（Wind と同じ）
+	dc->VSSetShader(nullptr, nullptr, 0);
+	dc->PSSetShader(nullptr, nullptr, 0);
+	dc->IASetInputLayout(nullptr);
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 }
 
 void BallDistance::DrawGUI()
@@ -105,6 +156,16 @@ void BallDistance::DrawGUI()
 		ImGui::Text("Font Color");
 		ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&fontColor));
 	}
+
+	if(ImGui::CollapsingHeader("Distance Background Settings"))
+	{
+		ImGui::Text("Background Position");
+		ImGui::DragFloat2("Position", &distanceBackPosition.x);
+		ImGui::Text("Background Size");
+		ImGui::DragFloat2("Size", &distanceBackSize.x);
+		ImGui::Text("Background Color");
+		ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&distanceBackColor));
+	}
 }
 
 void BallDistance::SaveToJson(nlohmann::json& j)
@@ -116,6 +177,17 @@ void BallDistance::SaveToJson(nlohmann::json& j)
 	j["fontColorG"] = fontColor.y;
 	j["fontColorB"] = fontColor.z;
 	j["fontColorA"] = fontColor.w;
+
+	//飛距離表示の背景の保存
+	j["distanceBackPositionX"] = distanceBackPosition.x;
+	j["distanceBackPositionY"] = distanceBackPosition.y;
+	j["distanceBackSizeX"] = distanceBackSize.x;
+	j["distanceBackSizeY"] = distanceBackSize.y;
+	j["distanceBackColorR"] = distanceBackColor.x;
+	j["distanceBackColorG"] = distanceBackColor.y;
+	j["distanceBackColorB"] = distanceBackColor.z;
+	j["distanceBackColorA"] = distanceBackColor.w;
+
 }
 
 void BallDistance::LoadFromJson(const nlohmann::json& j)
@@ -135,5 +207,23 @@ void BallDistance::LoadFromJson(const nlohmann::json& j)
 		fontColor.y = j["fontColorG"].get<float>();
 		fontColor.z = j["fontColorB"].get<float>();
 		fontColor.w = j["fontColorA"].get<float>();
+	}
+
+	if (j.contains("distanceBackPositionX") && j.contains("distanceBackPositionY"))
+	{
+		distanceBackPosition.x = j["distanceBackPositionX"].get<float>();
+		distanceBackPosition.y = j["distanceBackPositionY"].get<float>();
+	}
+	if(j.contains("distanceBackSizeX") && j.contains("distanceBackSizeY"))
+	{
+		distanceBackSize.x = j["distanceBackSizeX"].get<float>();
+		distanceBackSize.y = j["distanceBackSizeY"].get<float>();
+	}
+	if (j.contains("distanceBackColorR") && j.contains("distanceBackColorG") && j.contains("distanceBackColorB") && j.contains("distanceBackColorA"))
+	{
+		distanceBackColor.x = j["distanceBackColorR"].get<float>();
+		distanceBackColor.y = j["distanceBackColorG"].get<float>();
+		distanceBackColor.z = j["distanceBackColorB"].get<float>();
+		distanceBackColor.w = j["distanceBackColorA"].get<float>();
 	}
 }

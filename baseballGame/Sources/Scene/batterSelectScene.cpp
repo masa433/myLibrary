@@ -22,7 +22,11 @@ void batterSelectScene::SelectRandomPitcher()
 	if (it != Pitcher::pitcherToSpriteIndexTable.end())
 	{
 		selectedPitcherIndex = static_cast<size_t>(it->second);
+		
 	}
+
+	previousPitcherIndex = currentPitcherIndex;
+	currentPitcherIndex = selectedPitcherIndex;
 
 	//ピッチャー側にも選択されたピッチャーを設定
 	Pitcher::Instance().SelectRealPitcher(selectedPitcher);
@@ -31,8 +35,13 @@ void batterSelectScene::SelectRandomPitcher()
 	snprintf(buffer, sizeof(buffer), "Selected Pitcher: %d (Index: %zu)", static_cast<int>(selectedPitcher), selectedPitcherIndex);
 	OutputDebugStringA(buffer);
 
-	if (Pitcher::Instance().IsRightPitcher()) randomPitcherImageIndex = 2 + rand() % 2; //3か4
-	else randomPitcherImageIndex = rand() % 2;//0か1
+	if(currentPitcherIndex != previousPitcherIndex)
+	{
+		if (Pitcher::Instance().IsRightPitcher()) randomPitcherImageIndex = 2 + rand() % 2; //3か4
+		else randomPitcherImageIndex = rand() % 2;//0か1
+	}
+
+	
 
 }
 
@@ -62,6 +71,7 @@ void batterSelectScene::initialize()
 		input_element_desc, _countof(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", pixel_shader.GetAddressOf());
 
+	//背景のスプライトデータを初期化
 	backGroundData = std::make_unique<BatterSelectSpriteData>();
 	backGroundData->texturePath = L".\\resources\\textures\\batterSelectBack.png";
 	backGroundData->position = { 0.0f, 0.0f };
@@ -79,6 +89,7 @@ void batterSelectScene::initialize()
 	pitcherParamBackGroundData->color = { 1.0f, 1.0f, 1.0f, 0.8f };
 	pitcherParamBackGroundSprite = std::make_unique<sprite>(device, context, pitcherParamBackGroundData->texturePath.c_str());
 
+	//閉じるボタンのスプライトデータを初期化
 	closeButtonData = std::make_unique<BatterSelectSpriteData>();
 	closeButtonData->texturePath = L".\\resources\\textures\\closeButton.png";
 	closeButtonData->position = { 1800.0f, 100.0f };
@@ -90,6 +101,7 @@ void batterSelectScene::initialize()
 	//ピッチャーのスプライトデータを初期化
 	for (size_t i = 0; i < PITCHER_COUNT; ++i)
 	{
+		// ピッチャーのパラメータ画像のスプライトデータを初期化
 		pitcherSpriteDataArray[i] = std::make_unique<BatterSelectSpriteData>();
 		pitcherSpriteDataArray[i]->texturePath = L".\\resources\\textures\\pitcherParameter\\pitcherParameter" + std::to_wstring(i + 1) + L".png";
 		pitcherSpriteDataArray[i]->position = { 1150.0f, 150.0f };
@@ -98,6 +110,7 @@ void batterSelectScene::initialize()
 		pitcherSpriteDataArray[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		pitcherSprites[i] = std::make_unique<sprite>(device, context, pitcherSpriteDataArray[i]->texturePath.c_str());
 
+		// ピッチャーの名前タグのスプライトデータを初期化
 		pitcherNameSpriteData[i] = std::make_unique<BatterSelectSpriteData>();
 		pitcherNameSpriteData[i]->texturePath = L".\\resources\\textures\\pitcherNameTag\\pitcherNameTag" + std::to_wstring(i + 1) + L".png";
 		pitcherNameSpriteData[i]->position = { pitcherNamePosition.x, pitcherNamePosition.y };
@@ -119,6 +132,15 @@ void batterSelectScene::initialize()
 		pitcherImageSpriteDataArray[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		pitcherImageSprites[i] = std::make_unique<sprite>(device, context, pitcherImageSpriteDataArray[i]->texturePath.c_str());
 	}
+
+	//VSのスプライトデータを初期化
+	VSSpriteData = std::make_unique<BatterSelectSpriteData>();
+	VSSpriteData->texturePath = L".\\resources\\textures\\VS.png";
+	VSSpriteData->position = { VSPosition.x, VSPosition.y };
+	VSSpriteData->size = { VSSize.x, VSSize.y };
+	VSSpriteData->rotation = 0.0f;
+	VSSpriteData->color = { VSColor.x, VSColor.y, VSColor.z, VSColor.w };
+	VSSprite = std::make_unique<sprite>(device, context, VSSpriteData->texturePath.c_str());
 
 	//バーストエフェクト
 	{
@@ -473,6 +495,14 @@ void batterSelectScene::render(float elapsedTime)
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
+	if(VSSpriteData && VSSprite)
+	{
+		VSSprite->render(dc, VSPosition.x, VSPosition.y,
+			VSSize.x, VSSize.y,
+			VSColor.x, VSColor.y, VSColor.z, VSColor.w * batterImageAlpha,
+			VSSpriteData->rotation);
+	}
+
 	if(batterImageAlpha > 0.001f)
 	{
 		playerScrollView->RenderBatterImage(dc, batterImageAlpha); // この中でVS/PS/InputLayoutがnullptrに戻る
@@ -601,9 +631,7 @@ void batterSelectScene::uninitialize()
 {
 	// スクロールビューの解放
 	playerScrollView.reset();
-	// バッターパラメータスプライトの解放
-	batterParamSprite.reset();
-	batterParamData.reset();
+	VSSprite.reset();
 }
 
 void batterSelectScene::DrawGUI()
@@ -664,6 +692,13 @@ void batterSelectScene::DrawGUI()
 		ImGui::DragFloat2("Modal Burst Size", &modalBurstSize.x, 1.0f);
 	}
 
+	if(ImGui::CollapsingHeader("VS Sprite"))
+	{
+		ImGui::DragFloat2("Position", &VSPosition.x, 1.0f);
+		ImGui::DragFloat2("Size", &VSSize.x, 1.0f);
+		ImGui::ColorEdit4("Color", &VSColor.x);
+	}
+
 	ImGui::End();
 #endif // !_DEBUG
 }
@@ -695,6 +730,12 @@ void batterSelectScene::SaveSetting()
 	pitcherNameJson["size"] = { pitcherNameSize.x, pitcherNameSize.y };
 	pitcherNameJson["color"] = { pitcherNameColor.x, pitcherNameColor.y, pitcherNameColor.z, pitcherNameColor.w };
 	j["pitcherName"] = pitcherNameJson;
+
+	json VSJson;
+	VSJson["position"] = { VSPosition.x, VSPosition.y };
+	VSJson["size"] = { VSSize.x, VSSize.y };
+	VSJson["color"] = { VSColor.x, VSColor.y, VSColor.z, VSColor.w };
+	j["VS"] = VSJson;
 
 	// ファイルに保存
 	std::ofstream file("resources\\setting\\batterSelectSettings.json");
@@ -763,6 +804,28 @@ void batterSelectScene::LoadSetting()
 			pitcherNameColor.y = pitcherNameJson["color"][1].get<float>();
 			pitcherNameColor.z = pitcherNameJson["color"][2].get<float>();
 			pitcherNameColor.w = pitcherNameJson["color"][3].get<float>();
+		}
+	}
+
+	if(j.contains("VS") && j["VS"].is_object())
+	{
+		const auto& VSJson = j["VS"];
+		if (VSJson.contains("position") && VSJson["position"].is_array() && VSJson["position"].size() == 2)
+		{
+			VSPosition.x = VSJson["position"][0].get<float>();
+			VSPosition.y = VSJson["position"][1].get<float>();
+		}
+		if (VSJson.contains("size") && VSJson["size"].is_array() && VSJson["size"].size() == 2)
+		{
+			VSSize.x = VSJson["size"][0].get<float>();
+			VSSize.y = VSJson["size"][1].get<float>();
+		}
+		if (VSJson.contains("color") && VSJson["color"].is_array() && VSJson["color"].size() == 4)
+		{
+			VSColor.x = VSJson["color"][0].get<float>();
+			VSColor.y = VSJson["color"][1].get<float>();
+			VSColor.z = VSJson["color"][2].get<float>();
+			VSColor.w = VSJson["color"][3].get<float>();
 		}
 	}
 }
