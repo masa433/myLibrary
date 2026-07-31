@@ -62,7 +62,7 @@ private:
 	bool cursorClipped = false;
 
 	DirectX::XMFLOAT2 originalCursorSize = { 100.0f,100.0f };
-	float minCursorScale = 0.7f;
+	float minCursorScale = 0.6f;
 	float maxCursorScale = 1.3f;
 
 public:

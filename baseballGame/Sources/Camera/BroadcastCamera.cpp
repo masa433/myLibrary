@@ -497,6 +497,7 @@ void BroadcastCamera::StopAllTracking()
 	{
 		controller.StopTrackingBall();
 	}
+	activeCameraIndex = 0; // デフォルトカメラに戻す
 }
 
 std::string BroadcastCamera::GetPresetNameById(int cameraId) const

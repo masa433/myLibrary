@@ -30,8 +30,9 @@ static const SkyColorKey kColorTable[] =
 	{ 0.30f, {0.15f,0.30f,0.65f},  {0.70f,0.60f,0.40f},  {0.12f,0.10f,0.07f},  {1.0f ,0.8f ,0.5f }, 1.0f },  // morning
 	{ 0.50f, {0.10f,0.30f,0.75f},  {0.55f,0.65f,0.80f},  {0.15f,0.12f,0.10f},  {1.0f ,0.97f,0.9f }, 1.4f },  // noon
 	{ 0.70f, {0.12f,0.28f,0.70f},  {0.65f,0.55f,0.35f},  {0.12f,0.10f,0.07f},  {1.0f ,0.8f ,0.5f }, 1.0f },  // afternoon
-	{ 0.78f, {0.05f,0.05f,0.20f},  {0.55f,0.25f,0.10f},  {0.10f,0.06f,0.03f},  {1.0f ,0.5f ,0.1f }, 0.6f },  // sunset
-	{ 0.85f, {0.01f,0.01f,0.10f},  {0.07f,0.05f,0.12f},  {0.03f,0.02f,0.01f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // dusk
+	{ 0.78f, {0.05f,0.05f,0.20f},  {0.55f,0.25f,0.10f},  {0.10f,0.06f,0.03f},  {1.0f ,0.5f ,0.1f }, 0.6f },  // sunset (18:43頃): 赤橙色のピーク
+	{ 0.83f, {0.01f,0.01f,0.12f},  {0.08f,0.05f,0.18f},  {0.03f,0.02f,0.01f},  {0.2f ,0.05f,0.0f }, 0.1f },  // dusk (19:55頃): 赤みを一気に消して深い紫/藍色に沈める
+	{ 0.87f, {0.00f,0.00f,0.06f},  {0.03f,0.03f,0.09f},  {0.02f,0.01f,0.00f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // nightfall (20:52頃): すでに完全な夜色へ到達
 	{ 1.00f, {0.00f,0.00f,0.05f},  {0.02f,0.02f,0.08f},  {0.02f,0.01f,0.00f},  {0.0f ,0.0f ,0.0f }, 0.0f },  // midnight again
 };
 
@@ -77,6 +78,8 @@ XMFLOAT4 SkyRenderer::GetSunDirectionToLight() const
 	return XMFLOAT4(-sun_dir.x, -sun_dir.y, -sun_dir.z, 0.0f); // ライト空間では太陽光の方向は逆になる
 }
 
+
+
 // 時刻に応じた空の色を計算
 void SkyRenderer::ComputeSkyColors(sky_constants& out) const
 {
@@ -120,7 +123,9 @@ void SkyRenderer::ComputeSkyColors(sky_constants& out) const
 	out.time_of_day = t; // シェーダー側は従来通り0.0f～1.0fの正規化時刻を受け取る
 	out.sun_size = sun_size;
 	out.sun_bloom_size = sun_bloom_size;
-	out.sky_dummy = 0.0f; // パディング
+	out.cloud_color = { cloud_color.x, cloud_color.y, cloud_color.z, 1.0f };
+	out.cloud_params = { cloud_coverage, cloud_scale, cloud_speed, cloud_softness };// 雲のパラメータを設定
+	out.cloud_time = cloud_time_accum; // 雲の時間を設定（アニメーション用）
 }
 
 //初期化
@@ -156,6 +161,19 @@ void SkyRenderer::Update(float elapsedTime)
 		time_of_day = fmodf(time_of_day + elapsedTime * time_speed, kHoursPerDay);
 		if (time_of_day < 0.0f) time_of_day += kHoursPerDay;
 	}
+
+	cloud_time_accum += elapsedTime;// 雲の時間を累積（アニメーション用）
+
+	//時刻が6時から18時までは雲の色を白、それ以外はグレーにする
+	if(time_of_day >= 6.0f && time_of_day <= 18.0f)
+	{
+		cloud_color = { 1.0f, 1.0f, 1.0f }; // 昼間は白い雲
+	}
+	else
+	{
+		cloud_color = { 0.3f, 0.3f, 0.3f }; // 夜間はグレーの雲
+	}
+	
 }
 
 //描画
@@ -222,6 +240,15 @@ void SkyRenderer::DrawGUI()
 		{
 			time_of_day = 21.0f;
 			auto_advance_time = false;
+		}
+
+		if (ImGui::CollapsingHeader("Cloud"))
+		{
+			ImGui::ColorEdit3("Cloud Color", &cloud_color.x);
+			ImGui::SliderFloat("Cloud Coverage", &cloud_coverage, 0.0f, 1.0f);
+			ImGui::SliderFloat("Cloud Scale", &cloud_scale, 0.1f, 5.0f);
+			ImGui::SliderFloat("Cloud Speed", &cloud_speed, 0.0f, 1.0f);
+			ImGui::SliderFloat("Cloud Softness", &cloud_softness, 0.0f, 1.0f);
 		}
 	}
 #endif

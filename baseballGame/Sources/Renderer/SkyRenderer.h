@@ -17,10 +17,12 @@ public:
 		DirectX::XMFLOAT4 sky_zenith_color;// 空の天頂の色
 		DirectX::XMFLOAT4 sky_horizon_color;// 空の地平線の色
 		DirectX::XMFLOAT4 sky_ground_color;// 空の地面の色（今回は使用しない）
+		DirectX::XMFLOAT4 cloud_color; // 雲の色
+		DirectX::XMFLOAT4 cloud_params; // 雲のパラメータ　x=被覆率、y=スケール、z=速度、w=柔らかさ
 		float time_of_day; // 時刻（0.0f ～ 1.0f）
 		float sun_size; // 太陽のサイズ
 		float sun_bloom_size; // 太陽のブルームのサイズ
-		float sky_dummy; // パディング
+		float cloud_time; // 雲の時間（アニメーション用）
 	};
 
 	//パラメータ
@@ -29,6 +31,12 @@ public:
 	bool auto_advance_time = false; // 時刻の自動進行
 	float sun_size = 0.025f; // 太陽のサイズ
 	float sun_bloom_size = 0.12f; // 太陽のブルームのサイズ
+	DirectX::XMFLOAT3 cloud_color = { 1.0f, 1.0f, 1.0f }; // 雲の色
+	float cloud_coverage = 1.0f; // 雲の被覆率（0.0f～1.0f）
+	float cloud_scale = 5.0f; // 雲のスケール
+	float cloud_speed = 0.05f; // 雲の速度
+	float cloud_softness = 1.0f; // 雲の柔らかさ（0.0f～1.0f）
+	float cloud_time_accum = 0.0f; // 雲の時間の累積値（アニメーション用）
 
 public:
 	//関数
@@ -48,6 +56,7 @@ public:
 
 	float NormalizedTimeOfDay() const;
 	DirectX::XMFLOAT3 ComputeSunDirection() const; // 太陽光の方向を計算
+	DirectX::XMFLOAT3 ComputeCloudColor() const; // 雲の色を計算
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constant_buffer; // 定数バッファ

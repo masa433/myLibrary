@@ -20,10 +20,12 @@ cbuffer sky_constants : register(b9)
     float4   sky_zenith_color;   // 天頂（空の最上部）の色
     float4   sky_horizon_color;  // 地平線の色
     float4   sky_ground_color;   // 地平線より下の色
+    float4   cloud_color; // 雲の色（未使用）
+    float4   cloud_params; // 雲のパラメータ x=被覆率、y=スケール、z=速度、w=柔らかさ   
     float    time_of_day;        // 時刻（0.0 = 深夜、0.25 = 日の出、0.5 = 正午、0.75 = 日没、1.0 = 深夜）
     float    sun_size;           // 太陽ディスクの視野角（ラジアン単位、目安：0.025）
     float    sun_bloom_size;     // 太陽の柔らかな光（ブルーム）の半径（目安：0.12）
-    float    sky_dummy;
+    float cloud_time; // 雲の時間（アニメーション用）
 };
 
 // --- 頂点シェーダーからの入力構造体 ---
@@ -72,13 +74,13 @@ float3 SkyGradient(float3 ray_dir, float3 sun_dir)
 
     // 地平線の下か上か
     float horizon_blend = smoothstep(-0.05f, 0.05f, height);
-    float zenith_blend  = saturate(height * 1.5f);
+    float zenith_blend  = saturate(height * 10.0f);
 
-    float3 horizon_color = sky_horizon_color.rgb;
+    //float3 horizon_color = sky_horizon_color.rgb;
     float3 zenith_color  = sky_zenith_color.rgb;
     float3 ground_color  = sky_ground_color.rgb;
 
-    float3 sky = lerp(horizon_color, zenith_color, zenith_blend);
+    float3 sky = lerp(ground_color, zenith_color, zenith_blend);
     sky = lerp(ground_color, sky, horizon_blend);
 
     return sky;
@@ -99,7 +101,7 @@ float3 HorizonHaze(float3 ray_dir, float3 sun_dir)
     float day = saturate(sun_dir.y * 3.0f);
     float3 haze_color = lerp(warm_haze, cold_haze, day);
 
-    return haze_color * horizon_factor * 0.6f;
+    return haze_color * horizon_factor * 0.1f;
 }
 
 // --- 太陽のディスクとコロナ（光輪） ---
@@ -121,9 +123,12 @@ float3 SunDisk(float3 ray_dir, float3 sun_dir)
     float limb_darken = lerp(0.7f, 1.0f, sqrt(limb));
 
     // 太陽が地平線の上にある場合のみ表示
-    float above_horizon = smoothstep(-0.02f, 0.05f, sun_dir.y);
+    float above_horizon = smoothstep(0.00f, 0.03f, sun_dir.y);
+    
+    float bloom_fade = saturate(sun_dir.y * 10.0f);
+    float filtered_bloom = bloom * bloom_fade;
 
-    float3 sun_contrib = sun_color.rgb * (disk * limb_darken + bloom * 0.5f);
+    float3 sun_contrib = sun_color.rgb * (disk * limb_darken + filtered_bloom * 0.5f);
     return sun_contrib * above_horizon;
 }
 
@@ -150,6 +155,85 @@ float3 Moon(float3 ray_dir, float3 sun_dir, float night_factor)
     return moon_color * night_factor;
 }
 
+
+float CloudHash(float2 p)
+{
+    float3 p3 = frac(float3(p.xyx) * 0.1031f); // 乱数生成のためのハッシュ関数
+    p3 += dot(p3, p3.yzx + 33.33f);
+    return frac((p3.x + p3.y) * p3.z);
+}
+
+float CloudNoise(float2 p)
+{
+    float2 i = floor(p);
+    float2 f = frac(p);
+    
+   
+    // 4つの隣接するグリッドポイントのハッシュ値を取得 
+    float a = CloudHash(i); // 左下
+    float b = CloudHash(i + float2(1.0f, 0.0f)); // 右下
+    float c = CloudHash(i + float2(0.0f, 1.0f)); // 左上
+    float d = CloudHash(i + float2(1.0f, 1.0f)); // 右上
+    
+    float2 u = f * f * (3.0f - 2.0f * f); // スムーズステップ補間
+    
+    return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
+}
+
+float CloudFbm(float2 p)
+{
+    float value = 0.0f, amplitude = 0.5f; // フラクタルブラウン運動（FBM）による雲の生成
+    [unroll]
+    for (int i = 0; i < 5; i++)
+    {
+        value += amplitude * CloudNoise(p); // 雲のノイズを加算
+        p *= 2.02f; // 周波数を倍に
+        amplitude *= 0.5f; // 振幅を半分に
+    }
+
+    return value;
+}
+
+// --- 雲の描画 ---
+float3 Clouds(float3 ray_dir,float3 sun_dir,float3 base_sky)
+{
+    float horizon_fade = smoothstep(0.02f, 0.20f, ray_dir.y); // 地平線付近で雲をフェードアウト
+    if (horizon_fade <= 0.0f)
+        return base_sky; // 地平線の下では雲を描画しない
+    
+    float coverage = cloud_params.x; // 雲の被覆率
+    if(coverage <= 0.0f)
+        return base_sky; // 雲の被覆率が0なら雲は描画しない
+    
+    float scale = max(cloud_params.y, 0.001f); // 雲のスケール（小さすぎる場合は最小値に制限）
+    float speed = cloud_params.z; // 雲の移動速度
+    float softness = max(cloud_params.w, 0.01f); // 雲の柔らかさ（小さすぎる場合は最小値に制限）
+    
+    float2 cloud_uv = ray_dir.xz / ray_dir.y; // 平面投影のUV座標
+    float2 wind = float2(1.0f, 0.35f) * cloud_time * speed; // 風による雲の移動
+    float2 uv = cloud_uv * scale * 0.15f + wind; // 雲のUV座標をスケーリングして風の影響を加える
+    
+    float n = CloudFbm(uv); // 雲のフラクタルノイズを取得
+    float density = smoothstep(1.0f - coverage - softness, 1.0f - coverage + softness, n); // 雲の密度を計算（被覆率と柔らかさに基づく）
+    
+    float bulge = smoothstep(0.3f, 0.9f, n); // 雲の膨らみを計算（雲の形状に変化を与える）
+    float3 lit_color = cloud_color.rgb * 0.75f; // 雲の基本色を設定（太陽光の影響を受ける）
+    float3 shadow_color = cloud_color.rgb * 0.25f; // 雲の影の色を設定（太陽光の影響を受ける）
+    float3 cloud_col = lerp(shadow_color, lit_color, bulge); // 雲の色を膨らみに基づいて補間
+    
+    float3 sun_tint = saturate(sun_color.rgb / max(max(sun_color.r, sun_color.g), max(sun_color.b, 0.001f))); // 太陽の色を正規化して雲に反映
+    //cloud_col *= lerp(float3(1.0f, 1.0f, 1.0f), sun_tint, 0.50f); // 太陽の色を雲に少し反映させる
+
+    float sun_up = saturate(sun_dir.y * 2.0f); // 太陽が地平線の上にあるかどうかを判定
+    cloud_col *= lerp(0.7f, 1.0f, sun_up); // 太陽が上にあるときは雲を明るくする
+
+    cloud_col = saturate(cloud_col);
+    
+    float alpha = density * horizon_fade;
+    return lerp(base_sky, cloud_col, alpha);
+
+}
+
 // --- メイン関数 ---
 float4 main(PS_INPUT input) : SV_TARGET
 {
@@ -165,10 +249,11 @@ float4 main(PS_INPUT input) : SV_TARGET
 
     // 空のベースグラデーション
     float3 sky = SkyGradient(ray_dir, sun_dir);
-
-    // 大気の靄（ヘイズ）
+    
     sky += HorizonHaze(ray_dir, sun_dir);
 
+    sky += Clouds(ray_dir, sun_dir, sky);
+    
     // 月
     sky += Moon(ray_dir, sun_dir, night_factor);
 
