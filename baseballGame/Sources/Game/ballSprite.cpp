@@ -474,6 +474,25 @@ void ballSprite::Update(float elapsedTime)
 			return 0.0f;
 		};
 
+		if (pitchingState)
+		{
+			showSpriteTimer += elapsedTime;
+
+			if (showSpriteTimer >= showSpriteDelay)
+			{
+				if (!nowThrown && display == BallDisplayMode::None)
+				{
+					display = BallDisplayMode::Target;
+				}
+			}
+		}	
+		else
+		{
+			// 投球モーション中でなければタイマーリセット＆非表示
+			showSpriteTimer = 0.0f;
+			display = BallDisplayMode::None;
+		}
+
 	// ワインドアップ開始の立ち上がりを検知
 	if (pitchingState && !prevPitchingState)
 	{
@@ -487,13 +506,13 @@ void ballSprite::Update(float elapsedTime)
 			0.0f,
 			pitcher.IsRightPitcher());
 		ApplyBallSpritePosition(snapPos);
+		ApplyTagetSpritePosition(snapPos);
 		ballTrail2D.clear();
 
-		display = BallDisplayMode::Target;
-
-		ApplyTagetSpritePosition(snapPos);
 	}
 	prevPitchingState = pitchingState;
+
+	
 
 	if (nowThrown && !prevThrown)
 	{
@@ -502,7 +521,10 @@ void ballSprite::Update(float elapsedTime)
 		
 		Ball::Instance().SetHasCollidedWithBat(false);
 
-		display = BallDisplayMode::Ball;
+		if (showSpriteTimer >= showSpriteDelay)
+		{
+			display = BallDisplayMode::Ball;
+		}
 	}
 	prevThrown = nowThrown;
 
