@@ -147,6 +147,7 @@ private:
 		Finished,// 遷移準備完了
 		Reverting,// 戻るボタン押下後のフェード演出
 		ShowPitcherParam,// ピッチャーのパラメータ表示中
+		ChangeScene// シーン遷移中
 	};
 
 	SequenceState currentState = SequenceState::Selecting;

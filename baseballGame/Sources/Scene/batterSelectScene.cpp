@@ -304,6 +304,18 @@ void batterSelectScene::update(float elapsed_time)
 				}
 			}
 
+			// ÉVÅ[ÉìëJà⁄íÜÇÃèàóù
+			if (!isChangingScene)
+			{
+				if (buttonManager.IsStartRequested())
+				{
+					isChangingScene = true;
+					hexTransitionEffect.Start(1.0f);
+					buttonManager.ResetStartRequest(false);
+					currentState = SequenceState::ChangeScene;
+				}
+			}
+
 			break;
 		}
 		case SequenceState::Reverting:
@@ -354,33 +366,26 @@ void batterSelectScene::update(float elapsed_time)
 
 			break;
 		}
+		case SequenceState::ChangeScene:
+		{
+			
+			if(isChangingScene)
+			{
+				hexTransitionEffect.Update(elapsed_time);
+
+				if (hexTransitionEffect.IsFinished())
+				{
+					sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
+				}
+			}
+			break;
+		}
 	}
 
 	for(auto& effect : burstList)
 	{
 		effect.time += elapsed_time;
 	}
-
-	if (!isChangingScene)
-	{
-		if (buttonManager.IsStartRequested())
-		{
-			isChangingScene = true;
-			hexTransitionEffect.Start(1.0f);
-			buttonManager.ResetStartRequest(false);
-		}
-	}
-	else
-	{
-		hexTransitionEffect.Update(elapsed_time);
-
-		if (hexTransitionEffect.IsFinished())
-		{
-			sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
-		}
-	}
-
-	
 
 }
 
@@ -610,10 +615,6 @@ void batterSelectScene::render(float elapsedTime)
 		
 	}
 
-
-	
-
-	
 	if (isChangingScene)
 	{
 		hexTransitionEffect.Render();
