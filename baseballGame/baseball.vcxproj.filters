@@ -196,6 +196,9 @@
     <ClCompile Include="Sources\UI\ScrollView.cpp">
       <Filter>Sources\UI</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Renderer\BloomRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -413,6 +416,9 @@
     </ClInclude>
     <ClInclude Include="Sources\UI\ScrollView.h">
       <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Renderer\BloomRenderer.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

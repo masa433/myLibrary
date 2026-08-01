@@ -214,7 +214,7 @@ void BroadcastCamera::SetupDefaultCameras()
 		preset.cameraId = 11; // 確信ホームランカメラ6のIDを設定
 		AddCameraPreset(preset);
 	}
-	activeCameraIndex = 0;// 最初のカメラをアクティブにする
+	//activeCameraIndex = 0;// 最初のカメラをアクティブにする
 }
 
 void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)

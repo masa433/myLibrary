@@ -54,9 +54,26 @@ public:
 	bool IsTrackingBall() const;
 	void StopAllTracking();
 
+	std::string GetActiveCameraName() const
+	{
+		if(cameraPresets.empty() || activeCameraIndex < 0 || activeCameraIndex >= static_cast<int>(cameraPresets.size()))
+		{
+			return ""; // デフォルトの名前を返す
+		}
+		return cameraPresets[activeCameraIndex].name;
+	}
 	int GetActiveIndex() const { return activeCameraIndex; }
 	void SetActiveIndex(int i) { activeCameraIndex = i; }
 	std::vector<CameraPreset>& Presets() { return cameraPresets; }
+	
+	CameraType GetActiveCameraType() const
+	{
+		if(cameraPresets.empty() || activeCameraIndex < 0 || activeCameraIndex >= static_cast<int>(cameraPresets.size()))
+		{
+			return CameraType::NormalCamera; // デフォルトのカメラタイプを返す
+		}
+		return cameraPresets[activeCameraIndex].type;
+	}
 
 	std::string GetPresetNameById(int cameraId) const;
 

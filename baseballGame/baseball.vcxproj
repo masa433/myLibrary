@@ -286,6 +286,7 @@
     <ClCompile Include="Sources\Physics\physxManager.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Renderer\BloomRenderer.cpp" />
     <ClCompile Include="Sources\Renderer\FontRenderer.cpp" />
     <ClCompile Include="Sources\Renderer\ModelRenderer.cpp">
       <DeploymentContent>false</DeploymentContent>
@@ -439,6 +440,7 @@
     <ClInclude Include="Sources\Physics\physxManager.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Renderer\BloomRenderer.h" />
     <ClInclude Include="Sources\Renderer\FontRenderer.h" />
     <ClInclude Include="Sources\Renderer\ModelRenderer.h">
       <DeploymentContent>false</DeploymentContent>

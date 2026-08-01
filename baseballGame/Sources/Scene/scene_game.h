@@ -15,6 +15,7 @@
 #include "FreeCameraController.h"
 #include "FrustumCulling.h"
 #include "BroadcastCamera.h"
+#include "BloomRenderer.h"
 #include "json.hpp"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
@@ -43,12 +44,11 @@ private:
 
 	BroadcastCamera broadcastCamera;
 
+	BloomRenderer bloomRenderer;
+
 private:
     //	カスケードシャドウマップ数
     static constexpr int ShadowBufferSize = 4;
-
-    //	ガウスフィルター
-    static constexpr int KernelMax = 25;
 
     // スポットライトシャドウマップ関連
     static constexpr int SpotShadowCount = 4; // light_max と一致させる
@@ -93,31 +93,7 @@ private:
         DirectX::XMFLOAT4 fog_range; // x:開始距離、y:終了距離、z,wは未使用
     };
 
-    //ブルーム
-    struct luminance_extract_constants
-    {
-        float				threshold{ 0.7f };	//	高輝度抽出のための閾値
-        float				intensity{ 2.0f };	//	ブルームの強度
-        DirectX::XMFLOAT2	dummy;
-
-    };
-
-    //	シェーダー側への転送用定数バッファ
-    struct gaussian_filter_constants
-    {
-        DirectX::XMFLOAT4	weights[KernelMax * KernelMax];
-        float				kernel_size;
-        DirectX::XMFLOAT2	texcel;
-        float				dummy;
-    };
-
-    //	ガウスフィルター処理用情報
-    struct gaussian_filter_datas
-    {
-        int					kernel_size{ 9 };
-        float				sigma{ 10.0f };
-        DirectX::XMFLOAT2	texture_size{ SCREEN_WIDTH, SCREEN_HEIGHT };
-    };
+    
 
     //ポストエフェクト用定数バッファ構造体
     struct post_effect_constants
@@ -222,37 +198,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11InputLayout> sprite_input_layout;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> sprite_pixel_shader;
 
-	//	高輝度抽出関係
-	luminance_extract_constants luminance_extract_constant;
-
-    Microsoft::WRL::ComPtr<ID3D11Buffer> luminance_extract_constant_buffer;
-    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> luminance_extract_render_target_view;
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> luminance_extract_shader_resource_view;
-    Microsoft::WRL::ComPtr<ID3D11PixelShader> luminance_extract_pixel_shader;
-    std::unique_ptr<sprite>	luminance_extract_pass_sprite;
-
-    //	高輝度抽出を行うパス
-    void luminance_extract_pass(float elapsed_time);
-
-
-   
-	//	ガウスフィルター関係
-    gaussian_filter_datas gaussian_filter_data;
-    Microsoft::WRL::ComPtr<ID3D11Buffer> gaussian_filter_constant_buffer;
-    Microsoft::WRL::ComPtr<ID3D11PixelShader> gaussian_filter_pixel_shader;
-
-    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> bokeh_luminance_extract_render_target_view;
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bokeh_luminance_extract_shader_resource_view;
-    std::unique_ptr<sprite>	bokeh_luminance_extract_pass_sprite;
-
-    //	ガウスフィルター
-    void calculate_gaussian_filter_constant(gaussian_filter_constants& constant, const gaussian_filter_datas& data);
-
-    //	高輝度抽出バッファをぼかす
-    void bokeh_luminance_extract_pass(float elapsed_time);
-
-    //	ぼかした結果を書き込む
-    std::unique_ptr<sprite>	add_luminance_extract_pass_sprite;
+	
 
 private:
     //ドローコール表示用
@@ -263,4 +209,5 @@ private:
 
 private:
     float trackingTime = 0.0f;
+	bool showGUI = true;
 };

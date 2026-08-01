@@ -15,6 +15,7 @@
 #include "Hextransitioneffect.h"
 #include "json.hpp"
 #include "ButtonManager.h" 
+#include "sprite.h"
 
 using json = nlohmann::json;
 
@@ -132,6 +133,26 @@ private:
 	post_effect_constants post_effect_constant;
 	shadow_quality_constants shadow_quality_constant;
 
-	private:
-		ButtonManager buttonManager;
+private:
+	ButtonManager buttonManager;
+
+	struct SpriteData
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+	std::unique_ptr<SpriteData> logoSpriteData;
+	std::unique_ptr<sprite> logoSprite;
+
+	DirectX::XMFLOAT2 logoPosition = { 0.0f, 0.0f };
+	DirectX::XMFLOAT2 logoSize = { 400.0f, 200.0f };
+	DirectX::XMFLOAT4 logoColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	//シェーダー関連
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
 };

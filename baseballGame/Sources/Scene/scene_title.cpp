@@ -11,6 +11,7 @@
 #include <fstream>
 #include <string>
 #include "devmidi.h"
+#include <shader.h>
 
 
 void SceneTitle::initialize()
@@ -67,6 +68,26 @@ void SceneTitle::initialize()
 		hr = device->CreateBuffer(&buffer_desc, nullptr, shadow_quality_constant_buffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
+
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+
+	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.GetAddressOf(), spriteInputLayout.GetAddressOf(),
+		input_element_desc, _countof(input_element_desc));
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
+
+	logoSpriteData = std::make_unique<SpriteData>();
+	logoSpriteData->texturePath = L".\\resources\\textures\\titleLogo.png";
+	logoSpriteData->position = { logoPosition.x, logoPosition.y };
+	logoSpriteData->size = logoSize;
+	logoSpriteData->rotation = 0.0f;
+	logoSpriteData->color = logoColor;
+	logoSprite = std::make_unique<sprite>(device, context, logoSpriteData->texturePath.c_str());
 
 	//	ステージ初期化（PhysXを使う作りなら先にInitializeしておく）
 	Physics::Instance().Initialize();
@@ -233,10 +254,37 @@ void SceneTitle::render(float elapsed_time)
 	
 	buttonManager.Render();
 
+	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+	dc->PSSetShader(spritePS.Get(), nullptr, 0);
+	dc->IASetInputLayout(spriteInputLayout.Get());
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+	if (logoSpriteData && logoSprite)
+	{
+		logoSprite->render(dc,
+			logoPosition.x, logoPosition.y,
+			logoSize.x, logoSize.y,
+			logoColor.x, logoColor.y, logoColor.z, logoColor.w,
+			logoSpriteData->rotation);
+	}
+
+	dc->VSSetShader(nullptr, nullptr, 0);
+	dc->PSSetShader(nullptr, nullptr, 0);
+	dc->IASetInputLayout(nullptr);
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+
+
 	if (isChangingScene)
 	{
 		hexTransitionEffect.Render();
 	}
+
+	
+
 }
 
 void SceneTitle::uninitialize()
@@ -267,6 +315,15 @@ void SceneTitle::DrawGUI()
 
 	buttonManager.DrawGUI();
 
+	if(ImGui::CollapsingHeader("Logo Sprite"))
+	{
+		if(logoSpriteData)
+		{
+			ImGui::DragFloat2("Position", &logoPosition.x, 1.0f);
+			ImGui::DragFloat2("Size", &logoSize.x, 1.0f);
+			ImGui::ColorEdit4("Color", &logoColor.x);
+		}
+	}
 
 #endif
 #endif
@@ -277,6 +334,15 @@ void SceneTitle::SaveSetting()
 	json j;
 	buttonManager.SaveToJson(j);
 	// JSONをファイルに保存する処理を追加
+
+	//ロゴ関連の保存
+	j["logo"] = {
+		{"position", {logoPosition.x, logoPosition.y}},
+		{"size", {logoSize.x, logoSize.y}},
+		{"color", {logoColor.x, logoColor.y, logoColor.z, logoColor.w}},
+	};
+
+
 	// ファイルに保存
 	std::ofstream file("resources\\setting\\titleSettings.json");
 	file << j.dump(4);
@@ -292,4 +358,27 @@ void SceneTitle::LoadSetting()
 	file >> j;
 	// JSONファイルから読み込む処理を追加
 	buttonManager.LoadFromJson(j);
+
+	//ロゴ関連の読み込み
+	if (j.contains("logo"))
+	{
+		auto& logo = j["logo"];
+		if (logo.contains("position") && logo["position"].is_array() && logo["position"].size() == 2)
+		{
+			logoPosition.x = logo["position"][0].get<float>();
+			logoPosition.y = logo["position"][1].get<float>();
+		}
+		if (logo.contains("size") && logo["size"].is_array() && logo["size"].size() == 2)
+		{
+			logoSize.x = logo["size"][0].get<float>();
+			logoSize.y = logo["size"][1].get<float>();
+		}
+		if (logo.contains("color") && logo["color"].is_array() && logo["color"].size() == 4)
+		{
+			logoColor.x = logo["color"][0].get<float>();
+			logoColor.y = logo["color"][1].get<float>();
+			logoColor.z = logo["color"][2].get<float>();
+			logoColor.w = logo["color"][3].get<float>();
+		}
+	}
 }

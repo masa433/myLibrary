@@ -39,6 +39,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Model\gltf_model.cpp;C:\
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Model\Model.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Model.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Model\ModelResource.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ModelResource.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Physics\physxManager.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\physxManager.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\BloomRenderer.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\FontRenderer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\FontRenderer.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\ModelRenderer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ModelRenderer.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\PrimitiveRenderer.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\PrimitiveRenderer.obj

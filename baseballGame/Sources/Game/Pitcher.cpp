@@ -391,6 +391,7 @@ void Pitcher::ResetPitchFlags()
 	Ball::Instance().SetHasPassedFairFoulTrigger(false);
 	Ball::Instance().SetFoulLogged(false);
 	Ball::Instance().SetIsFoulConfirmed(false); // ファウル確定フラグをリセット
+	Ball::Instance().SetHasCollidedWithPole(false);
 
 	ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
 	ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
