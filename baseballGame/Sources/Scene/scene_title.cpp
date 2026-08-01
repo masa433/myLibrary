@@ -251,7 +251,9 @@ void SceneTitle::render(float elapsed_time)
 	//	ステージ描画
 	stage::Instance().render(rc, modelRenderer);
 
-	
+	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+
 	buttonManager.Render();
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
@@ -260,6 +262,7 @@ void SceneTitle::render(float elapsed_time)
 
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+	
 
 	if (logoSpriteData && logoSprite)
 	{
