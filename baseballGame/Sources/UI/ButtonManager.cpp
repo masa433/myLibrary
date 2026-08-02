@@ -192,6 +192,10 @@ void ButtonManager::Update(float elapsedTime)
 						isRerollRequested = true;
 						OutputDebugStringA("Reroll button clicked!\n");
 						break;
+					case ButtonType::Title:
+						isTitleRequested = true;
+						OutputDebugStringA("Title button clicked!\n");
+						break;
 
 					default:
 						break;
@@ -432,7 +436,7 @@ void ButtonManager::DrawGUI()
 			ImGui::ColorEdit4(u8"フォント色", &fontColor.x);
 
 			//ボタンタイプを選択
-			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" , "Reroll"};
+			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" , "Reroll", "Title"};
 			int currentTypeIndex = static_cast<int>(btn.buttonType);
 			ImGui::Combo(u8"ボタンタイプ", &currentTypeIndex, buttonTypeItems, IM_ARRAYSIZE(buttonTypeItems));
 			btn.buttonType = static_cast<ButtonManager::ButtonType>(currentTypeIndex);

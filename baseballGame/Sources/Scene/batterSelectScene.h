@@ -160,6 +160,7 @@ private:
 	float paramImageAlpha = 0.0f; // パラメータ画像の透明度
 
 	bool isChangingScene = false; // 設定がロードされたかどうかのフラグ
+	bool isTitleChanging = false; // タイトルに戻る処理中かどうかのフラグ
 
 	DirectX::XMFLOAT2 modalPitcherPos = { 300.0f,100.0f };
 	DirectX::XMFLOAT2 modalPitcherSize = { 600.0f,800.0f };

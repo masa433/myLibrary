@@ -5,6 +5,7 @@
 #include <random>
 #include "scene_loading.h"
 #include "scene_game.h"
+#include "scene_title.h"
 #include <fstream>
 
 void batterSelectScene::SelectRandomPitcher()
@@ -173,6 +174,7 @@ void batterSelectScene::initialize()
 
 	hexTransitionEffect.Initialize();
 	isChangingScene = false;
+	isTitleChanging = false;
 
 	SelectRandomPitcher(); // ランダムにピッチャーを選択
 	LoadSetting(); // 設定をロード
@@ -215,6 +217,18 @@ void batterSelectScene::update(float elapsed_time)
 				buttonManager.ResetOKRequest(false);
 				transitionTimer = 0.0f; // 遷移演出のタイマーをリセット
 			}
+
+			if (!isTitleChanging)
+			{
+				if (buttonManager.IsTitleRequested())
+				{
+					isTitleChanging = true;
+					hexTransitionEffect.Start(1.0f);
+					buttonManager.ResetTitleRequest(false);
+					currentState = SequenceState::ChangeScene;
+				}
+			}
+
 			break;
 		}
 		case SequenceState::Transition:
@@ -369,13 +383,20 @@ void batterSelectScene::update(float elapsed_time)
 		case SequenceState::ChangeScene:
 		{
 			
-			if(isChangingScene)
+			if(isChangingScene || isTitleChanging)
 			{
 				hexTransitionEffect.Update(elapsed_time);
 
 				if (hexTransitionEffect.IsFinished())
 				{
-					sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
+					if (isChangingScene)
+					{
+						sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
+					}
+					else if (isTitleChanging)
+					{
+						sceneManager::Instance().ChangeScene(new scene_loading(new SceneTitle()));
+					}
 				}
 			}
 			break;
@@ -419,6 +440,7 @@ void batterSelectScene::render(float elapsedTime)
 	}
 
 	buttonManager.Render(uiAlpha, ButtonManager::ButtonType::OK);
+	buttonManager.Render(uiAlpha, ButtonManager::ButtonType::Title);
 
 	dc->VSSetShader(burstVertexShader.Get(), nullptr, 0);
 	dc->PSSetShader(burstPixelShader.Get(), nullptr, 0);
@@ -615,7 +637,7 @@ void batterSelectScene::render(float elapsedTime)
 		
 	}
 
-	if (isChangingScene)
+	if (isChangingScene || isTitleChanging)
 	{
 		hexTransitionEffect.Render();
 	}
