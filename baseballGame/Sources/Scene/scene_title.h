@@ -15,7 +15,8 @@
 #include "Hextransitioneffect.h"
 #include "json.hpp"
 #include "ButtonManager.h" 
-#include "sprite.h"
+#include "BloomRenderer.h"
+
 
 using json = nlohmann::json;
 
@@ -44,7 +45,21 @@ private:
 	HexTransitionEffect hexTransitionEffect;
 	bool isChangingScene = false;//	シーン切り替え中かどうか
 
+	//空と太陽のレンダラー
+	SkyRenderer skyRenderer;
+
+	ShadowRenderer shadowRenderer;
+
+	BloomRenderer bloomRenderer;
+
 private:
+
+	//	カスケードシャドウマップ数
+	static constexpr int ShadowBufferSize = 4;
+
+	// スポットライトシャドウマップ関連
+	static constexpr int SpotShadowCount = 4; // light_max と一致させる
+
 	//	シーン用定数バッファ構造体（stageのシェーダーが要求するレイアウトに合わせる）
 	struct scene_constants
 	{
@@ -155,4 +170,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
+
+	// シーン描画用のレンダーターゲットとシェーダーリソースビュー
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> scene_render_target_view;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> scene_shader_resource_view;
+
+	bool enableShadows = false;
 };

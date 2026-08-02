@@ -1,8 +1,10 @@
-﻿  framework.cpp
+﻿  scene_title.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(106,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
+  (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
   
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
+  (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
   
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(111,144): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(111,104): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

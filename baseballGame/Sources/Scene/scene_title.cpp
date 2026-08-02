@@ -69,6 +69,48 @@ void SceneTitle::initialize()
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
+	//スカイレンダラーの初期化
+	{
+		skyRenderer.Initialize(device);
+
+		skyRenderer.auto_advance_time = false;
+		skyRenderer.time_of_day = 14.0f; // 初期の昼間設定（14時）
+	}
+
+	//シャドウレンダラーの初期化
+	shadowRenderer.Initialize();
+
+	//シーン描画用のバッファ生成
+	{
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
+		D3D11_TEXTURE2D_DESC texture2d_desc{};
+		texture2d_desc.Width = static_cast<UINT>(Graphics::Instance().GetScreenWidth());
+		texture2d_desc.Height = static_cast<UINT>(Graphics::Instance().GetScreenHeight());
+		texture2d_desc.MipLevels = 1;
+		texture2d_desc.ArraySize = 1;
+		texture2d_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		texture2d_desc.SampleDesc.Count = 1;
+		texture2d_desc.SampleDesc.Quality = 0;
+		texture2d_desc.Usage = D3D11_USAGE_DEFAULT;
+		texture2d_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		texture2d_desc.CPUAccessFlags = 0;
+		texture2d_desc.MiscFlags = 0;
+		hr = device->CreateTexture2D(&texture2d_desc, nullptr, color_buffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		//レンダーターゲットビュー生成
+		hr = device->CreateRenderTargetView(color_buffer.Get(), nullptr, scene_render_target_view.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		//シェーダーリソースビュー生成
+		hr = device->CreateShaderResourceView(color_buffer.Get(), nullptr, scene_shader_resource_view.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	}
+
+	//ブルームレンダラー初期化
+	bloomRenderer.Initialize(device, scene_shader_resource_view.Get(), Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight());
+
+
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -129,6 +171,15 @@ void SceneTitle::update(float elapsed_time)
 
 	stage::Instance().update(elapsed_time);
 
+	//	スカイレンダラー更新
+	skyRenderer.Update(elapsed_time);
+	//	太陽光の方向を取得してライト定数バッファに反映
+	directional_light_direction = skyRenderer.GetSunDirectionToLight();
+
+	//	シャドウレンダラー更新
+	shadowRenderer.SetDirectionalLight(directional_light_direction, directional_light_color, directional_light_intensity);
+
+
 	buttonManager.Update(elapsed_time);
 
 
@@ -168,12 +219,32 @@ void SceneTitle::render(float elapsed_time)
 
 	Camera& camera = Camera::Instance();
 
-	//	バックバッファに直接描画
+	shadowRenderer.SetCameraPosition(cameraPosition);
+
+
+	// 3本の描画呼び出し（関数名だけ変わる）
+	if (enableShadows)
+	{
+		if (shadowRenderer.use_cascade_shadow_map)
+			shadowRenderer.RenderCascadeShadowMap(elapsed_time);
+		else
+			shadowRenderer.RenderShadowMap(elapsed_time);
+
+		/*shadowRenderer.spot_shadow_frame_count++;
+		if (shadowRenderer.spot_shadow_frame_count >= shadowRenderer.spot_shadow_update_interval)
+		{
+			shadowRenderer.RenderSpotShadowMap(elapsed_time);
+			shadowRenderer.spot_shadow_frame_count = 0;
+
+		}*/
+	}
+
+	//	オフスクリーンに描画する
 	float clear_color[4] = { 0.2f, 0.4f, 0.6f, 1.0f };
-	ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
-	dc->ClearRenderTargetView(backBufferRTV, clear_color);
+	
+	dc->ClearRenderTargetView(scene_render_target_view.Get(), clear_color);
 	dc->ClearDepthStencilView(Graphics::Instance().GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	dc->OMSetRenderTargets(1, &backBufferRTV, Graphics::Instance().GetDepthStencilView());
+	dc->OMSetRenderTargets(1, scene_render_target_view.GetAddressOf(), Graphics::Instance().GetDepthStencilView());
 
 	D3D11_VIEWPORT viewport{};
 	viewport.TopLeftX = 0;
@@ -238,6 +309,8 @@ void SceneTitle::render(float elapsed_time)
 	dc->UpdateSubresource(shadow_quality_constant_buffer.Get(), 0, 0, &shadow_quality_constant, 0, 0);
 	dc->PSSetConstantBuffers(11, 1, shadow_quality_constant_buffer.GetAddressOf());
 
+	shadowRenderer.BindShadowResources(dc);
+
 	//	サンプラー
 	ID3D11SamplerState* sampler_states[] =
 	{
@@ -247,6 +320,15 @@ void SceneTitle::render(float elapsed_time)
 	};
 	dc->PSSetSamplers(0, ARRAYSIZE(sampler_states), sampler_states);
 	dc->VSSetSamplers(0, ARRAYSIZE(sampler_states), sampler_states);
+
+	skyRenderer.Render(dc,
+		constant_buffer.Get(),
+		renderState->GetDepthStencilState(DepthState::TestOnly),
+		renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+
+	// 深度・ラスタライザーを元に戻す
+	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+	dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
 	//	ステージ描画
 	stage::Instance().render(rc, modelRenderer);
@@ -280,6 +362,28 @@ void SceneTitle::render(float elapsed_time)
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 
+	// シャドウリソースのバインドを解除
+	shadowRenderer.UnbindShadowResources(dc);
+
+	// ここで高輝度抽出とぼかしを実行してパスのSRVを更新する
+	bloomRenderer.Extract(dc, camera.GetView(), camera.GetProjection(), cameraPosition);
+
+	//バックバッファに戻してコピー
+	ID3D11RenderTargetView* backbufferRTV = Graphics::Instance().GetRenderTargetView();
+	dc->OMSetRenderTargets(1, &backbufferRTV, nullptr);
+
+	{
+		ID3D11Resource* srcRes = nullptr;
+		ID3D11Resource* dstRes = nullptr;
+		scene_render_target_view->GetResource(&srcRes);
+		backbufferRTV->GetResource(&dstRes);
+		dc->CopyResource(dstRes, srcRes);
+		srcRes->Release();
+		dstRes->Release();
+	}
+
+	// ここでブルームの合成を行う
+	bloomRenderer.Composite(dc);
 
 	if (isChangingScene)
 	{
@@ -327,6 +431,14 @@ void SceneTitle::DrawGUI()
 			ImGui::ColorEdit4("Color", &logoColor.x);
 		}
 	}
+
+	if (ImGui::CollapsingHeader("Sky & Time")) { skyRenderer.DrawGUI(); }
+	if (ImGui::CollapsingHeader("Bloom"))
+	{
+		bloomRenderer.DrawGUI();
+		bloomRenderer.DrawEnableCheckbox();
+	}
+	ImGui::Checkbox("Enable Shadows", &enableShadows);
 
 #endif
 #endif
