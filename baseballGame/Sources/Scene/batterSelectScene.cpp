@@ -293,28 +293,15 @@ void batterSelectScene::update(float elapsed_time)
 				}
 			}
 
-			//imageAlphaが0.0の時はピッチャーのパラメータ画像を表示しない
-			if (batterImageAlpha > 0.0f)
+			
+			//ネームタグが押されたら、フェードインしてパラメータ画像を表示する
+			if (buttonManager.IsShowPitchParamRequested())
 			{
-				//マウスの位置を取得
-				Input& input = Input::Instance();
-				float mouseX = input.GetMouse().GetPositionX();
-				float mouseY = input.GetMouse().GetPositionY();
-
-				bool isLeftMouseButtonClicked = input.GetMouse().GetButtonDown();
-
-				//ピッチャーのネームタグを押すとパラメータの画像を確認できるようにする
-				isNameTagClicked = pitcherNamePosition.x <= mouseX && mouseX <= pitcherNamePosition.x + pitcherNameSize.x &&
-					pitcherNamePosition.y <= mouseY && mouseY <= pitcherNamePosition.y + pitcherNameSize.y &&
-					isLeftMouseButtonClicked;
-
-				//ネームタグが押されたら、フェードインしてパラメータ画像を表示する
-				if (isNameTagClicked)
-				{
-					transitionTimer = 0.0f; // 遷移演出のタイマーをリセット
-					currentState = SequenceState::ShowPitcherParam;
-				}
+				transitionTimer = 0.0f; // 遷移演出のタイマーをリセット
+				buttonManager.ResetShowPitchParamRequest(false);
+				currentState = SequenceState::ShowPitcherParam;
 			}
+			
 
 			// シーン遷移中の処理
 			if (!isChangingScene)
@@ -483,36 +470,8 @@ void batterSelectScene::render(float elapsedTime)
 		}
 	}
 
-	//パラメーター出現中のエフェクト描画
-	if (isNameTagClicked && paramImageAlpha > 0.001f)
-	{
-		D3D11_MAPPED_SUBRESOURCE mapped;
-
-		dc->Map(burstTransformBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-
-		// バーストエフェクトの中心位置をスクリーン座標に変換
-		auto* tcb = reinterpret_cast<BurstTransformBuffer*>(mapped.pData);
-		tcb->center = modalBurstPosition;
-		tcb->size = modalBurstSize;
-		tcb->screenSize = { static_cast<float>(Graphics::Instance().GetScreenWidth()), static_cast<float>(Graphics::Instance().GetScreenHeight()) };
-		dc->Unmap(burstTransformBuffer.Get(), 0);
-
-		dc->Map(burstColorBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-		auto* ccb = reinterpret_cast<BurstBuffer*>(mapped.pData);
-		ccb->time = burstList.empty() ? 0.0f : burstList[0].time;
-		ccb->aspectRatio = 1.0f; // アスペクト比を1.0に設定
-		ccb->progress = paramImageAlpha;
-		dc->Unmap(burstColorBuffer.Get(), 0);
-
-		dc->Draw(4, 0); // 頂点バッファなしで4頂点描画（トライアングルストリップ）
-	}
-
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Return);
-	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Start);
-	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Reroll);
 
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
@@ -553,7 +512,21 @@ void batterSelectScene::render(float elapsedTime)
 			pitcherNameSpriteData[selectedPitcherIndex]->rotation);
 	}
 
-	if(isNameTagClicked)
+	
+
+	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Return);
+	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Start);
+	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Reroll);
+	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::ShowPitchParam);
+
+	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
+	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
+	dc->IASetInputLayout(input_layout.Get());
+	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
+
+
+	if(currentState == SequenceState::ShowPitcherParam)
 	{
 		
 		//背景描画
@@ -579,7 +552,7 @@ void batterSelectScene::render(float elapsedTime)
 
 
 		//パラメーター出現中のエフェクト描画
-		if (isNameTagClicked && paramImageAlpha > 0.001f)
+		if (currentState == SequenceState::ShowPitcherParam && paramImageAlpha > 0.001f)
 		{
 			D3D11_MAPPED_SUBRESOURCE mapped;
 

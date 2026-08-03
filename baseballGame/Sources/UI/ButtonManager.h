@@ -31,6 +31,7 @@ public:
 		Title, //タイトルボタン
 		BatterSelect,//打者選択ボタン
 		Retry,//リトライボタン
+		ShowPitchParam,//ピッチャーパラメータ表示ボタン
 		Count
 	};
 
@@ -70,6 +71,9 @@ public:
 
 	void ResetBatterSelectRequest(bool requested) { isBatterSelectRequested = requested; }
 	bool IsBatterSelectRequested() const { return isBatterSelectRequested; }
+
+	void ResetShowPitchParamRequest(bool requested) { isShowPitchParamRequested = requested; }
+	bool IsShowPitchParamRequested() const { return isShowPitchParamRequested; }
 
 	//ボタンの色を変える関数
 	void ChangeColor(DirectX::XMFLOAT4 color, ButtonType buttonType = ButtonType::None);
@@ -122,4 +126,5 @@ private:
 	bool isTitleRequested = false;
 	bool isRetryRequested = false;
 	bool isBatterSelectRequested = false;
+	bool isShowPitchParamRequested = false;
 };

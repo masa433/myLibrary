@@ -204,6 +204,10 @@ void ButtonManager::Update(float elapsedTime)
 						isRetryRequested = true;
 						OutputDebugStringA("Retry button clicked!\n");
 						break;
+					case ButtonType::ShowPitchParam:
+						isShowPitchParamRequested = true;
+						OutputDebugStringA("ShowPitchParam button clicked!\n");
+						break;
 
 					default:
 						break;
@@ -444,7 +448,7 @@ void ButtonManager::DrawGUI()
 			ImGui::ColorEdit4(u8"フォント色", &fontColor.x);
 
 			//ボタンタイプを選択
-			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" , "Reroll", "Title", "BatterSelect", "Retry"};
+			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" , "Reroll", "Title", "BatterSelect", "Retry", "ShowPitchParam"};
 			int currentTypeIndex = static_cast<int>(btn.buttonType);
 			ImGui::Combo(u8"ボタンタイプ", &currentTypeIndex, buttonTypeItems, IM_ARRAYSIZE(buttonTypeItems));
 			btn.buttonType = static_cast<ButtonManager::ButtonType>(currentTypeIndex);
