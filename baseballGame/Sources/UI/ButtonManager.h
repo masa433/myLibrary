@@ -29,6 +29,8 @@ public:
 		Close,//閉じるボタン
 		Reroll,//振り直しボタン
 		Title, //タイトルボタン
+		BatterSelect,//打者選択ボタン
+		Retry,//リトライボタン
 		Count
 	};
 
@@ -62,6 +64,12 @@ public:
 
 	void ResetTitleRequest(bool requested) { isTitleRequested = requested; }
 	bool IsTitleRequested() const { return isTitleRequested; }
+
+	void ResetRetryRequest(bool requested) { isRetryRequested = requested; }
+	bool IsRetryRequested() const { return isRetryRequested; }
+
+	void ResetBatterSelectRequest(bool requested) { isBatterSelectRequested = requested; }
+	bool IsBatterSelectRequested() const { return isBatterSelectRequested; }
 
 	//ボタンの色を変える関数
 	void ChangeColor(DirectX::XMFLOAT4 color, ButtonType buttonType = ButtonType::None);
@@ -112,4 +120,6 @@ private:
 	bool isCloseRequested = false;
 	bool isRerollRequested = false;
 	bool isTitleRequested = false;
+	bool isRetryRequested = false;
+	bool isBatterSelectRequested = false;
 };

@@ -20,11 +20,11 @@
 
 using json = nlohmann::json;
 
-class SceneTitle : public scene
+class scene_title : public scene
 {
 public:
-	SceneTitle() {}
-	~SceneTitle() override {}
+	scene_title() {}
+	~scene_title() override {}
 	void initialize() override;
 	void update(float elapsed_time) override;
 	void render(float elapsed_time) override;

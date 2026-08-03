@@ -39,8 +39,8 @@ void ButtonManager::Initialize()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	// シェーダーの読み込み
-	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.GetAddressOf(), spriteInputLayout.GetAddressOf(), inputElementDesc, _countof(inputElementDesc));
-	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), inputElementDesc, _countof(inputElementDesc));
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
 
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
@@ -195,6 +195,14 @@ void ButtonManager::Update(float elapsedTime)
 					case ButtonType::Title:
 						isTitleRequested = true;
 						OutputDebugStringA("Title button clicked!\n");
+						break;
+					case ButtonType::BatterSelect:
+						isBatterSelectRequested = true;
+						OutputDebugStringA("BatterSelect button clicked!\n");
+						break;
+					case ButtonType::Retry:
+						isRetryRequested = true;
+						OutputDebugStringA("Retry button clicked!\n");
 						break;
 
 					default:
@@ -436,7 +444,7 @@ void ButtonManager::DrawGUI()
 			ImGui::ColorEdit4(u8"フォント色", &fontColor.x);
 
 			//ボタンタイプを選択
-			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" , "Reroll", "Title"};
+			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" , "Reroll", "Title", "BatterSelect", "Retry"};
 			int currentTypeIndex = static_cast<int>(btn.buttonType);
 			ImGui::Combo(u8"ボタンタイプ", &currentTypeIndex, buttonTypeItems, IM_ARRAYSIZE(buttonTypeItems));
 			btn.buttonType = static_cast<ButtonManager::ButtonType>(currentTypeIndex);

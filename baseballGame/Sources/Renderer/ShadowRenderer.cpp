@@ -21,22 +21,22 @@ void ShadowRenderer::Initialize()
 
         // シーン定数バッファの作成
         buffer_desc.ByteWidth = sizeof(scene_constants);
-        HRESULT hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, constant_buffer.GetAddressOf());
+        HRESULT hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, constant_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         //シャドウマップの定数バッファの作成
         buffer_desc.ByteWidth = sizeof(shadowmap_constants);
-        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, shadowmap_constant_buffer.GetAddressOf());
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, shadowmap_constant_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         //カスケードシャドウ用定数バッファ
         buffer_desc.ByteWidth = sizeof(cascade_shadowmap_constants);
-        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, cascade_shadowmap_constant_buffer.GetAddressOf());
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, cascade_shadowmap_constant_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         //スポットシャドウ用定数バッファ
         buffer_desc.ByteWidth = sizeof(spot_shadowmap_constants);
-        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, spot_shadowmap_constant_buffer.GetAddressOf());
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, spot_shadowmap_constant_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
 
@@ -56,7 +56,7 @@ void ShadowRenderer::Initialize()
         texture2d_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
         texture2d_desc.CPUAccessFlags = 0;
         texture2d_desc.MiscFlags = 0;
-        HRESULT hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.GetAddressOf());
+        HRESULT hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         //	深度ステンシルビュー生成
@@ -66,7 +66,7 @@ void ShadowRenderer::Initialize()
         depth_stencil_view_desc.Texture2D.MipSlice = 0;
         hr = device->CreateDepthStencilView(depth_buffer.Get(),
             &depth_stencil_view_desc,
-            shadowmap_depth_stencil_view.GetAddressOf());
+            shadowmap_depth_stencil_view.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         //	シェーダーリソースビュー生成
@@ -77,7 +77,7 @@ void ShadowRenderer::Initialize()
         shader_resource_view_desc.Texture2D.MipLevels = 1;
         hr = device->CreateShaderResourceView(depth_buffer.Get(),
             &shader_resource_view_desc,
-            shadowmap_shader_resource_view.GetAddressOf());
+            shadowmap_shader_resource_view.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         // サンプラステートの生成
@@ -96,7 +96,7 @@ void ShadowRenderer::Initialize()
             sampler_desc.BorderColor[3] = FLT_MAX;
             sampler_desc.MinLOD = 0;
             sampler_desc.MaxLOD = D3D11_FLOAT32_MAX;
-            hr = device->CreateSamplerState(&sampler_desc, shadowmap_sampler_state.GetAddressOf());
+            hr = device->CreateSamplerState(&sampler_desc, shadowmap_sampler_state.ReleaseAndGetAddressOf());
         }
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
@@ -120,7 +120,7 @@ void ShadowRenderer::Initialize()
         for (int index = 0; index < ShadowBufferSize; ++index)
         {
             Microsoft::WRL::ComPtr<ID3D11Texture2D> depth_buffer{};
-            hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.GetAddressOf());
+            hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.ReleaseAndGetAddressOf());
             _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
             //	深度ステンシルビュー生成
@@ -130,7 +130,7 @@ void ShadowRenderer::Initialize()
             depth_stencil_view_desc.Texture2D.MipSlice = 0;
             hr = device->CreateDepthStencilView(depth_buffer.Get(),
                 &depth_stencil_view_desc,
-                cascade_shadowmap_depth_stencil_views[index].GetAddressOf());
+                cascade_shadowmap_depth_stencil_views[index].ReleaseAndGetAddressOf());
             _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
             //	シェーダーリソースビュー生成
@@ -141,7 +141,7 @@ void ShadowRenderer::Initialize()
             shader_resource_view_desc.Texture2D.MipLevels = 1;
             hr = device->CreateShaderResourceView(depth_buffer.Get(),
                 &shader_resource_view_desc,
-                cascade_shadowmap_shader_resource_views[index].GetAddressOf());
+                cascade_shadowmap_shader_resource_views[index].ReleaseAndGetAddressOf());
             _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         }
@@ -165,7 +165,7 @@ void ShadowRenderer::Initialize()
         for (int index = 0; index < SpotShadowCount; ++index)
         {
             Microsoft::WRL::ComPtr<ID3D11Texture2D> depth_buffer{};
-            hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.GetAddressOf());
+            hr = device->CreateTexture2D(&texture2d_desc, NULL, depth_buffer.ReleaseAndGetAddressOf());
             _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
             D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
@@ -173,7 +173,7 @@ void ShadowRenderer::Initialize()
             dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
             dsv_desc.Texture2D.MipSlice = 0;
             hr = device->CreateDepthStencilView(depth_buffer.Get(), &dsv_desc,
-                spot_shadowmap_depth_stencil_views[index].GetAddressOf());
+                spot_shadowmap_depth_stencil_views[index].ReleaseAndGetAddressOf());
             _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
             D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc{};
@@ -182,7 +182,7 @@ void ShadowRenderer::Initialize()
             srv_desc.Texture2D.MostDetailedMip = 0;
             srv_desc.Texture2D.MipLevels = 1;
             hr = device->CreateShaderResourceView(depth_buffer.Get(), &srv_desc,
-                spot_shadowmap_shader_resource_views[index].GetAddressOf());
+                spot_shadowmap_shader_resource_views[index].ReleaseAndGetAddressOf());
             _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         }
@@ -201,7 +201,7 @@ void ShadowRenderer::Initialize()
             { "WEIGHTS", 0,DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         };
 
-        create_vs_from_cso(device, ".\\resources\\shader\\shadowmap_caster_vs.cso", shadowmap_caster_vertex_shader.GetAddressOf(), shadowmap_caster_input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
+        create_vs_from_cso(device, ".\\resources\\shader\\shadowmap_caster_vs.cso", shadowmap_caster_vertex_shader.ReleaseAndGetAddressOf(), shadowmap_caster_input_layout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
     }
 }
 
@@ -703,4 +703,27 @@ ID3D11ShaderResourceView* ShadowRenderer::GetShadowmapSRV() const
 ID3D11ShaderResourceView* ShadowRenderer::GetCascadeShadowmapSRV(int index) const
 {
     return cascade_shadowmap_shader_resource_views[index].Get();
+}
+
+void ShadowRenderer::Uninitialize()
+{
+    shadowmap_constant_buffer.Reset();
+    spot_shadowmap_constant_buffer.Reset();
+    cascade_shadowmap_constant_buffer.Reset();
+    shadowmap_shader_resource_view.Reset();
+    for (auto& srv : cascade_shadowmap_shader_resource_views)
+        srv.Reset();
+    for (auto& srv : spot_shadowmap_shader_resource_views)
+        srv.Reset();
+    shadowmap_sampler_state.Reset();
+    
+    // Missing cleanup for depth stencil views and shaders
+    shadowmap_depth_stencil_view.Reset();
+    for (auto& dsv : cascade_shadowmap_depth_stencil_views)
+        dsv.Reset();
+    for (auto& dsv : spot_shadowmap_depth_stencil_views)
+        dsv.Reset();
+    shadowmap_caster_vertex_shader.Reset();
+    shadowmap_caster_input_layout.Reset();
+    constant_buffer.Reset();
 }

@@ -134,10 +134,10 @@ void SkyRenderer::Initialize(ID3D11Device* device)
 	HRESULT hr;
 
 	// Load shaders (adjust paths to match your project layout)
-	hr = create_vs_from_cso(device, ".\\resources\\shader\\sky_vs.cso", vertex_shader.GetAddressOf(), nullptr, nullptr, 0);
+	hr = create_vs_from_cso(device, ".\\resources\\shader\\sky_vs.cso", vertex_shader.ReleaseAndGetAddressOf(), nullptr, nullptr, 0);
 	if (FAILED(hr)) return;
 
-	hr = create_ps_from_cso(device, ".\\resources\\shader\\sky_ps.cso", pixel_shader.GetAddressOf());
+	hr = create_ps_from_cso(device, ".\\resources\\shader\\sky_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
 	if (FAILED(hr)) return;
 
 	// Constant buffer
@@ -145,7 +145,7 @@ void SkyRenderer::Initialize(ID3D11Device* device)
 	bd.ByteWidth = sizeof(sky_constants);
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	hr = device->CreateBuffer(&bd, nullptr, constant_buffer.GetAddressOf());
+	hr = device->CreateBuffer(&bd, nullptr, constant_buffer.ReleaseAndGetAddressOf());
 	if (FAILED(hr)) return;
 
 }
@@ -272,3 +272,9 @@ void SkyRenderer::LoadFromJson(const json& j)
 	if (j.contains("sun_bloom_size")) sun_bloom_size = j["sun_bloom_size"].get<float>();
 }
 
+void SkyRenderer::Uninitialize()
+{
+	constant_buffer.Reset();
+	vertex_shader.Reset();
+	pixel_shader.Reset();
+}

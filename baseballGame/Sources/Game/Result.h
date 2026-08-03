@@ -11,6 +11,12 @@
 #include "ButtonManager.h"
 #include "Hextransitioneffect.h"
 
+enum class State
+{
+	Result,
+	Transition,
+};
+
 
 using json = nlohmann::json;
 
@@ -68,7 +74,11 @@ private:
 
 	ButtonManager buttonManager;
 	bool isResultToTitle = false;
+	bool isResultToRetry = false;
+	bool isResultToBatterSelect = false;
 
 
 	HexTransitionEffect hexTransitionEffect;
+
+	State currentState = State::Result;
 };

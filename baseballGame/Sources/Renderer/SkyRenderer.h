@@ -41,6 +41,7 @@ public:
 public:
 	//関数
 	void Initialize(ID3D11Device* device);
+	void Uninitialize();
 	void Update(float elapsedTime);
 	void Render(ID3D11DeviceContext* dc,
 		ID3D11Buffer* scene_constant_buffer,  // シーン定数バッファ

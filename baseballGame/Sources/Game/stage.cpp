@@ -109,13 +109,13 @@ void stage::initialize()
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
 		// Ground用のマテリアル（よく跳ねる）
-		physx::PxMaterial* groundMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.2f);
+		groundMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.2f);
 
 		// Stand用のマテリアル（ほぼ跳ねない）
-		physx::PxMaterial* standMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.0f);
+		standMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.0f);
 
 		//Pole用のマテリアル（あまり跳ねない）
-		physx::PxMaterial* poleMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.2f);
+		poleMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.2f);
 
 		DirectX::XMMATRIX StandTransform = DirectX::XMLoadFloat4x4(&standTransform);
 		DirectX::XMMATRIX GroundTransform = DirectX::XMLoadFloat4x4(&groundTransform);
@@ -236,12 +236,18 @@ void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 	physx::PxScene* pxScene = Physics::Instance().GetScene();
 
+	if (!pxPhysics || !pxScene) return; // ヌルチェックを追加
+
 	// 既存のフェンスラインのトリガーコライダーを削除
 	for (auto* actor : editor.triggers)
 	{
-		pxScene->removeActor(*actor);
-		actor->release();
+		if (actor)
+		{
+			pxScene->removeActor(*actor);
+			actor->release();
+		}
 	}
+
 	editor.triggers.clear();
 
 	if(editor.linePoints.size() < 2)
@@ -288,6 +294,8 @@ void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 		pxScene->addActor(*actor);
 		editor.triggers.push_back(actor);
 	}
+
+	triggerMaterial->release(); // マテリアルの解放
 }
 
 void stage::DrawLineOverlay(const LineTriggerEditor& editor,
@@ -468,6 +476,12 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 // 終了
 void stage::uninitialize()
 {
+	if (groundMaterial) { groundMaterial->release(); groundMaterial = nullptr; }
+	if (standMaterial) { standMaterial->release(); standMaterial = nullptr; }
+	if (poleMaterial) { poleMaterial->release(); poleMaterial = nullptr; }
+	
+	
+
 	for (physx::PxTriangleMesh* pxTriangleMesh : triangle_meshes)
 	{
 		pxTriangleMesh->release();
@@ -485,10 +499,41 @@ void stage::uninitialize()
 	}
 	actors.clear();
 
+	stand.reset();
+	ground.reset();
+	pole.reset();
+	lightTower.reset();
+
 	stand2.reset();
 	ground2.reset();
 	pole2.reset();
 	lightTower2.reset();
+
+	// フェンスラインのトリガーを削除
+	physx::PxScene* pxScene = Physics::Instance().GetScene();
+
+	if (pxScene)
+	{
+		for (auto* actor : homerunLineEditor.triggers)
+		{
+			if (actor)
+			{
+				pxScene->removeActor(*actor);
+				actor->release();
+			}
+		}
+		homerunLineEditor.triggers.clear();
+
+		for (auto* actor : foulLineEditor.triggers)
+		{
+			if (actor)
+			{
+				pxScene->removeActor(*actor);
+				actor->release();
+			}
+		}
+		foulLineEditor.triggers.clear();
+	}
 }
 
 void stage::DrawGUI()

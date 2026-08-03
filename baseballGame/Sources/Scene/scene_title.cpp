@@ -5,16 +5,14 @@
 #include "misc.h"
 #include "stage.h"
 #include "input.h"
-#include "sceneManager.h"
-#include "batterSelectScene.h"
-#include "scene_loading.h"
+#include "sceneTransition.h"
 #include <fstream>
 #include <string>
 #include "devmidi.h"
 #include <shader.h>
 
 
-void SceneTitle::initialize()
+void scene_title::initialize()
 {
 	HRESULT hr = S_OK;
 	ID3D11Device* device = Graphics::Instance().GetDevice();
@@ -45,27 +43,27 @@ void SceneTitle::initialize()
 		buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
 		buffer_desc.ByteWidth = sizeof(scene_constants);
-		hr = device->CreateBuffer(&buffer_desc, nullptr, constant_buffer.GetAddressOf());
+		hr = device->CreateBuffer(&buffer_desc, nullptr, constant_buffer.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		buffer_desc.ByteWidth = sizeof(light_constants);
-		hr = device->CreateBuffer(&buffer_desc, nullptr, light_constant_buffer.GetAddressOf());
+		hr = device->CreateBuffer(&buffer_desc, nullptr, light_constant_buffer.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		buffer_desc.ByteWidth = sizeof(hemisphere_light_constants);
-		hr = device->CreateBuffer(&buffer_desc, nullptr, hemisphere_light_constant_buffer.GetAddressOf());
+		hr = device->CreateBuffer(&buffer_desc, nullptr, hemisphere_light_constant_buffer.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		buffer_desc.ByteWidth = sizeof(fog_constants);
-		hr = device->CreateBuffer(&buffer_desc, nullptr, fog_constant_buffer.GetAddressOf());
+		hr = device->CreateBuffer(&buffer_desc, nullptr, fog_constant_buffer.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		buffer_desc.ByteWidth = sizeof(post_effect_constants);
-		hr = device->CreateBuffer(&buffer_desc, nullptr, post_effect_constant_buffer.GetAddressOf());
+		hr = device->CreateBuffer(&buffer_desc, nullptr, post_effect_constant_buffer.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		buffer_desc.ByteWidth = sizeof(shadow_quality_constants);
-		hr = device->CreateBuffer(&buffer_desc, nullptr, shadow_quality_constant_buffer.GetAddressOf());
+		hr = device->CreateBuffer(&buffer_desc, nullptr, shadow_quality_constant_buffer.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
@@ -95,15 +93,15 @@ void SceneTitle::initialize()
 		texture2d_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 		texture2d_desc.CPUAccessFlags = 0;
 		texture2d_desc.MiscFlags = 0;
-		hr = device->CreateTexture2D(&texture2d_desc, nullptr, color_buffer.GetAddressOf());
+		hr = device->CreateTexture2D(&texture2d_desc, nullptr, color_buffer.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		//レンダーターゲットビュー生成
-		hr = device->CreateRenderTargetView(color_buffer.Get(), nullptr, scene_render_target_view.GetAddressOf());
+		hr = device->CreateRenderTargetView(color_buffer.Get(), nullptr, scene_render_target_view.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		//シェーダーリソースビュー生成
-		hr = device->CreateShaderResourceView(color_buffer.Get(), nullptr, scene_shader_resource_view.GetAddressOf());
+		hr = device->CreateShaderResourceView(color_buffer.Get(), nullptr, scene_shader_resource_view.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
@@ -119,9 +117,9 @@ void SceneTitle::initialize()
 		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.GetAddressOf(), spriteInputLayout.GetAddressOf(),
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(),
 		input_element_desc, _countof(input_element_desc));
-	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
 	logoSpriteData = std::make_unique<SpriteData>();
 	logoSpriteData->texturePath = L".\\resources\\textures\\titleLogo.png";
@@ -131,7 +129,7 @@ void SceneTitle::initialize()
 	logoSpriteData->color = logoColor;
 	logoSprite = std::make_unique<sprite>(device, context, logoSpriteData->texturePath.c_str());
 
-	//	ステージ初期化（PhysXを使う作りなら先にInitializeしておく）
+	//	ステージ初期化
 	Physics::Instance().Initialize();
 	stage::Instance().initialize();
 
@@ -145,7 +143,7 @@ void SceneTitle::initialize()
 	LoadSetting();
 }
 
-void SceneTitle::update(float elapsed_time)
+void scene_title::update(float elapsed_time)
 {
 	// Ctrl + S で設定保存
 	ImGuiIO& io = ImGui::GetIO();
@@ -198,14 +196,14 @@ void SceneTitle::update(float elapsed_time)
 
 		if (hexTransitionEffect.IsFinished())
 		{
-			sceneManager::Instance().ChangeScene(new scene_loading(new batterSelectScene()));
+			ChangeSceneTitleToBatterSelect();
 		}
 	}
 	
 	devmidiUpdate();
 }
 
-void SceneTitle::render(float elapsed_time)
+void scene_title::render(float elapsed_time)
 {
 	using namespace DirectX;
 
@@ -394,14 +392,35 @@ void SceneTitle::render(float elapsed_time)
 
 }
 
-void SceneTitle::uninitialize()
+void scene_title::uninitialize()
 {
 	stage::Instance().uninitialize();
-	Physics::Instance().Finalize();
 	devmidiTerm();
+
+	skyRenderer.Uninitialize();
+	shadowRenderer.Uninitialize();
+	bloomRenderer.Uninitialize();
+
+	Physics::Instance().Finalize();
+
+	// GPU コマンドをフラッシュしてからリソース破棄
+	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	if (dc) dc->Flush();
+
+	constant_buffer.Reset();
+	light_constant_buffer.Reset();
+	hemisphere_light_constant_buffer.Reset();
+	fog_constant_buffer.Reset();
+	post_effect_constant_buffer.Reset();
+	shadow_quality_constant_buffer.Reset();
+	scene_render_target_view.Reset();
+	scene_shader_resource_view.Reset();
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
 }
 
-void SceneTitle::DrawGUI()
+void scene_title::DrawGUI()
 {
 #ifdef _DEBUG
 #ifdef USE_IMGUI
@@ -444,7 +463,7 @@ void SceneTitle::DrawGUI()
 #endif
 }
 
-void SceneTitle::SaveSetting()
+void scene_title::SaveSetting()
 {
 	json j;
 	buttonManager.SaveToJson(j);
@@ -457,14 +476,15 @@ void SceneTitle::SaveSetting()
 		{"color", {logoColor.x, logoColor.y, logoColor.z, logoColor.w}},
 	};
 
-
+	bloomRenderer.SaveToJson(j);
+	
 	// ファイルに保存
 	std::ofstream file("resources\\setting\\titleSettings.json");
 	file << j.dump(4);
 	
 }
 
-void SceneTitle::LoadSetting()
+void scene_title::LoadSetting()
 {
 	std::ifstream file("resources\\setting\\titleSettings.json");
 	
@@ -496,4 +516,6 @@ void SceneTitle::LoadSetting()
 			logoColor.w = logo["color"][3].get<float>();
 		}
 	}
+
+	bloomRenderer.LoadFromJson(j);
 }

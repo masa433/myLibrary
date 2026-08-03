@@ -466,6 +466,7 @@
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Sources\Scene\sceneManager.h" />
+    <ClInclude Include="Sources\Scene\sceneTransition.h" />
     <ClInclude Include="Sources\Scene\scene_game.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

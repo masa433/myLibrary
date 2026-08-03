@@ -1,10 +1,7 @@
 #include "Result.h"
 #include "Graphics.h"
 #include "imgui.h"
-#include "scene_loading.h"
-#include "scene_game.h"
-#include "batterSelectScene.h"
-#include "scene_title.h"
+#include "sceneTransition.h"
 
 void Result::Initialize(ID3D11Device* device)
 {
@@ -15,9 +12,9 @@ void Result::Initialize(ID3D11Device* device)
 		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.GetAddressOf(), spriteInputLayout.GetAddressOf(),
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(),
 		input_element_desc, _countof(input_element_desc));
-	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 	// スプライトの初期化
 	resultSpriteData = std::make_unique<Sprite>();
 	resultSpriteData->texturePath = L".\\resources\\textures\\scrollViewBack.png";
@@ -44,6 +41,10 @@ void Result::Initialize(ID3D11Device* device)
 	hexTransitionEffect.Initialize();
 
 	isResultToTitle = false;
+	isResultToBatterSelect = false;
+	isResultToRetry = false;
+
+	currentState = State::Result;
 
 }
 
@@ -57,27 +58,70 @@ void Result::Uninitialize()
 
 void Result::Update(float elapsedTime)
 {
-	buttonManager.Update(elapsedTime);
+	
 
-	//タイトルシーンに戻るボタンの更新処理
-	if (!isResultToTitle)
+
+	switch (currentState)
 	{
-		if (buttonManager.IsTitleRequested())
+		case State::Result:
 		{
-			isResultToTitle = true;
-			hexTransitionEffect.Start(1.0f);
-			buttonManager.ResetTitleRequest(false);
+			buttonManager.Update(elapsedTime);
+
+			//タイトルシーンに戻るボタンの更新処理
+			if (!isResultToTitle && !isResultToRetry && !isResultToBatterSelect)
+			{
+				if (buttonManager.IsTitleRequested())
+				{
+					isResultToTitle = true;
+					hexTransitionEffect.Start(1.0f);
+					buttonManager.ResetTitleRequest(false);
+					currentState = State::Transition;
+				}
+				if (buttonManager.IsRetryRequested())
+				{
+					isResultToRetry = true;
+					hexTransitionEffect.Start(1.0f);
+					buttonManager.ResetRetryRequest(false);
+					currentState = State::Transition;
+				}
+				if (buttonManager.IsBatterSelectRequested())
+				{
+					isResultToBatterSelect = true;
+					hexTransitionEffect.Start(1.0f);
+					buttonManager.ResetBatterSelectRequest(false);
+					currentState = State::Transition;
+				}
+			}
+
+			break;
+		}
+
+		case State::Transition:
+		{
+			hexTransitionEffect.Update(elapsedTime);
+
+			if (hexTransitionEffect.IsFinished())
+			{
+				if (isResultToTitle)
+				{
+					ChangeSceneGameToTitle();
+				}
+				else if (isResultToRetry)
+				{
+					ChangeSceneGameToGame();
+				}
+				else if (isResultToBatterSelect)
+				{
+					ChangeSceneGameToBatterSelect();
+				}
+			}
+			break;
 		}
 	}
-	else
-	{
-		hexTransitionEffect.Update(elapsedTime);
 
-		if (hexTransitionEffect.IsFinished())
-		{
-			sceneManager::Instance().ChangeScene(new scene_loading(new SceneTitle()));
-		}
-	}
+
+	
+	
 }
 
 void Result::Render()
@@ -119,9 +163,11 @@ void Result::Render()
 	}
 
 	buttonManager.Render(1.0f, ButtonManager::ButtonType::Title);
+	buttonManager.Render(1.0f, ButtonManager::ButtonType::Retry);
+	buttonManager.Render(1.0f, ButtonManager::ButtonType::BatterSelect);
 
 
-	if(isResultToTitle)
+	if(isResultToTitle || isResultToRetry || isResultToBatterSelect)
 	{
 		hexTransitionEffect.Render();
 	}

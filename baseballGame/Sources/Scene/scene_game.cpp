@@ -72,32 +72,32 @@ void scene_game::initialize()
 
         // シーン定数バッファの作成
         buffer_desc.ByteWidth = sizeof(scene_constants);
-        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, constant_buffer.GetAddressOf());
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, constant_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         // ライト定数バッファの作成
         buffer_desc.ByteWidth = sizeof(light_constants);
-        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, light_constant_buffer.GetAddressOf());
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, light_constant_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         // 半球ライティング定数バッファの作成
         buffer_desc.ByteWidth = sizeof(hemisphere_light_constants);
-        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, hemisphere_light_constant_buffer.GetAddressOf());
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, hemisphere_light_constant_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         // フォグ定数バッファの作成
         buffer_desc.ByteWidth = sizeof(fog_constants);
-        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, fog_constant_buffer.GetAddressOf());
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, fog_constant_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         //ポストエフェクト用の定数バッファの作成
         buffer_desc.ByteWidth = sizeof(post_effect_constants);
-        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, post_effect_constant_buffer.GetAddressOf());
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, post_effect_constant_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
         //シャドウクオリティの設定
         buffer_desc.ByteWidth = sizeof(shadow_quality_constants);
-        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, shadow_quality_constant_buffer.GetAddressOf());
+        hr = Graphics::Instance().GetDevice()->CreateBuffer(&buffer_desc, nullptr, shadow_quality_constant_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
 
@@ -117,10 +117,11 @@ void scene_game::initialize()
 		skyRenderer.time_of_day = (dist(rng) == 0) ? 14.0f : 21.0f;
     }
 
-    //物理システムの初期化
+  
+    // ステージの初期化
+
     Physics::Instance().Initialize();
 
-    // ステージの初期化
     stage::Instance().initialize();
 
     // プレイヤーの初期化
@@ -286,15 +287,15 @@ void scene_game::initialize()
     texture2d_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
     texture2d_desc.CPUAccessFlags = 0;
     texture2d_desc.MiscFlags = 0;
-    hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.GetAddressOf());
+    hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.ReleaseAndGetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
     //	レンダーターゲットビュー生成
-    hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, scene_render_target_view.GetAddressOf());
+    hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, scene_render_target_view.ReleaseAndGetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
     //	シェーダーリソースビュー生成
-    hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, scene_shader_resource_view.GetAddressOf());
+    hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, scene_shader_resource_view.ReleaseAndGetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 
@@ -306,8 +307,8 @@ void scene_game::initialize()
             { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
             { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         };
-        create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", sprite_vertex_shader.GetAddressOf(), sprite_input_layout.GetAddressOf(), input_element_desc, _countof(input_element_desc));
-        create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", sprite_pixel_shader.GetAddressOf());
+        create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", sprite_vertex_shader.ReleaseAndGetAddressOf(), sprite_input_layout.ReleaseAndGetAddressOf(), input_element_desc, _countof(input_element_desc));
+        create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", sprite_pixel_shader.ReleaseAndGetAddressOf());
 
 
     }
@@ -318,7 +319,7 @@ void scene_game::initialize()
     D3D11_QUERY_DESC query_desc{};
     query_desc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
     query_desc.MiscFlags = 0;
-    hr = device->CreateQuery(&query_desc, pipeline_stats_query.GetAddressOf());
+    hr = device->CreateQuery(&query_desc, pipeline_stats_query.ReleaseAndGetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
     // 設定のロード
@@ -776,13 +777,38 @@ void scene_game::render(float elapsedTime)
 
 void scene_game::uninitialize()
 {
-    // 終了処理
+    // オブジェクト側の終了
     Player::Instance().Uninitialize();
     stage::Instance().uninitialize();
     Pitcher::Instance().Uninitialize();
     BallDistance::Instance().Uninitialize();
+    Result::Instance().Uninitialize();
+
+    skyRenderer.Uninitialize();
+	shadowRenderer.Uninitialize();
+	bloomRenderer.Uninitialize();
+
+    // 最後に物理システムなどを終了
     Physics::Instance().Finalize();
-	Result::Instance().Uninitialize();
+
+    // GPU コマンドをフラッシュしてからリソース破棄
+    ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+    if (dc) dc->Flush();
+
+    // scene_game が持つ GPU リソースを明示的にリセットして参照カウントを下げる
+    constant_buffer.Reset();
+    light_constant_buffer.Reset();
+    hemisphere_light_constant_buffer.Reset();
+    fog_constant_buffer.Reset();
+    post_effect_constant_buffer.Reset();
+    scene_render_target_view.Reset();
+    scene_shader_resource_view.Reset();
+    sprite_vertex_shader.Reset();
+    sprite_input_layout.Reset();
+    sprite_pixel_shader.Reset();
+    pipeline_stats_query.Reset();
+    
+   
 }
 
 void scene_game::DrawGUI()

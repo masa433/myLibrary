@@ -74,7 +74,7 @@ void Pitcher::Initialize()
 
 		
 	}
-	
+	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 
 	InitializePitchSettings();
 	SelectPitchType();
@@ -109,7 +109,7 @@ void Pitcher::InitializePitchSettings()
 	pitchParameters[static_cast<int>(PitchType::BlazingFastball)] = { 150.0f, -2.5f, { 0.0f, 0.0f, 300.0f }, { 0.02f, 0.2f, -1.02f }, 1800.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 }
 
-void Pitcher::Uninitialize() 
+void Pitcher::Uninitialize()
 {
 	Ball::Instance().Uninitialize();
 	Wind::Instance().Uninitialize();
@@ -122,6 +122,17 @@ void Pitcher::Uninitialize()
 		strikeZoneTrigger = nullptr;
 	}
 	consoleLog = nullptr; // consoleLogの参照を解除
+	currentPitcher = nullptr;
+	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
+
+	animated_nodes.clear();
+	pitchParameters.clear();
+	realPitcherArsenal.clear();
+	pitchHistory.clear();
+
+	// GPUリソース解放
+	rightPitcher.reset();
+	leftPitcher.reset();
 }
 
 // 更新

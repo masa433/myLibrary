@@ -99,6 +99,7 @@ void Physics::Finalize()
 
 	PX_RELEASE(pxControllerManager);
 	PX_RELEASE(pxScene);
+	PX_RELEASE(pxMaterial);
 	PX_RELEASE(pxDispatcher);
 	PX_RELEASE(pxPhysics);
 

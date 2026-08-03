@@ -169,6 +169,17 @@ void Player::Uninitialize()
     PX_RELEASE(pxBatConvexMesh);
     PX_RELEASE(pxBatMaterial);
 
+    consoleLog = nullptr;
+    currentBatter = nullptr;
+
+    animated_nodes.clear();
+    realBatterInfo.clear();
+
+    // GPUリソース解放
+    bat.reset();
+    batModel.reset();
+    rightBatter.reset();
+    leftBatter.reset();
 }
 
 void Player::UpdateBatterModel()
@@ -333,7 +344,7 @@ void Player::Update(float elapsedTime)
 void Player::HandleInput(float elapsedTime)
 {
     // スペースキーでスイング
-    if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+    if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
     {
         if (current_state != State::Swinging)
         {               

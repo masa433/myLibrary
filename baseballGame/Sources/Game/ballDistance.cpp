@@ -12,12 +12,12 @@ void BallDistance::Initialize(ID3D11Device* device)
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
-	// ‹…í–¼‚Æ‹…‘¬•\¦‚É•K—v‚È•¶š‚¾‚¯‚ğƒxƒCƒN‚·‚é
+	// çƒç¨®åã¨çƒé€Ÿè¡¨ç¤ºã«å¿…è¦ãªæ–‡å­—ã ã‘ã‚’ãƒ™ã‚¤ã‚¯ã™ã‚‹
 	std::vector<int> pitchInfoCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789m"
 	);
 
-	// “ú–{ŒêƒOƒŠƒt‚ğ‚ÂƒtƒHƒ“ƒg‚ğ—pˆÓ‚µ‚Ä”z’u‚·‚é
+	// æ—¥æœ¬èªã‚°ãƒªãƒ•ã‚’æŒã¤ãƒ•ã‚©ãƒ³ãƒˆã‚’ç”¨æ„ã—ã¦é…ç½®ã™ã‚‹
 	ballDistanceFont.Initialize(device,
 		L".\\resources\\fonts\\Futur12.ttf",
 		28.0f,
@@ -31,9 +31,9 @@ void BallDistance::Initialize(ID3D11Device* device)
 		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.GetAddressOf(), spriteInputLayout.GetAddressOf(),
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(),
 		input_element_desc, _countof(input_element_desc));
-	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
 	distanceBackData = std::make_unique<DistanceBackData>();
 	distanceBackData->texturePath = L".\\resources\\textures\\distanceBack.png";
@@ -50,6 +50,8 @@ void BallDistance::Initialize(ID3D11Device* device)
 void BallDistance::Uninitialize()
 {
 	ballDistanceFont.Uninitialize();
+	distanceBackSprite.reset();
+	distanceBackData.reset();
 }
 
 void BallDistance::Update(float elapsedTime)
@@ -61,22 +63,22 @@ void BallDistance::Update(float elapsedTime)
 		return;
 	}
 
-	// ƒ{[ƒ‹‚ªƒoƒbƒg‚É“–‚½‚Á‚½ŒãA’n–Ê‚Ü‚½‚ÍƒtƒFƒ“ƒX‚É“–‚½‚é‚Ü‚Å‚ÌŠÔA‹——£‚ğ•\¦‚·‚é
+	// ãƒœãƒ¼ãƒ«ãŒãƒãƒƒãƒˆã«å½“ãŸã£ãŸå¾Œã€åœ°é¢ã¾ãŸã¯ãƒ•ã‚§ãƒ³ã‚¹ã«å½“ãŸã‚‹ã¾ã§ã®é–“ã€è·é›¢ã‚’è¡¨ç¤ºã™ã‚‹
 	bool isFinished = Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround();
 
-	// ƒ{[ƒ‹‚ª’n–Ê‚Ü‚½‚ÍƒtƒFƒ“ƒX‚É“–‚½‚Á‚½‚çA‹——£‚ğƒƒbƒN‚·‚é
+	// ãƒœãƒ¼ãƒ«ãŒåœ°é¢ã¾ãŸã¯ãƒ•ã‚§ãƒ³ã‚¹ã«å½“ãŸã£ãŸã‚‰ã€è·é›¢ã‚’ãƒ­ãƒƒã‚¯ã™ã‚‹
 	if (isDistanceLocked) return;
 
 	if (!isFinished)
 	{
 		DirectX::XMFLOAT3 ballPosition = Ball::Instance().GetWorldPosition();
 
-		// ‚‚³(Y)‚ğŠÜ‚ß‚È‚¢…•½‹——£
+		// é«˜ã•(Y)ã‚’å«ã‚ãªã„æ°´å¹³è·é›¢
 		currentDistance = sqrtf(
 			ballPosition.x * ballPosition.x +
 			ballPosition.z * ballPosition.z);
 		
-		//ƒ{[ƒ‹‚ª’n–Ê‚É‚Â‚­‚©ƒtƒFƒ“ƒX‚É“–‚½‚Á‚½‚çA‚»‚ÌˆÊ’u‚Ì‹——£‚ğ•\¦‚·‚é
+		//ãƒœãƒ¼ãƒ«ãŒåœ°é¢ã«ã¤ãã‹ãƒ•ã‚§ãƒ³ã‚¹ã«å½“ãŸã£ãŸã‚‰ã€ãã®ä½ç½®ã®è·é›¢ã‚’è¡¨ç¤ºã™ã‚‹
 
 		snprintf(distanceText, sizeof(distanceText), "%.fm", currentDistance);
 		hasDistanceText = true;
@@ -89,9 +91,9 @@ void BallDistance::Update(float elapsedTime)
 
 		snprintf(distanceText, sizeof(distanceText), "%.fm", currentDistance);
 		hasDistanceText = true;
-		isDistanceLocked = true; // ˆÈŒã‚Í‰ÁZEXV‚µ‚È‚¢
+		isDistanceLocked = true; // ä»¥å¾Œã¯åŠ ç®—ãƒ»æ›´æ–°ã—ãªã„
 
-		// Å‚”ò‹——£‚ğXV‚·‚é
+		// æœ€é«˜é£›è·é›¢ã‚’æ›´æ–°ã™ã‚‹
 		if(currentDistance > maxDistance)
 		{
 			maxDistance = currentDistance;
@@ -105,7 +107,7 @@ void BallDistance::Render()
 	
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
-	// Wind ‚Æ“¯‚¶‚æ‚¤‚ÉƒVƒF[ƒ_[‚ğƒZƒbƒg
+	// Wind ã¨åŒã˜ã‚ˆã†ã«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã‚’ã‚»ãƒƒãƒˆ
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
 	dc->IASetInputLayout(spriteInputLayout.Get());
@@ -113,7 +115,7 @@ void BallDistance::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	// ƒ{[ƒ‹‚ªƒoƒbƒg‚É“–‚½‚Á‚½‚çA‹——£‚ğ•\¦‚·‚é(ƒ{[ƒ‹‚ÌˆÊ’u‚ÅƒŠƒAƒ‹ƒ^ƒCƒ€‚ÉXV‚·‚é)
+	// ãƒœãƒ¼ãƒ«ãŒãƒãƒƒãƒˆã«å½“ãŸã£ãŸã‚‰ã€è·é›¢ã‚’è¡¨ç¤ºã™ã‚‹(ãƒœãƒ¼ãƒ«ã®ä½ç½®ã§ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã«æ›´æ–°ã™ã‚‹)
 	
 	if (!hasDistanceText) return;
 
@@ -129,7 +131,7 @@ void BallDistance::Render()
 	}
 
 
-	//’†‰›‚¼‚ë‚¦‚É‚·‚éƒwƒ‹ƒp[ŠÖ”
+	//ä¸­å¤®ãã‚ãˆã«ã™ã‚‹ãƒ˜ãƒ«ãƒ‘ãƒ¼é–¢æ•°
 	auto centerTextPosition = [&](const std::string& text, float fontSize, float x, float y) -> DirectX::XMFLOAT2
 	{
 		float textWidth = 0.0f;
@@ -143,7 +145,7 @@ void BallDistance::Render()
 	ballDistanceFont.DrawTextW(dc, distanceText, fontPos.x, fontPos.y, fontSize,
 		fontColor.x, fontColor.y, fontColor.z, fontColor.w);
 
-	// Œãn––iWind ‚Æ“¯‚¶j
+	// å¾Œå§‹æœ«ï¼ˆWind ã¨åŒã˜ï¼‰
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
 	dc->IASetInputLayout(nullptr);
@@ -154,7 +156,7 @@ void BallDistance::Render()
 
 void BallDistance::DrawGUI()
 {
-	// ImGui‚ğg‚Á‚ÄƒtƒHƒ“ƒg‚ÌˆÊ’uAƒTƒCƒYAF‚ğ’²®‚·‚éGUI‚ğì‚é
+	// ImGuiã‚’ä½¿ã£ã¦ãƒ•ã‚©ãƒ³ãƒˆã®ä½ç½®ã€ã‚µã‚¤ã‚ºã€è‰²ã‚’èª¿æ•´ã™ã‚‹GUIã‚’ä½œã‚‹
 	if (ImGui::CollapsingHeader("Ball Distance Settings"))
 	{
 		ImGui::Text("Font Position");
@@ -189,7 +191,7 @@ void BallDistance::SaveToJson(nlohmann::json& j)
 	j["fontColorB"] = fontColor.z;
 	j["fontColorA"] = fontColor.w;
 
-	//”ò‹——£•\¦‚Ì”wŒi‚Ì•Û‘¶
+	//é£›è·é›¢è¡¨ç¤ºã®èƒŒæ™¯ã®ä¿å­˜
 	j["distanceBackPositionX"] = distanceBackPosition.x;
 	j["distanceBackPositionY"] = distanceBackPosition.y;
 	j["distanceBackSizeX"] = distanceBackSize.x;

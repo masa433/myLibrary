@@ -31,7 +31,13 @@ public:
 	void IncrementCount() { homeRunCount++; }
 	int GetHomeRunCount() const { return homeRunCount; }
 
-	void ResetCount() { homeRunCount = 0; }
+	void ResetCount()
+	{
+		homeRunCount = 0;
+		previousHomeRunCount = 0;
+		numberDisplayScale = 3.0f; 
+		numberAlpha = 1.0f; 
+	}
 
 private:
 	int homeRunCount = 0;//ホームラン数を保持する変数

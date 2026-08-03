@@ -3,9 +3,7 @@
 #include "imgui.h"
 #include "shader.h"
 #include <random>
-#include "scene_loading.h"
-#include "scene_game.h"
-#include "scene_title.h"
+#include "sceneTransition.h"
 #include <fstream>
 
 void batterSelectScene::SelectRandomPitcher()
@@ -68,9 +66,9 @@ void batterSelectScene::initialize()
 		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", vertex_shader.GetAddressOf(), input_layout.GetAddressOf(),
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", vertex_shader.ReleaseAndGetAddressOf(), input_layout.ReleaseAndGetAddressOf(),
 		input_element_desc, _countof(input_element_desc));
-	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", pixel_shader.GetAddressOf());
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
 
 	//背景のスプライトデータを初期化
 	backGroundData = std::make_unique<BatterSelectSpriteData>();
@@ -145,8 +143,8 @@ void batterSelectScene::initialize()
 
 	//バーストエフェクト
 	{
-		create_vs_from_cso(device, ".\\resources\\shader\\burstEffect_vs.cso", burstVertexShader.GetAddressOf(), nullptr, nullptr, 0);
-		create_ps_from_cso(device, ".\\resources\\shader\\burstEffect_ps.cso", burstPixelShader.GetAddressOf());
+		create_vs_from_cso(device, ".\\resources\\shader\\burstEffect_vs.cso", burstVertexShader.ReleaseAndGetAddressOf(), nullptr, nullptr, 0);
+		create_ps_from_cso(device, ".\\resources\\shader\\burstEffect_ps.cso", burstPixelShader.ReleaseAndGetAddressOf());
 
 		D3D11_BUFFER_DESC desc{};
 		desc.Usage = D3D11_USAGE_DYNAMIC;
@@ -154,10 +152,10 @@ void batterSelectScene::initialize()
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 		desc.ByteWidth = sizeof(BurstTransformBuffer);
-		device->CreateBuffer(&desc, nullptr, burstTransformBuffer.GetAddressOf());
+		device->CreateBuffer(&desc, nullptr, burstTransformBuffer.ReleaseAndGetAddressOf());
 
 		desc.ByteWidth = sizeof(BurstBuffer);
-		device->CreateBuffer(&desc, nullptr, burstColorBuffer.GetAddressOf());
+		device->CreateBuffer(&desc, nullptr, burstColorBuffer.ReleaseAndGetAddressOf());
 
 	}
 
@@ -391,11 +389,11 @@ void batterSelectScene::update(float elapsed_time)
 				{
 					if (isChangingScene)
 					{
-						sceneManager::Instance().ChangeScene(new scene_loading(new scene_game()));
+						ChangeSceneBatterSelectToGame();
 					}
 					else if (isTitleChanging)
 					{
-						sceneManager::Instance().ChangeScene(new scene_loading(new SceneTitle()));
+						ChangeSceneBatterSelectToTitle();
 					}
 				}
 			}
@@ -652,9 +650,25 @@ void batterSelectScene::render(float elapsedTime)
 
 void batterSelectScene::uninitialize()
 {
+
+	// GPU コマンドをフラッシュしてからリソース破棄
+	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	if (dc) dc->Flush();
 	// スクロールビューの解放
+	vertex_shader.Reset();
+	pixel_shader.Reset();
+	input_layout.Reset();
+	burstVertexShader.Reset();
+	burstPixelShader.Reset();
+	burstTransformBuffer.Reset(); 
+	burstColorBuffer.Reset();     
+
 	playerScrollView.reset();
 	VSSprite.reset();
+	pitcherParamBackGroundSprite.reset();
+	closeButtonSprite.reset();
+	backGroundSprite.reset();
+
 }
 
 void batterSelectScene::DrawGUI()

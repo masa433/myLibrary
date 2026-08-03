@@ -107,6 +107,10 @@ private:
 
 	bool isInstancingEnabled = true; // インスタンシング描画の有効/無効
 
+	physx::PxMaterial* groundMaterial = nullptr; // 地面の物理マテリアル
+	physx::PxMaterial* standMaterial = nullptr;  // スタンドの物理マテリアル
+	physx::PxMaterial* poleMaterial = nullptr;   // ポールの物理マテリアル
+
 public:
 	
 	// フェンスラインの編集用

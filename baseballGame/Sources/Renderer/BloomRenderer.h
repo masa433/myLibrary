@@ -60,6 +60,7 @@ public:
     // screenWidth / screenHeight : 画面サイズ
     void Initialize(ID3D11Device* device, ID3D11ShaderResourceView* sceneColorSRV,
         UINT screenWidth, UINT screenHeight);
+	void Uninitialize();
 
 	//高輝度抽出からぼかしまでの処理を行う
     // view / projection / cameraPosition は現在のシーンカメラの情報

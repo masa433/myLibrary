@@ -14,9 +14,9 @@ void FoulSprite::Initialize(ID3D11Device* device)
 		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.GetAddressOf(), spriteInputLayout.GetAddressOf(),
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(),
 		input_element_desc, _countof(input_element_desc));
-	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.GetAddressOf());
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
 	foulSprite = std::make_unique<Sprite>();
 	foulSprite->texturePath = L".\\resources\\textures\\Foul.png";
@@ -25,6 +25,8 @@ void FoulSprite::Initialize(ID3D11Device* device)
 	foulSprite->rotation = 0.0f;
 	foulSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	foulSpriteRenderer = std::make_unique<sprite>(device, context, foulSprite->texturePath.c_str());
+
+	showFoulSprite = false;
 }
 
 void FoulSprite::Uninitialize()

@@ -25,17 +25,17 @@ void BloomRenderer::Initialize(ID3D11Device* device, ID3D11ShaderResourceView* s
 
 		//シーン定数バッファの作成
 		buffer_desc.ByteWidth = sizeof(scene_constants);
-		hr = device->CreateBuffer(&buffer_desc, nullptr, scene_constant_buffer.GetAddressOf());
+		hr = device->CreateBuffer(&buffer_desc, nullptr, scene_constant_buffer.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		//高輝度抽出用定数バッファの作成
 		buffer_desc.ByteWidth = sizeof(luminance_extract_constants);
-		hr = device->CreateBuffer(&buffer_desc, nullptr, luminance_extract_constant_buffer.GetAddressOf());
+		hr = device->CreateBuffer(&buffer_desc, nullptr, luminance_extract_constant_buffer.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		//ガウスフィルター用定数バッファの作成
 		buffer_desc.ByteWidth = sizeof(gaussian_filter_constants);
-		hr = device->CreateBuffer(&buffer_desc, nullptr, gaussian_filter_constant_buffer.GetAddressOf());
+		hr = device->CreateBuffer(&buffer_desc, nullptr, gaussian_filter_constant_buffer.ReleaseAndGetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
@@ -47,9 +47,9 @@ void BloomRenderer::Initialize(ID3D11Device* device, ID3D11ShaderResourceView* s
 			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
-		create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", sprite_vertex_shader.GetAddressOf(), sprite_input_layout.GetAddressOf(),
+		create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", sprite_vertex_shader.ReleaseAndGetAddressOf(), sprite_input_layout.ReleaseAndGetAddressOf(),
 			input_element_desc, _countof(input_element_desc));
-		create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", sprite_pixel_shader.GetAddressOf());
+		create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", sprite_pixel_shader.ReleaseAndGetAddressOf());
 	}
 
     //高輝度抽出バッファ生成
@@ -69,13 +69,13 @@ void BloomRenderer::Initialize(ID3D11Device* device, ID3D11ShaderResourceView* s
 
 
         Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
-        hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.GetAddressOf());
+        hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
         //	レンダーターゲットビュー生成
-        hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, luminance_extract_render_target_view.GetAddressOf());
+        hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, luminance_extract_render_target_view.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
         //	シェーダーリソースビュー生成
-        hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, luminance_extract_shader_resource_view.GetAddressOf());
+        hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, luminance_extract_shader_resource_view.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
 
@@ -95,13 +95,13 @@ void BloomRenderer::Initialize(ID3D11Device* device, ID3D11ShaderResourceView* s
         texture2d_desc.MiscFlags = 0;
 
         Microsoft::WRL::ComPtr<ID3D11Texture2D> color_buffer{};
-        hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.GetAddressOf());
+        hr = device->CreateTexture2D(&texture2d_desc, NULL, color_buffer.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
         //	レンダーターゲットビュー生成
-        hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, bokeh_luminance_extract_render_target_view.GetAddressOf());
+        hr = device->CreateRenderTargetView(color_buffer.Get(), NULL, bokeh_luminance_extract_render_target_view.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
         //	シェーダーリソースビュー生成
-        hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, bokeh_luminance_extract_shader_resource_view.GetAddressOf());
+        hr = device->CreateShaderResourceView(color_buffer.Get(), NULL, bokeh_luminance_extract_shader_resource_view.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
     }
 
@@ -117,11 +117,11 @@ void BloomRenderer::Initialize(ID3D11Device* device, ID3D11ShaderResourceView* s
             { "JOINTS", 0, DXGI_FORMAT_R16G16B16A16_UINT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
             { "WEIGHTS", 0,DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         };
-        create_ps_from_cso(device, ".\\resources\\shader\\luminance_extract_ps.cso", luminance_extract_pixel_shader.GetAddressOf());
+        create_ps_from_cso(device, ".\\resources\\shader\\luminance_extract_ps.cso", luminance_extract_pixel_shader.ReleaseAndGetAddressOf());
         luminance_extract_pass_sprite = std::make_unique<sprite>(device, sceneColorSRV);
 
         //	高輝度抽出バッファぼかし用
-        create_ps_from_cso(device, ".\\resources\\shader\\gaussian_filtering_ps.cso", gaussian_filter_pixel_shader.GetAddressOf());
+        create_ps_from_cso(device, ".\\resources\\shader\\gaussian_filtering_ps.cso", gaussian_filter_pixel_shader.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
         bokeh_luminance_extract_pass_sprite = std::make_unique<sprite>(device, luminance_extract_shader_resource_view);
 
@@ -416,4 +416,23 @@ void BloomRenderer::LoadFromJson(const nlohmann::json& j)
     {
         enable_bloom = j["performance"].value("enable_bloom", true);
     }
+}
+
+void BloomRenderer::Uninitialize()
+{
+    sprite_vertex_shader.Reset();
+    sprite_pixel_shader.Reset();
+    sprite_input_layout.Reset();
+    luminance_extract_pixel_shader.Reset();
+    luminance_extract_pass_sprite.reset();
+    gaussian_filter_pixel_shader.Reset();
+    bokeh_luminance_extract_pass_sprite.reset();
+    add_luminance_extract_pass_sprite.reset();
+    scene_constant_buffer.Reset();
+    luminance_extract_constant_buffer.Reset();
+    gaussian_filter_constant_buffer.Reset();
+    luminance_extract_render_target_view.Reset();
+    luminance_extract_shader_resource_view.Reset();
+    bokeh_luminance_extract_render_target_view.Reset();
+    bokeh_luminance_extract_shader_resource_view.Reset();
 }
