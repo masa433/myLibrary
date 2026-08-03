@@ -377,4 +377,42 @@ public:
 		{ RealPitcher::Inoue,     20 },
 	};
 
+
+	
+private:
+
+	struct InfoData
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+
+	DirectX::XMFLOAT2 cursorPosition = { 0.0f, 0.0f };
+	DirectX::XMFLOAT2 cursorSize = { 0.0f, 0.0f };
+	DirectX::XMFLOAT4 cursorColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	std::unique_ptr<InfoData> cursorData;
+	std::unique_ptr<sprite> cursorSprite;
+
+	DirectX::XMFLOAT2 swingPosition = { 0.0f, 0.0f };
+	DirectX::XMFLOAT2 swingSize = { 0.0f, 0.0f };
+	DirectX::XMFLOAT4 swingColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	std::unique_ptr<InfoData> swingData;
+	std::unique_ptr<sprite> swingSprite;
+
+	DirectX::XMFLOAT2 infoBackPosition = { 0.0f, 0.0f };
+	DirectX::XMFLOAT2 infoBackSize = { 0.0f, 0.0f };
+	DirectX::XMFLOAT4 infoBackColor = { 1.0f, 1.0f, 1.0f, 0.7f };
+
+	std::unique_ptr<InfoData> infoBackData;
+	std::unique_ptr<sprite> infoBackSprite;
+
+	//シェーダー関連
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
 };

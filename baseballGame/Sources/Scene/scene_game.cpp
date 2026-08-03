@@ -703,7 +703,7 @@ void scene_game::render(float elapsedTime)
 
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
-    BatSprite::Instance().Render();
+    if(!GameTimer::Instance().IsFinished())BatSprite::Instance().Render();
     ballSprite::Instance().Render();
 
     GameTimer::Instance().Render();

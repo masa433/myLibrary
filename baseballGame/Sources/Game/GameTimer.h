@@ -59,8 +59,8 @@ private:
 	DirectX::XMFLOAT4 fontColor;
 
 	//タイマーの値
-	float startTime = 10.0f; // 120秒からスタート(2分)
-	float remainingTime = 10.0f;
+	float startTime = 120.0f; // 120秒からスタート(2分)
+	float remainingTime = 120.0f;
 
 	int startCountdown = 10; // カウントダウンの初期値
 

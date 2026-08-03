@@ -13,6 +13,7 @@
 #include "TrackingData.h"
 #include "FoulSprite.h"
 #include "GameTimer.h"
+#include "shader.h"	
 
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
@@ -74,6 +75,43 @@ void Pitcher::Initialize()
 
 		
 	}
+
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(),
+		input_element_desc, _countof(input_element_desc));
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
+	// スプライトの初期化
+	cursorData = std::make_unique<InfoData>();
+	cursorData->texturePath = L".\\resources\\textures\\cursorMoveInfo.png";
+	cursorData->position = { cursorPosition.x, cursorPosition.y };
+	cursorData->size = { cursorSize.x, cursorSize.y };
+	cursorData->rotation = 0.0f;
+	cursorData->color = { cursorColor.x, cursorColor.y, cursorColor.z, cursorColor.w };
+	cursorSprite = std::make_unique<sprite>(device, context, cursorData->texturePath.c_str());
+
+	swingData = std::make_unique<InfoData>();
+	swingData->texturePath = L".\\resources\\textures\\swingInfo.png";
+	swingData->position = { swingPosition.x, swingPosition.y };
+	swingData->size = { swingSize.x, swingSize.y };
+	swingData->rotation = 0.0f;
+	swingData->color = { swingColor.x, swingColor.y, swingColor.z, swingColor.w };
+	swingSprite = std::make_unique<sprite>(device, context, swingData->texturePath.c_str());
+
+	infoBackData = std::make_unique<InfoData>();
+	infoBackData->texturePath = L".\\resources\\textures\\scrollViewBack.png";
+	infoBackData->position = { infoBackPosition.x, infoBackPosition.y };
+	infoBackData->size = { infoBackSize.x, infoBackSize.y };
+	infoBackData->rotation = 0.0f;
+	infoBackData->color = { infoBackColor.x, infoBackColor.y, infoBackColor.z, infoBackColor.w };
+	infoBackSprite = std::make_unique<sprite>(device, context, infoBackData->texturePath.c_str());
+
+
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 
 	InitializePitchSettings();
@@ -429,7 +467,52 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 
 	Wind::Instance().Render(rc);
 	
-	
+	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+	dc->PSSetShader(spritePS.Get(), nullptr, 0);
+	dc->IASetInputLayout(spriteInputLayout.Get());
+	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
+
+	if (!Ball::Instance().GetHasCollidedWithBat())
+	{
+
+		if (infoBackData && infoBackSprite)
+		{
+			infoBackSprite->render(dc,
+				infoBackPosition.x, infoBackPosition.y,
+				infoBackSize.x, infoBackSize.y,
+				infoBackColor.x, infoBackColor.y, infoBackColor.z, infoBackColor.w,
+				infoBackData->rotation);
+		}
+
+		if (cursorData && cursorSprite)
+		{
+			cursorSprite->render(dc,
+				cursorPosition.x, cursorPosition.y,
+				cursorSize.x, cursorSize.y,
+				cursorColor.x, cursorColor.y, cursorColor.z, cursorColor.w,
+				cursorData->rotation);
+		}
+
+		if (swingData && swingSprite)
+		{
+			swingSprite->render(dc,
+				swingPosition.x, swingPosition.y,
+				swingSize.x, swingSize.y,
+				swingColor.x, swingColor.y, swingColor.z, swingColor.w,
+				swingData->rotation);
+		}
+
+		
+	}
+
+	// 描画後の状態をリセット
+	dc->VSSetShader(nullptr, nullptr, 0);
+	dc->PSSetShader(nullptr, nullptr, 0);
+	dc->IASetInputLayout(nullptr);
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 }
 
 void Pitcher::UpdatePitcherModel()
@@ -949,6 +1032,19 @@ void Pitcher::DrawGUI()
 		}
 	Wind::Instance().DrawGUI();
 	FoulSprite::Instance().DrawGUI();
+
+	if (ImGui::CollapsingHeader("Sprite"))
+	{
+		ImGui::DragFloat2("cursorPosition", &cursorPosition.x, 0.1f, 0.0f, 1920.0f);
+		ImGui::DragFloat2("cursorSize", &cursorSize.x, 0.1f, 0.1f, 1000.0f);
+
+
+		ImGui::DragFloat2("swingPosition", &swingPosition.x, 0.1f, 0.0f, 1080.0f);
+		ImGui::DragFloat2("swingSize", &swingSize.x, 0.1f, 0.1f, 1000.0f);
+
+		ImGui::DragFloat2("backPosition", &infoBackPosition.x, 0.1f, 0.0f, 1080.0f);
+		ImGui::DragFloat2("backSize", &infoBackSize.x, 0.1f, 0.1f, 1000.0f);
+	}
 
 #endif
 }
@@ -1851,6 +1947,16 @@ void Pitcher::SaveToJson(json& j)
 		pitchArray.push_back(p);
 	}
 	j["pitch_settings"] = pitchArray;
+
+	//スプライトデータ
+	json spriteData;
+	spriteData["cursorPosition"] = { cursorPosition.x, cursorPosition.y};
+	spriteData["cursorSize"] = { cursorSize.x, cursorSize.y };
+	spriteData["swingPosition"] = { swingPosition.x, swingPosition.y };
+	spriteData["swingSize"] = { swingSize.x, swingSize.y };
+	spriteData["infoBackPosition"] = { infoBackPosition.x, infoBackPosition.y };
+	spriteData["infoBackSize"] = { infoBackSize.x, infoBackSize.y };
+	j["sprite_data"] = spriteData;
 }
 
 void Pitcher::LoadFromJson(const json& j)
@@ -1917,6 +2023,23 @@ void Pitcher::LoadFromJson(const json& j)
 													p["bezier_target"][1],
 													p["bezier_target"][2] };
 		}
+	}
+
+	// スプライトデータの読み込み
+	if (j.contains("sprite_data")) {
+		const auto& spriteData = j["sprite_data"];
+		if (spriteData.contains("cursorPosition"))
+			cursorPosition = { spriteData["cursorPosition"][0], spriteData["cursorPosition"][1] };
+		if (spriteData.contains("cursorSize"))
+			cursorSize = { spriteData["cursorSize"][0], spriteData["cursorSize"][1] };
+		if (spriteData.contains("swingPosition"))
+			swingPosition = { spriteData["swingPosition"][0], spriteData["swingPosition"][1] };
+		if (spriteData.contains("swingSize"))
+			swingSize = { spriteData["swingSize"][0], spriteData["swingSize"][1] };
+		if (spriteData.contains("infoBackPosition"))
+			infoBackPosition = { spriteData["infoBackPosition"][0], spriteData["infoBackPosition"][1] };
+		if (spriteData.contains("infoBackSize"))
+			infoBackSize = { spriteData["infoBackSize"][0], spriteData["infoBackSize"][1] };
 	}
 
 	/*if (j.contains("selected_real_pitcher"))

@@ -11,6 +11,7 @@
 #include "physxManager.h"
 #include "batSprite.h"
 #include "ballSprite.h"
+#include <GameTimer.h>
 
 
 // 初期化
@@ -343,6 +344,8 @@ void Player::Update(float elapsedTime)
 // キー入力処理
 void Player::HandleInput(float elapsedTime)
 {
+    if(GameTimer::Instance().GetRemainingTime() <= 0.0f) return;
+
     // スペースキーでスイング
     if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
     {
