@@ -43,6 +43,8 @@ void BallDistance::Initialize(ID3D11Device* device)
 	distanceBackData->color = { distanceBackColor.x, distanceBackColor.y, distanceBackColor.z, distanceBackColor.w };
 	distanceBackSprite = std::make_unique<sprite>(device, dc, distanceBackData->texturePath.c_str());
 
+	ResetMaxDistance();
+
 }
 
 void BallDistance::Uninitialize()
@@ -88,6 +90,12 @@ void BallDistance::Update(float elapsedTime)
 		snprintf(distanceText, sizeof(distanceText), "%.fm", currentDistance);
 		hasDistanceText = true;
 		isDistanceLocked = true; // 以後は加算・更新しない
+
+		// 最高飛距離を更新する
+		if(currentDistance > maxDistance)
+		{
+			maxDistance = currentDistance;
+		}
 	}
 }
 
@@ -166,6 +174,9 @@ void BallDistance::DrawGUI()
 		ImGui::Text("Background Color");
 		ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&distanceBackColor));
 	}
+
+
+	ImGui::Text(" maxDistance: %.f", maxDistance);
 }
 
 void BallDistance::SaveToJson(nlohmann::json& j)

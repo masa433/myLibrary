@@ -12,6 +12,7 @@
 #include "ballSprite.h"
 #include "TrackingData.h"
 #include "FoulSprite.h"
+#include "GameTimer.h"
 
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
@@ -120,12 +121,17 @@ void Pitcher::Uninitialize()
 		strikeZoneTrigger->release();
 		strikeZoneTrigger = nullptr;
 	}
+	consoleLog = nullptr; // consoleLogの参照を解除
 }
 
 // 更新
 void Pitcher::Update(float elapsedTime)
 {
 
+	if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(currentState == State::Throwing))
+	{
+		return; // タイマーが0以下の場合、更新をスキップ
+	}
 
 	// **バックスペースキーで強制的に投球開始**
 	if (GetAsyncKeyState(VK_LSHIFT) & 0x8000)

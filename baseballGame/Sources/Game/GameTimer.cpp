@@ -1,6 +1,8 @@
 ﻿#include "GameTimer.h"
 #include "Graphics.h"
 #include <imgui.h>
+#include <Ball.h>
+#include <Pitcher.h>
 
 void GameTimer::Initialize(ID3D11Device* device)
 {
@@ -59,7 +61,15 @@ void GameTimer::Update(float elapsedTime)
 	}
 
 	remainingTime -= elapsedTime;
-	if (remainingTime <= 0.0f) remainingTime = 0.0f;
+	if (remainingTime <= 0.0f)
+	{
+		remainingTime = 0.0f;
+
+		if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing))
+		{
+			isFinished = true;
+		}
+	}
 }
 
 void GameTimer::Render()

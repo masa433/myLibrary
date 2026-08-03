@@ -245,6 +245,7 @@
     <ClCompile Include="Sources\Game\Player.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Game\Result.cpp" />
     <ClCompile Include="Sources\Game\stage.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -393,6 +394,7 @@
     <ClInclude Include="Sources\Game\Player.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Game\Result.h" />
     <ClInclude Include="Sources\Game\stage.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

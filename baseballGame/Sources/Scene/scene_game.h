@@ -210,4 +210,5 @@ private:
 private:
     float trackingTime = 0.0f;
 	bool showGUI = true;
+    bool showResult = false;
 };

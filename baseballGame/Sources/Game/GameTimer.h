@@ -29,6 +29,9 @@ public:
 	void SaveToJson(nlohmann::json& j);
 	void LoadFromJson(const nlohmann::json& j);
 
+	float GetRemainingTime() const { return remainingTime; }
+	bool IsFinished() const { return isFinished; }
+
 private:
 	//スプライトデータ
 	struct Sprite
@@ -60,4 +63,6 @@ private:
 	float remainingTime = 120.0f;
 
 	int startCountdown = 10; // カウントダウンの初期値
+
+	bool isFinished = false;// タイマーが終了したかどうかのフラグ
 };

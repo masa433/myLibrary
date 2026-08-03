@@ -31,6 +31,12 @@ public:
 	void SaveToJson(nlohmann::json& j);
 	void LoadFromJson(const nlohmann::json& j);
 
+	//Å‚”ò‹——£‚ğæ“¾‚·‚éŠÖ”
+	float GetMaxDistance() const { return static_cast<int>(maxDistance); }
+
+	//Å‚”ò‹——£‚ğƒŠƒZƒbƒg‚·‚éŠÖ”
+	void ResetMaxDistance() { maxDistance = 0.0f; }
+
 private:
 
 	FontRenderer ballDistanceFont;
@@ -41,6 +47,7 @@ private:
 	DirectX::XMFLOAT4 fontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	float currentDistance = 0.0f;
+	float maxDistance = 0.0f;
 	char distanceText[32] = "";
 	bool hasDistanceText = false;
 	bool isDistanceLocked = false;
