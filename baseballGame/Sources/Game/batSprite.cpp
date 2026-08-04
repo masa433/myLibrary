@@ -7,6 +7,13 @@
 #include <algorithm>
 #include "Player.h"
 #include <TrackingData.h>
+#include <GameTimer.h>
+
+//ラープ関数
+float Lerp(float a, float b, float t)
+{
+	return a + (b - a) * t;
+}
 
 void BatSprite::Initialize(ID3D11Device* device)
 {
@@ -88,6 +95,91 @@ void BatSprite::Update(float elapsedTime)
 	//	RECT clipRect = { tl.x, tl.y, br.x, br.y };
 	//	ClipCursor(&clipRect);
 	//}
+
+	if (GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing))
+	{
+		// 投球が終わったらフラグをリセット
+		isAssisting = false;
+		return;
+	}
+	
+	Pitcher& pitcher = Pitcher::Instance();
+	ballSprite& bs = ballSprite::Instance();
+
+	//ボールスプライトの位置を取得
+	if (pitcher.GetIsBallThrown())
+	{
+		////アシスト中に自分でマウスを動かした場合はアシストを終了する
+		//POINT currentMousePos;
+		//GetCursorPos(&currentMousePos);
+
+		//if (currentMousePos.x != assistStartMousePos.x || currentMousePos.y != assistStartMousePos.y)
+		//{
+		//	isAssisting = false;
+		//	return;
+		//}
+
+		//アシストを始めていなかったら、最初の1フレームのみ初期化
+		if (!isAssisting)
+		{
+			isAssisting = true;
+			GetCursorPos(&assistStartMousePos);
+			assistTimer = 0.0f;
+		}
+
+		//アシスト中はカーソルの位置をボールの位置に合わせる
+		if (isAssisting)
+		{
+			assistTimer += elapsedTime;
+
+			// 1. X軸とY軸でそれぞれ進捗率を計算する
+			float progressX = (std::min)(assistTimer / assistDuration, 1.0f);
+
+			// yMoveScale（例: 0.5f）を掛けることで、Y軸の補間スピードだけを遅らせる
+			float yMoveScale = bs.GetYMoveScale(
+				bs.GetCurrentPitchIndex(),
+				bs.GetFinalScreenPos().y,
+				bs.GetStartScreenPos().y,
+				bs.GetZoneCenterY()
+			);
+			float progressY = (std::min)((assistTimer / assistDuration) * yMoveScale, 1.0f);
+
+			// 2. ボールの最終到達地点を取得（オフセット調整が必要な場合は固定値で足す）
+			DirectX::XMFLOAT2 ballFinalPos = bs.GetFinalScreenPos();
+
+			// バットカーソルの中心・芯に合わせるためのオフセット調整（必要な場合）
+			float offsetY = batCursorSpriteData->size.y * 0.2f;
+
+			float actualFinalY = bs.GetStartScreenPos().y + (ballFinalPos.y - bs.GetStartScreenPos().y) * yMoveScale;
+
+			POINT targetPt = {
+				static_cast<LONG>(ballFinalPos.x),
+				static_cast<LONG>(actualFinalY + offsetY)
+			};
+
+			// スクリーン座標に変換
+			HWND hwnd = GetForegroundWindow();
+			ClientToScreen(hwnd, &targetPt);
+
+			// 3. X軸とY軸で異なる進捗率を使ってカーソル位置を補間
+			POINT currentPt;
+			currentPt.x = static_cast<LONG>(assistStartMousePos.x + (targetPt.x - assistStartMousePos.x) * progressX);
+			currentPt.y = static_cast<LONG>(assistStartMousePos.y + (targetPt.y - assistStartMousePos.y) * progressY);
+
+			SetCursorPos(currentPt.x, currentPt.y);
+			
+		}
+
+		
+	}
+	else
+	{
+		// 投球が終わったらフラグをリセット
+		isAssisting = false;
+	}
+
+	
+
 }
 
 void BatSprite::UpdateCursorSizeByContact(int contact)
@@ -127,6 +219,7 @@ void BatSprite::Render()
 	// Win32 APIで直接クライアント座標を取得
 	POINT pt;
 	GetCursorPos(&pt);
+
 	ScreenToClient(GetForegroundWindow(), &pt);
 
 
@@ -207,4 +300,5 @@ void BatSprite::DrawGUI()
 		
 		}
 	}
+
 }

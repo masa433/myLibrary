@@ -111,6 +111,7 @@ public:
 	const int PITCH_TYPE_COUNT = 19;  // 球種の数
 
 	int currentPitchIndex = 0;  // 現在の球種インデックス
+	int GetCurrentPitchIndex() const { return currentPitchIndex; }
 
 	//ストライクゾーンのグリッド（3x3）
 	DirectX::XMFLOAT2 strikeZoneGrid[3][3] =
@@ -275,8 +276,16 @@ public:
 
 	bool strikeJudgeDone = false;// ストライク判定が完了したかどうか
 
-	DirectX::XMFLOAT2 aiTargetFinalScreen = { 0.0f, 0.0f }; // AIが最終的に狙うターゲット位置（スクリーン座標）
+	DirectX::XMFLOAT2 startScreenPos = { 0.0f, 0.0f }; // 投球開始時のボール位置（スクリーン座標）
+	DirectX::XMFLOAT2 finalScreenPos = { 0.0f, 0.0f }; // AIが最終的に狙うターゲット位置（スクリーン座標）
 	bool aiTargetLocked = false; // AIがターゲット位置をロックしたかどうか
+	float zoneCenterY = 0.0f; // ストライクゾーンの中心Y座標（スクリーン座標）
+
+	float GetZoneCenterY() const { return zoneCenterY; }
+	DirectX::XMFLOAT2 GetStartScreenPos() const { return startScreenPos; }
+	DirectX::XMFLOAT2 GetFinalScreenPos() const { return finalScreenPos; }
+	float yMoveScale = 1.0f; // ストライクゾーンの縦方向の動きのスケール（1.0で通常、0.5で半分の動き）
+	float GetYMoveScale(int currentPitchIndex, float finalScreenPosY, float startScreenPosY, float zoneCenterY);
 
 	//3Dのボールとバットが当たった段階で、2Dボールの動きを止める
 	// これをtrueにすると、2Dボールは当たった位置で止まる

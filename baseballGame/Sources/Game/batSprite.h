@@ -65,6 +65,11 @@ private:
 	float minCursorScale = 0.6f;
 	float maxCursorScale = 1.3f;
 
+	bool isAssisting = false; //補助線表示中か
+	POINT assistStartMousePos = { 0,0 }; //補助線表示開始時のマウス座標
+	float assistTimer = 0.0f; //補助線表示タイマー
+	float assistDuration = 0.4f; //補助線表示時間（秒）
+
 public:
 	void UpdateCursorSizeByContact(int contact);
 };

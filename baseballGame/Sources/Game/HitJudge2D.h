@@ -45,7 +45,7 @@ public:
 	float hitWindowBeforeSec = 0.5f; //早すぎ判定
 	float hitWindowAfterSec = 0.5f;  //遅すぎ判定
 
-	float timingJustWindowSec = 0.03f; //ジャスト判定窓（秒）
+	float timingJustWindowSec = 0.05f; //ジャスト判定窓（秒）
 	float timingSlightWindowSec = 0.01f; //少し早い/遅い判定窓（秒）
 
     // バット矩形のうち「当たり」と見なす上端オフセット（px）
@@ -371,7 +371,7 @@ private:
         else
         {
             // アウトコースの時のジャスト判定窓（今まで通り）
-            if (timeToZone_ >= -7.0f && timeToZone_ <= effectiveJustWindow)
+            if (timeToZone_ >= -10.0f && timeToZone_ <= effectiveJustWindow)
             {
                 snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just/Outside)\n", timeToZone_);
                 OutputDebugStringA(buffer);

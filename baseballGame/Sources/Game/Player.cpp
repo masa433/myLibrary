@@ -344,7 +344,7 @@ void Player::Update(float elapsedTime)
 // キー入力処理
 void Player::HandleInput(float elapsedTime)
 {
-    if(GameTimer::Instance().GetRemainingTime() <= 0.0f) return;
+    if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)) return;
 
     // スペースキーでスイング
     if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)

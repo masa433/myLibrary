@@ -327,6 +327,7 @@ void ballSprite::Uninitialize()
 	ballTargetSprite.reset();
 	pitchInfoFont.Uninitialize();
 	TrackingData::Instance().Uninitialize();
+	consoleLog = nullptr;
 }
 
 void ballSprite::Update(float elapsedTime)
@@ -535,7 +536,7 @@ void ballSprite::Update(float elapsedTime)
 
 		// 最終到達点（p3）をゾーン画面座標へ
 		bool isRight = Pitcher::Instance().IsRightPitcher();
-		DirectX::XMFLOAT2 finalScreenPos = WorldToZoneScreen(
+		finalScreenPos = WorldToZoneScreen(
 			ball.GetBezierP3().x, ball.GetBezierP3().y,
 			strikeZoneSpriteData->position,
 			strikeZoneSpriteData->size,
@@ -544,7 +545,7 @@ void ballSprite::Update(float elapsedTime)
 			);
 
 		// 開始点はゾーン中心（見た目上「まっすぐ来た場合」の基準点）
-		DirectX::XMFLOAT2 startScreenPos = EvalPitchBreakScreenPath(
+		startScreenPos = EvalPitchBreakScreenPath(
 			finalScreenPos,
 			pitchBreaks[currentPitchIndex],
 			strikeZoneSpriteData->size,
@@ -555,15 +556,10 @@ void ballSprite::Update(float elapsedTime)
 		//縦スライダー、フォーク、スプリット、チェンジアップ、シンカー、パーム、ナックルのときに
 		// ターゲットがストライクゾーンの中心より高め(スクリーンY座標が小さい方が上)なら
 		// ballSpriteのY方向の移動量を半分にする
-		float yMoveScale = 1.0f;
-		const float zoneCenterY = strikeZoneSpriteData->position.y + strikeZoneSpriteData->size.y * 0.5f;
+		
+		zoneCenterY = strikeZoneSpriteData->position.y + strikeZoneSpriteData->size.y * 0.5f;
 		//落ちる系の球種
-		if ((currentPitchIndex == 6 || currentPitchIndex == 9 || currentPitchIndex == 5 || currentPitchIndex == 8 ||
-			currentPitchIndex == 7 || currentPitchIndex == 15 || currentPitchIndex == 12) &&
-			(finalScreenPos.y < zoneCenterY || startScreenPos.y < zoneCenterY))
-		{
-			yMoveScale = 0.5f;
-		}
+		yMoveScale = GetYMoveScale(currentPitchIndex, finalScreenPos.y, startScreenPos.y, zoneCenterY);
 
 
 		DirectX::XMFLOAT2 currentScreenPos = {
@@ -621,6 +617,18 @@ void ballSprite::Update(float elapsedTime)
 	{
 		showBallBoard = false;
 	}
+}
+
+float ballSprite::GetYMoveScale(int currentPitchIndex, float finalScreenPosY, float startScreenPosY, float zoneCenterY)
+{
+	//落ちる系の球種
+	if ((currentPitchIndex == 6 || currentPitchIndex == 9 || currentPitchIndex == 5 || currentPitchIndex == 8 ||
+		currentPitchIndex == 7 || currentPitchIndex == 15 || currentPitchIndex == 12) &&
+		(finalScreenPosY < zoneCenterY || startScreenPosY < zoneCenterY))
+	{
+		return 0.5f;
+	}
+	return 1.0f;
 }
 
 void ballSprite::Render()
