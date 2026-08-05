@@ -71,6 +71,9 @@ private:
 	float assistTimer = 0.0f; //補助線表示タイマー
 	float assistDuration = 0.4f; //補助線表示時間（秒）
 
+	float drawX = 0.0f; //補助線描画開始X座標
+	float drawY = 0.0f; //補助線描画開始Y座標
+
 public:
 	void UpdateCursorSizeByContact(int contact);
 };

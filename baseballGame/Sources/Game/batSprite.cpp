@@ -237,25 +237,55 @@ void BatSprite::Render()
 
 	//確信ホームランのときも描画しない
 	if (Physics::Instance().GetIsHomeRun()) return;
+
+	//ストライクゾーン内でカーソルの位置によってバットの角度を変える
+	float zoneHeight = zoneBottomRight.y - zoneTopLeft.y;
+	float normalizedY = (mouseY - zoneTopLeft.y) / zoneHeight; // 0.0f ~ 1.0f
+	normalizedY = (std::max)(0.0f, (std::min)(1.0f, normalizedY)); // Clamp to [0, 1]
+
+	float highAngle = -15.0f; // 高めの角度
+	float lowAngle = 45.0f;  // 低めの角度
+	float centerAngle = 25.0f; // 中心の角度
+
+	float targetRotation = highAngle + (lowAngle - highAngle) * normalizedY;// 線形補間で角度を計算
 	
+	Player& player = Player::Instance();
+
 	if (batSprite && batSpriteData)
 	{
-		// 画像の中心をマウス位置に合わせる
-		float drawX = mouseX - batSpriteData->size.x * 0.7f;
-		float drawY = mouseY - batSpriteData->size.y;
 
 		//左バッターの時は反転させる
-		Player& player = Player::Instance();
+		
 		if (player.IsRightBatter())
 		{
-			batSpriteData->rotation = 25.0f; // 右バッターの場合は回転させない
+			batSpriteData->rotation = targetRotation; // 右バッターの場合は回転させない
+			//drawX = mouseX - batSpriteData->size.x * 0.7f; // 右バッターの場合は位置を調整
 		}
 		else
 		{
-			batSpriteData->rotation = 155.0f; // 左バッターの場合は180度回転させる
-			drawX = mouseX - batSpriteData->size.x * 0.3f; // 左バッターの場合は位置を調整
+			batSpriteData->rotation = 180.0f - targetRotation; // 左バッターの場合は180度回転させる
+			//drawX = mouseX - batSpriteData->size.x * 0.3f; // 左バッターの場合は位置を調整
 		}
 
+		float pivotOffsetX = 0.7f;
+		
+
+		float localPivotX = (pivotOffsetX - 0.5f) * batSpriteData->size.x;
+		float localPivotY = 0.0f;
+
+		float rad = DirectX::XMConvertToRadians(batSpriteData->rotation);
+
+		// ピボット位置を現在の角度で回転させる
+		float rotatedPivotX = localPivotX * cosf(rad) - localPivotY * sinf(rad);
+		float rotatedPivotY = localPivotX * sinf(rad) + localPivotY * cosf(rad);
+
+		
+		float centerX = mouseX - rotatedPivotX;
+		float centerY = mouseY - rotatedPivotY;
+
+		// 画像左上基準の場合の直接計算式：
+		drawX = mouseX - (batSpriteData->size.x * 0.5f + rotatedPivotX);
+		drawY = mouseY - (batSpriteData->size.y * 0.5f + rotatedPivotY);
 
 		batSprite->render(dc,
 			drawX, drawY,
@@ -267,7 +297,7 @@ void BatSprite::Render()
 
 	if(batCursorSprite && batCursorSpriteData)
 	{
-		// 画像の中心をマウス位置に合わせる
+		// 画像の中心をバットの芯の位置にくっつける
 		float drawX = mouseX - batCursorSpriteData->size.x * 0.5f;
 		float drawY = mouseY - batCursorSpriteData->size.y * 0.5f;
 		batCursorSprite->render(dc,
@@ -296,8 +326,12 @@ void BatSprite::DrawGUI()
 			ImGui::DragFloat2(u8"ゾーン 位置(px)", &batSpriteData->position.x, 1.0f);
 			ImGui::DragFloat2(u8"ゾーン サイズ(px)", &batSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
 			ImGui::ColorEdit4(u8"ゾーン 透明度", &batSpriteData->color.x);
+			ImGui::DragFloat(u8"ゾーン 回転角度(度)", &batSpriteData->rotation, 1.0f, 0.0f, 360.0f);
 
-		
+			ImGui::DragFloat(u8"カーソル 位置X(px)", &drawX, 1.0f);
+			ImGui::DragFloat(u8"カーソル 位置Y(px)", &drawY, 1.0f);
+			ImGui::DragFloat2(u8"カーソル サイズ(px)", &batCursorSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
+
 		}
 	}
 	if (ImGui::CollapsingHeader(u8"ミートアシスト"))

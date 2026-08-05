@@ -230,28 +230,51 @@ void Player::Update(float elapsedTime)
         mouseX = std::max(zoneTopLeft.x, std::min(zoneBottomRight.x, mouseX));
         mouseY = std::max(zoneTopLeft.y, std::min(zoneBottomRight.y, mouseY));
 
+
+		float zoneHeight = zoneBottomRight.y - zoneTopLeft.y;
+		float normalizedY = (mouseY - zoneTopLeft.y) / zoneHeight;
+		normalizedY = std::max(0.0f, std::min(1.0f, normalizedY));
+
+        float highAngle = -15.0f; // 高めの角度
+        float lowAngle = 45.0f;  // 低めの角度
+        float centerAngle = 25.0f; // 中心の角度
+
+        float targetRotation = highAngle + (lowAngle - highAngle) * normalizedY;// 線形補間で角度を計算
+
         const DirectX::XMFLOAT2 batSize = BatSprite::Instance().GetBatSpriteSize();
-        DirectX::XMFLOAT2 batCenter;
-        float batRotDisplay; // 見た目のスプライト回転
-        float batRotPhysics; // 当たり判定用の回転（新規）
+        
+        float batRotPhysics; // 当たり判定用の回転
+        float pivotRatioX = 0.0f;
+        
+
         if (IsRightBatter())
         {
-            batCenter = {
-                (mouseX - batSize.x * 0.7f) + batSize.x * 0.5f,
-                (mouseY - batSize.y) + batSize.y * 0.5f
-            };
-            batRotDisplay = 25.0f;
-            batRotPhysics = 25.0f;
+            
+            
+            batRotPhysics = targetRotation;
+			
         }
         else
         {
-            batCenter = {
-                (mouseX - batSize.x * 0.3f) + batSize.x * 0.5f,
-                (mouseY - batSize.y) + batSize.y * 0.5f
-            };
-            batRotDisplay = 155.0f;
-            batRotPhysics = -25.0f;
+            batRotPhysics = -targetRotation;
+			
         }
+
+		pivotRatioX = 0.7f; // バットのピボット位置（0.0f:左端、1.0f:右端）
+
+		float localPivotX = (pivotRatioX - 0.5f) * batSize.x; // バットのローカル座標でのピボット位置
+		float localPivotY = 0.0f; // バットのローカル座標でのピボット位置（Yは中央）
+
+
+		float rad = DirectX::XMConvertToRadians(batRotPhysics);
+		float rotatedPivotX = localPivotX * cosf(rad) - localPivotY * sinf(rad);
+		float rotatedPivotY = localPivotX * sinf(rad) + localPivotY * cosf(rad);
+
+        DirectX::XMFLOAT2 batCenter = {
+            mouseX - rotatedPivotX,
+            mouseY - rotatedPivotY
+        };
+
 
         // 紫バットOBBを別途計算してボールと重なり判定
         // 紫バットは白バットの先端寄り1/3程度（芯～先端）と仮定
