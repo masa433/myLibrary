@@ -120,7 +120,7 @@ void BatSprite::Update(float elapsedTime)
 		//}
 
 		//アシストを始めていなかったら、最初の1フレームのみ初期化
-		if (!isAssisting)
+		if (!isAssisting && isMeetAssistEnabled)
 		{
 			isAssisting = true;
 			GetCursorPos(&assistStartMousePos);
@@ -299,6 +299,11 @@ void BatSprite::DrawGUI()
 
 		
 		}
+	}
+	if (ImGui::CollapsingHeader(u8"ミートアシスト"))
+	{
+		ImGui::Checkbox(u8"ミートアシスト有効", &isMeetAssistEnabled);
+		ImGui::DragFloat(u8"ミートアシスト時間(秒)", &assistDuration, 0.01f, 0.1f, 5.0f);
 	}
 
 }

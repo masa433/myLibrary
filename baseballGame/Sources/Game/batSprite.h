@@ -65,6 +65,7 @@ private:
 	float minCursorScale = 0.6f;
 	float maxCursorScale = 1.3f;
 
+	bool isMeetAssistEnabled = false; //補助線表示条件を満たしているか
 	bool isAssisting = false; //補助線表示中か
 	POINT assistStartMousePos = { 0,0 }; //補助線表示開始時のマウス座標
 	float assistTimer = 0.0f; //補助線表示タイマー
