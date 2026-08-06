@@ -134,7 +134,7 @@ void scene_game::initialize()
 
     BatSprite::Instance().Initialize(device);
 
-    GameTimer::Instance().Initialize(device);
+    //GameTimer::Instance().Initialize(device);
 
     HomeRunCount::Instance().Initialize(device);
 
@@ -408,7 +408,7 @@ void scene_game::update(float elapsed_time)
     // 物理システムの更新
     Physics::Instance().Update(elapsed_time);
 
-    GameTimer::Instance().Update(elapsed_time);
+    //GameTimer::Instance().Update(elapsed_time);
 
     HomeRunCount::Instance().Update(elapsed_time);
 
@@ -706,7 +706,7 @@ void scene_game::render(float elapsedTime)
     if(!GameTimer::Instance().IsFinished())BatSprite::Instance().Render();
     ballSprite::Instance().Render();
 
-    GameTimer::Instance().Render();
+    //GameTimer::Instance().Render();
 
     HomeRunCount::Instance().Render();
 
@@ -765,7 +765,7 @@ void scene_game::render(float elapsedTime)
         dstRes->Release();
     }
 
-    if (GameTimer::Instance().IsFinished())
+    if (Pitcher::Instance().GetRemainingBalls() <= 0 && Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
     {
         //リザルトを表示する
         Result::Instance().Render();
@@ -1500,7 +1500,7 @@ void scene_game::LoadSetting()
     //if (j.contains("sky")) skyRenderer.LoadFromJson(j["sky"]);
     if (j.contains("ball_sprite")) ballSprite::Instance().LoadFromJson(j["ball_sprite"]);
     if (j.contains("stage")) stage::Instance().LoadFromJson(j["stage"]);
-    if (j.contains("gameTimer")) GameTimer::Instance().LoadFromJson(j["gameTimer"]);
+    //if (j.contains("gameTimer")) GameTimer::Instance().LoadFromJson(j["gameTimer"]);
     if (j.contains("homeRunCount")) HomeRunCount::Instance().LoadFromJson(j["homeRunCount"]);
     if (j.contains("catcher")) Catcher::Instance().LoadFromJson(j["catcher"]);
 	if (j.contains("ballDistance")) BallDistance::Instance().LoadFromJson(j["ballDistance"]);

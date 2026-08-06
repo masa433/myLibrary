@@ -65,7 +65,12 @@ private:
 	float showSpriteDelay = 0.7f; // スプライト表示の遅延時間
 	float showSpriteTimer = 0.0f; // スプライト表示のタイマー
 
+	bool isStrike = false;
+
 public:
+
+	bool IsStrike() const { return isStrike; }
+
 	//2Dスクリーン座標上のストライクゾーンの中心とサイズ
 	DirectX::XMFLOAT2 zone3DCenter = { 0.0f, 0.8f };
 	DirectX::XMFLOAT2 zone3DSize = { 0.43f,0.6f };

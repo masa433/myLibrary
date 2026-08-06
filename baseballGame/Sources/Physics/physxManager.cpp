@@ -970,6 +970,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			Ball::Instance().CancelBezier();
 			ballSprite::Instance().SetShowBallBoard(true);
 			ballSprite::Instance().SetStopBallOnHit(true);
+			Pitcher::Instance().DecreaseRemainingBalls(1);
 
 			physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 			physx::PxRigidDynamic* batCollider = Player::Instance().GetBatCollider();

@@ -586,8 +586,10 @@ void ballSprite::Update(float elapsedTime)
 		DirectX::XMFLOAT2 szTopLeft, szBottomRight;
 		GetStrikeZoneScreenBounds(szTopLeft, szBottomRight);
 
-		bool isStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
+		isStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
 			ballCenter.y >= szTopLeft.y && ballCenter.y <= szBottomRight.y);
+
+		if (isStrike) pitcher.DecreaseRemainingBalls(1);
 
 		if (consoleLog)
 		{

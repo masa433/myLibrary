@@ -235,7 +235,7 @@ void Player::Update(float elapsedTime)
 		float normalizedY = (mouseY - zoneTopLeft.y) / zoneHeight;
 		normalizedY = std::max(0.0f, std::min(1.0f, normalizedY));
 
-        float highAngle = -15.0f; // 高めの角度
+        float highAngle = -5.0f; // 高めの角度
         float lowAngle = 45.0f;  // 低めの角度
         float centerAngle = 25.0f; // 中心の角度
 
@@ -360,21 +360,28 @@ void Player::Update(float elapsedTime)
     // ボールの位置を取得してルックアット処理を実行
     const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetBallPosition();
     UpdateLookAt(ballPosition);
- 
-
 }
 
 // キー入力処理
 void Player::HandleInput(float elapsedTime)
 {
-    if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)) return;
+    //if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)) return;
+	if (Pitcher::Instance().GetRemainingBalls() <= 0) return;
+
+    
 
     // スペースキーでスイング
     if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
     {
-        if (current_state != State::Swinging)
+        //スイングカウントを増やす
+		IncreaseSwingCount();
+
+        
+
+        if (current_state != State::Swinging && swingCount <= 1)
         {               
-             ChangeState(State::Swinging);          
+             ChangeState(State::Swinging); 
+             if(Pitcher::Instance().GetIsBallThrown()) Pitcher::Instance().DecreaseRemainingBalls(1);
         }
     }
 
@@ -488,6 +495,8 @@ void Player::RenderBat(const RenderContext& rc, ModelRenderer* renderer)
 void Player::DrawGUI()
 {
 #ifdef USE_IMGUI
+
+	ImGui::DragInt("Swing Count", &swingCount, 1, 0, 10);
 
     if (ImGui::CollapsingHeader("Player Info"))
     {

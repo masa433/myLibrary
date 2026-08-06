@@ -243,7 +243,7 @@ void BatSprite::Render()
 	float normalizedY = (mouseY - zoneTopLeft.y) / zoneHeight; // 0.0f ~ 1.0f
 	normalizedY = (std::max)(0.0f, (std::min)(1.0f, normalizedY)); // Clamp to [0, 1]
 
-	float highAngle = -15.0f; // 高めの角度
+	float highAngle = -5.0f; // 高めの角度
 	float lowAngle = 45.0f;  // 低めの角度
 	float centerAngle = 25.0f; // 中心の角度
 

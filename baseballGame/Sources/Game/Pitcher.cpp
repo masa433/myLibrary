@@ -113,6 +113,8 @@ void Pitcher::Initialize()
 
 
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
+	remainingBalls = 10;
+	aiStrikeRate = 0.5f; // AIのストライク率を初期化
 
 	InitializePitchSettings();
 	SelectPitchType();
@@ -177,7 +179,8 @@ void Pitcher::Uninitialize()
 void Pitcher::Update(float elapsedTime)
 {
 
-	if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(currentState == State::Throwing))
+	//if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(currentState == State::Throwing))
+	if(GetRemainingBalls() <=0 && !Ball::Instance().GetHasCollidedWithBat() && (currentState == State::SelectingPitch))
 	{
 		return; // タイマーが0以下の場合、更新をスキップ
 	}
@@ -212,7 +215,7 @@ void Pitcher::Update(float elapsedTime)
 		ResetPitchFlags(); // pitchFlagsをリセット		
 		isBallThrown = false;
 		TrackingData::Instance().Reset(); // トラッキングデータをリセット
-		if (stateTime > 1.0f) // 1秒後に投球開始
+		if (stateTime > 2.0f) // 2秒後に投球開始
 		{
 			currentState = State::Throwing;
 			stateTime = 0.0f;
@@ -436,6 +439,20 @@ void Pitcher::UpdateBallCollider()
 	Ball::Instance().UpdateCollider();
 }
 
+void Pitcher::DecreaseRemainingBalls(int amount)
+{
+	if (hasCountedHit) return;
+
+	
+	remainingBalls -= amount;
+	if (remainingBalls < 0)
+	{
+		remainingBalls = 0;
+	}	
+	hasCountedHit = true; // ヒットがカウントされたことを記録
+	
+}
+
 void Pitcher::ResetPitchFlags()
 {
 	Ball::Instance().SetHasBeenJudged(false);
@@ -447,12 +464,13 @@ void Pitcher::ResetPitchFlags()
 	Ball::Instance().SetFoulLogged(false);
 	Ball::Instance().SetIsFoulConfirmed(false); // ファウル確定フラグをリセット
 	Ball::Instance().SetHasCollidedWithPole(false);
-
+	Player::Instance().ResetSwingCount();
 	ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
 	ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
 
 	TrackingData::Instance().Reset(); // トラッキングデータをリセット
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
+	ResetHitFlag(); // ヒットフラグをリセット
 }
 
 // 描画
@@ -1046,6 +1064,8 @@ void Pitcher::DrawGUI()
 		ImGui::DragFloat2("backSize", &infoBackSize.x, 0.1f, 0.1f, 1000.0f);
 	}
 
+	ImGui::DragInt("remainingBalls", &remainingBalls, 1, 0, 100);
+
 #endif
 }
 
@@ -1170,10 +1190,10 @@ void Pitcher::ThrowBallBezier()
 	switch (ballSpeedMode)
 	{
 	case BallSpeedMode::slowSpeed:
-		speedMs *= 0.7f;
+		speedMs *= 0.8f;
 		break;
 	case BallSpeedMode::highSpeed:
-		speedMs *= 0.85f;
+		speedMs *= 0.9f;
 		break;
 	case BallSpeedMode::realSpeed:
 	default:
@@ -1747,13 +1767,21 @@ void Pitcher::ApplyAIBezierTarget()
 			(std::max)(0.02f, aiNearBallMargin * 0.5f),
 			(std::max)(0.04f, aiNearBallMargin));
 
-		int dir = static_cast<int>(GenerateRandomFloat(0.0f, 3.9999f));
+		const float randomOffset = GenerateRandomFloat(-0.5f, 0.5f);
+
+		int dir = static_cast<int>(GenerateRandomFloat(0.0f, 7.9999f));
 		switch (dir)
 		{
-		case 0: targetX = -boxSize.x * 0.5f - missAmount; break; // インコース外
-		case 1: targetX = boxSize.x * 0.5f + missAmount; break; // アウトコース外
-		case 2: targetY = boxSize.y * 0.5f + missAmount; break; // 高め外
-		case 3: targetY = -boxSize.y * 0.5f - missAmount; break; // 低め外
+			//インハイ、真ん中高め、アウトハイ、真ん中アウトコース、真ん中インコース
+			//インロー、真ん中低め、アウトローで、どの方向に外すかをランダムで決定
+		case 0: targetX = -boxSize.x * 0.5f - missAmount; targetY = boxSize.y * 0.5f + missAmount; break; //インハイ
+		case 1: targetX = boxSize.x * 0.5f + missAmount; targetY = boxSize.y * 0.5f + missAmount; break; //アウトハイ
+		case 2: targetX = -boxSize.x * 0.5f - missAmount; targetY = -boxSize.y * 0.5f - missAmount; break; //インロー
+		case 3: targetX = boxSize.x * 0.5f + missAmount; targetY = -boxSize.y * 0.5f - missAmount; break; //アウトロー
+		case 4: targetX = randomOffset; targetY = boxSize.y * 0.5f + missAmount; break; //真ん中高め
+		case 5: targetX = randomOffset; targetY = -boxSize.y * 0.5f - missAmount; break; //真ん中低め
+		case 6: targetX = boxSize.x * 0.5f + missAmount; targetY = randomOffset; break; //真ん中アウトコース
+		case 7: targetX = -boxSize.x * 0.5f - missAmount; targetY = randomOffset; break; //真ん中インコース
 		}
 	}
 
@@ -1920,7 +1948,7 @@ void Pitcher::SaveToJson(json& j)
 	j["rotation_speed"] = { rotationSpeed.x, rotationSpeed.y, rotationSpeed.z };
 	j["is_right_pitcher"] = isRightPitcher;
 	j["use_pitch_ai"] = usePitchAI;
-	j["ai_strike_rate"] = aiStrikeRate;
+	//j["ai_strike_rate"] = aiStrikeRate;
 	j["ai_near_ball_margin"] = aiNearBallMargin;
 	j["selected_real_pitcher"] = static_cast<int>(selectedRealPitcher);
 
@@ -1972,7 +2000,7 @@ void Pitcher::LoadFromJson(const json& j)
 	if (j.contains("throw_direction")) throwDirection = { j["throw_direction"][0], j["throw_direction"][1], j["throw_direction"][2] };
 	if (j.contains("rotation_speed")) rotationSpeed = { j["rotation_speed"][0], j["rotation_speed"][1], j["rotation_speed"][2] };
 	if (j.contains("use_pitch_ai")) usePitchAI = j["use_pitch_ai"];
-	if (j.contains("ai_strike_rate")) aiStrikeRate = (std::max)(0.0f, (std::min)(1.0f, static_cast<float>(j["ai_strike_rate"])));
+	//if (j.contains("ai_strike_rate")) aiStrikeRate = (std::max)(0.0f, (std::min)(1.0f, static_cast<float>(j["ai_strike_rate"])));
 	if (j.contains("ai_near_ball_margin")) aiNearBallMargin = (std::max)(0.0f, static_cast<float>(j["ai_near_ball_margin"]));
 
 	// 投手の左右設定を反映

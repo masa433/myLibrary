@@ -142,8 +142,14 @@ private:
 	bool hasPlayBeforeSwing = false;
 	bool isRightBatter = false; // 右打者かどうかのフラグ
 
+	int swingCount = 0; // スイング回数のカウント
+
+	
+	void IncreaseSwingCount() { swingCount++; } // スイング回数をインクリメントするメソッド
+
 	
 public:
+    void ResetSwingCount() { swingCount = 0; } // スイング回数をリセットするメソッド
 
 	bool isPurpleBat = false; // 紫色のバットに当たったかどうかのフラグ
 

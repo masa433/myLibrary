@@ -415,4 +415,17 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
+
+private:
+	//残りの球数
+	int remainingBalls = 10;
+	bool hasCountedHit = false; //ヒット判定済みかどうか
+
+public:
+	int GetRemainingBalls() const { return remainingBalls; }
+	void SetRemainingBalls(int balls) { remainingBalls = balls; }
+
+	//球数を減らす関数
+	void DecreaseRemainingBalls(int amount);
+	void ResetHitFlag() { hasCountedHit = false; }
 };
