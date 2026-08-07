@@ -151,6 +151,39 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	};
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", vertex_shader.ReleaseAndGetAddressOf(), input_layout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
+
+	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+
+	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
+		u8"0123456789"
+		u8"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	);
+
+	// フォントレンダラーの初期化
+	fontRenderer.Initialize(device,
+		L".\\resources\\fonts\\GarpSansNormalItalic.otf",
+		100.0f,
+		screenWidth, screenHeight,
+		512, 512,
+		&trackingDataCodepoints);
+
+	powerFontData.position = { 1300.0f, 400.0f }; // 画面内に配置
+	powerFontData.scale = 1.0f;                    // スケールを1.0に設定
+	powerFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 不透明な白色
+
+	contactFontData.position = { 1300.0f, 500.0f };
+	contactFontData.scale = 1.0f;
+	contactFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	powerRankFontData.position = { 1500.0f, 400.0f };
+	powerRankFontData.scale = 1.0f;
+	powerRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	contactRankFontData.position = { 1500.0f, 500.0f };
+	contactRankFontData.scale = 1.0f;
+	contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 }
 
 
@@ -284,7 +317,98 @@ void ScrollView::Render(float alpha)
 	}
 
 	
+	//フォントの描画
 
+	if (fontRenderer.IsValid())
+	{
+		/*fontRenderer.DrawTextW(dc, "55", 1300.0f, 200.0f, 1.5f, 1.0f, 1.0f, 1.0f, alpha);*/
+
+		//選択中の選手のパワーとミートの値を取得
+		if (selectedIndex >= 0 && selectedIndex < BATTER_COUNT)
+		{
+			int power = Player::Instance().GetSelectedRealBatterPower();
+			int contact = Player::Instance().GetSelectedRealBatterContact();
+			// 関数側が inline const RankData& GetPowerRank(int power) const のような場合
+			Player::BatterPowerRank powerRank = Player::Instance().GetPowerRank(power);
+			Player::BatterContactRank contactRank = Player::Instance().GetContactRank(contact);
+
+			//ランクに応じて色を変える
+			switch(powerRank)
+			{
+				case Player::BatterPowerRank::S:
+					powerRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 白
+					break;
+				case Player::BatterPowerRank::A:
+					powerRankFontData.color = { 1.0f, 0.0f, 1.0f, 1.0f }; // ピンク
+					break;
+				case Player::BatterPowerRank::B:
+					powerRankFontData.color = { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
+					break;
+				case Player::BatterPowerRank::C:
+					powerRankFontData.color = { 1.0f, 0.5f, 0.0f, 1.0f }; // オレンジ
+					break;
+				case Player::BatterPowerRank::D:
+					powerRankFontData.color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色
+					break;
+				case Player::BatterPowerRank::E:
+					powerRankFontData.color = { 0.0f, 1.0f, 0.0f, 1.0f }; // 緑
+					break;
+				case Player::BatterPowerRank::F:
+					powerRankFontData.color = { 0.5f, 0.5f, 0.5f, 1.0f }; // グレー
+					break;
+				default:
+					powerRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // デフォルトはホワイト
+					break;
+			}
+
+			switch (contactRank)
+			{
+				case Player::BatterContactRank::S:
+					contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 白
+					break;
+				case Player::BatterContactRank::A:
+					contactRankFontData.color = { 1.0f, 0.0f, 1.0f, 1.0f }; // ピンク
+					break;
+				case Player::BatterContactRank::B:
+					contactRankFontData.color = { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
+					break;
+				case Player::BatterContactRank::C:
+					contactRankFontData.color = { 1.0f, 0.5f, 0.0f, 1.0f }; // オレンジ
+					break;
+				case Player::BatterContactRank::D:
+					contactRankFontData.color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色
+					break;
+				case Player::BatterContactRank::E:
+					contactRankFontData.color = { 0.0f, 1.0f, 0.0f, 1.0f }; // 緑
+					break;
+				case Player::BatterContactRank::F:
+					contactRankFontData.color = { 0.5f, 0.5f, 0.5f, 1.0f }; // グレー
+					break;
+				default:
+					contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // デフォルトはホワイト
+					break;
+			}
+
+			//パワーとミートの値を描画
+			fontRenderer.DrawTextW(dc, std::to_string(power).c_str(), 
+				powerFontData.position.x, powerFontData.position.y, powerFontData.scale,
+				powerFontData.color.x, powerFontData.color.y, powerFontData.color.z, powerFontData.color.w * alpha);
+
+			fontRenderer.DrawTextW(dc, GetBatterPowerRankString(powerRank),
+				powerRankFontData.position.x, powerRankFontData.position.y, powerRankFontData.scale,
+				powerRankFontData.color.x, powerRankFontData.color.y, powerRankFontData.color.z, powerRankFontData.color.w* alpha);
+
+			fontRenderer.DrawTextW(dc, std::to_string(contact).c_str(),
+				contactFontData.position.x, contactFontData.position.y, contactFontData.scale, 
+				contactFontData.color.x, contactFontData.color.y, contactFontData.color.z, contactFontData.color.w * alpha);
+
+			fontRenderer.DrawTextW(dc, GetBatterContactRankString(contactRank),
+				contactRankFontData.position.x, contactRankFontData.position.y, contactRankFontData.scale,
+				contactRankFontData.color.x, contactRankFontData.color.y, contactRankFontData.color.z, contactRankFontData.color.w* alpha);
+			
+		}
+
+	}
 
 
 	dc->VSSetShader(nullptr, nullptr, 0);
@@ -582,6 +706,33 @@ void ScrollView::DrawGUI()
 			ImGui::DragFloat2("Batter Name Tag Size", &batterNameTagSize.x, 1.0f);
 			ImGui::ColorEdit4("Batter Name Tag Color", &batterNameTagColor.x);
 		}
+
+		if (ImGui::CollapsingHeader("Param Font"))
+		{
+			//パワーの数値とランクの文字列
+			if(ImGui::CollapsingHeader("Power Font & Rank"))
+			{
+				ImGui::DragFloat2("Power Font Position", &powerFontData.position.x, 1.0f);
+				ImGui::DragFloat("Power Font Scale", &powerFontData.scale, 0.01f, 0.1f, 10.0f);
+				ImGui::ColorEdit4("Power Font Color", &powerFontData.color.x);
+
+				ImGui::DragFloat2("Power Rank Font Position", &powerRankFontData.position.x, 1.0f);
+				ImGui::DragFloat("Power Rank Font Scale", &powerRankFontData.scale, 0.01f, 0.1f, 10.0f);
+				ImGui::ColorEdit4("Power Rank Font Color", &powerRankFontData.color.x);
+			}
+
+			if(ImGui::CollapsingHeader("Contact Font & Rank"))
+			{
+				ImGui::DragFloat2("Contact Font Position", &contactFontData.position.x, 1.0f);
+				ImGui::DragFloat("Contact Font Scale", &contactFontData.scale, 0.01f, 0.1f, 10.0f);
+				ImGui::ColorEdit4("Contact Font Color", &contactFontData.color.x);
+				ImGui::DragFloat2("Contact Rank Font Position", &contactRankFontData.position.x, 1.0f);
+				ImGui::DragFloat("Contact Rank Font Scale", &contactRankFontData.scale, 0.01f, 0.1f, 10.0f);
+				ImGui::ColorEdit4("Contact Rank Font Color", &contactRankFontData.color.x);
+			}
+			
+			
+		}
 	}
 #endif // _DEBUG
 }
@@ -629,6 +780,22 @@ void ScrollView::SaveToJson(nlohmann::json& json)
 			{"color", {batterNameTagColor.x, batterNameTagColor.y, batterNameTagColor.z, batterNameTagColor.w}}
 		};
 	}
+
+	// フォントの設定を保存
+	json["FontSettings"] = {
+		{"powerFontPosition", {powerFontData.position.x, powerFontData.position.y}},
+		{"powerFontScale", powerFontData.scale},
+		{"powerFontColor", {powerFontData.color.x, powerFontData.color.y, powerFontData.color.z, powerFontData.color.w}},
+		{"powerRankFontPosition", {powerRankFontData.position.x, powerRankFontData.position.y}},
+		{"powerRankFontScale", powerRankFontData.scale},
+		{"powerRankFontColor", {powerRankFontData.color.x, powerRankFontData.color.y, powerRankFontData.color.z, powerRankFontData.color.w}},
+		{"contactFontPosition", {contactFontData.position.x, contactFontData.position.y}},
+		{"contactFontScale", contactFontData.scale},
+		{"contactFontColor", {contactFontData.color.x, contactFontData.color.y, contactFontData.color.z, contactFontData.color.w}},
+		{"contactRankFontPosition", {contactRankFontData.position.x, contactRankFontData.position.y}},
+		{"contactRankFontScale", contactRankFontData.scale},
+		{"contactRankFontColor", {contactRankFontData.color.x, contactRankFontData.color.y, contactRankFontData.color.z, contactRankFontData.color.w}}
+	};
 }
 
 void ScrollView::LoadFromJson(const nlohmann::json& json)
@@ -734,4 +901,73 @@ void ScrollView::LoadFromJson(const nlohmann::json& json)
 		}
 	}
 
+	// フォントの設定を読み込む
+	if (json.contains("FontSettings"))
+	{
+		const auto& fontSettingsJson = json["FontSettings"];
+		if (fontSettingsJson.contains("powerFontPosition"))
+		{
+			powerFontData.position.x = fontSettingsJson["powerFontPosition"][0].get<float>();
+			powerFontData.position.y = fontSettingsJson["powerFontPosition"][1].get<float>();
+		}
+		if (fontSettingsJson.contains("powerFontScale"))
+		{
+			powerFontData.scale = fontSettingsJson["powerFontScale"].get<float>();
+		}
+		if (fontSettingsJson.contains("powerFontColor"))
+		{
+			powerFontData.color.x = fontSettingsJson["powerFontColor"][0].get<float>();
+			powerFontData.color.y = fontSettingsJson["powerFontColor"][1].get<float>();
+			powerFontData.color.z = fontSettingsJson["powerFontColor"][2].get<float>();
+			powerFontData.color.w = fontSettingsJson["powerFontColor"][3].get<float>();
+		}
+		if(fontSettingsJson.contains("powerRankFontPosition"))
+		{
+			powerRankFontData.position.x = fontSettingsJson["powerRankFontPosition"][0].get<float>();
+			powerRankFontData.position.y = fontSettingsJson["powerRankFontPosition"][1].get<float>();
+		}
+		if (fontSettingsJson.contains("powerRankFontScale"))
+		{
+			powerRankFontData.scale = fontSettingsJson["powerRankFontScale"].get<float>();
+		}
+		if (fontSettingsJson.contains("powerRankFontColor"))
+		{
+			powerRankFontData.color.x = fontSettingsJson["powerRankFontColor"][0].get<float>();
+			powerRankFontData.color.y = fontSettingsJson["powerRankFontColor"][1].get<float>();
+			powerRankFontData.color.z = fontSettingsJson["powerRankFontColor"][2].get<float>();
+			powerRankFontData.color.w = fontSettingsJson["powerRankFontColor"][3].get<float>();
+		}
+		if (fontSettingsJson.contains("contactFontPosition"))
+		{
+			contactFontData.position.x = fontSettingsJson["contactFontPosition"][0].get<float>();
+			contactFontData.position.y = fontSettingsJson["contactFontPosition"][1].get<float>();
+		}
+		if (fontSettingsJson.contains("contactFontScale"))
+		{
+			contactFontData.scale = fontSettingsJson["contactFontScale"].get<float>();
+		}
+		if (fontSettingsJson.contains("contactFontColor"))
+		{
+			contactFontData.color.x = fontSettingsJson["contactFontColor"][0].get<float>();
+			contactFontData.color.y = fontSettingsJson["contactFontColor"][1].get<float>();
+			contactFontData.color.z = fontSettingsJson["contactFontColor"][2].get<float>();
+			contactFontData.color.w = fontSettingsJson["contactFontColor"][3].get<float>();
+		}
+		if (fontSettingsJson.contains("contactRankFontPosition"))
+		{
+			contactRankFontData.position.x = fontSettingsJson["contactRankFontPosition"][0].get<float>();
+			contactRankFontData.position.y = fontSettingsJson["contactRankFontPosition"][1].get<float>();
+		}
+		if (fontSettingsJson.contains("contactRankFontScale"))
+		{
+			contactRankFontData.scale = fontSettingsJson["contactRankFontScale"].get<float>();
+		}
+		if (fontSettingsJson.contains("contactRankFontColor"))
+		{
+			contactRankFontData.color.x = fontSettingsJson["contactRankFontColor"][0].get<float>();
+			contactRankFontData.color.y = fontSettingsJson["contactRankFontColor"][1].get<float>();
+			contactRankFontData.color.z = fontSettingsJson["contactRankFontColor"][2].get<float>();
+			contactRankFontData.color.w = fontSettingsJson["contactRankFontColor"][3].get<float>();
+		}
+	}
 }

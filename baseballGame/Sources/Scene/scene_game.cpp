@@ -1331,7 +1331,7 @@ void scene_game::SaveSetting()
     skyRenderer.SaveToJson(j["sky"]);
     ballSprite::Instance().SaveToJson(j["ball_sprite"]);
     stage::Instance().SaveToJson(j["stage"]);
-    GameTimer::Instance().SaveToJson(j["gameTimer"]);
+    //GameTimer::Instance().SaveToJson(j["gameTimer"]);
     HomeRunCount::Instance().SaveToJson(j["homeRunCount"]);
     Catcher::Instance().SaveToJson(j["catcher"]);
 	BallDistance::Instance().SaveToJson(j["ballDistance"]);

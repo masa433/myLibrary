@@ -7,6 +7,7 @@
 #include "UiEasing.h"
 #include "input.h"
 #include "Player.h"
+#include "FontRenderer.h"
 #include "json.hpp"
 
 #define BATTER_IMAGE_COUNT 6
@@ -29,6 +30,21 @@ public:
 	void RenderBatterImage(ID3D11DeviceContext* dc, float alpha = 1.0f);
 
 private:
+
+	FontRenderer fontRenderer;
+
+	struct BatterParamFontData
+	{
+		DirectX::XMFLOAT2 position;
+		float scale;
+		DirectX::XMFLOAT4 color;
+	};
+
+	BatterParamFontData powerFontData;
+	BatterParamFontData powerRankFontData;
+	BatterParamFontData contactFontData;
+	BatterParamFontData contactRankFontData;
+
 	//スクロール背景スプライトデータ
 	struct ScrollBackData
 	{
@@ -167,5 +183,35 @@ public:
 			return &playerButtonDataList[index];
 		}
 		return nullptr;
+	}
+
+	static const char* GetBatterPowerRankString(Player::BatterPowerRank rank)
+	{
+		switch (rank)
+		{
+		case Player::BatterPowerRank::F: return "F";
+		case Player::BatterPowerRank::E: return "E";
+		case Player::BatterPowerRank::D: return "D";
+		case Player::BatterPowerRank::C: return "C";
+		case Player::BatterPowerRank::B: return "B";
+		case Player::BatterPowerRank::A: return "A";
+		case Player::BatterPowerRank::S: return "S";
+		default: return "";
+		}
+	}
+
+	static const char* GetBatterContactRankString(Player::BatterContactRank rank)
+	{
+		switch (rank)
+		{
+		case Player::BatterContactRank::F: return "F";
+		case Player::BatterContactRank::E: return "E";
+		case Player::BatterContactRank::D: return "D";
+		case Player::BatterContactRank::C: return "C";
+		case Player::BatterContactRank::B: return "B";
+		case Player::BatterContactRank::A: return "A";
+		case Player::BatterContactRank::S: return "S";
+		default: return "";
+		}
 	}
 };
