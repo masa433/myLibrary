@@ -96,6 +96,14 @@ void BatSprite::Update(float elapsedTime)
 	//	ClipCursor(&clipRect);
 	//}
 
+	//バットに当たったらテクスチャの動きを止める
+	if(Ball::Instance().GetHasCollidedWithBat())
+	{
+		isAssisting = false;
+		return;
+	}
+
+
 	if (GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing))
 	{
 		// 投球が終わったらフラグをリセット
@@ -109,16 +117,7 @@ void BatSprite::Update(float elapsedTime)
 	//ボールスプライトの位置を取得
 	if (pitcher.GetIsBallThrown())
 	{
-		////アシスト中に自分でマウスを動かした場合はアシストを終了する
-		//POINT currentMousePos;
-		//GetCursorPos(&currentMousePos);
-
-		//if (currentMousePos.x != assistStartMousePos.x || currentMousePos.y != assistStartMousePos.y)
-		//{
-		//	isAssisting = false;
-		//	return;
-		//}
-
+	
 		//アシストを始めていなかったら、最初の1フレームのみ初期化
 		if (!isAssisting && isMeetAssistEnabled)
 		{
@@ -178,7 +177,88 @@ void BatSprite::Update(float elapsedTime)
 		isAssisting = false;
 	}
 
-	
+	shouldRenderBat = !TrackingData::Instance().IsTrackingDataVisible() &&
+		!Physics::Instance().GetIsHomeRun();
+
+	if (!shouldRenderBat) return;
+
+	// Win32 APIで直接クライアント座標を取得
+	POINT pt;
+	GetCursorPos(&pt);
+
+	ScreenToClient(GetForegroundWindow(), &pt);
+
+
+	float mouseX = static_cast<float>(pt.x);
+	float mouseY = static_cast<float>(pt.y);
+
+	DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
+	ballSprite::Instance().GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
+
+	mouseX = (std::max)(zoneTopLeft.x, (std::min)(zoneBottomRight.x, mouseX));
+	mouseY = (std::max)(zoneTopLeft.y, (std::min)(zoneBottomRight.y, mouseY));
+
+	// トラッキングデータが表示されている場合はバットスプライトを描画しない
+	if (TrackingData::Instance().IsTrackingDataVisible()) return;
+
+	//確信ホームランのときも描画しない
+	if (Physics::Instance().GetIsHomeRun()) return;
+
+	//ストライクゾーン内でカーソルの位置によってバットの角度を変える
+	float zoneHeight = zoneBottomRight.y - zoneTopLeft.y;
+	float normalizedY = (mouseY - zoneTopLeft.y) / zoneHeight; // 0.0f ~ 1.0f
+	normalizedY = (std::max)(0.0f, (std::min)(1.0f, normalizedY)); // Clamp to [0, 1]
+
+	float highAngle = -5.0f; // 高めの角度
+	float lowAngle = 45.0f;  // 低めの角度
+	float centerAngle = 25.0f; // 中心の角度
+
+	float targetRotation = highAngle + (lowAngle - highAngle) * normalizedY;// 線形補間で角度を計算
+
+	Player& player = Player::Instance();
+
+	if (batSprite && batSpriteData)
+	{
+
+		//左バッターの時は反転させる
+
+		if (player.IsRightBatter())
+		{
+			batSpriteData->rotation = targetRotation; // 右バッターの場合は回転させない
+			//drawX = mouseX - batSpriteData->size.x * 0.7f; // 右バッターの場合は位置を調整
+		}
+		else
+		{
+			batSpriteData->rotation = 180.0f - targetRotation; // 左バッターの場合は180度回転させる
+			//drawX = mouseX - batSpriteData->size.x * 0.3f; // 左バッターの場合は位置を調整
+		}
+
+		float pivotOffsetX = 0.7f;
+
+
+		float localPivotX = (pivotOffsetX - 0.5f) * batSpriteData->size.x;
+		float localPivotY = 0.0f;
+
+		float rad = DirectX::XMConvertToRadians(batSpriteData->rotation);
+
+		// ピボット位置を現在の角度で回転させる
+		float rotatedPivotX = localPivotX * cosf(rad) - localPivotY * sinf(rad);
+		float rotatedPivotY = localPivotX * sinf(rad) + localPivotY * cosf(rad);
+
+
+		float centerX = mouseX - rotatedPivotX;
+		float centerY = mouseY - rotatedPivotY;
+
+		// 画像左上基準の場合の直接計算式：
+		batDrawX = mouseX - (batSpriteData->size.x * 0.5f + rotatedPivotX);
+		batDrawY = mouseY - (batSpriteData->size.y * 0.5f + rotatedPivotY);
+	}
+
+	if(batCursorSpriteData)
+	{
+		cursorDrawX = mouseX - (batCursorSpriteData->size.x * 0.5f);
+		cursorDrawY = mouseY - (batCursorSpriteData->size.y * 0.5f);
+	}
 
 }
 
@@ -206,6 +286,8 @@ void BatSprite::UpdateCursorSizeByContact(int contact)
 
 void BatSprite::Render()
 {
+	if(!shouldRenderBat) return;
+
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
@@ -216,79 +298,21 @@ void BatSprite::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	// Win32 APIで直接クライアント座標を取得
-	POINT pt;
-	GetCursorPos(&pt);
-
-	ScreenToClient(GetForegroundWindow(), &pt);
-
-
-	float mouseX = static_cast<float>(pt.x);
-	float mouseY = static_cast<float>(pt.y); 
-
-	DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
-	ballSprite::Instance().GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
-
-	mouseX = (std::max)(zoneTopLeft.x, (std::min)(zoneBottomRight.x, mouseX));
-	mouseY = (std::max)(zoneTopLeft.y, (std::min)(zoneBottomRight.y, mouseY));
-
+	
 	// トラッキングデータが表示されている場合はバットスプライトを描画しない
 	if (TrackingData::Instance().IsTrackingDataVisible()) return;
 
 	//確信ホームランのときも描画しない
 	if (Physics::Instance().GetIsHomeRun()) return;
 
-	//ストライクゾーン内でカーソルの位置によってバットの角度を変える
-	float zoneHeight = zoneBottomRight.y - zoneTopLeft.y;
-	float normalizedY = (mouseY - zoneTopLeft.y) / zoneHeight; // 0.0f ~ 1.0f
-	normalizedY = (std::max)(0.0f, (std::min)(1.0f, normalizedY)); // Clamp to [0, 1]
-
-	float highAngle = -5.0f; // 高めの角度
-	float lowAngle = 45.0f;  // 低めの角度
-	float centerAngle = 25.0f; // 中心の角度
-
-	float targetRotation = highAngle + (lowAngle - highAngle) * normalizedY;// 線形補間で角度を計算
 	
-	Player& player = Player::Instance();
-
 	if (batSprite && batSpriteData)
 	{
 
-		//左バッターの時は反転させる
 		
-		if (player.IsRightBatter())
-		{
-			batSpriteData->rotation = targetRotation; // 右バッターの場合は回転させない
-			//drawX = mouseX - batSpriteData->size.x * 0.7f; // 右バッターの場合は位置を調整
-		}
-		else
-		{
-			batSpriteData->rotation = 180.0f - targetRotation; // 左バッターの場合は180度回転させる
-			//drawX = mouseX - batSpriteData->size.x * 0.3f; // 左バッターの場合は位置を調整
-		}
-
-		float pivotOffsetX = 0.7f;
-		
-
-		float localPivotX = (pivotOffsetX - 0.5f) * batSpriteData->size.x;
-		float localPivotY = 0.0f;
-
-		float rad = DirectX::XMConvertToRadians(batSpriteData->rotation);
-
-		// ピボット位置を現在の角度で回転させる
-		float rotatedPivotX = localPivotX * cosf(rad) - localPivotY * sinf(rad);
-		float rotatedPivotY = localPivotX * sinf(rad) + localPivotY * cosf(rad);
-
-		
-		float centerX = mouseX - rotatedPivotX;
-		float centerY = mouseY - rotatedPivotY;
-
-		// 画像左上基準の場合の直接計算式：
-		drawX = mouseX - (batSpriteData->size.x * 0.5f + rotatedPivotX);
-		drawY = mouseY - (batSpriteData->size.y * 0.5f + rotatedPivotY);
 
 		batSprite->render(dc,
-			drawX, drawY,
+			batDrawX, batDrawY,
 			batSpriteData->size.x, batSpriteData->size.y,
 			batSpriteData->color.x, batSpriteData->color.y,
 			batSpriteData->color.z, batSpriteData->color.w,
@@ -297,11 +321,9 @@ void BatSprite::Render()
 
 	if(batCursorSprite && batCursorSpriteData)
 	{
-		// 画像の中心をバットの芯の位置にくっつける
-		float drawX = mouseX - batCursorSpriteData->size.x * 0.5f;
-		float drawY = mouseY - batCursorSpriteData->size.y * 0.5f;
+		
 		batCursorSprite->render(dc,
-			drawX, drawY,
+			cursorDrawX, cursorDrawY,
 			batCursorSpriteData->size.x, batCursorSpriteData->size.y,
 			batCursorSpriteData->color.x, batCursorSpriteData->color.y,
 			batCursorSpriteData->color.z, batCursorSpriteData->color.w,
@@ -328,8 +350,8 @@ void BatSprite::DrawGUI()
 			ImGui::ColorEdit4(u8"ゾーン 透明度", &batSpriteData->color.x);
 			ImGui::DragFloat(u8"ゾーン 回転角度(度)", &batSpriteData->rotation, 1.0f, 0.0f, 360.0f);
 
-			ImGui::DragFloat(u8"カーソル 位置X(px)", &drawX, 1.0f);
-			ImGui::DragFloat(u8"カーソル 位置Y(px)", &drawY, 1.0f);
+			ImGui::DragFloat(u8"カーソル 位置X(px)", &cursorDrawX, 1.0f);
+			ImGui::DragFloat(u8"カーソル 位置Y(px)", &cursorDrawY, 1.0f);
 			ImGui::DragFloat2(u8"カーソル サイズ(px)", &batCursorSpriteData->size.x, 1.0f, 1.0f, 2000.0f);
 
 		}
