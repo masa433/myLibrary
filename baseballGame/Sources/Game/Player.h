@@ -198,6 +198,9 @@ public:
 
     enum class BatterPowerRank
     {
+		F, // Fランク
+        E,
+        D,
 		C, // Cランク
         B,
 		A,
@@ -215,12 +218,19 @@ public:
             return BatterPowerRank::B;
         else if (power >= 60)
             return BatterPowerRank::C;
-        else
-			return BatterPowerRank::C; //Cランクに統一
+        else if(power >= 50)
+            return BatterPowerRank::D;
+        else if(power >= 40)
+            return BatterPowerRank::E;
+		else
+			return BatterPowerRank::F; //Fランクに統一
     }
 
     enum class BatterContactRank
 	{
+		F, // Fランク
+		E,
+		D,
         C, // Cランク
 		B,
 		A,
@@ -238,8 +248,12 @@ public:
             return BatterContactRank::B;
         else if (contact >= 60)
             return BatterContactRank::C;
+		else if (contact >= 50)
+            return BatterContactRank::D;
+        else if (contact >= 40)
+            return BatterContactRank::E;
 		else
-            return BatterContactRank::C; //Cランクに統一
+            return BatterContactRank::F; //Fランクに統一
 	}
 
     struct RealArsenalInfo

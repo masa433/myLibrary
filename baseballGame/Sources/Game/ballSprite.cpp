@@ -906,7 +906,8 @@ void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
 	std::vector<Pitcher::RealArsenalEntry> arsenal;
 	bool isRight = true;
 	const char* name = "";
-	if (!Pitcher::GetRealPitcherArsenalData(rp, arsenal, isRight, name))
+	int pitcherRank = 1;
+	if (!Pitcher::GetRealPitcherArsenalData(rp, arsenal, isRight, name, pitcherRank))
 	{
 		breakSet.initialized = true;
 		return;

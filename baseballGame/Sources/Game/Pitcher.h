@@ -314,6 +314,8 @@ public:
 		S
 	};
 
+
+
 	//実在投手が投げる球種のデータ
 	struct RealArsenalEntry
 	{
@@ -350,7 +352,7 @@ public:
 	//outArsenal: 該当投手の持ち球リストを返す（空の場合あり）
 	//outIsRight: 該当投手が右投げかどうかを返す
 	//outName: 該当投手の表示名を返す
-	static bool GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalEntry>& outArsenal, bool& outIsRight, const char*& outName);
+	static bool GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalEntry>& outArsenal, bool& outIsRight, const char*& outName,int& pitcherRank);
 
 	inline static const std::unordered_map<RealPitcher, int> pitcherToSpriteIndexTable =
 	{
@@ -377,7 +379,7 @@ public:
 		{ RealPitcher::Inoue,     20 },
 	};
 
-
+	int realPitcherRank = 1;
 	
 private:
 

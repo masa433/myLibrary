@@ -114,7 +114,7 @@ void Pitcher::Initialize()
 
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 	remainingBalls = 10;
-	aiStrikeRate = 0.5f; // AIのストライク率を初期化
+	aiStrikeRate = 0.75f; // AIのストライク率を初期化
 
 	InitializePitchSettings();
 	SelectPitchType();
@@ -635,6 +635,15 @@ void Pitcher::DrawGUI()
 			if (selectedRealPitcher != RealPitcher::None)
 			{
 				ImGui::TextWrapped(u8"※実際の球種構成・平均球速データをもとに、この投手が投げる球種と球速を再現しています。配球AIもこの投手の実測投球割合に基づいて球種を選択します。");
+				
+				ImGui::Text(u8"投手ランク: ");
+				ImGui::SameLine();
+				for (int i = 0; i < 5; ++i)
+				{
+					ImGui::SameLine(0.0f, 2.0f);
+					ImGui::TextColored(i < realPitcherRank ? ImVec4(1.0f, 1.0f, 0.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 1.0f), u8"★");
+				}
+
 				for (const RealArsenalEntry& entry : realPitcherArsenal)
 				{
 					ImGui::BulletText(u8"%s : %.1f%% / 平均%.1fkm/h",
@@ -1377,11 +1386,12 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 	return PitchType::Fastball;
 }
 
-bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalEntry>& outArsenal, bool& outIsRight, const char*& outName)
+bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalEntry>& outArsenal, bool& outIsRight, const char*& outName,int& pitcherRank)
 {
 	outArsenal.clear();
 	outIsRight = true;
 	outName = "";
+	pitcherRank = std::clamp(pitcherRank, 1, 5); //ランクを1～5に制限
 
 	switch (rp)
 	{
@@ -1395,6 +1405,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Curveball,			  5.3f, 124.9f, BreakGrade::D , Power::E },
 			{ PitchType::Cutter,			  0.3f, 138.0f, BreakGrade::C , Power::D },
 		};
+		pitcherRank = 2;
 		return true;
 
 	case RealPitcher::Mukai:
@@ -1406,6 +1417,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Slider,     16.9f, 132.4f, BreakGrade::B , Power::B },
 			{ PitchType::Curveball,   8.9f, 116.6f, BreakGrade::D , Power::D },
 		};
+		pitcherRank = 2;
 		return true;
 
 	case RealPitcher::Abe: 
@@ -1420,6 +1432,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Curveball,   3.6f, 109.2f, BreakGrade::D , Power::D },
 			{ PitchType::Shooter,     1.3f, 141.8f, BreakGrade::C , Power::C },
 		};
+		pitcherRank = 3;
 		return true;
 
 	case RealPitcher::Morita:
@@ -1433,6 +1446,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Curveball,   4.2f, 102.2f, BreakGrade::C , Power::D },
 			{ PitchType::SlowCurve,   4.2f,  92.5f, BreakGrade::D , Power::C },
 		};
+		pitcherRank = 4;
 		return true;
 
 	case RealPitcher::Ito:
@@ -1448,6 +1462,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Changeup,    3.4f, 134.5f, BreakGrade::C , Power::D },
 			{ PitchType::SlowBall,	  1.6f,  90.0f, BreakGrade::F , Power::E },
 		};
+		pitcherRank = 4;
 		return true;
 
 	case RealPitcher::Fukuhara:
@@ -1462,6 +1477,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Curveball,   5.9f, 118.0f, BreakGrade::D , Power::D },
 			{ PitchType::Palm,        2.4f, 112.8f, BreakGrade::D , Power::D },
 		};
+		pitcherRank = 2;
 		return true;
 
 	case RealPitcher::Ishikawa:
@@ -1476,6 +1492,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Curveball,   6.2f, 105.0f, BreakGrade::D , Power::D }, 
 			{ PitchType::Changeup,    4.4f, 110.2f, BreakGrade::E , Power::D },
 		};
+		pitcherRank = 1;
 		return true;
 
 	case RealPitcher::Takaoka:
@@ -1491,6 +1508,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Curveball,    1.5f, 114.0f, BreakGrade::D , Power::D },
 			{ PitchType::Knuckleball,  0.4f, 109.0f, BreakGrade::E , Power::D },
 		};
+		pitcherRank = 3;
 		return true;
 
 	case RealPitcher::Oda:
@@ -1505,6 +1523,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::VerticalSlider,1.2f, 141.6f, BreakGrade::B , Power::C },
 			{ PitchType::Cutter,        0.7f, 148.7f, BreakGrade::D , Power::E },
 		};
+		pitcherRank = 5;
 		return true;
 
 	case RealPitcher::Kondo:
@@ -1518,6 +1537,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Sinker,     12.7f, 153.5f, BreakGrade::C , Power::B },
 			{ PitchType::Slider,      6.9f, 140.5f, BreakGrade::C , Power::B },
 		};
+		pitcherRank = 5;
 		return true;
 
 	case RealPitcher::Nishi:
@@ -1530,6 +1550,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Cutter,      6.5f, 141.3f, BreakGrade::C , Power::D },
 			{ PitchType::Curveball,   3.0f, 119.6f, BreakGrade::C , Power::C },
 		};
+		pitcherRank = 4;
 		return true;
 
 	case RealPitcher::Kikuchi:
@@ -1543,6 +1564,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Curveball,   9.7f, 126.8f, BreakGrade::D , Power::C },
 			{ PitchType::Sinker,      1.0f, 154.8f, BreakGrade::D , Power::D },
 		};
+		pitcherRank = 3;
 		return true;
 
 	case RealPitcher::Okubo:
@@ -1556,6 +1578,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Sinker,      4.0f, 143.1f, BreakGrade::C , Power::E },
 			{ PitchType::Curveball,   0.4f, 105.5f, BreakGrade::E , Power::F },
 		};
+		pitcherRank = 5;
 		return true;
 
 	case RealPitcher::Mizuno:
@@ -1566,6 +1589,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Forkball,    38.4f, 138.3f, BreakGrade::A , Power::A },			
 			{ PitchType::Slider,       1.4f, 126.0f, BreakGrade::B , Power::B },
 		};
+		pitcherRank = 1;
 		return true;
 
 	case RealPitcher::Fujikawa:
@@ -1577,6 +1601,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::TwoSeam,			10.0f, 147.0f, BreakGrade::E , Power::D },
 			{ PitchType::Curveball,			 5.0f, 116.0f, BreakGrade::C , Power::D },
 		};
+		pitcherRank = 4;
 		return true;
 
 	case RealPitcher::Watanabe:
@@ -1589,6 +1614,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::VerticalSlider,4.6f, 141.1f, BreakGrade::E , Power::C },
 			{ PitchType::Curveball,     3.0f, 130.3f, BreakGrade::C , Power::C },
 		};
+		pitcherRank = 4;
 		return true;
 
 	case RealPitcher::Ishi: 
@@ -1601,6 +1627,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Forkball,       5.2f, 134.6f, BreakGrade::B , Power::B },
 			{ PitchType::Curveball,      4.8f, 123.0f, BreakGrade::D , Power::D },
 		};
+		pitcherRank = 2;
 		return true;
 
 	case RealPitcher::Kinoshita:
@@ -1612,6 +1639,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::TwoSeam,        7.3f, 156.2f, BreakGrade::F , Power::C },
 			{ PitchType::Splitter,       1.5f, 148.3f, BreakGrade::E , Power::F },
 		};
+		pitcherRank = 4;
 		return true;
 
 	case RealPitcher::Masuda:
@@ -1622,6 +1650,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Shooter,       31.0f, 141.4f, BreakGrade::D , Power::C },
 			{ PitchType::Fastball,      10.3f, 142.7f, BreakGrade::C , Power::B },
 		};
+		pitcherRank = 1;
 		return true;
 
 	case RealPitcher::Matsuyama: //松山
@@ -1632,6 +1661,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::Forkball,      40.6f, 141.2f, BreakGrade::B , Power::A },
 			{ PitchType::Cutter,         0.6f, 146.0f, BreakGrade::E , Power::D },
 		};
+		pitcherRank = 1;
 		return true;
 
 	case RealPitcher::Inoue:
@@ -1646,6 +1676,7 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 			{ PitchType::SlowBall,       2.3f,  85.0f, BreakGrade::F , Power::D },
 			{ PitchType::Curveball,      2.0f, 105.5f, BreakGrade::D , Power::D },
 		};
+		pitcherRank = 2;
 		return true;
 
 	default:
@@ -1681,7 +1712,8 @@ const char* Pitcher::GetRealPitcherName(RealPitcher rp)
 	std::vector<RealArsenalEntry> dummyArsenal;//ダミーのアーセナル
 	bool dummyIsRight = true;
 	const char* name = "";
-	if(GetRealPitcherArsenalData(rp, dummyArsenal, dummyIsRight, name))
+	int dummyRank = 0;
+	if(GetRealPitcherArsenalData(rp, dummyArsenal, dummyIsRight, name, dummyRank))
 	{
 		return name;
 	}
@@ -1698,6 +1730,7 @@ void Pitcher::SelectRealPitcher(RealPitcher rp)
 	if(rp == RealPitcher::None)
 	{
 		realPitcherArsenal.clear();
+		realPitcherRank = 0;
 		if (consoleLog)
 		{
 			consoleLog->push_back(u8"[Info] 実在投手プリセットを解除しました\n");
@@ -1708,15 +1741,18 @@ void Pitcher::SelectRealPitcher(RealPitcher rp)
 	std::vector<RealArsenalEntry> arsenal;//ダミーのアーセナル
 	bool isRight = true;
 	const char* name = "";
+	int pitcherRank = 0;
 	//実在投手のアーセナルデータを取得
-	if(!GetRealPitcherArsenalData(rp, arsenal, isRight, name))
+	if(!GetRealPitcherArsenalData(rp, arsenal, isRight, name, pitcherRank))
 	{
 		selectedRealPitcher = RealPitcher::None;
 		realPitcherArsenal.clear();
+		realPitcherRank = 0;
 		return;
 	}
 
 	realPitcherArsenal = arsenal;
+	realPitcherRank = pitcherRank;
 
 	//球種別の実測球速をパラメーターへ反映
 	for(const RealArsenalEntry& entry : realPitcherArsenal)
@@ -1767,7 +1803,7 @@ void Pitcher::ApplyAIBezierTarget()
 			(std::max)(0.02f, aiNearBallMargin * 0.5f),
 			(std::max)(0.04f, aiNearBallMargin));
 
-		const float randomOffset = GenerateRandomFloat(-0.5f, 0.5f);
+		const float randomOffset = GenerateRandomFloat(-0.1f, 0.1f);
 
 		int dir = static_cast<int>(GenerateRandomFloat(0.0f, 7.9999f));
 		switch (dir)

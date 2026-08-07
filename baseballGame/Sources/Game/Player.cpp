@@ -564,16 +564,17 @@ void Player::DrawGUI()
 		//各選手のパワー・ミートを表示・編集する
         if (selectedRealBatter != RealBatter::None)
         {
-			float power = GetSelectedRealBatterPower();
-            if (ImGui::DragFloat(u8"パワー", &power, 0.01f, 0.0f, 1.0f))
+			int power = GetSelectedRealBatterPower();
+            if (ImGui::DragInt(u8"パワー", &power, 1, 0, 99))
             {
                 SetSelectedRealBatterPower(power);
 			}
 
-			float contact = GetSelectedRealBatterContact();
-            if(ImGui::DragFloat(u8"ミート", &contact, 0.01f, 0.0f, 1.0f))
+			int contact = GetSelectedRealBatterContact();
+            if(ImGui::DragInt(u8"ミート", &contact, 1, 0, 99))
             {
                 SetSelectedRealBatterContact(contact);
+                BatSprite::Instance().UpdateCursorSizeByContact(static_cast<int>(contact));
 			}
 		}
     }

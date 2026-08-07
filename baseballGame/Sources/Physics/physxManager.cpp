@@ -863,12 +863,12 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 inline float PowerToExitVelocityScale(float power)
 {
 	// GetSelectedRealBatterPower() の値域
-	constexpr float kPowerMin = 75.0f;
-	constexpr float kPowerMax = 92.0f;
+	constexpr float kPowerMin = 1.0f;
+	constexpr float kPowerMax = 99.0f;
 
 	// パワー最低時・最高時の打球速度倍率（ここを調整してバランスを取る）
-	constexpr float kScaleMin = 1.0f;
-	constexpr float kScaleMax = 1.1f;
+	constexpr float kScaleMin = 0.6f;
+	constexpr float kScaleMax = 1.2f;
 
 	// 範囲外の値が来ても安全なようにクランプ
 	float clampedPower = std::clamp(power, kPowerMin, kPowerMax);

@@ -186,11 +186,11 @@ void BatSprite::UpdateCursorSizeByContact(int contact)
 {
 	if (batCursorSpriteData == nullptr) return;
 
-	//0～99の範囲を0～1にクランプ
-	float t = (std::max)(0, (std::min)(99,contact)) / 99.0f;
+	// contact の値を 0～99の範囲に制限
+	float t = (std::max)(0.0f, (std::min)(99.0f, static_cast<float>(contact))) / 99.0f;
 
 	// クランプされた値を使ってカーソルサイズを更新
-	float scale = minCursorScale * (maxCursorScale - minCursorScale) * t;
+	float scale = minCursorScale + (maxCursorScale - minCursorScale) * t;
 
 	if (batCursorSpriteData)
 	{
