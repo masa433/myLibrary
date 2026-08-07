@@ -115,6 +115,7 @@ void Pitcher::Initialize()
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 	remainingBalls = 10;
 	aiStrikeRate = 0.75f; // AIのストライク率を初期化
+	pitchHistory.clear();// 投球履歴をクリア
 
 	InitializePitchSettings();
 	SelectPitchType();
@@ -450,7 +451,6 @@ void Pitcher::DecreaseRemainingBalls(int amount)
 		remainingBalls = 0;
 	}	
 	hasCountedHit = true; // ヒットがカウントされたことを記録
-	
 }
 
 void Pitcher::ResetPitchFlags()
@@ -1284,18 +1284,18 @@ void Pitcher::SelectPitchTypeByAI()
 	selectedPitchType = ChooseAIPitchType();
 	SelectPitchType();
 
+	const float speedVariance = GetSpeedVarianceKmh(selectedPitchType);
+	ballSpeedKmh += GenerateRandomFloat(-speedVariance, speedVariance);
+	ballSpeedKmh = (std::max)(60.0f, (std::min)(ballSpeedKmh, 180.0f));
+
+	ApplyAIBezierTarget();
+
 	// 配球履歴を更新（直近 kPitchHistorySize 球分だけ保持）
 	pitchHistory.push_back(selectedPitchType);
 	if (static_cast<int>(pitchHistory.size()) > PITCH_HISTORY_SIZE)
 	{
 		pitchHistory.pop_front();
 	}
-
-	const float speedVariance = GetSpeedVarianceKmh(selectedPitchType);
-	ballSpeedKmh += GenerateRandomFloat(-speedVariance, speedVariance);
-	ballSpeedKmh = (std::max)(60.0f, (std::min)(ballSpeedKmh, 180.0f));
-
-	ApplyAIBezierTarget();
 
 	const float side = IsRightPitcher() ? 1.0f : -1.0f;
 
@@ -1315,6 +1315,25 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 	//実在投手プリセットが選択されていたら、実測の投球割合をそのまま反映
 	if (!realPitcherArsenal.empty())
 	{
+		//初球はストレート、無ければナチュラルシュートか真っスラか火の玉ストレート
+		if (pitchHistory.empty())
+		{
+			for (const RealArsenalEntry& entry : realPitcherArsenal)
+			{
+				if (entry.pitchType == PitchType::Fastball)
+				{
+					return PitchType::Fastball;
+				}
+			}
+			for (const RealArsenalEntry& entry : realPitcherArsenal)
+			{
+				if (entry.pitchType == PitchType::NaturalShoot || entry.pitchType == PitchType::BlazingFastball || entry.pitchType == PitchType::CutFastball)
+				{
+					return entry.pitchType;
+				}
+			}
+		}
+
 		float totalRealWeight = 0.0f;
 		for (const RealArsenalEntry& entry : realPitcherArsenal)
 		{
@@ -1790,39 +1809,18 @@ void Pitcher::ApplyAIBezierTarget()
 	float targetX = 0.0f;
 	float targetY = 0.0f;
 
-	//ストライクゾーン内で目標地点を設定
-	if (throwStrike)
+	//初球は必ず真ん中に投げる
+	if (pitchHistory.empty())
 	{
-		targetX = GenerateRandomFloat(-boxSize.x * 0.4f, boxSize.x * 0.4f);
-		targetY = GenerateRandomFloat(-boxSize.y * 0.4f, boxSize.y * 0.4f);
-	}
-	else
-	{
-		// ゾーン外4方向のどれかへ外す
-		const float missAmount = GenerateRandomFloat(
-			(std::max)(0.02f, aiNearBallMargin * 0.5f),
-			(std::max)(0.04f, aiNearBallMargin));
+		//初球は真ん中に投げる
+		targetX = 0.0f;
+		targetY = 0.0f;
 
-		const float randomOffset = GenerateRandomFloat(-0.1f, 0.1f);
-
-		int dir = static_cast<int>(GenerateRandomFloat(0.0f, 7.9999f));
-		switch (dir)
-		{
-			//インハイ、真ん中高め、アウトハイ、真ん中アウトコース、真ん中インコース
-			//インロー、真ん中低め、アウトローで、どの方向に外すかをランダムで決定
-		case 0: targetX = -boxSize.x * 0.5f - missAmount; targetY = boxSize.y * 0.5f + missAmount; break; //インハイ
-		case 1: targetX = boxSize.x * 0.5f + missAmount; targetY = boxSize.y * 0.5f + missAmount; break; //アウトハイ
-		case 2: targetX = -boxSize.x * 0.5f - missAmount; targetY = -boxSize.y * 0.5f - missAmount; break; //インロー
-		case 3: targetX = boxSize.x * 0.5f + missAmount; targetY = -boxSize.y * 0.5f - missAmount; break; //アウトロー
-		case 4: targetX = randomOffset; targetY = boxSize.y * 0.5f + missAmount; break; //真ん中高め
-		case 5: targetX = randomOffset; targetY = -boxSize.y * 0.5f - missAmount; break; //真ん中低め
-		case 6: targetX = boxSize.x * 0.5f + missAmount; targetY = randomOffset; break; //真ん中アウトコース
-		case 7: targetX = -boxSize.x * 0.5f - missAmount; targetY = randomOffset; break; //真ん中インコース
-		}
+		ballSpeedKmh -= 10.0f;
 	}
 
 	//10%の確率で、ど真ん中をターゲットにする(失投)
-	if (GenerateRandomFloat(0.0f, 1.0f) < 0.1f)
+	else if (GenerateRandomFloat(0.0f, 1.0f) < 0.1f)
 	{
 		targetX = 0.0f;
 		targetY = 0.0f;
@@ -1830,6 +1828,40 @@ void Pitcher::ApplyAIBezierTarget()
 		//その際、球速を10キロぐらい落とす
 		ballSpeedKmh -= 10.0f;
 
+	}
+
+	//ストライクゾーン内で目標地点を設定
+	else
+	{
+		if (throwStrike)
+		{
+			targetX = GenerateRandomFloat(-boxSize.x * 0.4f, boxSize.x * 0.4f);
+			targetY = GenerateRandomFloat(-boxSize.y * 0.4f, boxSize.y * 0.4f);
+		}
+		else
+		{
+			// ゾーン外4方向のどれかへ外す
+			const float missAmount = GenerateRandomFloat(
+				(std::max)(0.02f, aiNearBallMargin * 0.5f),
+				(std::max)(0.04f, aiNearBallMargin));
+
+			const float randomOffset = GenerateRandomFloat(-0.1f, 0.1f);
+
+			int dir = static_cast<int>(GenerateRandomFloat(0.0f, 7.9999f));
+			switch (dir)
+			{
+				//インハイ、真ん中高め、アウトハイ、真ん中アウトコース、真ん中インコース
+				//インロー、真ん中低め、アウトローで、どの方向に外すかをランダムで決定
+			case 0: targetX = -boxSize.x * 0.5f - missAmount; targetY = boxSize.y * 0.5f + missAmount; break; //インハイ
+			case 1: targetX = boxSize.x * 0.5f + missAmount; targetY = boxSize.y * 0.5f + missAmount; break; //アウトハイ
+			case 2: targetX = -boxSize.x * 0.5f - missAmount; targetY = -boxSize.y * 0.5f - missAmount; break; //インロー
+			case 3: targetX = boxSize.x * 0.5f + missAmount; targetY = -boxSize.y * 0.5f - missAmount; break; //アウトロー
+			case 4: targetX = randomOffset; targetY = boxSize.y * 0.5f + missAmount; break; //真ん中高め
+			case 5: targetX = randomOffset; targetY = -boxSize.y * 0.5f - missAmount; break; //真ん中低め
+			case 6: targetX = boxSize.x * 0.5f + missAmount; targetY = randomOffset; break; //真ん中アウトコース
+			case 7: targetX = -boxSize.x * 0.5f - missAmount; targetY = randomOffset; break; //真ん中インコース
+			}
+		}
 	}
 
 	// 2D経由で確定させる（3D→2D→3D で座標系を統一）
@@ -1846,6 +1878,7 @@ void Pitcher::ApplyAIBezierTarget()
 	target.x = world.x - boxPosition.x * side;
 	target.y = world.y - boxPosition.y;
 	target.z = 0.0f;
+
 
 	//目標地点をログ表示
 	if (consoleLog)
