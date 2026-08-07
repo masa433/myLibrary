@@ -165,7 +165,7 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 		L".\\resources\\fonts\\GarpSansNormalItalic.otf",
 		100.0f,
 		screenWidth, screenHeight,
-		512, 512,
+		1024, 1024,
 		&trackingDataCodepoints);
 
 	powerFontData.position = { 1300.0f, 400.0f }; // 画面内に配置
@@ -339,7 +339,7 @@ void ScrollView::Render(float alpha)
 					powerRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 白
 					break;
 				case Player::BatterPowerRank::A:
-					powerRankFontData.color = { 1.0f, 0.0f, 1.0f, 1.0f }; // ピンク
+					powerRankFontData.color = { 1.0f, 0.75f, 0.8f, 1.0f }; // 薄ピンク
 					break;
 				case Player::BatterPowerRank::B:
 					powerRankFontData.color = { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
@@ -367,7 +367,7 @@ void ScrollView::Render(float alpha)
 					contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 白
 					break;
 				case Player::BatterContactRank::A:
-					contactRankFontData.color = { 1.0f, 0.0f, 1.0f, 1.0f }; // ピンク
+					contactRankFontData.color = { 1.0f, 0.75f, 0.8f, 1.0f }; // 薄ピンク
 					break;
 				case Player::BatterContactRank::B:
 					contactRankFontData.color = { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
