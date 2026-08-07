@@ -62,7 +62,7 @@ private:
 	bool cursorClipped = false;
 
 	DirectX::XMFLOAT2 originalCursorSize = { 30.0f,30.0f };
-	float minCursorScale = 0.6f;
+	float minCursorScale = 0.3f;
 	float maxCursorScale = 1.3f;
 
 	bool isMeetAssistEnabled = false; //補助線表示条件を満たしているか
