@@ -230,6 +230,7 @@
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="Sources\Game\ballDistance.cpp" />
+    <ClCompile Include="Sources\Game\BallNet.cpp" />
     <ClCompile Include="Sources\Game\ballSprite.cpp" />
     <ClCompile Include="Sources\Game\batSprite.cpp" />
     <ClCompile Include="Sources\Game\catcher.cpp" />
@@ -378,6 +379,7 @@
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Sources\Game\ballDistance.h" />
+    <ClInclude Include="Sources\Game\BallNet.h" />
     <ClInclude Include="Sources\Game\ballSprite.h" />
     <ClInclude Include="Sources\Game\batSprite.h" />
     <ClInclude Include="Sources\Game\catcher.h" />

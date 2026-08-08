@@ -167,6 +167,10 @@ public:
 	bool GetIsFoulConfirmed() const { return isFoulConfirmed; }
 	void SetIsFoulConfirmed(bool value) { isFoulConfirmed = value; }
 
+	bool hasCollidedWithNet = false;
+	bool GetHasCollidedWithNet() const { return hasCollidedWithNet; }
+	void SetHasCollidedWithNet(bool value) { hasCollidedWithNet = value; }
+
 	void SetModelRotationSpeed(const DirectX::XMFLOAT3& speed) { modelRotationSpeed = speed; }
 	const DirectX::XMFLOAT3& GetModelAngle() const { return modelAngle; }
 

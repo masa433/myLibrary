@@ -108,6 +108,8 @@ private:
 	float ballDebugRadius = 0.15f; // デフォルトのスケール倍率
 	float reducedRadius = 0.0f;
 
+	float FairFaulJudgeDelayTime = 0.0f; // ファウル判定の遅延時間（秒）
+
 public:
 
 

@@ -358,7 +358,7 @@ void Pitcher::Update(float elapsedTime)
 	{
 		isBallThrown = false;
 		ResetPitchFlags(); // pitchFlagsをリセット
-	
+		FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
 	}
 
 	Wind::Instance().Update(elapsedTime);
@@ -372,16 +372,22 @@ void Pitcher::Update(float elapsedTime)
 		foulSpriteTriggered = true;
 	}
 	//ボールが後ろに飛んで行ったらファウル判定
-	else if (Ball::Instance().GetHasCollidedWithBat() && Ball::Instance().GetIsFoulConfirmed() && !TrackingData::Instance().IsTrackingDataVisible() && !foulSpriteTriggered)
+	else if (Ball::Instance().GetHasCollidedWithBat() && Ball::Instance().GetIsFoulConfirmed() && !TrackingData::Instance().IsTrackingDataVisible() && !foulSpriteTriggered && FairFaulJudgeDelayTime >= 1.0f)
 	{
 		FoulSprite::Instance().SetShowFoulSprite(true);
 		foulSpriteTriggered = true;
 	}
 
+	if (Ball::Instance().GetHasCollidedWithBat())
+	{
+		FairFaulJudgeDelayTime += elapsedTime;
+	}
+
 	// ボールが転がり中（グラウンド着地済み・まだ判定前）のみ監視
 	if (Ball::Instance().GetHasCollidedWithGround() &&
-		!Ball::Instance().GetHasCollidedWithFence() && !Ball::Instance().GetHasBeenJudged() && !Ball::Instance().GetFoulLogged() && Ball::Instance().GetHasCollidedWithBat())
+		!Ball::Instance().GetHasCollidedWithFence() && Ball::Instance().GetHasCollidedWithBat())
 	{
+
 		physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 		if (ballCollider)
 		{
@@ -390,44 +396,43 @@ void Pitcher::Update(float elapsedTime)
 			// z=19.5未満の間だけ監視（超えたらもうフェア確定ゾーン）
 			if (ballPos.z < 19.5f)
 			{
+				constexpr float kFoulLineTolerance = 0.05f; // 5cm程度の許容誤差
 				bool isFair = (ballPos.z >= 0.0f) &&
-					(std::fabs(ballPos.x) <= ballPos.z);
+					(std::fabs(ballPos.x) <= ballPos.z + kFoulLineTolerance);
 
 				if (!isFair)
 				{
-					// フェア範囲外に出た → ファウル確定
-					// 二重判定防止のため地面衝突フラグで流用
-					Ball::Instance().SetHasBeenJudged(true);
-
-					Ball::Instance().SetFoulLogged(true); // ファウルログフラグを設定
-					Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
-					
-					char debugMessage[256];
-					snprintf(debugMessage, sizeof(debugMessage),
-						u8"ファウル：転がってファウルラインを越えた x=%.2f z=%.2f\n",
-						ballPos.x, ballPos.z);
-					OutputDebugStringA(debugMessage);
-					if (consoleLog)
+					// まだファウルとして記録していない場合のみログを出す
+					if (!Ball::Instance().GetFoulLogged())
 					{
-						consoleLog->push_back(debugMessage);
+						Ball::Instance().SetFoulLogged(true);
+						Ball::Instance().SetIsFoulConfirmed(true);
+
+						char debugMessage[256];
+						snprintf(debugMessage, sizeof(debugMessage),
+							u8"ファウル：転がってファウルラインを越えた x=%.2f z=%.2f\n",
+							ballPos.x, ballPos.z);
+						OutputDebugStringA(debugMessage);
+						if (consoleLog) consoleLog->push_back(debugMessage);
 					}
 				}
 
 				//ファウルからフェアに戻った場合の処理
-				if (isFair && Ball::Instance().GetFoulLogged())
+				else
 				{
-					// ファウルログがある状態でフェアに戻った場合、ファウルログをリセット
-					Ball::Instance().SetFoulLogged(false);
-					Ball::Instance().SetIsFoulConfirmed(false); // ファウル確定フラグもリセット
-					
-					char debugMessage[256];
-					snprintf(debugMessage, sizeof(debugMessage),
-						u8"フェア：転がってファウルラインを越えた後、フェアに戻った x=%.2f z=%.2f\n",
-						ballPos.x, ballPos.z);
-					OutputDebugStringA(debugMessage);
-					if (consoleLog)
+					// フェアに戻った場合は、初回バウンドの暫定判定も含めて必ずリセットする
+					if (Ball::Instance().GetFoulLogged() || Ball::Instance().GetIsFoulConfirmed())
 					{
-						consoleLog->push_back(debugMessage);
+						Ball::Instance().SetFoulLogged(false);
+						Ball::Instance().SetIsFoulConfirmed(false);
+						FoulSprite::Instance().SetShowFoulSprite(false);
+
+						char debugMessage[256];
+						snprintf(debugMessage, sizeof(debugMessage),
+							u8"フェア：転がってファウルラインを越えた後、フェアに戻った x=%.2f z=%.2f\n",
+							ballPos.x, ballPos.z);
+						OutputDebugStringA(debugMessage);
+						if (consoleLog) consoleLog->push_back(debugMessage);
 					}
 				}
 			}
@@ -464,12 +469,14 @@ void Pitcher::ResetPitchFlags()
 	Ball::Instance().SetFoulLogged(false);
 	Ball::Instance().SetIsFoulConfirmed(false); // ファウル確定フラグをリセット
 	Ball::Instance().SetHasCollidedWithPole(false);
+	Ball::Instance().SetHasCollidedWithNet(false);
 	Player::Instance().ResetSwingCount();
 	ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
 	ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
 
 	TrackingData::Instance().Reset(); // トラッキングデータをリセット
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
+	FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
 	ResetHitFlag(); // ヒットフラグをリセット
 }
 
@@ -563,6 +570,7 @@ void Pitcher::DrawGUI()
 {
 #ifdef USE_IMGUI
 	
+	ImGui::DragFloat("Fair/Foul Judge Delay Time", &FairFaulJudgeDelayTime, 0.01f, 0.0f, 5.0f);
 		ImGui::Text("Current State: %s",
 			currentState == State::SelectingPitch ? "Selecting Pitch" :
 			currentState == State::Throwing ? "Throwing" : "Idle");

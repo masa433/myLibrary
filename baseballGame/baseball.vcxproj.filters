@@ -202,6 +202,9 @@
     <ClCompile Include="Sources\Game\Result.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\BallNet.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -428,6 +431,9 @@
     </ClInclude>
     <ClInclude Include="Sources\Scene\sceneTransition.h">
       <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\BallNet.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

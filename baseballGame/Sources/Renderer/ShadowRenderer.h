@@ -7,6 +7,7 @@
 #include "Pitcher.h"
 #include "stage.h"
 #include "catcher.h"
+#include "BallNet.h"
 #include "RenderContext.h"
 #include "ModelRenderer.h"
 
@@ -115,7 +116,6 @@ public:
 	bool shadow_enabled_this_frame = true; 
 	float shadow_day_factor = 1.0f; // 日中の影の強さを調整するための係数
     cascade_shadowmap_constants cascade_shadow_constant;
-
 private:
         //GPU リソース
         Microsoft::WRL::ComPtr<ID3D11VertexShader>        shadowmap_caster_vertex_shader;

@@ -15,6 +15,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\FreeCameraControl
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Collision\collision.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\collision.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Ball.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Ball.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballDistance.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ballDistance.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\BallNet.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\BallNet.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballSprite.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ballSprite.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\batSprite.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\batSprite.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\catcher.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\catcher.obj

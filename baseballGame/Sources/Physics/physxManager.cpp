@@ -13,6 +13,8 @@
 #include "Ball.h"
 #include "ballSprite.h"
 #include "HomeRunCount.h"
+#include "BallNet.h"
+#define NET_COUNT 4
 
 // グローバルまたはクラス内にキューを用意
 std::queue<std::function<void()>> velocityUpdateQueue;
@@ -709,7 +711,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 							// フェンス衝突なし: 通常の摩擦ベース減衰
 							physx::PxMaterial* stageMaterial = Physics::Instance().GetMaterial();
 							float friction = stageMaterial->getDynamicFriction();
-							dampingFactor = 1.0f - (friction * 0.001f);
+							dampingFactor = 1.0f - (friction * 0.005f);
 						}
 
 						velocity *= dampingFactor;
@@ -742,11 +744,11 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					float distanceX = ballPosition.x - ballHitPos.x;
 					float distanceZ = ballPosition.z - ballHitPos.z;
 					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
-
 					// フェア/ファウル判定
-						// ホームベース(z=0)からポール位置(±67, z=67)を結ぶ直線の傾き = 67/67 = 1.0
-						// |x| <= z なら2本の直線の間（フェアゾーン）
-					bool isFair = (ballPosition.z >= 0.0f) && (std::fabs(ballPosition.x) <= ballPosition.z);
+					constexpr float kFoulLineTolerance = 0.05f; // 5cm程度の許容誤差
+					float ballRadius = Ball::Instance().GetDebugRadius();
+					bool isFair = (ballPosition.z >= 0.0f) &&
+						(std::fabs(ballPosition.x) <= ballPosition.z + kFoulLineTolerance + ballRadius);
 					if (!isFair)
 					{
 						Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
@@ -855,9 +857,47 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			}
 		}
 
+		//ボールとネットの衝突を検知
+		for (int i = 0; i < NET_COUNT; i++)
+		{
+
+			//ネットに当たったら速度を落とす
+			if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "NetCollider" + std::to_string(i)) ||
+				(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "NetCollider" + std::to_string(i)))
+			{
+				// キューに速度変更リクエストを追加
+				{
+					std::lock_guard<std::mutex> lock(queueMutex);
+					velocityUpdateQueue.push([]() {
+						physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+						if (ballCollider)
+						{
+							physx::PxVec3 velocity = ballCollider->getLinearVelocity();
+							velocity *= 0.5f; // 速度を半分にする
+							ballCollider->setLinearVelocity(velocity);
+						}
+						});
+				}
+			}
+
+			if(Ball::Instance().GetHasCollidedWithNet())
+				continue;//ネットに衝突済みなら以降の判定は不要
+
+			if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "NetCollider" + std::to_string(i)) ||
+				(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "NetCollider" + std::to_string(i)))
+			{
+				Ball::Instance().SetHasCollidedWithNet(true);
+				OutputDebugStringA("ネットに衝突！\n");
+				if (consoleLog)
+					consoleLog->push_back(u8"[Hit] ネットに衝突！");
+			}
+		}
+
 	}
 
-		
+	
+
+	
 }
 
 inline float PowerToExitVelocityScale(float power)

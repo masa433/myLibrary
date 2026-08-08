@@ -203,6 +203,7 @@ void ShadowRenderer::Initialize()
 
         create_vs_from_cso(device, ".\\resources\\shader\\shadowmap_caster_vs.cso", shadowmap_caster_vertex_shader.ReleaseAndGetAddressOf(), shadowmap_caster_input_layout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
     }
+
 }
 
 void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
@@ -268,6 +269,7 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
         Pitcher::Instance().Render(rc, modelRenderer);
         Player::Instance().Render(rc, modelRenderer);
 		Catcher::Instance().Render(rc, modelRenderer, nullptr);
+		BallNet::Instance().Render(rc, modelRenderer);
     }
 }
 
@@ -376,6 +378,7 @@ void ShadowRenderer::RenderShadowMap(float elapsedTime)
         Player::Instance().Render(rc, modelRenderer);
 
         Catcher::Instance().Render(rc, modelRenderer, nullptr);
+		BallNet::Instance().Render(rc, modelRenderer);
 
         // プレイヤー描画後、元のカリング状態に戻しておく
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
@@ -623,6 +626,8 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
         Player::Instance().Render(rc, modelRenderer);
 
 		Catcher::Instance().Render(rc, modelRenderer, nullptr);
+
+		BallNet::Instance().Render(rc, modelRenderer);
     }
 }
 

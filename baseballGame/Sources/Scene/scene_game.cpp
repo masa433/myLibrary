@@ -145,6 +145,8 @@ void scene_game::initialize()
 
 	Result::Instance().Initialize(device);
 
+    BallNet::Instance().Initialize();
+
     shadowRenderer.Initialize();
 
     shadowRenderer.GetPointLights().resize(36);
@@ -418,6 +420,8 @@ void scene_game::update(float elapsed_time)
 
 	Result::Instance().Update(elapsed_time);
 
+	BallNet::Instance().Update(elapsed_time);
+
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
 
@@ -658,6 +662,7 @@ void scene_game::render(float elapsedTime)
     // 通常の ambient / 半球ライト（lightConstants・hemisphereLightConstants、
     // どちらもこの時点でスロット3・4にバインド済み）の影響を受けたまま描画する。
     // バットだけは別途この下のブロックで専用のライティングに切り替える。
+	BallNet::Instance().Render(rc, modelRenderer);
     Pitcher::Instance().Render(rc, modelRenderer);
     Player::Instance().RenderPlayer(rc, modelRenderer);
 
@@ -783,6 +788,7 @@ void scene_game::uninitialize()
     Pitcher::Instance().Uninitialize();
     BallDistance::Instance().Uninitialize();
     Result::Instance().Uninitialize();
+	BallNet::Instance().Uninitialize();
 
     skyRenderer.Uninitialize();
 	shadowRenderer.Uninitialize();
@@ -868,6 +874,8 @@ void scene_game::DrawGUI()
         if (ImGui::CollapsingHeader("Ball Distance")) { BallDistance::Instance().DrawGUI(); }
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Result")) { Result::Instance().DrawGUI(); }
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Ball Net")) { BallNet::Instance().DrawGUI(); }
 
         ImGui::End();
 
@@ -1336,6 +1344,7 @@ void scene_game::SaveSetting()
     Catcher::Instance().SaveToJson(j["catcher"]);
 	BallDistance::Instance().SaveToJson(j["ballDistance"]);
 	Result::Instance().SaveToJson(j["result"]);
+	BallNet::Instance().SaveToJson(j["ballNet"]);
 
     // ファイルに保存
     std::ofstream file("resources\\setting\\settings.json");
@@ -1505,5 +1514,6 @@ void scene_game::LoadSetting()
     if (j.contains("catcher")) Catcher::Instance().LoadFromJson(j["catcher"]);
 	if (j.contains("ballDistance")) BallDistance::Instance().LoadFromJson(j["ballDistance"]);
 	if (j.contains("result")) Result::Instance().LoadFromJson(j["result"]);
+	if (j.contains("ballNet")) BallNet::Instance().LoadFromJson(j["ballNet"]);
     consoleLog.push_back("[Info] Settings loaded.");
 }

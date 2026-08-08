@@ -977,7 +977,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		outIsRight = true;
         outArsenal =
         {
-            { 49 , 44 } // power（威力）, contact（ミート）
+            { 52 , 44 } // power（威力）, contact（ミート）
 
         };
         return true;
@@ -987,7 +987,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
         outIsRight = false;
         outArsenal =
         {
-            { 58 , 52 } // power（威力）, contact（ミート）
+            { 57 , 52 } // power（威力）, contact（ミート）
 		};
 		return true;
 
@@ -996,7 +996,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		outIsRight = true;
         outArsenal =
         {
-            { 59 , 51 } // power（威力）, contact（ミート）
+            { 57 , 51 } // power（威力）, contact（ミート）
 		};
         return true;
 
@@ -1005,7 +1005,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 		outIsRight = true;
         outArsenal =
         {
-            { 46 , 48 } // power（威力）, contact（ミート）
+            { 49 , 48 } // power（威力）, contact（ミート）
         };
 		return true;
 
@@ -1050,7 +1050,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
         outIsRight = true;
         outArsenal =
         {
-			{ 60 , 55 } // power（威力）, contact（ミート）
+			{ 58 , 55 } // power（威力）, contact（ミート）
         };
 		return true;
 

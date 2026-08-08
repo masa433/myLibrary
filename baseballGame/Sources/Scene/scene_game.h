@@ -16,6 +16,7 @@
 #include "FrustumCulling.h"
 #include "BroadcastCamera.h"
 #include "BloomRenderer.h"
+#include "BallNet.h"
 #include "json.hpp"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
