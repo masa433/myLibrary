@@ -3,6 +3,7 @@
 #include "shader.h"
 #include <imgui.h>
 #include "ballDistance.h"
+#include "Ball.h"
 
 void Money::Initialize(ID3D11Device* device)
 {
@@ -48,6 +49,9 @@ void Money::Uninitialize()
 void Money::Update(float elapsedTime)
 {
 	bool isLocked = BallDistance::Instance().GetDistanceLock();
+
+	//ファールの時は、お金が増えないようにする
+	if (Ball::Instance().GetIsFoulConfirmed()) return;
 
 	if (currentMoney < targetMoney)
 	{
