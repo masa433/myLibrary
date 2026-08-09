@@ -12,6 +12,7 @@
 #include "batSprite.h"
 #include "ballSprite.h"
 #include <GameTimer.h>
+#include <ballCount.h>
 
 
 // 初期化
@@ -366,7 +367,7 @@ void Player::Update(float elapsedTime)
 void Player::HandleInput(float elapsedTime)
 {
     //if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)) return;
-	if (Pitcher::Instance().GetRemainingBalls() <= 0) return;
+	if (ballCount::Instance().GetRemainingBalls() <= 0) return;
 
     
 
@@ -381,7 +382,7 @@ void Player::HandleInput(float elapsedTime)
         if (current_state != State::Swinging && swingCount <= 1)
         {               
              ChangeState(State::Swinging); 
-             if(Pitcher::Instance().GetIsBallThrown()) Pitcher::Instance().DecreaseRemainingBalls(1);
+             if(Pitcher::Instance().GetIsBallThrown()) ballCount::Instance().DecreaseRemainingBalls(1);
         }
     }
 

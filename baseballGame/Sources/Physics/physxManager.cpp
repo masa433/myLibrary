@@ -14,6 +14,7 @@
 #include "ballSprite.h"
 #include "HomeRunCount.h"
 #include "BallNet.h"
+#include <ballCount.h>
 #define NET_COUNT 4
 
 // グローバルまたはクラス内にキューを用意
@@ -1010,7 +1011,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			Ball::Instance().CancelBezier();
 			ballSprite::Instance().SetShowBallBoard(true);
 			ballSprite::Instance().SetStopBallOnHit(true);
-			Pitcher::Instance().DecreaseRemainingBalls(1);
+			ballCount::Instance().DecreaseRemainingBalls(1);
 
 			physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
 			physx::PxRigidDynamic* batCollider = Player::Instance().GetBatCollider();

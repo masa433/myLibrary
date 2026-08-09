@@ -1,2 +1,4 @@
-﻿  physxManager.cpp
+﻿  ballCount.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballCount.cpp(42,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballCount.cpp(41,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

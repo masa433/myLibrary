@@ -5,6 +5,7 @@
 #include "Pitcher.h"
 #include "Ball.h"
 #include "TrackingData.h"
+#include "ballCount.h"
 #include <algorithm>
 #include <cmath>
 
@@ -589,7 +590,7 @@ void ballSprite::Update(float elapsedTime)
 		isStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
 			ballCenter.y >= szTopLeft.y && ballCenter.y <= szBottomRight.y);
 
-		if (isStrike) pitcher.DecreaseRemainingBalls(1);
+		if (isStrike) ballCount::Instance().DecreaseRemainingBalls(1);
 
 		if (consoleLog)
 		{

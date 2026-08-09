@@ -26,6 +26,7 @@
 #include <fstream>
 #include <string>
 #include <random>
+#include <ballCount.h>
 
 
 using json = nlohmann::json;
@@ -770,7 +771,7 @@ void scene_game::render(float elapsedTime)
         dstRes->Release();
     }
 
-    if (Pitcher::Instance().GetRemainingBalls() <= 0 && Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
+    if (ballCount::Instance().GetRemainingBalls() <= 0 && Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
     {
         //リザルトを表示する
         Result::Instance().Render();

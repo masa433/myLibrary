@@ -14,6 +14,7 @@
 #include "FoulSprite.h"
 #include "GameTimer.h"
 #include "shader.h"	
+#include "ballCount.h"
 
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
@@ -47,6 +48,8 @@ void Pitcher::Initialize()
 	Wind::Instance().Initialize();
 
 	FoulSprite::Instance().Initialize(device);
+
+	ballCount::Instance().Initialize(device);
 
 	boxPosition = { 0.0f, 0.8f, 0.0f }; // ストライクゾーンの位置を設定
 	boxSize = { 0.43f, 0.6f, 0.2f }; // ストライクゾーンのサイズを設定
@@ -113,7 +116,6 @@ void Pitcher::Initialize()
 
 
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
-	remainingBalls = 10;
 	aiStrikeRate = 0.75f; // AIのストライク率を初期化
 	pitchHistory.clear();// 投球履歴をクリア
 
@@ -155,6 +157,7 @@ void Pitcher::Uninitialize()
 	Ball::Instance().Uninitialize();
 	Wind::Instance().Uninitialize();
 	FoulSprite::Instance().Uninitialize();
+	ballCount::Instance().Uninitialize();
 	if (strikeZoneTrigger)
 	{
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
@@ -181,7 +184,7 @@ void Pitcher::Update(float elapsedTime)
 {
 
 	//if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(currentState == State::Throwing))
-	if(GetRemainingBalls() <=0 && !Ball::Instance().GetHasCollidedWithBat() && (currentState == State::SelectingPitch))
+	if(ballCount::Instance().GetRemainingBalls() <=0 && !Ball::Instance().GetHasCollidedWithBat() && (currentState == State::SelectingPitch))
 	{
 		return; // タイマーが0以下の場合、更新をスキップ
 	}
@@ -445,18 +448,7 @@ void Pitcher::UpdateBallCollider()
 	Ball::Instance().UpdateCollider();
 }
 
-void Pitcher::DecreaseRemainingBalls(int amount)
-{
-	if (hasCountedHit) return;
 
-	
-	remainingBalls -= amount;
-	if (remainingBalls < 0)
-	{
-		remainingBalls = 0;
-	}	
-	hasCountedHit = true; // ヒットがカウントされたことを記録
-}
 
 void Pitcher::ResetPitchFlags()
 {
@@ -473,11 +465,10 @@ void Pitcher::ResetPitchFlags()
 	Player::Instance().ResetSwingCount();
 	ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
 	ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
-
+	ballCount::Instance().ResetHitFlag(); // ボールカウントをリセット
 	TrackingData::Instance().Reset(); // トラッキングデータをリセット
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 	FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
-	ResetHitFlag(); // ヒットフラグをリセット
 }
 
 // 描画
@@ -491,6 +482,8 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 	Ball::Instance().Render(rc, renderer, isBallThrown);
 
 	Wind::Instance().Render(rc);
+
+	ballCount::Instance().Render();
 	
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -1080,8 +1073,7 @@ void Pitcher::DrawGUI()
 		ImGui::DragFloat2("backPosition", &infoBackPosition.x, 0.1f, 0.0f, 1080.0f);
 		ImGui::DragFloat2("backSize", &infoBackSize.x, 0.1f, 0.1f, 1000.0f);
 	}
-
-	ImGui::DragInt("remainingBalls", &remainingBalls, 1, 0, 100);
+	ballCount::Instance().DrawGUI();
 
 #endif
 }
@@ -2062,6 +2054,8 @@ void Pitcher::SaveToJson(json& j)
 	spriteData["infoBackPosition"] = { infoBackPosition.x, infoBackPosition.y };
 	spriteData["infoBackSize"] = { infoBackSize.x, infoBackSize.y };
 	j["sprite_data"] = spriteData;
+
+	ballCount::Instance().SaveToJson(j);
 }
 
 void Pitcher::LoadFromJson(const json& j)
@@ -2146,6 +2140,8 @@ void Pitcher::LoadFromJson(const json& j)
 		if (spriteData.contains("infoBackSize"))
 			infoBackSize = { spriteData["infoBackSize"][0], spriteData["infoBackSize"][1] };
 	}
+
+	ballCount::Instance().LoadFromJson(j);
 
 	/*if (j.contains("selected_real_pitcher"))
 	{
