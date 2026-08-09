@@ -241,6 +241,7 @@
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="Sources\Game\HomeRunCount.cpp" />
+    <ClCompile Include="Sources\Game\Money.cpp" />
     <ClCompile Include="Sources\Game\Pitcher.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -392,6 +393,7 @@
     </ClInclude>
     <ClInclude Include="Sources\Game\HitJudge2D.h" />
     <ClInclude Include="Sources\Game\HomeRunCount.h" />
+    <ClInclude Include="Sources\Game\Money.h" />
     <ClInclude Include="Sources\Game\Pitcher.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

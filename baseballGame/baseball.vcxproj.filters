@@ -208,6 +208,9 @@
     <ClCompile Include="Sources\Game\ballCount.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\Money.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -439,6 +442,9 @@
       <Filter>Sources\Game</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Game\ballCount.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\Money.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>

@@ -32,10 +32,13 @@ public:
 	void LoadFromJson(const nlohmann::json& j);
 
 	//Å‚”ò‹——£‚ğæ“¾‚·‚éŠÖ”
-	float GetMaxDistance() const { return static_cast<int>(maxDistance); }
+	float GetMaxDistance() const { return std::round(maxDistance); }
+	float GetCurrentDistance() const { return std::round(currentDistance); }
 
 	//Å‚”ò‹——£‚ğƒŠƒZƒbƒg‚·‚éŠÖ”
 	void ResetMaxDistance() { maxDistance = 0.0f; }
+
+	bool GetDistanceLock() const { return isDistanceLocked; }
 
 private:
 

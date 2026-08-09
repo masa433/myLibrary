@@ -172,7 +172,7 @@ void Wind::Render(const RenderContext& rc)
 	//}
 
 	// トラッキングデータが表示されている場合は、風のスプライトやテキストを描画しない
-	if (TrackingData::Instance().IsTrackingDataVisible()) return;
+	//if (TrackingData::Instance().IsTrackingDataVisible()) return;
 
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
@@ -181,6 +181,15 @@ void Wind::Render(const RenderContext& rc)
 
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0); // 書き込みなし
+
+	// 風の強さを示すボードスプライトの描画
+	if (windBoardSprite && windBoardSpriteRenderer)
+	{
+		windBoardSpriteRenderer->render(rc.deviceContext, windBoardSprite->position.x, windBoardSprite->position.y,
+			windBoardSprite->size.x, windBoardSprite->size.y,
+			windBoardSprite->color.x, windBoardSprite->color.y, windBoardSprite->color.z, windBoardSprite->color.w,
+			0.0f);
+	}
 
 	
 	if (windGroundSprite && windGroundSpriteRenderer)
@@ -203,15 +212,6 @@ void Wind::Render(const RenderContext& rc)
 
 	}
 
-	// 風の強さを示すボードスプライトの描画
-	if (windBoardSprite && windBoardSpriteRenderer)
-	{
-		windBoardSpriteRenderer->render(rc.deviceContext, windBoardSprite->position.x, windBoardSprite->position.y,
-			windBoardSprite->size.x, windBoardSprite->size.y,
-			windBoardSprite->color.x, windBoardSprite->color.y, windBoardSprite->color.z, windBoardSprite->color.w,
-			0.0f);
-	}
-
 	// 風の強さテキストをFontRenderer(TTF直読み)で描画
 	if (windStrengthFont.IsValid())
 	{
@@ -221,15 +221,12 @@ void Wind::Render(const RenderContext& rc)
 		char speedText[64];
 		snprintf(speedText, sizeof(speedText), "%.f m", currentWindSpeed);
 
-		// アイコンの座標に基づいてテキスト位置を決定
-		float textX = windDirectionSprite->position.x + 80.0f;
-		float textY = windDirectionSprite->position.y + 100.0f;
-
+		
 		// scale=1.0でInitialize時のpixelHeight(32px)相当の大きさになる。
 		// 大きさを変えたい場合はscaleを調整する(例: 1.5fで1.5倍)。
 		windStrengthFont.DrawTextW(dc, speedText,
-			textX, textY,
-			1.0f,
+			fontPosition.x, fontPosition.y,
+			fontScale,
 			1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
@@ -302,6 +299,9 @@ void Wind::DrawGUI()
 			ImGui::DragFloat2("Wind Board Sprite Size", &windBoardSprite->size.x, 1.0f, 1.0f, 500.0f);
 			ImGui::ColorEdit4("Wind Board Sprite Color", &windBoardSprite->color.x);
 		}
+		ImGui::Separator();
+		ImGui::DragFloat2("Wind Strength Font Position", &fontPosition.x, 1.0f, 0.0f, 1280.0f);
+		ImGui::DragFloat("Wind Strength Font Scale", &fontScale, 0.01f, 0.1f, 5.0f);
 	}
 #endif
 }
@@ -342,6 +342,8 @@ void Wind::SaveToJson(json& j)
 		j["board_sprite"]["size"] = { windBoardSprite->size.x, windBoardSprite->size.y };
 		j["board_sprite"]["color"] = { windBoardSprite->color.x, windBoardSprite->color.y, windBoardSprite->color.z, windBoardSprite->color.w };
 	}
+	j["font_position"] = { fontPosition.x, fontPosition.y };
+	j["font_scale"] = fontScale;
 }
 
 void Wind::LoadFromJson(const json& j)
@@ -370,4 +372,6 @@ void Wind::LoadFromJson(const json& j)
 		windBoardSprite->size = { j["board_sprite"]["size"][0], j["board_sprite"]["size"][1] };
 		windBoardSprite->color = { j["board_sprite"]["color"][0], j["board_sprite"]["color"][1], j["board_sprite"]["color"][2], j["board_sprite"]["color"][3] };
 	}
+	if (j.contains("font_position")) fontPosition = { j["font_position"][0], j["font_position"][1] };
+	if (j.contains("font_scale")) fontScale = j["font_scale"];
 }

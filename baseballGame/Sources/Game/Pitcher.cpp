@@ -286,12 +286,23 @@ void Pitcher::Update(float elapsedTime)
 
 			break;
 		}
-		if (ballsettled)
+		// ボールの完全停止チェック
+		bool isBallStopped = false;
+		physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+		if (ballCollider)
+		{
+			float speed = ballCollider->getLinearVelocity().magnitude();
+			// 速度がほぼ 0（完全停止）しているか判定
+			isBallStopped = (speed < 0.5f);
+		}
+
+		// 「地面/フェンスに当たった」かつ「ボールが完全に止まった」状態からタイマーを開始
+		if (ballsettled && isBallStopped)
 		{
 			resultWaitTimer += elapsedTime;
 
-			// トラッキングデータの表示猶予（例：表示開始から3秒見せる）
-			constexpr float RESULT_DISPLAY_DURATION = 1.5f;
+			// 停止後、結果表示の猶予時間（1.0秒）を経てから遷移
+			constexpr float RESULT_DISPLAY_DURATION = 1.0f;
 			if (resultWaitTimer >= RESULT_DISPLAY_DURATION)
 			{
 				TrackingData::Instance().Reset();
@@ -491,7 +502,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
-	if (!Ball::Instance().GetHasCollidedWithBat())
+	/*if (!Ball::Instance().GetHasCollidedWithBat())
 	{
 
 		if (infoBackData && infoBackSprite)
@@ -522,7 +533,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 		}
 
 		
-	}
+	}*/
 
 	// 描画後の状態をリセット
 	dc->VSSetShader(nullptr, nullptr, 0);

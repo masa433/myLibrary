@@ -98,6 +98,7 @@ void BallDistance::Update(float elapsedTime)
 		{
 			maxDistance = currentDistance;
 		}
+
 	}
 }
 

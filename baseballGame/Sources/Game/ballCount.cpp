@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include "shader.h"
 #include "imgui.h"
+#include "Pitcher.h"
 
 void ballCount::Initialize(ID3D11Device* device)
 {
@@ -64,6 +65,13 @@ void ballCount::Render()
 
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
+	
+	const auto pitcherState = Pitcher::Instance().GetCurrentState();
+
+	
+	//select以外の時は描画しない
+	if (pitcherState != Pitcher::State::SelectingPitch) return;
+
 	// Wind と同じようにシェーダーをセット
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -72,6 +80,7 @@ void ballCount::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
+	
 	// ボールカウントの背景を描画
 	if (ballCountSprite)
 	{
@@ -97,6 +106,7 @@ void ballCount::Render()
 	pitchInfoFont.DrawTextW(dc, remainingBallsText.c_str(),
 		fontPos.x, fontPos.y, pitchInfoScale,
 		pitchInfoColor.x, pitchInfoColor.y, pitchInfoColor.z, pitchInfoColor.w);
+	
 
 	// 後始末（Wind と同じ）
 	dc->VSSetShader(nullptr, nullptr, 0);

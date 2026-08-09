@@ -23,6 +23,7 @@
 #include "catcher.h"
 #include "ballDistance.h"
 #include "Result.h"
+#include "Money.h"
 #include <fstream>
 #include <string>
 #include <random>
@@ -147,6 +148,8 @@ void scene_game::initialize()
 	Result::Instance().Initialize(device);
 
     BallNet::Instance().Initialize();
+
+	Money::Instance().Initialize(device);
 
     shadowRenderer.Initialize();
 
@@ -375,9 +378,9 @@ void scene_game::update(float elapsed_time)
     if (broadcastCamera.IsTrackingBall())
     {
         enableShadows = false;
-        const auto& vel = Ball::Instance().GetVelocity();
+        /*const auto& vel = Ball::Instance().GetVelocity();
         float speed = sqrtf(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
-        if (speed < 1.0f)
+        if (speed < 0.1f)
         {
             trackingTime += elapsed_time;
             if (trackingTime > 1.0f)
@@ -386,7 +389,7 @@ void scene_game::update(float elapsed_time)
                 trackingTime = 0.0f;
                 enableShadows = true;
             }
-        }
+        }*/
         if (ImGui::IsKeyPressed(ImGuiKey_LeftShift))
         {
             broadcastCamera.StopAllTracking();
@@ -422,6 +425,8 @@ void scene_game::update(float elapsed_time)
 	Result::Instance().Update(elapsed_time);
 
 	BallNet::Instance().Update(elapsed_time);
+
+	Money::Instance().Update(elapsed_time);
 
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
@@ -720,7 +725,7 @@ void scene_game::render(float elapsedTime)
 
 	BallDistance::Instance().Render();
 
-   
+	Money::Instance().Render();
 
     // ShapeRenderer の描画実行
 
@@ -790,6 +795,7 @@ void scene_game::uninitialize()
     BallDistance::Instance().Uninitialize();
     Result::Instance().Uninitialize();
 	BallNet::Instance().Uninitialize();
+	Money::Instance().Uninitialize();
 
     skyRenderer.Uninitialize();
 	shadowRenderer.Uninitialize();
@@ -877,6 +883,8 @@ void scene_game::DrawGUI()
 		if (ImGui::CollapsingHeader("Result")) { Result::Instance().DrawGUI(); }
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Ball Net")) { BallNet::Instance().DrawGUI(); }
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Money")) { Money::Instance().DrawGUI(); }
 
         ImGui::End();
 
@@ -1346,6 +1354,7 @@ void scene_game::SaveSetting()
 	BallDistance::Instance().SaveToJson(j["ballDistance"]);
 	Result::Instance().SaveToJson(j["result"]);
 	BallNet::Instance().SaveToJson(j["ballNet"]);
+	Money::Instance().SaveToJson(j["money"]);
 
     // ファイルに保存
     std::ofstream file("resources\\setting\\settings.json");
@@ -1516,5 +1525,6 @@ void scene_game::LoadSetting()
 	if (j.contains("ballDistance")) BallDistance::Instance().LoadFromJson(j["ballDistance"]);
 	if (j.contains("result")) Result::Instance().LoadFromJson(j["result"]);
 	if (j.contains("ballNet")) BallNet::Instance().LoadFromJson(j["ballNet"]);
+	if (j.contains("money")) Money::Instance().LoadFromJson(j["money"]);
     consoleLog.push_back("[Info] Settings loaded.");
 }

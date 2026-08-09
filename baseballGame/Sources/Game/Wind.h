@@ -68,6 +68,9 @@ private:
 	std::unique_ptr<sprite> windBoardSpriteRenderer;
 	FontRenderer windStrengthFont;
 
+	DirectX::XMFLOAT2 fontPosition = { 100.0f, 200.0f }; // 風の強さ表示の位置
+	float fontScale = 1.0f; // 風の強さ表示のスケール
+
 	// シェーダー関連メンバーを追加
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;

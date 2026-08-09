@@ -698,7 +698,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					float speed = velocity.magnitude();
 
 					// 速度がある程度以上ある場合のみ減衰を適用
-					if (speed > 0.1f)
+					if (speed > 1.0f)
 					{
 						// フェンス衝突後かどうかで減衰率を変更
 						float dampingFactor;
@@ -712,7 +712,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 							// フェンス衝突なし: 通常の摩擦ベース減衰
 							physx::PxMaterial* stageMaterial = Physics::Instance().GetMaterial();
 							float friction = stageMaterial->getDynamicFriction();
-							dampingFactor = 1.0f - (friction * 0.005f);
+							dampingFactor = 1.0f - (friction * 0.01f);
 						}
 
 						velocity *= dampingFactor;
@@ -776,6 +776,37 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stand") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stand"))
 		{
+			
+			{
+				std::lock_guard<std::mutex> lock(queueMutex);
+				velocityUpdateQueue.push([]() {
+					physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+					if (!ballCollider) return;
+
+					physx::PxVec3 velocity = ballCollider->getLinearVelocity();
+					float speed = velocity.magnitude();
+
+					if (speed > 1.0f)
+					{
+						// スタンドはグラウンドより摩擦が強い想定で少し強めに減衰
+						float dampingFactor = 0.95f;
+
+						velocity *= dampingFactor;
+
+						physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();
+						angularVelocity *= dampingFactor;
+
+						ballCollider->setLinearVelocity(velocity);
+						ballCollider->setAngularVelocity(angularVelocity);
+					}
+					else
+					{
+						ballCollider->setLinearVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
+						ballCollider->setAngularVelocity(physx::PxVec3(0.0f, 0.0f, 0.0f));
+					}
+					});
+			}
+
 			if (!Ball::Instance().GetHasCollidedWithFence())
 			{
 				bool wasAlreadyGrounded = Ball::Instance().GetHasCollidedWithGround();
@@ -874,7 +905,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						if (ballCollider)
 						{
 							physx::PxVec3 velocity = ballCollider->getLinearVelocity();
-							velocity *= 0.5f; // 速度を半分にする
+							velocity.x *= 0.3f; // 速度を30%にする
+							velocity.z *= 0.3f; // 速度を30%にする
 							ballCollider->setLinearVelocity(velocity);
 						}
 						});

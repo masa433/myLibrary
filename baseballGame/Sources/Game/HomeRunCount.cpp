@@ -20,7 +20,7 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 
 	// スプライトの初期化
 	homeRunCountSpriteData = std::make_unique<Sprite>();
-	homeRunCountSpriteData->texturePath = L".\\resources\\textures\\homeRunCountBoard.png";
+	homeRunCountSpriteData->texturePath = L".\\resources\\textures\\MissionBoard.png";
 	homeRunCountSpriteData->position = { 10.0f, 10.0f };
 	homeRunCountSpriteData->size = { 200.0f, 50.0f };
 	homeRunCountSpriteData->rotation = 0.0f;
@@ -90,12 +90,12 @@ void HomeRunCount::Render()
 		homeRunCountSpriteData->rotation);
 	
 	// "HOMERUN" ラベルをそのまま描画
-	homeRunCountFont.DrawTextW(dc,
-		"HOMERUN",
-		labelPositionX,
-		labelPositionY,
-		labelScale,
-		1.0f, 1.0f, 1.0f, 1.0f); // 白色
+	//homeRunCountFont.DrawTextW(dc,
+	//	"HOMERUN",
+	//	labelPositionX,
+	//	labelPositionY,
+	//	labelScale,
+	//	1.0f, 1.0f, 1.0f, 1.0f); // 白色
 
 	// 数字だけ大きく、ラベルの下に描画
 	char numberBuffer[16];
