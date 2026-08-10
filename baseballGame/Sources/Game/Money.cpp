@@ -44,6 +44,7 @@ void Money::Uninitialize()
 	moneyFont.Uninitialize();
 	moneySprite.reset();
 	moneyData.reset();
+	consoleLog = nullptr;
 }
 
 void Money::Update(float elapsedTime)
@@ -53,15 +54,55 @@ void Money::Update(float elapsedTime)
 	//ファールの時は、お金が増えないようにする
 	if (Ball::Instance().GetIsFoulConfirmed()) return;
 
+	
+
+	if (isLocked && !prevDistanceLocked)
+	{
+		float baseDistance = BallDistance::Instance().GetCurrentDistance();
+		float totalMultiplier = 1.0f;
+
+		bool isHomeRun = Ball::Instance().GetHasPassedHomeRunZone() || Ball::Instance().GetHasCollidedWithPole();
+
+		// ホームランボーナスを適用
+		if (isHomeRun)
+		{
+			totalMultiplier *= currentHomerunBonus;
+			/*OutputDebugStringA("ホームランボーナスが適用されました。\n");*/
+			if(consoleLog)
+			{
+				consoleLog->push_back(u8"[Info]ホームランボーナスが適用されました。");
+				consoleLog->push_back(u8"[Info]現在のホームランボーナス倍率: " + std::to_string(currentHomerunBonus));
+			}
+		}
+
+		// 変化球ボーナスを適用
+		if(Pitcher::Instance().IsBreakingBallBonus() && isHomeRun)
+		{
+			
+			// 変化球ボーナスの倍率を設定
+			float breakingBonus = breakingBallBonus;
+			totalMultiplier *= breakingBonus;
+			if(consoleLog)
+			{
+				consoleLog->push_back(u8"[Info]変化球ボーナスが適用されました。");
+				consoleLog->push_back(u8"[Info]現在の変化球ボーナス倍率: " + std::to_string(breakingBonus));
+			}
+		}
+
+		// 最終的な距離に倍率を適用して加算
+		int finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier));
+		AddMoney(finalDistance);
+		isHomerunBonusApplied = true;
+
+		if (isHomeRun)
+		{
+			ResetHomerunBonus();
+		}
+	}
+
 	if (currentMoney < targetMoney)
 	{
 		currentMoney++;
-	}
-
-	// 前回 false で、今回 true になった「立ち上がりの瞬間」だけ加算
-	if (isLocked && !prevDistanceLocked)
-	{
-		AddMoney(static_cast<int>(std::round(BallDistance::Instance().GetCurrentDistance())));
 	}
 
 	// 現在の状態を保存

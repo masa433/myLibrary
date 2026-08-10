@@ -112,7 +112,7 @@ void Wind::Initialize()
 
 	// 風の強さをランダムで決定
 
-	windStrength = static_cast<float>(rand()) / RAND_MAX * 10.0f; // 0.0f ～ 10.0f
+	windStrength = static_cast<float>(rand()) / RAND_MAX * 7.0f; // 0.0f ～ 7.0f
 }
 
 void Wind::Uninitialize()

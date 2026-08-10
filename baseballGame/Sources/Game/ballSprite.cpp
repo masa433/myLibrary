@@ -6,6 +6,8 @@
 #include "Ball.h"
 #include "TrackingData.h"
 #include "ballCount.h"
+#include "Money.h"
+#include "Player.h"
 #include <algorithm>
 #include <cmath>
 
@@ -574,7 +576,7 @@ void ballSprite::Update(float elapsedTime)
 		ApplyTagetSpritePosition(currentScreenPos);
 	}
 
-	if (pitchingState && wp.z < -0.5f && wp.z > -0.7f && !strikeJudgeDone)
+	if (pitchingState && wp.z < -0.5f && wp.z > -1.0f && !strikeJudgeDone)
 	{
 		strikeJudgeDone = true;
 
@@ -590,7 +592,19 @@ void ballSprite::Update(float elapsedTime)
 		isStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
 			ballCenter.y >= szTopLeft.y && ballCenter.y <= szBottomRight.y);
 
-		if (isStrike) ballCount::Instance().DecreaseRemainingBalls(1);
+		if (isStrike)
+		{
+			ballCount::Instance().DecreaseRemainingBalls(1);		
+		}
+		else
+		{
+			if (!(Player::Instance().GetCurrentState() == Player::State::Swinging))
+			{
+				//ホームラン倍率を上昇する
+				Money::Instance().IncrementHomerunBonus();
+			}
+			
+		}
 
 		if (consoleLog)
 		{
@@ -600,6 +614,17 @@ void ballSprite::Update(float elapsedTime)
 			else
 				snprintf(buf, sizeof(buf), u8"[Info] ボール！");
 			consoleLog->push_back(buf);
+		}
+	}
+
+	//ストライクゾーンを空振りまたは見逃しで倍率をリセットする
+	if (pitchingState && wp.z < -8.0f && wp.z > -8.5f && isStrike)
+	{
+		//この範囲内でバットに当たったらリセットしない
+		//空振りまたは見逃しでストライクゾーンに入った場合のみリセットする
+		if(!Ball::Instance().GetHasCollidedWithBat())
+		{
+			Money::Instance().ResetHomerunBonus();
 		}
 	}
 

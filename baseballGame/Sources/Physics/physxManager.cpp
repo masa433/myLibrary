@@ -15,6 +15,7 @@
 #include "HomeRunCount.h"
 #include "BallNet.h"
 #include <ballCount.h>
+#include "Money.h"
 #define NET_COUNT 4
 
 // グローバルまたはクラス内にキューを用意
@@ -658,7 +659,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 					//ホームランカウントを１増やす
 					HomeRunCount::Instance().IncrementCount();
-
+					
 					//グラウンドなら実測飛距離、スタンドなら総飛距離を保存
 					if(isGround)
 					{
@@ -1159,7 +1160,11 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			float batterPowerScale = PowerToExitVelocityScale(static_cast<float>(batterPower));
 			float pitchPowerScale = ballSprite::Instance().GetCurrentPitchPowerScale();
 			//スイングのタイミングによって打球速度を補正する
-
+			//ボールスプライトのターゲットが中心の時はバッターのパワーを1.1倍にして反映させる
+			if(Pitcher::Instance().IsBezierTargetCenter())
+			{
+				batterPowerScale *= 1.1f;
+			}
 
 			estimatedExitVelocity *= batterPowerScale;
 			estimatedExitVelocity *= pitchPowerScale;

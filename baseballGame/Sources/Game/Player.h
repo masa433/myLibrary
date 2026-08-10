@@ -155,6 +155,7 @@ public:
 
     bool IsSwinging() const { return current_state == State::Swinging; } // スイング中かどうかを判定するメソッド
 
+	State GetCurrentState() const { return current_state; } // 現在の状態を取得するメソッド
 
 public:
     // コンソールログへのポインタをセット

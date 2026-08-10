@@ -52,6 +52,43 @@ public:
 
 	void ResetPitchFlags(); // pitchFlagsをリセットする関数
 
+	bool IsBezierTargetCenter(float threshold = 0.1f) const
+	{
+		const auto& params = pitchParameters[static_cast<int>(selectedPitchType)];
+
+		// bezierTarget の (x, y) が 0.0f 付近（許容誤差 threshold 内）かを判定
+		bool isCenterX = std::fabs(params.bezierTarget.x) <= threshold;
+		bool isCenterY = std::fabs(params.bezierTarget.y) <= threshold;
+
+		return isCenterX && isCenterY;
+	}
+
+	//変化球ボーナス
+	bool IsBreakingBallBonus() const
+	{
+		switch (selectedPitchType)
+		{
+		case PitchType::Slider:
+		case PitchType::Curveball:
+		case PitchType::Changeup:
+		case PitchType::Forkball:
+		case PitchType::TwoSeam:
+		case PitchType::Cutter:
+		case PitchType::Sinker:
+		case PitchType::VerticalSlider:
+		case PitchType::Splitter:
+		case PitchType::SlowCurve:
+		case PitchType::Shooter:
+		case PitchType::Knuckleball:
+		case PitchType::SlowBall:
+		case PitchType::Sweeper:
+		case PitchType::Palm:
+			return true;
+		default:
+			return false;
+		}
+	}
+
 public:
 
 	enum class PitchType
@@ -342,6 +379,18 @@ public:
 	float pitchSequenceFloor = 0.1f; // 重みが下がりすぎないようにする下限倍率
 
 	float GetSequencingMultiplier(PitchType type) const;
+
+	BreakGrade GetPitchGrade(RealPitcher pitcher, PitchType pitchType) const
+	{
+		if (pitcher == RealPitcher::None) return BreakGrade::F;
+
+		int rpIndex = static_cast<int>(pitcher);
+		int pitchIndex = PitchTypeToBreakIndex(pitchType);
+
+		if (pitchIndex < 0 || rpIndex >= static_cast<int>(realPitcherArsenal.size())) return BreakGrade::F;
+
+		return realPitcherArsenal[pitchIndex].breakGrade;
+	}
 
 private:
 	// 現在選択中の実在投手プリセット、およびその持ち球リスト（配球AIが参照する）

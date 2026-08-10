@@ -15,6 +15,7 @@
 #include "GameTimer.h"
 #include "shader.h"	
 #include "ballCount.h"
+#include "Money.h"
 
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)

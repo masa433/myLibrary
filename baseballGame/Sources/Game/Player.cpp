@@ -13,6 +13,7 @@
 #include "ballSprite.h"
 #include <GameTimer.h>
 #include <ballCount.h>
+#include <Money.h>
 
 
 // 初期化
@@ -383,6 +384,9 @@ void Player::HandleInput(float elapsedTime)
         {               
              ChangeState(State::Swinging); 
              if(Pitcher::Instance().GetIsBallThrown()) ballCount::Instance().DecreaseRemainingBalls(1);
+
+             //ボールゾーンをスイングしたら倍率リセット
+			 if (!ballSprite::Instance().IsStrike()) Money::Instance().ResetHomerunBonus();
         }
     }
 

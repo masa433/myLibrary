@@ -45,6 +45,7 @@ void scene_game::initialize()
     Pitcher::Instance().SetConsoleLog(&consoleLog);
     Player::Instance().SetConsoleLog(&consoleLog);
     ballSprite::Instance().SetConsoleLog(&consoleLog);
+	Money::Instance().SetConsoleLog(&consoleLog);
 
     // カメラ設定をここに移動
     float screenWidth = Graphics::Instance().GetScreenWidth();

@@ -5,6 +5,7 @@
 #include <memory>
 #include "sprite.h"
 #include "FontRenderer.h"
+#include "Pitcher.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -27,9 +28,45 @@ public:
 	void SubtractMoney(int amount) { targetMoney -= amount; if (targetMoney < 0) targetMoney = 0; }
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
+
+	// 外からボール判定時に呼ぶ関数
+	void IncrementHomerunBonus() 
+	{
+		currentHomerunBonus += homerunBonusIncrement;
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"[Info]ホームランボーナスが増加しました。");
+			consoleLog->push_back(u8"[Info]現在のホームランボーナス倍率: " + std::to_string(currentHomerunBonus));
+		}
+	}
+
+	// 倍率を初期値に戻す関数
+	void ResetHomerunBonus() 
+	{ 
+		currentHomerunBonus = baseHomerunBonus;
+		if(consoleLog)
+		{
+			consoleLog->push_back(u8"[Info]ホームランボーナスがリセットされました。");
+			consoleLog->push_back(u8"[Info]現在のホームランボーナス倍率: " + std::to_string(currentHomerunBonus));
+		}
+		isHomerunBonusApplied = false;
+	}
+
+	//ホームランボーナスが適用されたかどうか
+	bool IsHomerunBonusApplied() const { return isHomerunBonusApplied; }
+
+	
 private:
 	int currentMoney = 0;
 	int targetMoney = 0; // 目標金額
+
+	//ホームラン時の倍率ボーナス
+	float baseHomerunBonus = 1.05f;
+	float currentHomerunBonus = 1.05f; // 現在のホームランボーナス倍率
+	float homerunBonusIncrement = 0.05f; // ホームランボーナスの増加量
+
+	//変化球を打ったときの倍率ボーナス
+	float breakingBallBonus = 1.05f;
 
 	struct MoneyData
 	{
@@ -59,4 +96,12 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
 
 	bool prevDistanceLocked = false; // 前フレームの距離ロック状態を保存する変数
+	bool isHomerunBonusApplied = false; // ホームランボーナスが適用されたかどうかのフラグ
+
+public:
+	// コンソールログへのポインタをセット
+	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
+
+private:
+	std::vector<std::string>* consoleLog = nullptr;
 };
