@@ -30,40 +30,38 @@ public:
 	void LoadFromJson(const json& j);
 
 	// 外からボール判定時に呼ぶ関数
-	void IncrementHomerunBonus() 
+	void IncrementBallZoneBonus() 
 	{
-		currentHomerunBonus += homerunBonusIncrement;
+		currentBallZoneBonus += ballZoneBonusIncrement;
 		if (consoleLog)
 		{
-			consoleLog->push_back(u8"[Info]ホームランボーナスが増加しました。");
-			consoleLog->push_back(u8"[Info]現在のホームランボーナス倍率: " + std::to_string(currentHomerunBonus));
+			consoleLog->push_back(u8"[Info]ボールゾーンボーナスが増加しました。");
+			consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + std::to_string(currentBallZoneBonus));
 		}
 	}
 
 	// 倍率を初期値に戻す関数
-	void ResetHomerunBonus() 
+	void ResetBallZoneBonus() 
 	{ 
-		currentHomerunBonus = baseHomerunBonus;
+		currentBallZoneBonus = baseBallZoneBonus;
 		if(consoleLog)
 		{
-			consoleLog->push_back(u8"[Info]ホームランボーナスがリセットされました。");
-			consoleLog->push_back(u8"[Info]現在のホームランボーナス倍率: " + std::to_string(currentHomerunBonus));
+			consoleLog->push_back(u8"[Info]ボールゾーンボーナスがリセットされました。");
+			consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + std::to_string(currentBallZoneBonus));
 		}
-		isHomerunBonusApplied = false;
+		
 	}
 
-	//ホームランボーナスが適用されたかどうか
-	bool IsHomerunBonusApplied() const { return isHomerunBonusApplied; }
-
-	
 private:
 	int currentMoney = 0;
 	int targetMoney = 0; // 目標金額
 
 	//ホームラン時の倍率ボーナス
-	float baseHomerunBonus = 1.05f;
-	float currentHomerunBonus = 1.05f; // 現在のホームランボーナス倍率
-	float homerunBonusIncrement = 0.05f; // ホームランボーナスの増加量
+	float homerunBonus = 1.05f;
+	float baseBallZoneBonus = 1.0f; //ボールゾーンを見逃したときの倍率ボーナス
+	float currentBallZoneBonus = 1.0f; //現在のボールゾーン倍率ボーナス
+	float ballZoneBonusIncrement = 0.05f; // ボールゾーンボーナスの増加量
+
 
 	//変化球を打ったときの倍率ボーナス
 	float breakingBallBonus = 1.05f;
@@ -96,8 +94,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
 
 	bool prevDistanceLocked = false; // 前フレームの距離ロック状態を保存する変数
-	bool isHomerunBonusApplied = false; // ホームランボーナスが適用されたかどうかのフラグ
-
+	
 public:
 	// コンソールログへのポインタをセット
 	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }

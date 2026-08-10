@@ -164,6 +164,11 @@ public:
 private:
     std::vector<std::string>* consoleLog = nullptr;
 
+public:
+	bool HasSwungThisPitch() const { return hasSwungThisPitch; }// 現在のピッチでスイングしたかどうかを取得するメソッド
+	void ResetSwungThisPitch() { hasSwungThisPitch = false; }// 現在のピッチでスイングしたかどうかをリセットするメソッド
+private:
+    bool hasSwungThisPitch = false;
 
 public:
 

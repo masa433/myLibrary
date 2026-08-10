@@ -66,10 +66,14 @@ private:
 	float showSpriteTimer = 0.0f; // スプライト表示のタイマー
 
 	bool isStrike = false;
+	bool isBall = false;
+	bool isPitchJudgedStrike = false;
 
 public:
 
 	bool IsStrike() const { return isStrike; }
+	bool IsBall() const { return isBall; }
+	bool IsPitchJudgedStrike() const { return isPitchJudgedStrike; }
 
 	//2Dスクリーン座標上のストライクゾーンの中心とサイズ
 	DirectX::XMFLOAT2 zone3DCenter = { 0.0f, 0.8f };

@@ -66,12 +66,20 @@ void Money::Update(float elapsedTime)
 		// ホームランボーナスを適用
 		if (isHomeRun)
 		{
-			totalMultiplier *= currentHomerunBonus;
+			totalMultiplier *= homerunBonus;
 			/*OutputDebugStringA("ホームランボーナスが適用されました。\n");*/
 			if(consoleLog)
 			{
 				consoleLog->push_back(u8"[Info]ホームランボーナスが適用されました。");
-				consoleLog->push_back(u8"[Info]現在のホームランボーナス倍率: " + std::to_string(currentHomerunBonus));
+				consoleLog->push_back(u8"[Info]現在のホームランボーナス倍率: " + std::to_string(homerunBonus));
+			}
+
+			// ボールゾーンボーナスを適用
+			totalMultiplier *= currentBallZoneBonus;
+			if (consoleLog)
+			{
+				consoleLog->push_back(u8"[Info]ボールゾーンボーナスが適用されました。");
+				consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + std::to_string(currentBallZoneBonus));
 			}
 		}
 
@@ -89,14 +97,19 @@ void Money::Update(float elapsedTime)
 			}
 		}
 
+		
+
 		// 最終的な距離に倍率を適用して加算
 		int finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier));
 		AddMoney(finalDistance);
-		isHomerunBonusApplied = true;
-
+		
 		if (isHomeRun)
 		{
-			ResetHomerunBonus();
+			ResetBallZoneBonus();
+			if (consoleLog)
+			{
+				consoleLog->push_back(u8"[Info] ボールゾーンボーナスがリセットされました。by Money");
+			}
 		}
 	}
 
@@ -143,15 +156,15 @@ void Money::Render()
 
 		DirectX::XMFLOAT2 fontPos = centerTextPosition(moneyText, moneyTextScale, moneyTextPosition.x, moneyTextPosition.y);
 
-		//10万以上になったら、サイズを1.7倍にする
-		if (currentMoney >= 100000)
-		{
-			moneyTextScale = 2.0f;
-		}
-		else
-		{
-			moneyTextScale = 2.2f;
-		}
+		////10万以上になったら、サイズを1.7倍にする
+		//if (currentMoney >= 100000)
+		//{
+		//	moneyTextScale = 2.0f;
+		//}
+		//else
+		//{
+		//	moneyTextScale = 2.2f;
+		//}
 
 		moneyFont.DrawTextW(dc, moneyText.c_str(),
 			fontPos.x, fontPos.y,

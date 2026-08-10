@@ -346,7 +346,18 @@ void ballSprite::Update(float elapsedTime)
 	const bool pitchingState = (pitcher.GetCurrentState() == Pitcher::State::Throwing);
 	const bool nowThrown = pitcher.GetIsBallThrown();
 
+	DirectX::XMFLOAT2 ballCenter = {
+			ballDebugSpriteData->position.x + ballDebugSpriteData->size.x * 0.5f,
+			ballDebugSpriteData->position.y + ballDebugSpriteData->size.y * 0.5f
+	};
+	DirectX::XMFLOAT2 szTopLeft, szBottomRight;
+	GetStrikeZoneScreenBounds(szTopLeft, szBottomRight);
 
+	isStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
+		ballCenter.y >= szTopLeft.y && ballCenter.y <= szBottomRight.y);
+
+	isBall = (ballCenter.x < szTopLeft.x || ballCenter.x > szBottomRight.x ||
+		ballCenter.y < szTopLeft.y || ballCenter.y > szBottomRight.y);
 
 	const DirectX::XMFLOAT3& wp = ball.GetWorldPosition();
 
@@ -522,7 +533,8 @@ void ballSprite::Update(float elapsedTime)
 	{
 		ballTrail2D.clear();
 		strikeJudgeDone = false;
-		
+		isPitchJudgedStrike = false;
+		Player::Instance().ResetSwungThisPitch();
 		Ball::Instance().SetHasCollidedWithBat(false);
 
 		if (showSpriteTimer >= showSpriteDelay)
@@ -589,19 +601,26 @@ void ballSprite::Update(float elapsedTime)
 		DirectX::XMFLOAT2 szTopLeft, szBottomRight;
 		GetStrikeZoneScreenBounds(szTopLeft, szBottomRight);
 
-		isStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
+		isPitchJudgedStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
 			ballCenter.y >= szTopLeft.y && ballCenter.y <= szBottomRight.y);
 
-		if (isStrike)
+		if (isPitchJudgedStrike)
 		{
 			ballCount::Instance().DecreaseRemainingBalls(1);		
 		}
 		else
 		{
-			if (!(Player::Instance().GetCurrentState() == Player::State::Swinging))
+			if (Player::Instance().HasSwungThisPitch())
 			{
-				//ホームラン倍率を上昇する
-				Money::Instance().IncrementHomerunBonus();
+				// ボール球を振っていた → リセット
+				Money::Instance().ResetBallZoneBonus();
+				if (consoleLog)
+					consoleLog->push_back(u8"[Info] ボール球をスイングしたためボーナスをリセットしました。by ballSprite");
+			}
+			else
+			{
+				// 見逃しボール → ボーナス上昇
+				Money::Instance().IncrementBallZoneBonus();
 			}
 			
 		}
@@ -609,7 +628,7 @@ void ballSprite::Update(float elapsedTime)
 		if (consoleLog)
 		{
 			char buf[256];
-			if (isStrike)
+			if (isPitchJudgedStrike)
 				snprintf(buf, sizeof(buf), u8"[Info] ストライク！");
 			else
 				snprintf(buf, sizeof(buf), u8"[Info] ボール！");
@@ -618,13 +637,17 @@ void ballSprite::Update(float elapsedTime)
 	}
 
 	//ストライクゾーンを空振りまたは見逃しで倍率をリセットする
-	if (pitchingState && wp.z < -8.0f && wp.z > -8.5f && isStrike)
+	if (pitchingState && wp.z < -8.0f && wp.z > -8.5f && isPitchJudgedStrike)
 	{
 		//この範囲内でバットに当たったらリセットしない
 		//空振りまたは見逃しでストライクゾーンに入った場合のみリセットする
 		if(!Ball::Instance().GetHasCollidedWithBat())
 		{
-			Money::Instance().ResetHomerunBonus();
+			Money::Instance().ResetBallZoneBonus();
+			if (consoleLog)
+			{
+				consoleLog->push_back(u8"[Info] ストライクゾーン倍率をリセットしました。by ballSprite");
+			}
 		}
 	}
 
