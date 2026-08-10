@@ -370,10 +370,10 @@ void Player::HandleInput(float elapsedTime)
     //if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)) return;
 	if (ballCount::Instance().GetRemainingBalls() <= 0) return;
 
-    
+    float ballZ = Ball::Instance().GetWorldPosition().z;
 
     // スペースキーでスイング
-    if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+    if (GetAsyncKeyState(VK_LBUTTON) & 0x8000 && ballZ >= -5.0f)
     {
         //スイングカウントを増やす
 		IncreaseSwingCount();
@@ -386,7 +386,7 @@ void Player::HandleInput(float elapsedTime)
              if(Pitcher::Instance().GetIsBallThrown()) ballCount::Instance().DecreaseRemainingBalls(1);
 
              //ボールゾーンをスイングしたら倍率リセット
-			 if (!ballSprite::Instance().IsStrike()) Money::Instance().ResetHomerunBonus();
+			 if (Pitcher::Instance().GetIsBallThrown() && !ballSprite::Instance().IsStrike()) Money::Instance().ResetHomerunBonus();
         }
     }
 
