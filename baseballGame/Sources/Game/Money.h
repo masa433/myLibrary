@@ -6,6 +6,7 @@
 #include "sprite.h"
 #include "FontRenderer.h"
 #include "Pitcher.h"
+#include "UiEasing.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -53,6 +54,8 @@ public:
 	}
 
 private:
+	
+
 	int currentMoney = 0;
 	int targetMoney = 0; // 目標金額
 
@@ -60,8 +63,9 @@ private:
 	float homerunBonus = 1.05f;
 	float baseBallZoneBonus = 1.0f; //ボールゾーンを見逃したときの倍率ボーナス
 	float currentBallZoneBonus = 1.0f; //現在のボールゾーン倍率ボーナス
+	float showBallZoneBonus = 1.0f; //表示用のボールゾーン倍率ボーナス
 	float ballZoneBonusIncrement = 0.05f; // ボールゾーンボーナスの増加量
-
+	int finalDistance = 0; //最終的な飛距離
 
 	//変化球を打ったときの倍率ボーナス
 	float breakingBallBonus = 1.05f;
@@ -78,9 +82,18 @@ private:
 	std::unique_ptr<MoneyData> moneyData;
 	std::unique_ptr<sprite> moneySprite;
 
+
 	DirectX::XMFLOAT2 moneyPosition = { 50.0f, 50.0f };
 	DirectX::XMFLOAT2 moneySize = { 200.0f, 50.0f };
 	DirectX::XMFLOAT4 moneyColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	struct BonusInfo
+	{
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		DirectX::XMFLOAT4 color;
+	};
+
 
 	FontRenderer moneyFont; // お金表示用のフォントレンダラー
 
@@ -101,4 +114,34 @@ public:
 
 private:
 	std::vector<std::string>* consoleLog = nullptr;
+
+private:
+
+	struct BonusItem
+	{
+		std::string name;
+		std::unique_ptr<MoneyData> data;
+		std::unique_ptr<sprite> sprite;
+		std::unique_ptr<FontRenderer> fontRenderer;
+		BonusInfo info;
+		bool isActive = false;
+
+		//アニメーション制御
+		DirectX::XMFLOAT2 startPos = { 2000.0f, 0.0f };
+		DirectX::XMFLOAT2 targetPos = { 1500.0f, 0.0f };
+		DirectX::XMFLOAT2 currentPos = { 2000.0f, 0.0f };
+	};
+
+	std::vector<BonusItem> bonusItems;
+	float bonusAnimTimer = 0.0f;
+	const float BONUS_ANIM_DURATION = 2.5f; // ボーナスアニメーションの時間(秒)
+	bool isBonusAnimating = false; // ボーナスアニメーション中かどうかのフラグ
+	float textXOffset = 0.0f; // ボーナステキストのX座標
+	float textYOffset = 0.0f; // ボーナステキストのY座標
+
+	//ボーナスのレイアウト再計算処理
+
+	void TriggerBonusAnimation(bool isHomeRun, bool isBreaking);
+	
+
 };

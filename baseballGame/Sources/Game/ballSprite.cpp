@@ -615,7 +615,7 @@ void ballSprite::Update(float elapsedTime)
 				// ボール球を振っていた → リセット
 				Money::Instance().ResetBallZoneBonus();
 				if (consoleLog)
-					consoleLog->push_back(u8"[Info] ボール球をスイングしたためボーナスをリセットしました。by ballSprite");
+					consoleLog->push_back(u8"[Info] ボール球スイングでボールゾーン倍率をリセットしました。by ballSprite");
 			}
 			else
 			{
@@ -646,7 +646,7 @@ void ballSprite::Update(float elapsedTime)
 			Money::Instance().ResetBallZoneBonus();
 			if (consoleLog)
 			{
-				consoleLog->push_back(u8"[Info] ストライクゾーン倍率をリセットしました。by ballSprite");
+				consoleLog->push_back(u8"[Info] ボールゾーン倍率をリセットしました。by ballSprite");
 			}
 		}
 	}

@@ -4,6 +4,30 @@
 #include <imgui.h>
 #include "ballDistance.h"
 #include "Ball.h"
+#include <cstdio>
+#include <string>
+
+// 小数点以下の不要な 0 を削除する関数(小数第1位は消さない)
+std::string FormatFloat(float value)
+{
+	
+	char buf[32];
+	std::snprintf(buf, sizeof(buf), "%.2f", value);
+	std::string str(buf);
+
+	// 末尾が '0' かつ 小数点から2文字以上後ろにある場合のみ '0' を削る
+	// (＝ "1.00" の場合は "1.0" になるが、"1.0" の末尾の0は削られない)
+	size_t dotPos = str.find('.');
+	if (dotPos != std::string::npos)
+	{
+		while (str.back() == '0' && str.length() > dotPos + 2)
+		{
+			str.pop_back();
+		}
+	}
+
+	return str;
+}
 
 void Money::Initialize(ID3D11Device* device)
 {
@@ -26,6 +50,76 @@ void Money::Initialize(ID3D11Device* device)
 	moneyData->color = { moneyColor.x, moneyColor.y, moneyColor.z, moneyColor.w };
 	moneySprite = std::make_unique<sprite>(device, context, moneyData->texturePath.c_str());
 
+	bonusItems.clear();
+	std::vector<int> bonusCodepoints = FontRenderer::Utf8ToCodepoints(u8"0123456789.x ");
+
+	// ホームランボーナスアイテムの初期化
+	BonusItem homeRunBonusItem;
+	homeRunBonusItem.name = "HomeRun";
+	homeRunBonusItem.info = { { 300.0f, 50.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	homeRunBonusItem.data = std::make_unique<MoneyData>();
+	homeRunBonusItem.data->texturePath = L".\\resources\\textures\\homeRunBonusBoard.png";
+	homeRunBonusItem.sprite = std::make_unique<sprite>(device, context, homeRunBonusItem.data->texturePath.c_str());
+	homeRunBonusItem.fontRenderer = std::make_unique<FontRenderer>();
+	homeRunBonusItem.fontRenderer->Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		28.0f,
+		static_cast<int>(Graphics::Instance().GetScreenWidth()),
+		static_cast<int>(Graphics::Instance().GetScreenHeight()),
+		512, 512,
+		&bonusCodepoints);
+	bonusItems.push_back(std::move(homeRunBonusItem));
+
+	// ボールゾーンボーナスアイテムの初期化
+	BonusItem ballZoneBonusItem;
+	ballZoneBonusItem.name = "BallZone";
+	ballZoneBonusItem.info = { { 300.0f, 120.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	ballZoneBonusItem.data = std::make_unique<MoneyData>();
+	ballZoneBonusItem.data->texturePath = L".\\resources\\textures\\ballZoneBonusBoard.png";
+	ballZoneBonusItem.sprite = std::make_unique<sprite>(device, context, ballZoneBonusItem.data->texturePath.c_str());
+	ballZoneBonusItem.fontRenderer = std::make_unique<FontRenderer>();
+	ballZoneBonusItem.fontRenderer->Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		28.0f,
+		static_cast<int>(Graphics::Instance().GetScreenWidth()),
+		static_cast<int>(Graphics::Instance().GetScreenHeight()),
+		512, 512,
+		&bonusCodepoints);
+	bonusItems.push_back(std::move(ballZoneBonusItem));
+
+	// 変化球ボーナスアイテムの初期化
+	BonusItem breakingBallBonusItem;
+	breakingBallBonusItem.name = "BreakingBall";
+	breakingBallBonusItem.info = { { 300.0f, 190.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	breakingBallBonusItem.data = std::make_unique<MoneyData>();
+	breakingBallBonusItem.data->texturePath = L".\\resources\\textures\\breakingBallBonusBoard.png";
+	breakingBallBonusItem.sprite = std::make_unique<sprite>(device, context, breakingBallBonusItem.data->texturePath.c_str());
+	breakingBallBonusItem.fontRenderer = std::make_unique<FontRenderer>();
+	breakingBallBonusItem.fontRenderer->Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		28.0f,
+		static_cast<int>(Graphics::Instance().GetScreenWidth()),
+		static_cast<int>(Graphics::Instance().GetScreenHeight()),
+		512, 512,
+		&bonusCodepoints);
+	bonusItems.push_back(std::move(breakingBallBonusItem));
+
+	BonusItem totalItem;
+	totalItem.name = "Total";
+	totalItem.info = { { 300.0f, 260.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	totalItem.data = std::make_unique<MoneyData>();
+	totalItem.data->texturePath = L".\\resources\\textures\\totalBoard.png";
+	totalItem.sprite = std::make_unique<sprite>(device, context, totalItem.data->texturePath.c_str());
+	totalItem.fontRenderer = std::make_unique<FontRenderer>();
+	totalItem.fontRenderer->Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		28.0f,
+		static_cast<int>(Graphics::Instance().GetScreenWidth()),
+		static_cast<int>(Graphics::Instance().GetScreenHeight()),
+		512, 512,
+		&bonusCodepoints);
+	bonusItems.push_back(std::move(totalItem));
+
 	// フォントレンダラーの初期化
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
@@ -37,6 +131,7 @@ void Money::Initialize(ID3D11Device* device)
 		screenWidth, screenHeight,
 		512, 512,
 		&resultCodepoints);
+
 }
 
 void Money::Uninitialize()
@@ -63,6 +158,8 @@ void Money::Update(float elapsedTime)
 
 		bool isHomeRun = Ball::Instance().GetHasPassedHomeRunZone() || Ball::Instance().GetHasCollidedWithPole();
 
+		TriggerBonusAnimation(isHomeRun, Pitcher::Instance().IsBreakingBallBonus());
+
 		// ホームランボーナスを適用
 		if (isHomeRun)
 		{
@@ -71,7 +168,7 @@ void Money::Update(float elapsedTime)
 			if(consoleLog)
 			{
 				consoleLog->push_back(u8"[Info]ホームランボーナスが適用されました。");
-				consoleLog->push_back(u8"[Info]現在のホームランボーナス倍率: " + std::to_string(homerunBonus));
+				consoleLog->push_back(u8"[Info]現在のホームランボーナス倍率: " + FormatFloat(homerunBonus));
 			}
 
 			// ボールゾーンボーナスを適用
@@ -79,9 +176,12 @@ void Money::Update(float elapsedTime)
 			if (consoleLog)
 			{
 				consoleLog->push_back(u8"[Info]ボールゾーンボーナスが適用されました。");
-				consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + std::to_string(currentBallZoneBonus));
+				consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + FormatFloat(currentBallZoneBonus));
 			}
 		}
+		
+		// 表示用のボールゾーンボーナスを更新
+		showBallZoneBonus = currentBallZoneBonus;
 
 		// 変化球ボーナスを適用
 		if(Pitcher::Instance().IsBreakingBallBonus() && isHomeRun)
@@ -93,14 +193,14 @@ void Money::Update(float elapsedTime)
 			if(consoleLog)
 			{
 				consoleLog->push_back(u8"[Info]変化球ボーナスが適用されました。");
-				consoleLog->push_back(u8"[Info]現在の変化球ボーナス倍率: " + std::to_string(breakingBonus));
+				consoleLog->push_back(u8"[Info]現在の変化球ボーナス倍率: " + FormatFloat(breakingBonus));
 			}
 		}
 
 		
 
 		// 最終的な距離に倍率を適用して加算
-		int finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier));
+		finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier));
 		AddMoney(finalDistance);
 		
 		if (isHomeRun)
@@ -111,6 +211,66 @@ void Money::Update(float elapsedTime)
 				consoleLog->push_back(u8"[Info] ボールゾーンボーナスがリセットされました。by Money");
 			}
 		}
+	}
+
+	if(isBonusAnimating)
+	{
+		bonusAnimTimer += elapsedTime;
+
+		
+		const float delayPerItem = 0.1f; // 各アイテムのアニメーション開始の遅延時間
+
+		bool allItemsFinished = true;
+
+		for(size_t i = 0; i < bonusItems.size(); ++i)
+		{
+			auto& item = bonusItems[i];
+			if (!item.isActive) continue;
+
+			//アイテムごとのアニメーション開始時間を計算
+			float myTime = bonusAnimTimer - (i * delayPerItem);//アイテムごとの遅延を考慮
+
+			if (myTime < 0.0f)
+			{
+				item.currentPos = item.startPos; // 遅延中はスタート位置に固定
+				allItemsFinished = false; // まだ全てのアイテムが終了していない
+				continue;
+			}
+
+			// アニメーションの進行度を計算
+			float myProgress = myTime / BONUS_ANIM_DURATION;//	0.0fから1.0fの範囲に正規化
+
+			if (myProgress < 1.0f)
+			{
+				allItemsFinished = false; // まだ全てのアイテムが終了していない
+
+				if (myProgress < 0.2f)
+				{
+					float t = myProgress / 0.2f; // 0.0fから1.0fの範囲に正規化
+					item.currentPos = UiEasing::Lerp(item.startPos, item.targetPos, t, UiEasing::EasingType::OutBack);
+				}
+				else if (myProgress > 0.8f)
+				{
+					float t = (myProgress - 0.8f) / 0.2f; // 0.0fから1.0fの範囲に正規化
+					item.currentPos = UiEasing::Lerp(item.targetPos, item.startPos, t, UiEasing::EasingType::InBack);
+				}
+				else
+				{
+					item.currentPos = item.targetPos; // 中間の時間帯はターゲット位置に固定
+				}
+			}
+			else
+			{
+				// 自分のアニメーション完了（最終位置に固定）
+				item.currentPos = item.startPos;
+			}
+		}
+
+		if (allItemsFinished)
+		{
+			isBonusAnimating = false;
+		}
+
 	}
 
 	if (currentMoney < targetMoney)
@@ -142,6 +302,56 @@ void Money::Render()
 			moneyData->rotation);
 	}
 
+	if (isBonusAnimating)
+	{
+		for (const auto& item : bonusItems)
+		{
+			if (item.isActive && item.sprite)
+			{
+				item.sprite->render(dc,
+					item.currentPos.x, item.currentPos.y,
+					item.info.size.x, item.info.size.y,
+					item.info.color.x, item.info.color.y, item.info.color.z, item.info.color.w,
+					0.0f);
+			}
+		}
+
+		for (const auto& item : bonusItems)
+		{
+			if (item.fontRenderer && item.isActive)
+			{
+				std::string bonusText;
+				if (item.name == "HomeRun")
+				{
+					bonusText = " x " + FormatFloat(homerunBonus);
+				}
+				else if (item.name == "BallZone")
+				{
+					bonusText = " x " + FormatFloat(showBallZoneBonus);
+				}
+				else if (item.name == "BreakingBall")
+				{
+					bonusText = " x " + FormatFloat(breakingBallBonus);
+				}
+				else if (item.name == "Total")
+				{
+					bonusText = std::to_string(finalDistance);
+				}
+				float fontSize = 1.5f; // フォントサイズを適切に設定
+				float textWidth = 0.0f;
+				float textHeight = 100.0f;
+				item.fontRenderer->MeasureText(bonusText.c_str(), fontSize, textWidth, textHeight);
+				float textX = item.currentPos.x + (item.info.size.x - textWidth) / 2.0f; // 中央揃え
+				float textY = item.currentPos.y + (item.info.size.y - textHeight) / 2.0f; // 中央揃え
+				item.fontRenderer->DrawText(dc, bonusText.c_str(),
+					textX + textXOffset, textY + textYOffset,
+					fontSize,
+					1.0f, 1.0f, 1.0f, 1.0f); // 白色で描画
+			}
+		}
+		
+	}
+
 	if(moneyFont.IsValid())
 	{
 		std::string moneyText = std::to_string(currentMoney);
@@ -156,16 +366,7 @@ void Money::Render()
 
 		DirectX::XMFLOAT2 fontPos = centerTextPosition(moneyText, moneyTextScale, moneyTextPosition.x, moneyTextPosition.y);
 
-		////10万以上になったら、サイズを1.7倍にする
-		//if (currentMoney >= 100000)
-		//{
-		//	moneyTextScale = 2.0f;
-		//}
-		//else
-		//{
-		//	moneyTextScale = 2.2f;
-		//}
-
+		
 		moneyFont.DrawTextW(dc, moneyText.c_str(),
 			fontPos.x, fontPos.y,
 			moneyTextScale,
@@ -195,6 +396,12 @@ void Money::DrawGUI()
 		ImGui::ColorEdit4("Text Color", &moneyTextColor.x);
 	}
 
+	if (ImGui::CollapsingHeader("BonusText"))
+	{
+		ImGui::DragFloat("Text X", &textXOffset);
+		ImGui::DragFloat("Text Y", &textYOffset);
+	}
+
 	ImGui::DragInt("Current Money", &currentMoney);
 }
 
@@ -207,6 +414,8 @@ void Money::SaveToJson(json& j)
 	j["moneyTextPosition"] = { moneyTextPosition.x, moneyTextPosition.y };
 	j["moneyTextScale"] = moneyTextScale;
 	j["moneyTextColor"] = { moneyTextColor.x, moneyTextColor.y, moneyTextColor.z, moneyTextColor.w };
+	j["textXOffset"] = textXOffset; 
+	j["textYOffset"] = textYOffset;
 }
 
 void Money::LoadFromJson(const json& j)
@@ -240,5 +449,57 @@ void Money::LoadFromJson(const json& j)
 		moneyTextColor.y = j["moneyTextColor"][1].get<float>();
 		moneyTextColor.z = j["moneyTextColor"][2].get<float>();
 		moneyTextColor.w = j["moneyTextColor"][3].get<float>();
+	}
+	if (j.contains("textXOffset")) textXOffset = j["textXOffset"].get<float>();
+	if (j.contains("textYOffset")) textYOffset = j["textYOffset"].get<float>();
+}
+
+void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
+{
+	float startY = 310.0f; // 初期Y座標
+	float spacingY = 90.0f; // ボーナスアイテム間の垂直間隔
+	int activeCount = 0;
+
+	for (auto& bonusItem : bonusItems)
+	{
+		bonusItem.isActive = false; // まず全てのボーナスアイテムを非アクティブにする
+
+		if (bonusItem.name == "HomeRun" && isHomeRun)
+		{
+			bonusItem.isActive = true;
+		}
+		else if (bonusItem.name == "BallZone" && isHomeRun && currentBallZoneBonus > baseBallZoneBonus)
+		{
+			bonusItem.isActive = true;
+		}
+		else if (bonusItem.name == "BreakingBall" && isHomeRun && isBreaking)
+		{
+			bonusItem.isActive = true;
+		}
+		else if(bonusItem.name == "Total")
+		{
+			bonusItem.isActive = true; // Totalは常に表示
+		}
+
+		if (bonusItem.isActive)
+		{
+			float targetY = startY + (activeCount * spacingY);
+
+			bonusItem.startPos = { 2000.0f, targetY };
+			bonusItem.targetPos = { 1500.0f, targetY };
+			bonusItem.currentPos = bonusItem.startPos;
+
+			activeCount++;
+		}
+	}
+
+	if (activeCount > 0)
+	{
+		isBonusAnimating = true;
+		bonusAnimTimer = 0.0f;
+	}
+	else
+	{
+		isBonusAnimating = false;
 	}
 }
