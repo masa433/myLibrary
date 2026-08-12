@@ -17,6 +17,8 @@
 
 using json = nlohmann::json;
 
+#define PITCHER_COUNT 21
+
 class Pitcher : public GameObject
 {
 public:
@@ -463,6 +465,12 @@ private:
 
 	std::unique_ptr<InfoData> infoBackData;
 	std::unique_ptr<sprite> infoBackSprite;
+
+	std::unique_ptr<InfoData> ballTypeData[PITCHER_COUNT];
+	std::unique_ptr<sprite> ballTypeSprite[PITCHER_COUNT];
+	DirectX::XMFLOAT2 ballTypePosition;
+	DirectX::XMFLOAT2 ballTypeSize;
+	DirectX::XMFLOAT4 ballTypeColor;
 
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;

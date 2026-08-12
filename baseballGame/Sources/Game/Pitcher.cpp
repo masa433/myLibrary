@@ -115,6 +115,17 @@ void Pitcher::Initialize()
 	infoBackData->color = { infoBackColor.x, infoBackColor.y, infoBackColor.z, infoBackColor.w };
 	infoBackSprite = std::make_unique<sprite>(device, context, infoBackData->texturePath.c_str());
 
+	for (int i = 0; i < PITCHER_COUNT; ++i)
+	{
+		ballTypeData[i] = std::make_unique<InfoData>();
+		ballTypeData[i]->texturePath = L".\\resources\\textures\\pitcherBallType\\pitcherBallType" + std::to_wstring(i + 1) + L".png";
+		ballTypeData[i]->position = { ballTypePosition.x, ballTypePosition.y };
+		ballTypeData[i]->size = { ballTypeSize.x, ballTypeSize.y };
+		ballTypeData[i]->rotation = 0.0f;
+		ballTypeData[i]->color = { ballTypeColor.x, ballTypeColor.y, ballTypeColor.z, ballTypeColor.w };
+		ballTypeSprite[i] = std::make_unique<sprite>(device, context, ballTypeData[i]->texturePath.c_str());
+	}
+
 
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 	aiStrikeRate = 0.75f; // AIのストライク率を初期化
@@ -535,6 +546,26 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer)
 
 		
 	}*/
+
+	//選択されているピッチャーの番号のアイコンを描画
+	if (currentState == State::SelectingPitch)
+	{
+		// RealPitcher::None でない場合のみ描画
+		if (selectedRealPitcher != RealPitcher::None)
+		{
+			// Enumの値(1～21) から 1 を引いて配列インデックス(0～20) に変換
+			int spriteIndex = static_cast<int>(selectedRealPitcher) - 1;
+
+			if (spriteIndex >= 0 && spriteIndex < PITCHER_COUNT && ballTypeData[spriteIndex] && ballTypeSprite[spriteIndex])
+			{
+				ballTypeSprite[spriteIndex]->render(dc,
+					ballTypePosition.x - (ballTypeSize.x / 2.0f), ballTypePosition.y - (ballTypeSize.y / 2.0f),
+					ballTypeSize.x, ballTypeSize.y,
+					ballTypeColor.x, ballTypeColor.y, ballTypeColor.z, ballTypeColor.w,
+					ballTypeData[spriteIndex]->rotation);
+			}
+		}
+	}
 
 	// 描画後の状態をリセット
 	dc->VSSetShader(nullptr, nullptr, 0);
@@ -1084,6 +1115,10 @@ void Pitcher::DrawGUI()
 
 		ImGui::DragFloat2("backPosition", &infoBackPosition.x, 0.1f, 0.0f, 1080.0f);
 		ImGui::DragFloat2("backSize", &infoBackSize.x, 0.1f, 0.1f, 1000.0f);
+
+		ImGui::DragFloat2("ballTypePosition", &ballTypePosition.x, 0.1f, 0.0f, 1080.0f);
+		ImGui::DragFloat2("ballTypeSize", &ballTypeSize.x, 0.1f, 0.1f, 1000.0f);
+		ImGui::ColorEdit4("ballTypeColor", &ballTypeColor.x);
 	}
 	ballCount::Instance().DrawGUI();
 
@@ -2065,6 +2100,9 @@ void Pitcher::SaveToJson(json& j)
 	spriteData["swingSize"] = { swingSize.x, swingSize.y };
 	spriteData["infoBackPosition"] = { infoBackPosition.x, infoBackPosition.y };
 	spriteData["infoBackSize"] = { infoBackSize.x, infoBackSize.y };
+	spriteData["ballTypePosition"] = { ballTypePosition.x, ballTypePosition.y };
+	spriteData["ballTypeSize"] = { ballTypeSize.x, ballTypeSize.y };
+	spriteData["ballTypeColor"] = { ballTypeColor.x, ballTypeColor.y, ballTypeColor.z, ballTypeColor.w };
 	j["sprite_data"] = spriteData;
 
 	ballCount::Instance().SaveToJson(j);
@@ -2151,6 +2189,12 @@ void Pitcher::LoadFromJson(const json& j)
 			infoBackPosition = { spriteData["infoBackPosition"][0], spriteData["infoBackPosition"][1] };
 		if (spriteData.contains("infoBackSize"))
 			infoBackSize = { spriteData["infoBackSize"][0], spriteData["infoBackSize"][1] };
+		if (spriteData.contains("ballTypePosition"))
+			ballTypePosition = { spriteData["ballTypePosition"][0], spriteData["ballTypePosition"][1] };
+		if (spriteData.contains("ballTypeSize"))
+			ballTypeSize = { spriteData["ballTypeSize"][0], spriteData["ballTypeSize"][1] };
+		if (spriteData.contains("ballTypeColor"))
+			ballTypeColor = { spriteData["ballTypeColor"][0], spriteData["ballTypeColor"][1], spriteData["ballTypeColor"][2], spriteData["ballTypeColor"][3] };
 	}
 
 	ballCount::Instance().LoadFromJson(j);
