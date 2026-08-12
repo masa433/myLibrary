@@ -614,6 +614,7 @@ void ballSprite::Update(float elapsedTime)
 			{
 				// ボール球を振っていた → リセット
 				Money::Instance().ResetBallZoneBonus();
+				ballCount::Instance().DecreaseRemainingBalls(1);
 				if (consoleLog)
 					consoleLog->push_back(u8"[Info] ボール球スイングでボールゾーン倍率をリセットしました。by ballSprite");
 			}

@@ -14,6 +14,7 @@
 #include <GameTimer.h>
 #include <ballCount.h>
 #include <Money.h>
+#include "shader.h"
 
 
 // 初期化
@@ -155,6 +156,36 @@ void Player::Initialize()
         pxScene->addActor(*pxBatRigidBody);
     }
 
+    ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+    D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
+    create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(),
+        input_element_desc, _countof(input_element_desc));
+    create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
+
+    swingTimingPosition = isRightBatter ? DirectX::XMFLOAT2(1050.0f, 450.0f) : DirectX::XMFLOAT2(650.0f, 450.0f);
+
+	swingTimingInfo = std::make_unique<SwingTimingInfo>();
+	swingTimingInfo->texturePath[static_cast<int>(SwingTiming::Late)] = L".\\resources\\textures\\swingLate.png";
+	swingTimingInfo->texturePath[static_cast<int>(SwingTiming::Early)] = L".\\resources\\textures\\swingEarly.png";
+    swingTimingInfo->position = {swingTimingPosition.x, swingTimingPosition.y};
+    swingTimingInfo->size = {swingTimingSize.x, swingTimingSize.y};
+    swingTimingInfo->rotation = 0.0f;
+    swingTimingInfo->color = {swingTimingColor.x, swingTimingColor.y, swingTimingColor.z, swingTimingColor.w};
+    for (int i = 1; i < static_cast<int>(SwingTiming::Count); ++i)
+    {
+        swingTimingSprite[i] = std::make_unique<sprite>(
+            device,
+            context,
+            swingTimingInfo->texturePath[i].c_str()
+        );
+    }
+
+
 	SelectRealBatter(selectedRealBatter);
 	UpdateBatterModel();
 
@@ -202,6 +233,8 @@ void Player::UpdateBatterModel()
     position = isRightBatter ? DirectX::XMFLOAT3(-1.0f, 0.01f, -0.4f) : DirectX::XMFLOAT3(1.0f, 0.01f, -0.4f);
     batPosition = isRightBatter ? DirectX::XMFLOAT3(-0.08f, 0.0f, 0.05f) : DirectX::XMFLOAT3(0.08f, 0.0f, 0.05f);
     batAngle = isRightBatter ? DirectX::XMFLOAT3(0.0f, 0.0f, -1.6f) : DirectX::XMFLOAT3(0.0f, 0.0f, 1.6f);
+
+    swingTimingPosition.x = isRightBatter ? 1050.0f : 650.0f;
 }
 
 
@@ -362,6 +395,12 @@ void Player::Update(float elapsedTime)
     // ボールの位置を取得してルックアット処理を実行
     const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetBallPosition();
     UpdateLookAt(ballPosition);
+
+    float ballZ = Ball::Instance().GetWorldPosition().z;
+    if (ballZ <= -5.0f && currentSwingTiming != SwingTiming::None && !Ball::Instance().GetHasCollidedWithBat())
+    {
+        showSwingTimingSprite = true;
+    }
 }
 
 // キー入力処理
@@ -372,6 +411,8 @@ void Player::HandleInput(float elapsedTime)
 
     float ballZ = Ball::Instance().GetWorldPosition().z;
 
+    
+  
     // スペースキーでスイング
     if (GetAsyncKeyState(VK_LBUTTON) & 0x8000 && ballZ >= -3.0f)
     {
@@ -380,8 +421,22 @@ void Player::HandleInput(float elapsedTime)
 
         
 
-        if (current_state != State::Swinging && swingCount <= 1)
-        {               
+        if (current_state != State::Swinging)
+        {      
+            if(Ball::Instance().IsBezierFlying())
+            {
+                remainingTime = Ball::Instance().GetBezierRemainingTime();
+                if (remainingTime > 0.2f)
+                {
+                    currentSwingTiming = SwingTiming::Early;
+                }
+				else
+                {
+                    currentSwingTiming = SwingTiming::Late;
+                }
+            }
+            
+        
              ChangeState(State::Swinging); 
              if (Pitcher::Instance().GetIsBallThrown())
              {
@@ -491,6 +546,41 @@ void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
 {
     currentBatter->render_batched(rc.deviceContext, transform, animated_nodes);
 
+    ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+    RenderState* renderState = Graphics::Instance().GetRenderState();
+
+    dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+    dc->PSSetShader(spritePS.Get(), nullptr, 0);
+    dc->IASetInputLayout(spriteInputLayout.Get());
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
+
+
+    if (showSwingTimingSprite && swingTimingInfo && currentSwingTiming != SwingTiming::None)
+    {
+        int timingIndex = static_cast<int>(currentSwingTiming);
+        if (timingIndex >= 0 && timingIndex < static_cast<int>(SwingTiming::Count))
+        {
+            swingTimingSprite[timingIndex]->render(
+                dc,
+                swingTimingPosition.x,
+                swingTimingPosition.y,
+				swingTimingSize.x, swingTimingSize.y,
+				swingTimingColor.x, swingTimingColor.y, swingTimingColor.z, swingTimingColor.w,
+                swingTimingInfo->rotation
+            );
+		}
+    }
+
+
+
+    // 描画後の状態をリセット
+    dc->VSSetShader(nullptr, nullptr, 0);
+    dc->PSSetShader(nullptr, nullptr, 0);
+    dc->IASetInputLayout(nullptr);
+
+    dc->OMSetDepthStencilState(
+        renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 }
 
 void Player::RenderBat(const RenderContext& rc, ModelRenderer* renderer)
@@ -548,6 +638,17 @@ void Player::DrawGUI()
         }
 
     }
+
+    if(ImGui::CollapsingHeader("Swing Timing Sprite"))
+    {
+        ImGui::DragFloat2("Position", &swingTimingPosition.x);
+		
+        ImGui::DragFloat2("Size", &swingTimingSize.x);
+        ImGui::ColorEdit4("Color", &swingTimingColor.x);
+
+		ImGui::Text("Current Swing Timing: %s", (currentSwingTiming == SwingTiming::Early) ? "Early" : (currentSwingTiming == SwingTiming::Late) ? "Late" : "None");
+        ImGui::DragFloat("remainingTime", &remainingTime, 0.01f, 0.0f, 1.0f);
+	}
     
 	HitJudge2D::Instance().DrawGUI();
 
@@ -868,6 +969,9 @@ void Player::ChangeState(State newState)
     // 構えに戻った際、またはスイングを開始した際に当たり判定を復活させる
     if (newState == State::BattingIdle)
     {
+        showSwingTimingSprite = false;
+        currentSwingTiming = SwingTiming::None;
+
         if (pxBatRigidBody)
         {
             physx::PxShape* shape = nullptr;

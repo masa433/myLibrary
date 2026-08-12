@@ -9,6 +9,7 @@
 #include "../Model/gltf_model.h"
 #include "json.hpp"
 #include "HitJudge2D.h"
+#include "sprite.h"
 
 using json = nlohmann::json;
 
@@ -331,4 +332,40 @@ public:
         { RealBatter::Ueda, 23 },
 
     };
+
+private:
+
+    enum class SwingTiming
+    {
+        None,
+        Late,
+		Early,
+        Count
+    };
+
+	struct SwingTimingInfo
+    {
+        std::wstring texturePath[static_cast<int>(SwingTiming::Count)];
+        DirectX::XMFLOAT2 position;
+        DirectX::XMFLOAT2 size;
+        float rotation;
+        DirectX::XMFLOAT4 color;
+    };
+
+	std::unique_ptr<SwingTimingInfo> swingTimingInfo;
+	std::unique_ptr<sprite> swingTimingSprite[(int)SwingTiming::Count];
+
+	SwingTiming currentSwingTiming = SwingTiming::Late;
+
+	DirectX::XMFLOAT2 swingTimingPosition = { 1050.0f, 450.0f };
+	DirectX::XMFLOAT2 swingTimingSize = { 200.0f, 100.0f };
+	DirectX::XMFLOAT4 swingTimingColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+  
+    //シェーダー関連
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
+
+	bool showSwingTimingSprite = false;
+	float remainingTime = 0.0f; // 残り時間
 };
