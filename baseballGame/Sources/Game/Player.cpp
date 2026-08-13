@@ -969,8 +969,11 @@ void Player::ChangeState(State newState)
     // 構えに戻った際、またはスイングを開始した際に当たり判定を復活させる
     if (newState == State::BattingIdle)
     {
-        showSwingTimingSprite = false;
-        currentSwingTiming = SwingTiming::None;
+        if (Pitcher::Instance().GetCurrentState() != Pitcher::State::Throwing)
+        {
+           
+            currentSwingTiming = SwingTiming::None;
+        }
 
         if (pxBatRigidBody)
         {

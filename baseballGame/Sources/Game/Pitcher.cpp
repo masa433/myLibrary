@@ -486,6 +486,8 @@ void Pitcher::ResetPitchFlags()
 	Ball::Instance().SetHasCollidedWithPole(false);
 	Ball::Instance().SetHasCollidedWithNet(false);
 	Player::Instance().ResetSwingCount();
+	Player::Instance().SetShowSwingTimingSprite(false);
+	Player::Instance().ResetSwingTiming();
 	ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
 	ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
 	ballCount::Instance().ResetHitFlag(); // ボールカウントをリセット

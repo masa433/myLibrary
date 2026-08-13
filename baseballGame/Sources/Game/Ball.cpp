@@ -161,11 +161,11 @@ void Ball::Initialize()
 	model = std::make_unique<gltf_model>(device, ".\\resources\\ball\\ball.glb");
 
 	position = { 0.0f, 0.0f, 0.05f };
-	scale = { 1.2f, 1.2f, 1.2f };
+	scale = { 1.5f, 1.5f, 1.5f };
 	angle = { 0.0f, 0.0f, 0.0f };
 	worldPosition = { 0.0f, 0.0f, 0.0f };
 	worldAngle = angle;
-	worldScale = { 1.2f, 1.2f, 1.2f };
+	worldScale = { 1.5f, 1.5f, 1.5f };
 	debugRadius = 0.037f;
 
 	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();

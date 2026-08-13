@@ -333,6 +333,10 @@ public:
 
     };
 
+	void SetShowSwingTimingSprite(bool show) { showSwingTimingSprite = show; }
+	bool GetShowSwingTimingSprite() const { return showSwingTimingSprite; }
+	void ResetSwingTiming() { currentSwingTiming = SwingTiming::None; remainingTime = 0.0f; }
+
 private:
 
     enum class SwingTiming
