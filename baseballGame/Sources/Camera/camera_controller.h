@@ -64,7 +64,7 @@ private:
 	DirectX::XMFLOAT3 transitionStartEye = {};
 	DirectX::XMFLOAT3 transitionStartFocus = {};
 	bool lockFocusY = false; // 追跡中に focus の Y 座標を固定するかどうか
-	float trackedFocusY = 10.0f; // 追跡中固定するfocusのY座標
+	float trackedFocusY = 0.0f; // 追跡中固定するfocusのY座標
 
 	// スムーズ追従用（現在の eye/focus を保持して lerp する）
 	DirectX::XMFLOAT3   smoothEye = {};

@@ -1,6 +1,7 @@
 ﻿#include "HomeRunCount.h"
 #include "Graphics.h"
 #include "imgui.h"
+#include "RoundManager.h"
 
 void HomeRunCount::Initialize(ID3D11Device* device)
 {
@@ -30,7 +31,7 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 	// ホームラン数表示に必要な文字だけをベイクする
 	std::vector<int> homeRunCountCodepoints = FontRenderer::Utf8ToCodepoints(
-		u8"0123456789HOMERUN");
+		u8"0123456789HOMERUN/");
 	// フォントレンダラーの初期化
 	homeRunCountFont.Initialize(device,
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
@@ -98,8 +99,10 @@ void HomeRunCount::Render()
 	//	1.0f, 1.0f, 1.0f, 1.0f); // 白色
 
 	// 数字だけ大きく、ラベルの下に描画
+	int currentHomeRunTarget = RoundManager::Instance().GetCurrentTarget();
+
 	char numberBuffer[16];
-	sprintf_s(numberBuffer, sizeof(numberBuffer), "%d", homeRunCount);
+	sprintf_s(numberBuffer, sizeof(numberBuffer), "%d / %d", homeRunCount , currentHomeRunTarget);
 
 	// 中央寄せしたい場合は幅を測ってから位置を調整
 	float numberWidth = 0.0f, numberHeight = 0.0f;

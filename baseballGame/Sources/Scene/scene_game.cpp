@@ -28,6 +28,7 @@
 #include <string>
 #include <random>
 #include <ballCount.h>
+#include "RoundManager.h"
 
 
 using json = nlohmann::json;
@@ -151,6 +152,8 @@ void scene_game::initialize()
     BallNet::Instance().Initialize();
 
 	Money::Instance().Initialize(device);
+
+    RoundManager::Instance().Initialize(device);
 
     shadowRenderer.Initialize();
 
@@ -428,6 +431,8 @@ void scene_game::update(float elapsed_time)
 	BallNet::Instance().Update(elapsed_time);
 
 	Money::Instance().Update(elapsed_time);
+
+	RoundManager::Instance().Update(elapsed_time);
 
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
@@ -728,6 +733,8 @@ void scene_game::render(float elapsedTime)
 
 	Money::Instance().Render();
 
+	RoundManager::Instance().Render();
+
     // ShapeRenderer の描画実行
 
     if (showPhysxDebug)
@@ -797,6 +804,7 @@ void scene_game::uninitialize()
     Result::Instance().Uninitialize();
 	BallNet::Instance().Uninitialize();
 	Money::Instance().Uninitialize();
+	RoundManager::Instance().Uninitialize();
 
     skyRenderer.Uninitialize();
 	shadowRenderer.Uninitialize();
@@ -886,6 +894,8 @@ void scene_game::DrawGUI()
 		if (ImGui::CollapsingHeader("Ball Net")) { BallNet::Instance().DrawGUI(); }
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Money")) { Money::Instance().DrawGUI(); }
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Round Manager")) { RoundManager::Instance().DrawGUI(); }
 
         ImGui::End();
 
@@ -1356,6 +1366,7 @@ void scene_game::SaveSetting()
 	Result::Instance().SaveToJson(j["result"]);
 	BallNet::Instance().SaveToJson(j["ballNet"]);
 	Money::Instance().SaveToJson(j["money"]);
+	RoundManager::Instance().SaveToJson(j["roundManager"]);
 
     // ファイルに保存
     std::ofstream file("resources\\setting\\settings.json");
@@ -1527,5 +1538,6 @@ void scene_game::LoadSetting()
 	if (j.contains("result")) Result::Instance().LoadFromJson(j["result"]);
 	if (j.contains("ballNet")) BallNet::Instance().LoadFromJson(j["ballNet"]);
 	if (j.contains("money")) Money::Instance().LoadFromJson(j["money"]);
+	if (j.contains("roundManager")) RoundManager::Instance().LoadFromJson(j["roundManager"]);
     consoleLog.push_back("[Info] Settings loaded.");
 }

@@ -1,1 +1,50 @@
 #pragma once
+#include <DirectXMath.h>
+#include <d3d11.h>
+#include <memory>
+#include <wrl.h>
+#include "FontRenderer.h"
+#include "json.hpp"
+
+using json = nlohmann::json;
+
+class RoundManager
+{
+
+public:
+	static RoundManager& Instance()
+	{
+		static RoundManager instance;
+		return instance;
+	}
+	void Initialize(ID3D11Device* device);
+	void Uninitialize();
+	void Update(float elapsedTime);
+	void Render();
+	void DrawGUI();
+	void SaveToJson(json& j);
+	void LoadFromJson(const json& j);
+	void IncreaseRound() { if (currentRound < totalRounds) currentRound++; }
+
+	int GetCurrentTarget() const
+	{
+		int index = currentRound - 1;
+		// 配列の範囲内かどうかを確認
+		if(index >= 0 && index < targetHomeRuns.size())
+		{
+			return targetHomeRuns[index];// 現在のラウンドに対応する目標本塁打数を返す
+		}
+		return 0; // デフォルト値
+	}
+
+private:
+	int currentRound = 1;
+	int totalRounds = 5;
+	std::vector<int> targetHomeRuns = { 0,1,2,3,5 };
+
+	FontRenderer roundFont;
+	DirectX::XMFLOAT2 roundTextPosition = { 20.0f, 20.0f };
+	float roundTextScale = 1.0f;
+	DirectX::XMFLOAT4 roundTextColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+};
