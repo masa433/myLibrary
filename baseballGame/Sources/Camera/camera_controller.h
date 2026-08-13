@@ -19,7 +19,8 @@ public:
 	// ball        : 追跡対象のBallインスタンス
 	// offsetBack  : ボール後方への距離（デフォルト 3.0m）
 	// offsetUp    : ボール上方へのオフセット（デフォルト 0.5m）
-	void StartTrackingBall(const Ball* ball, float offsetTracking = 3.0f, float offsetUp = 0.5f);
+	// lockFocusY : 追跡中に focus の Y 座標を固定するかどうか（デフォルト false）
+	void StartTrackingBall(const Ball* ball, float offsetTracking = 3.0f, float offsetUp = 0.5f, bool lockY = false);
 
 	//ボール追跡カメラを停止する
 	void StopTrackingBall();
@@ -62,6 +63,8 @@ private:
 	// 追跡開始位置への補間用
 	DirectX::XMFLOAT3 transitionStartEye = {};
 	DirectX::XMFLOAT3 transitionStartFocus = {};
+	bool lockFocusY = false; // 追跡中に focus の Y 座標を固定するかどうか
+	float trackedFocusY = 10.0f; // 追跡中固定するfocusのY座標
 
 	// スムーズ追従用（現在の eye/focus を保持して lerp する）
 	DirectX::XMFLOAT3   smoothEye = {};
@@ -126,4 +129,13 @@ private:
 		float trackingBlendTime = 0.0f;                    // Tracking開始からの経過時間
 		static constexpr float trackingBlendDuration = 0.5f; // この秒数かけて本速度に移行
 
+public:
+
+	//ホームラン着弾時の球ズーム演出
+	void TriggerImpactZoom(float impactFov = DirectX::XMConvertToRadians(5.0f), float duration = 5.0f);
+	
+private:
+	bool impactZoomActive = false;
+	float impactZoomFov = 0.0f;
+	float impactZoomDuration = 5.0f;
 };

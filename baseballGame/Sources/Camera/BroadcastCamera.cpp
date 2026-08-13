@@ -233,16 +233,37 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 	//打球方向によってアクティブにするカメラを変える
 	float ballDirection = Physics::Instance().GetBallDirection();
 	float originalDirection = Physics::Instance().GetBallOriginalDirection();
+	float ballAngle = Physics::Instance().GetBallAngle();
+	bool passedHomeRun = Ball::Instance().GetHasPassedHomeRunZone();
+	bool hitGroundOrStand = Ball::Instance().GetHasCollidedWithGround() ||
+		Ball::Instance().GetHasCollidedWithFence();
+
+	if(passedHomeRun && hitGroundOrStand && !hasTriggeredImpactZoom)
+	{
+		zoomStartDelay += elapsed_time;
+
+		if(zoomStartDelay >= zoomStartTime)
+		{
+			hasTriggeredImpactZoom = true;
+			//Y軸固定も外す
+			forceLockFocusYThisPlay = false;
+
+			cameraControllers[activeCameraIndex].TriggerImpactZoom(DirectX::XMConvertToRadians(2.0f), 5.0f);
+		}
+
+	}
 
 	//バットに当たった瞬間にHitCameraの追跡を開始する
 	if(ballHasCollidedWithBat && !prevHasCollidedWithBat)
 	{
 		Physics::Instance().ClearBallWasHit();
+		forceLockFocusYThisPlay = (ballAngle >= 55.0f);
 		for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
 		{
 			if (cameraPresets[i].type == CameraType::HitCamera || cameraPresets[i].type == CameraType::ReplayCamera)
 			{
-				cameraControllers[i].StartTrackingBall(&Ball::Instance(), 3.0f, -30.0f);
+				bool lockY = cameraPresets[i].lockFocusY || forceLockFocusYThisPlay;
+				cameraControllers[i].StartTrackingBall(&Ball::Instance(), 3.0f, -30.0f, lockY);
 			}
 		}
 	}
@@ -466,6 +487,9 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 				break;
 			}
 		}
+		forceLockFocusYThisPlay = false;
+		hasTriggeredImpactZoom = false;
+		zoomStartDelay = 0.0f;
 		StopAllTracking();
 	}
 
@@ -498,6 +522,8 @@ void BroadcastCamera::StopAllTracking()
 		controller.StopTrackingBall();
 	}
 	activeCameraIndex = 0; // デフォルトカメラに戻す
+	hasTriggeredImpactZoom = false; // インパクトズームのフラグをリセット
+	zoomStartDelay = 0.0f;
 }
 
 std::string BroadcastCamera::GetPresetNameById(int cameraId) const
@@ -582,7 +608,9 @@ void BroadcastCamera::DrawGUI()
 				if (ImGui::Combo(u8"カメラタイプ", &currentTypeIndex, cameraTypeItems, IM_ARRAYSIZE(cameraTypeItems)))
 				{
 					preset.type = static_cast<CameraType>(currentTypeIndex);
-				}
+				}				
+
+				ImGui::Checkbox(u8"注視点のY方向を固定", &preset.lockFocusY);
 
 				// カメラIDを編集できるようにする
 				changed |= ImGui::InputInt(u8"カメラID", &preset.cameraId);
@@ -643,6 +671,7 @@ void BroadcastCamera::SaveToJson(json& j) const
 		j["relay_cameras"][i]["zoom_far_dist"] = p.zoomFarDist;
 		j["relay_cameras"][i]["type"] = static_cast<int>(p.type);
 		j["relay_cameras"][i]["cameraId"] = p.cameraId;
+		j["relay_cameras"][i]["lockFocusY"] = p.lockFocusY;
 	}
 	j["relay_cameras_active_index"] = activeCameraIndex;
 }
@@ -669,6 +698,7 @@ void BroadcastCamera::LoadFromJson(const nlohmann::json& j)
 		preset.zoomFarDist = jc.value("zoom_far_dist", 130.0f);
 		preset.type = static_cast<CameraType>(jc.value("type", 0));
 		preset.cameraId = jc.value("cameraId", -1);
+		preset.lockFocusY = jc.value("lockFocusY", false);
 		AddCameraPreset(preset);
 	}
 	activeCameraIndex = j.value("relay_cameras_active_index", 0);

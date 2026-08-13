@@ -53,7 +53,7 @@ void CameraController::SyncControllerToCamera(Camera& camera)
 
 
 // ボール追跡カメラを開始する
-void CameraController::StartTrackingBall(const Ball* ball, float offsetTracking, float offsetUp)
+void CameraController::StartTrackingBall(const Ball* ball, float offsetTracking, float offsetUp, bool lockY)
 {
 	
 	if (!ball) return;
@@ -73,6 +73,9 @@ void CameraController::StartTrackingBall(const Ball* ball, float offsetTracking,
 	//スムーズ追従の初期値も現在位置に保存
 	//smoothEye = eye;
 	smoothFocus = focus;
+
+	lockFocusY = lockY;
+	trackedFocusY = focus.y;
 
 	zoomTime = 0.0f;
 
@@ -96,6 +99,7 @@ void CameraController::StopTrackingBall()
 	focus = savedFocus;
 
 	currentFov = defaultFov;
+	impactZoomActive = false;
 }
 
 // 更新処理
@@ -105,8 +109,11 @@ void CameraController::Update(float elapsedTime)
 	if (trackingState != TrackState::None && trackedBall)
 	{
 		//ボールの位置と速度を保存
-		const DirectX::XMFLOAT3& ballPos = trackedBall->GetWorldPosition();
-		
+		DirectX::XMFLOAT3 ballPos = trackedBall->GetWorldPosition();
+		if (lockFocusY)
+		{
+			ballPos.y = trackedFocusY; // Y固定モードなら目標のYを上書き
+		}
 		
 		if (trackingState == TrackState::Transition)
 		{
@@ -127,7 +134,7 @@ void CameraController::Update(float elapsedTime)
 				trackingState = TrackState::Tracking;
 			}
 		}
-		else// TrackingState::Tracking
+		else if (trackingState == TrackState::Tracking)
 		{
 			// Tracking開始直後は追従速度を抑えて徐々に本速度へ
 			trackingBlendTime += elapsedTime;
@@ -162,6 +169,12 @@ void CameraController::Update(float elapsedTime)
 			
 		}
 
+		if (impactZoomActive)
+		{
+			float fovLerp = 1.0f - expf(-impactZoomDuration * elapsedTime);
+			currentFov += (impactZoomFov - currentFov) * fovLerp;
+		}
+
 		// up ベクトルは常にワールド Y 軸方向で固定
 		up = { 0.0f, 1.0f, 0.0f };
 
@@ -172,6 +185,15 @@ void CameraController::Update(float elapsedTime)
 	}
 
 	
+}
+
+void CameraController::TriggerImpactZoom(float impactFov, float duration)
+{
+	impactZoomFov = impactFov;
+	impactZoomDuration = duration;
+	impactZoomActive = true;
+
+	lockFocusY = false; // Y固定モードを解除
 }
 
 void CameraController::DrawGUI()

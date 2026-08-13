@@ -1,71 +1,12 @@
-﻿  Pitcher.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
-  
-  Player.cpp
-  Result.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Game/Result.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Game/Result.cpp' をコンパイルしています)
-  
-  ballSprite.cpp
-  batSprite.cpp
-  physxManager.cpp
-  ShadowRenderer.cpp
-  batterSelectScene.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\batterSelectScene.cpp(28,24): warning C4267: '=': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
-  scene_game.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(323,147): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(323,107): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(530,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
-  scene_title.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(109,144): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(109,104): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  framework.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
-  
-  main.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/System/main.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/System/main.cpp' をコンパイルしています)
-  
-  ButtonManager.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/UI/ButtonManager.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/UI/ButtonManager.cpp' をコンパイルしています)
-  
-  ScrollView.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\UI\ScrollView.cpp(463,13): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
-  コードを生成中...
+﻿  BroadcastCamera.cpp
+     ライブラリ C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.lib とオブジェクト C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exp を作成中
+LINK : warning LNK4217: シンボル 'PxGetPhysics' ('PhysX_static_64.lib(NpPhysics.obj)' で定義) が 'Pitcher.obj' によって関数 '"public: static class physx::PxShape * __cdecl physx::PxRigidActorExt::createExclusiveShape(class physx::PxRigidActor &,class physx::PxGeometry const &,class physx::PxMaterial * const *,unsigned short,class physx::PxFlags<enum physx::PxShapeFlag::Enum,unsigned char>)" (?createExclusiveShape@PxRigidActorExt@physx@@SAPEAVPxShape@2@AEAVPxRigidActor@2@AEBVPxGeometry@2@PEBQEAVPxMaterial@2@GV?$PxFlags@W4Enum@PxShapeFlag@physx@@E@2@@Z)' 内でインポートされています
+LINK : warning LNK4217: シンボル 'PxGetPhysics' ('PhysX_static_64.lib(NpPhysics.obj)' で定義) が 'Player.obj' によって関数 '"public: void __cdecl Player::RenderPlayer(class RenderContext const &,class ModelRenderer *)" (?RenderPlayer@Player@@QEAAXAEBVRenderContext@@PEAVModelRenderer@@@Z)' 内でインポートされています
+LINK : warning LNK4286: シンボル 'PxGetPhysics' ('PhysX_static_64.lib(NpPhysics.obj)' で定義) が 'stage.obj' によってインポートされています
+LINK : warning LNK4217: シンボル 'PxGetStandaloneInsertionCallback' ('PhysXCooking_static_64.lib(Cooking.obj)' で定義) が 'Player.obj' によって関数 '"class physx::PxConvexMesh * __cdecl PxCreateConvexMesh(struct physx::PxCookingParams const &,class physx::PxConvexMeshDesc const &)" (?PxCreateConvexMesh@@YAPEAVPxConvexMesh@physx@@AEBUPxCookingParams@2@AEBVPxConvexMeshDesc@2@@Z)' 内でインポートされています
+LINK : warning LNK4286: シンボル 'PxGetStandaloneInsertionCallback' ('PhysXCooking_static_64.lib(Cooking.obj)' で定義) が 'stage.obj' によってインポートされています
+LINK : warning LNK4217: シンボル 'PxCreateConvexMesh' ('PhysXCooking_static_64.lib(Cooking.obj)' で定義) が 'Player.obj' によって関数 '"class physx::PxConvexMesh * __cdecl PxCreateConvexMesh(struct physx::PxCookingParams const &,class physx::PxConvexMeshDesc const &)" (?PxCreateConvexMesh@@YAPEAVPxConvexMesh@physx@@AEBUPxCookingParams@2@AEBVPxConvexMeshDesc@2@@Z)' 内でインポートされています
+LINK : warning LNK4217: シンボル 'PxCreateTriangleMesh' ('PhysXCooking_static_64.lib(Cooking.obj)' で定義) が 'stage.obj' によって関数 '"class physx::PxTriangleMesh * __cdecl PxCreateTriangleMesh(struct physx::PxCookingParams const &,class physx::PxTriangleMeshDesc const &)" (?PxCreateTriangleMesh@@YAPEAVPxTriangleMesh@physx@@AEBUPxCookingParams@2@AEBVPxTriangleMeshDesc@2@@Z)' 内でインポートされています
+LINK : warning LNK4217: シンボル 'PxCreateFoundation' ('PhysXFoundation_static_64.lib(FdFoundation.obj)' で定義) が 'physxManager.obj' によって関数 '"public: void __cdecl Physics::Initialize(void)" (?Initialize@Physics@@QEAAXXZ)' 内でインポートされています
+LINK : warning LNK4217: シンボル 'PxCreatePhysics' ('PhysX_static_64.lib(NpPhysics.obj)' で定義) が 'physxManager.obj' によって関数 '"public: void __cdecl Physics::Initialize(void)" (?Initialize@Physics@@QEAAXXZ)' 内でインポートされています
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

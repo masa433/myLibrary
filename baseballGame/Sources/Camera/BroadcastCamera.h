@@ -35,6 +35,7 @@ public:
 		float zoomFarDist = 100.0f;  // この距離以上でfovFar
 		CameraType type = CameraType::HomeRunCamera; // カメラの種類
 		int cameraId = -1; // カメラのID（必要に応じて使用）
+		bool lockFocusY = false; // 追跡中に focus の Y 座標を固定するかどうか
 	};
 
 	//カメラ関連の関数
@@ -80,7 +81,10 @@ public:
 	bool prevHasCollidedWithBat = false; // 前フレームでボールがバットに当たったかどうかのフラグ
 	bool prevHasShowTrackingData = false; // 前フレームで追跡データを表示していたかどうかのフラグ
 	bool prevIsHomeRun = false; // 前フレームでホームランだったかどうかのフラグ
-
+	bool forceLockFocusYThisPlay = false;
+	bool hasTriggeredImpactZoom = false;//ホームラン時のズームを一度だけ発動させるためのフラグ
+	float zoomStartDelay = 0.0f; // ズーム開始までの遅延時間（秒）
+	float zoomStartTime = 0.2f; // ズーム開始までの時間（秒）
 private:
 	//カメラ配列
 	std::vector<CameraPreset> cameraPresets;
