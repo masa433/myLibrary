@@ -300,6 +300,9 @@ public:
 	};
 	BallSpeedMode ballSpeedMode = BallSpeedMode::realSpeed;
 
+	BallSpeedMode GetBallSpeedMode() const { return ballSpeedMode; }
+	void SetBallSpeedMode(BallSpeedMode mode) { ballSpeedMode = mode;}
+
 
 private:
 	void UpdatePitcherModel();

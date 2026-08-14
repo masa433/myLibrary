@@ -59,6 +59,19 @@ void RoundManager::Update(float elapsedTime)
 			isGameOver = true;
 		}
 	}
+
+	if (currentRound <= 2)
+	{
+		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::slowSpeed);
+	}
+	else if(currentRound <= 4)
+	{
+		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::highSpeed);
+	}
+	else
+	{
+		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::realSpeed);
+	}
 }
 
 void RoundManager::Render()
