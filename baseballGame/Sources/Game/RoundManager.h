@@ -25,6 +25,10 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 	void IncreaseRound() { if (currentRound < totalRounds) currentRound++; }
+	//最終ラウンドに到達したかを判定する関数
+	bool IsFinalRound() const { return currentRound >= totalRounds; }
+	bool IsGameOver() const {return isGameOver;}
+	bool IsGameClear() const { return isGameClear; }
 
 	int GetCurrentTarget() const
 	{
@@ -47,4 +51,6 @@ private:
 	float roundTextScale = 1.0f;
 	DirectX::XMFLOAT4 roundTextColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+	bool isGameOver = false; // ゲームオーバー状態を示すフラグ
+	bool isGameClear = false; // ゲームクリア状態を示すフラグ
 };

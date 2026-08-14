@@ -28,6 +28,7 @@ public:
 
 	int GetRemainingBalls() const { return remainingBalls; }
 	void SetRemainingBalls(int balls) { remainingBalls = balls; }
+	void ResetRemainingBalls() { remainingBalls = 10; } //‹…”‚ğƒŠƒZƒbƒg‚·‚éŠÖ”
 
 	//‹…”‚ğŒ¸‚ç‚·ŠÖ”
 	void DecreaseRemainingBalls(int amount)

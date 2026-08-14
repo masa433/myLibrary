@@ -720,7 +720,9 @@ void scene_game::render(float elapsedTime)
 
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
-    if(!GameTimer::Instance().IsFinished())BatSprite::Instance().Render();
+   
+    BatSprite::Instance().Render();
+
     ballSprite::Instance().Render();
 
     //GameTimer::Instance().Render();
@@ -784,7 +786,7 @@ void scene_game::render(float elapsedTime)
         dstRes->Release();
     }
 
-    if (ballCount::Instance().GetRemainingBalls() <= 0 && Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
+    if (RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver())
     {
         //リザルトを表示する
         Result::Instance().Render();

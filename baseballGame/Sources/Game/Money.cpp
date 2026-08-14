@@ -132,6 +132,9 @@ void Money::Initialize(ID3D11Device* device)
 		512, 512,
 		&resultCodepoints);
 
+	currentMoney = 0;
+	targetMoney = 0;
+
 }
 
 void Money::Uninitialize()

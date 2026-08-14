@@ -2,6 +2,9 @@
 #include "Graphics.h"
 #include "imgui.h"
 #include "shader.h"
+#include "ballCount.h"
+#include "Pitcher.h"
+#include "HomeRunCount.h"
 
 void RoundManager::Initialize(ID3D11Device* device)
 {
@@ -18,6 +21,11 @@ void RoundManager::Initialize(ID3D11Device* device)
 		screenWidth, screenHeight,
 		1024, 1024,
 		&trackingDataCodepoints);
+
+	isGameClear = false;
+	isGameOver = false;
+
+	currentRound = 1; // 初期ラウンドを設定
 }
 
 void RoundManager::Uninitialize()
@@ -27,7 +35,30 @@ void RoundManager::Uninitialize()
 
 void RoundManager::Update(float elapsedTime)
 {
-	// 現在のラウンドに応じた処理をここに追加することができます。
+	bool isPitchFinished = (ballCount::Instance().GetRemainingBalls() <= 0 &&
+		Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch);
+
+	if (isPitchFinished)
+	{
+		bool targetReached = HomeRunCount::Instance().IsHomeRunCountExceeded(GetCurrentTarget());
+		if (targetReached)
+		{
+			if (IsFinalRound())
+			{
+				isGameClear = true;
+			}
+			else
+			{
+				IncreaseRound();
+				ballCount::Instance().ResetRemainingBalls();
+				HomeRunCount::Instance().ResetCount();
+			}
+		}
+		else
+		{
+			isGameOver = true;
+		}
+	}
 }
 
 void RoundManager::Render()

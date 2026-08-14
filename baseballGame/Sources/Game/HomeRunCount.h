@@ -39,6 +39,12 @@ public:
 		numberAlpha = 1.0f; 
 	}
 
+	//現在のホームラン数が目標値を超えているかどうかを判定する関数
+	bool IsHomeRunCountExceeded(int targetCount) const
+	{
+		return homeRunCount >= targetCount;
+	}
+
 private:
 	int homeRunCount = 0;//ホームラン数を保持する変数
 	int previousHomeRunCount = 0;//前回のホームラン数を保持する変数
