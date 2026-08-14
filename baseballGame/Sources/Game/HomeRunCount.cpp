@@ -31,7 +31,8 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 	// ホームラン数表示に必要な文字だけをベイクする
 	std::vector<int> homeRunCountCodepoints = FontRenderer::Utf8ToCodepoints(
-		u8"0123456789HOMERUN/");
+		u8"0123456789HOMERUN/"
+	u8"お金をためよう！");
 	// フォントレンダラーの初期化
 	homeRunCountFont.Initialize(device,
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
@@ -57,16 +58,35 @@ void HomeRunCount::Update(float elapsedTime)
 	{
 		previousHomeRunCount = homeRunCount;
 		numberDisplayScale = numberScale * numberPopScaleMultiplier; // 大きい状態から開始
+		goldColorTime = 1.0f; // ゴールドカラーの表示時間をリセット
 	}
 
 	// 現在のスケールを基準サイズへ滑らかに近づける
-	if (numberDisplayScale > numberScale)
+	bool isAnimating = numberDisplayScale > numberScale;
+
+	if (isAnimating)
 	{
 		numberDisplayScale -= numberScaleAnimSpeed * elapsedTime;
 		if (numberDisplayScale < numberScale)
 		{
 			numberDisplayScale = numberScale;
 		}
+
+	}
+
+	if (isAnimating)
+	{
+		countColor = DirectX::XMFLOAT4(1.0f, 0.84f, 0.0f, 1.0f); // 金色
+	}
+	else if(goldColorTime > 0.0f)
+	{
+		goldColorTime -= elapsedTime;
+		countColor = DirectX::XMFLOAT4(1.0f, 0.84f, 0.0f, 1.0f); // 金色
+	}
+
+	else
+	{
+		countColor = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // 白色
 	}
 }
 
@@ -100,22 +120,63 @@ void HomeRunCount::Render()
 
 	// 数字だけ大きく、ラベルの下に描画
 	int currentHomeRunTarget = RoundManager::Instance().GetCurrentTarget();
+	int currentRound = RoundManager::Instance().GetCurrentRound();
+	char roundBuffer[64];
+	if(currentRound ==1)
+	{
+		sprintf_s(roundBuffer, sizeof(roundBuffer), u8"お金をためよう！");
+	}
+	
 
-	char numberBuffer[16];
-	sprintf_s(numberBuffer, sizeof(numberBuffer), "%d / %d", homeRunCount , currentHomeRunTarget);
+	char countBuffer[16];
+	char slashBuffer[4] = " / ";
+	char targetBuffer[16];
+	sprintf_s(countBuffer, sizeof(countBuffer), "%d", homeRunCount);
+	sprintf_s(targetBuffer, sizeof(targetBuffer), "%d", currentHomeRunTarget);
 
 	// 中央寄せしたい場合は幅を測ってから位置を調整
-	float numberWidth = 0.0f, numberHeight = 0.0f;
-	homeRunCountFont.MeasureText(numberBuffer, numberDisplayScale, numberWidth, numberHeight);
-	float numberX = homeRunCountSpriteData->position.x
-		+ homeRunCountSpriteData->size.x * 0.5f - numberWidth * 0.5f;
+	float countWidth = 0.0f, countHeight = 0.0f;
+	float slashWidth = 0.0f, slashHeight = 0.0f;
+	float targetWidth = 0.0f, targetHeight = 0.0f;
+	homeRunCountFont.MeasureText(countBuffer, numberDisplayScale, countWidth, countHeight);
+	homeRunCountFont.MeasureText(slashBuffer, slashDisplayScale, slashWidth, slashHeight);
+	homeRunCountFont.MeasureText(targetBuffer, targetDisplayScale, targetWidth, targetHeight);
 
-	homeRunCountFont.DrawTextW(dc,
-		numberBuffer,
-		numberX,
-		numberPositionY,
-		numberDisplayScale,
-		numberColor.x, numberColor.y, numberColor.z, numberColor.w); // 金色にして目立たせる例
+	float totalWidth = countWidth + slashWidth + targetWidth;
+	float startX = homeRunCountSpriteData->position.x + (homeRunCountSpriteData->size.x - totalWidth) / 2.0f;
+
+	if(currentRound == 1)
+	{
+		homeRunCountFont.DrawTextW(dc,
+			roundBuffer,
+			labelPositionX,
+			labelPositionY,
+			labelScale,
+			1.0f, 1.0f, 1.0f, 1.0f); // 白色
+	}
+	else
+	{
+		homeRunCountFont.DrawTextW(dc,
+			countBuffer,
+			startX,
+			numberPositionY,
+			numberDisplayScale,
+			countColor.x, countColor.y, countColor.z, countColor.w); // 金色にして目立たせる例
+
+		homeRunCountFont.DrawTextW(dc,
+			slashBuffer,
+			startX + countWidth,
+			numberPositionY,
+			slashDisplayScale,
+			slashColor.x, slashColor.y, slashColor.z, slashColor.w); // 金色にして目立たせる例
+
+		homeRunCountFont.DrawTextW(dc,
+			targetBuffer,
+			startX + countWidth + slashWidth,
+			numberPositionY,
+			targetDisplayScale,
+			targetColor.x, targetColor.y, targetColor.z, targetColor.w); // 金色にして目立たせる例
+	}
 
 	// 後始末（Wind と同じ）
 	dc->VSSetShader(nullptr, nullptr, 0);
@@ -141,7 +202,9 @@ void HomeRunCount::DrawGUI()
 		ImGui::DragFloat("Label Scale", &labelScale);
 		ImGui::DragFloat2("Number Position", &numberPositionX);
 		ImGui::DragFloat("Number Scale", &numberScale);
-		ImGui::ColorEdit4("Number Color", &numberColor.x);
+		ImGui::ColorEdit4("Number Count Color", &countColor.x);
+		ImGui::ColorEdit4("Number Slash Color", &slashColor.x);
+		ImGui::ColorEdit4("Number Target Color", &targetColor.x);
 
 		ImGui::Separator();
 		ImGui::DragFloat("Pop Scale Multiplier", &numberPopScaleMultiplier, 0.05f, 1.0f, 5.0f);
@@ -164,7 +227,9 @@ void HomeRunCount::SaveToJson(nlohmann::json& j)
 		{"labelScale", labelScale},
 		{"numberPosition", {numberPositionX, numberPositionY}},
 		{"numberScale", numberScale},
-		{"numberColor", {numberColor.x, numberColor.y, numberColor.z, numberColor.w}}
+		{"numberCountColor", {countColor.x, countColor.y, countColor.z, countColor.w}},
+		{"numberSlashColor", {slashColor.x, slashColor.y, slashColor.z, slashColor.w}},
+		{"numberTargetColor", {targetColor.x, targetColor.y, targetColor.z, targetColor.w}}
 	};
 }
 
@@ -236,15 +301,37 @@ void HomeRunCount::LoadFromJson(const nlohmann::json& j)
 		}
 		if (fontJson.contains("numberScale"))
 			numberScale = fontJson["numberScale"].get<float>();
-		if (fontJson.contains("numberColor"))
+		if (fontJson.contains("numberCountColor"))
 		{
-			const auto& color = fontJson["numberColor"];
+			const auto& color = fontJson["numberCountColor"];
 			if (color.is_array() && color.size() == 4)
 			{
-				numberColor.x = color[0].get<float>();
-				numberColor.y = color[1].get<float>();
-				numberColor.z = color[2].get<float>();
-				numberColor.w = color[3].get<float>();
+				countColor.x = color[0].get<float>();
+				countColor.y = color[1].get<float>();
+				countColor.z = color[2].get<float>();
+				countColor.w = color[3].get<float>();
+			}
+		}
+		if (fontJson.contains("numberSlashColor"))
+		{
+			const auto& color = fontJson["numberSlashColor"];
+			if (color.is_array() && color.size() == 4)
+			{
+				slashColor.x = color[0].get<float>();
+				slashColor.y = color[1].get<float>();
+				slashColor.z = color[2].get<float>();
+				slashColor.w = color[3].get<float>();
+			}
+		}
+		if (fontJson.contains("numberTargetColor"))
+		{
+			const auto& color = fontJson["numberTargetColor"];
+			if (color.is_array() && color.size() == 4)
+			{
+				targetColor.x = color[0].get<float>();
+				targetColor.y = color[1].get<float>();
+				targetColor.z = color[2].get<float>();
+				targetColor.w = color[3].get<float>();
 			}
 		}
 	}

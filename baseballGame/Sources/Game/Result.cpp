@@ -151,7 +151,7 @@ void Result::Render()
 	if (resultFont.IsValid())
 	{
 		
-		std::string homeRunText = u8"ホームラン: " + std::to_string(HomeRunCount::Instance().GetHomeRunCount()) + u8"本";
+		std::string homeRunText = u8"ホームラン: " + std::to_string(HomeRunCount::Instance().GetTotalHomeRunCount()) + u8"本";
 		std::string distanceText = u8"最高飛距離: " + std::to_string(static_cast<int>(BallDistance::Instance().GetMaxDistance())) + u8"m";
 
 		resultFont.DrawTextW(dc, homeRunText.c_str(),

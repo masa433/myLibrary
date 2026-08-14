@@ -29,6 +29,7 @@ public:
 	bool IsFinalRound() const { return currentRound >= totalRounds; }
 	bool IsGameOver() const {return isGameOver;}
 	bool IsGameClear() const { return isGameClear; }
+	int GetCurrentRound() const { return currentRound; }
 
 	int GetCurrentTarget() const
 	{

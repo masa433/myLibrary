@@ -28,8 +28,9 @@ public:
 	void SaveToJson(nlohmann::json& j);
 	void LoadFromJson(const nlohmann::json& j);
 
-	void IncrementCount() { homeRunCount++; }
+	void IncrementCount() { homeRunCount++; totalHomeRunCount++; }
 	int GetHomeRunCount() const { return homeRunCount; }
+	int GetTotalHomeRunCount() const { return totalHomeRunCount; }
 
 	void ResetCount()
 	{
@@ -48,6 +49,7 @@ public:
 private:
 	int homeRunCount = 0;//ホームラン数を保持する変数
 	int previousHomeRunCount = 0;//前回のホームラン数を保持する変数
+	int totalHomeRunCount = 0; //累計ホームラン数を保持する変数
 
 	//スプライトデータ
 	struct Sprite
@@ -77,12 +79,17 @@ private:
 	float numberPositionX = 10.0f;
 	float numberPositionY = 50.0f;
 	float numberScale = 1.0f;
-	DirectX::XMFLOAT4 numberColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT4 countColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT4 slashColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT4 targetColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	float goldColorTime = 0.0f; // ゴールドカラーの時間経過を追跡する変数
 
 	//カウントポップアニメーション
 	float numberDisplayScale = 3.0f;      // 実際に描画に使う現在のスケール
 	float numberPopScaleMultiplier = 1.8f; // 増えた瞬間に何倍まで大きくするか
 	float numberScaleAnimSpeed = 6.0f;    // 元のサイズへ戻る速度（大きいほど速い）
+	float slashDisplayScale = 3.0f;      // 実際に描画に使う現在のスケール
+	float targetDisplayScale = 3.0f; // 元のサイズに戻すための目標スケール
 
 	//透明度を徐々に0にするための変数
 	float numberAlpha = 1.0f; // 現在の透明度

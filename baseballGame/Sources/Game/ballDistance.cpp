@@ -82,6 +82,7 @@ void BallDistance::Update(float elapsedTime)
 
 		snprintf(distanceText, sizeof(distanceText), "%.fm", currentDistance);
 		hasDistanceText = true;
+		fontColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // 白色に戻す
 	}
 	else 
 	{
@@ -99,7 +100,12 @@ void BallDistance::Update(float elapsedTime)
 			maxDistance = currentDistance;
 		}
 
+		if (Ball::Instance().GetHasPassedHomeRunZone())
+		{
+			fontColor = { 1.0f,0.85f,0.0f,1.0f };// ホームランゾーンを超えたら、金色にする
+		}
 	}
+	
 }
 
 void BallDistance::Render()
