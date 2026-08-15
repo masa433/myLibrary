@@ -2,6 +2,8 @@
 #include "Graphics.h"
 #include "imgui.h"
 #include "RoundManager.h"
+#include "Combo.h"
+#include <Pitcher.h>
 
 void HomeRunCount::Initialize(ID3D11Device* device)
 {
@@ -41,6 +43,8 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 		512, 512,
 		&homeRunCountCodepoints);
 
+	Combo::Instance().Initialize(device);
+
 	ResetCount(); // ホームラン数を初期化
 }
 
@@ -49,6 +53,7 @@ void HomeRunCount::Uninitialize()
 	homeRunCountFont.Uninitialize();
 	homeRunCountSprite.reset();
 	homeRunCountSpriteData.reset();
+	Combo::Instance().Uninitialize();
 }
 
 void HomeRunCount::Update(float elapsedTime)
@@ -59,10 +64,11 @@ void HomeRunCount::Update(float elapsedTime)
 		previousHomeRunCount = homeRunCount;
 		numberDisplayScale = numberScale * numberPopScaleMultiplier; // 大きい状態から開始
 		goldColorTime = 1.0f; // ゴールドカラーの表示時間をリセット
+		Combo::Instance().AddCombo(1); // コンボを追加
 	}
 
 	// 現在のスケールを基準サイズへ滑らかに近づける
-	bool isAnimating = numberDisplayScale > numberScale;
+	isAnimating = numberDisplayScale > numberScale;
 
 	if (isAnimating)
 	{
@@ -88,6 +94,8 @@ void HomeRunCount::Update(float elapsedTime)
 	{
 		countColor = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // 白色
 	}
+
+	Combo::Instance().Update(elapsedTime);
 }
 
 void HomeRunCount::Render()
@@ -178,6 +186,14 @@ void HomeRunCount::Render()
 			targetColor.x, targetColor.y, targetColor.z, targetColor.w); // 金色にして目立たせる例
 	}
 
+	bool isFinished = Ball::Instance().GetHasPassedHomeRunZone() && (Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround());
+		
+	if(isFinished && Pitcher::Instance().GetCurrentState() == Pitcher::State::WaitingForResult)
+	{
+		Combo::Instance().Render();
+	}
+	
+
 	// 後始末（Wind と同じ）
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -210,6 +226,8 @@ void HomeRunCount::DrawGUI()
 		ImGui::DragFloat("Pop Scale Multiplier", &numberPopScaleMultiplier, 0.05f, 1.0f, 5.0f);
 		ImGui::DragFloat("Pop Anim Speed", &numberScaleAnimSpeed, 0.1f, 0.5f, 20.0f);
 	}
+	Combo::Instance().DrawGUI();
+
 }
 
 void HomeRunCount::SaveToJson(nlohmann::json& j)
@@ -231,6 +249,8 @@ void HomeRunCount::SaveToJson(nlohmann::json& j)
 		{"numberSlashColor", {slashColor.x, slashColor.y, slashColor.z, slashColor.w}},
 		{"numberTargetColor", {targetColor.x, targetColor.y, targetColor.z, targetColor.w}}
 	};
+
+	Combo::Instance().SaveToJson(j["combo"]);
 }
 
 void HomeRunCount::LoadFromJson(const nlohmann::json& j)
@@ -335,6 +355,8 @@ void HomeRunCount::LoadFromJson(const nlohmann::json& j)
 			}
 		}
 	}
+
+	Combo::Instance().LoadFromJson(j["combo"]);
 
 	ResetCount();
 }

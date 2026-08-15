@@ -235,6 +235,7 @@
     <ClCompile Include="Sources\Game\ballSprite.cpp" />
     <ClCompile Include="Sources\Game\batSprite.cpp" />
     <ClCompile Include="Sources\Game\catcher.cpp" />
+    <ClCompile Include="Sources\Game\Combo.cpp" />
     <ClCompile Include="Sources\Game\FoulSprite.cpp" />
     <ClCompile Include="Sources\Game\GameTimer.cpp" />
     <ClCompile Include="Sources\Game\game_object.cpp">
@@ -387,6 +388,7 @@
     <ClInclude Include="Sources\Game\ballSprite.h" />
     <ClInclude Include="Sources\Game\batSprite.h" />
     <ClInclude Include="Sources\Game\catcher.h" />
+    <ClInclude Include="Sources\Game\Combo.h" />
     <ClInclude Include="Sources\Game\FoulSprite.h" />
     <ClInclude Include="Sources\Game\GameTimer.h" />
     <ClInclude Include="Sources\Game\game_object.h">

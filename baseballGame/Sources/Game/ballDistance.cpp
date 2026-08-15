@@ -20,7 +20,7 @@ void BallDistance::Initialize(ID3D11Device* device)
 	// 日本語グリフを持つフォントを用意して配置する
 	ballDistanceFont.Initialize(device,
 		L".\\resources\\fonts\\Futur12.ttf",
-		28.0f,
+		100.0f,
 		screenWidth, screenHeight,
 		512, 512,
 		&pitchInfoCodepoints);

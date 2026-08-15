@@ -94,4 +94,6 @@ private:
 	//透明度を徐々に0にするための変数
 	float numberAlpha = 1.0f; // 現在の透明度
 	float alphaDecreaseSpeed = 1.0f; // 透明度を減少させる速度（大きいほど速い）
+
+	bool isAnimating = false; // アニメーション中かどうかのフラグ
 };
