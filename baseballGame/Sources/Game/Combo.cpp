@@ -21,7 +21,7 @@ void Combo::Initialize(ID3D11Device* device)
 		L".\\resources\\fonts\\Futur12.ttf",
 		150.0f,
 		screenWidth, screenHeight,
-		1024, 1024,
+		2048, 2048,
 		&comboCodepoints);
 
 	currentCombo = 0;

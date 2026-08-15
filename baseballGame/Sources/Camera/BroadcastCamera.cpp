@@ -490,6 +490,12 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 		forceLockFocusYThisPlay = false;
 		hasTriggeredImpactZoom = false;
 		zoomStartDelay = 0.0f;
+		prevIsHomeRun = false;
+		prevHasCollidedWithBat = false;
+		nowIsHomeRun = false;
+		passedHomeRun = false;
+		hitGroundOrStand = false;
+
 		StopAllTracking();
 	}
 

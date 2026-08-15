@@ -212,6 +212,7 @@ void Pitcher::Update(float elapsedTime)
 			SelectPitchTypeByAI(); // 球種選択
 			ResetPitchFlags(); // pitchFlagsをリセット
 			Player::Instance().SetShowSwingTimingSprite(false);
+			Ball::Instance().SetHasCollidedWithBat(false);
 			OutputDebugStringA("Forced Throw: Backspace pressed\n");
 
 			if(consoleLog)
@@ -232,6 +233,8 @@ void Pitcher::Update(float elapsedTime)
 	case State::SelectingPitch:
 		stateTime += elapsedTime;
 		Player::Instance().SetShowSwingTimingSprite(false);
+		Ball::Instance().SetHasCollidedWithBat(false);
+		ResetPitchFlags(); // pitchFlagsをリセット
 		isBallThrown = false;
 		TrackingData::Instance().Reset(); // トラッキングデータをリセット
 		if (stateTime > 2.0f) // 2秒後に投球開始
@@ -240,7 +243,7 @@ void Pitcher::Update(float elapsedTime)
 			stateTime = 0.0f;
 			hasReachedZero = false;
 			throwCounter = 0.0f;		
-			ResetPitchFlags(); // pitchFlagsをリセット
+			
 			
 			if (consoleLog)
 			{
