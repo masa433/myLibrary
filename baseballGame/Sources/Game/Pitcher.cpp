@@ -16,6 +16,7 @@
 #include "shader.h"	
 #include "ballCount.h"
 #include "Money.h"
+#include "Combo.h"
 
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
@@ -209,6 +210,8 @@ void Pitcher::Update(float elapsedTime)
 			currentState = State::Throwing;
 			stateTime = 0.0f;
 			SelectPitchTypeByAI(); // 球種選択
+			ResetPitchFlags(); // pitchFlagsをリセット
+			Player::Instance().SetShowSwingTimingSprite(false);
 			OutputDebugStringA("Forced Throw: Backspace pressed\n");
 
 			if(consoleLog)
@@ -228,7 +231,7 @@ void Pitcher::Update(float elapsedTime)
 	{
 	case State::SelectingPitch:
 		stateTime += elapsedTime;
-		ResetPitchFlags(); // pitchFlagsをリセット		
+		Player::Instance().SetShowSwingTimingSprite(false);
 		isBallThrown = false;
 		TrackingData::Instance().Reset(); // トラッキングデータをリセット
 		if (stateTime > 2.0f) // 2秒後に投球開始
@@ -237,6 +240,12 @@ void Pitcher::Update(float elapsedTime)
 			stateTime = 0.0f;
 			hasReachedZero = false;
 			throwCounter = 0.0f;		
+			ResetPitchFlags(); // pitchFlagsをリセット
+			
+			if (consoleLog)
+			{
+				consoleLog->push_back(u8"[Info] リセットしました\n");
+			}
 			SelectPitchTypeByAI(); // 球種選択		
 			OutputDebugStringA("Judgment reset\n");
 			if(consoleLog)
@@ -251,7 +260,7 @@ void Pitcher::Update(float elapsedTime)
 	case State::Throwing:
 		// 投げるアニメーションを再生
 		UpdateAnimation(elapsedTime);
-
+		
 		// アニメーションが終了したら球種選択状態に遷移
 		if (animation_time >= currentPitcher->animations[current_animation_index].duration)
 		{
@@ -264,7 +273,7 @@ void Pitcher::Update(float elapsedTime)
 			if (!ballWasHit || isCompleteFoul)
 			{
 				TrackingData::Instance().Reset(); // トラッキングデータをリセット
-				ResetPitchFlags(); // pitchFlagsをリセット
+				//ResetPitchFlags(); // pitchFlagsをリセット
 				currentState = State::SelectingPitch; // 球種選択状態に戻る
 				stateTime = 0.0f; // 状態時間をリセット
 			}
@@ -291,7 +300,7 @@ void Pitcher::Update(float elapsedTime)
 			{
 				currentFoulWaitTime = 0.0f; // ファウル待機時間をリセット
 				TrackingData::Instance().Reset(); // トラッキングデータをリセット
-				ResetPitchFlags(); // pitchFlagsをリセット
+				//ResetPitchFlags(); // pitchFlagsをリセット
 				currentState = State::SelectingPitch;
 				stateTime = 0.0f; // 状態時間をリセット
 			}
@@ -318,7 +327,7 @@ void Pitcher::Update(float elapsedTime)
 			if (resultWaitTimer >= RESULT_DISPLAY_DURATION)
 			{
 				TrackingData::Instance().Reset();
-				ResetPitchFlags();
+				//ResetPitchFlags();
 				currentState = State::SelectingPitch;
 				stateTime = 0.0f;
 			}
@@ -493,6 +502,7 @@ void Pitcher::ResetPitchFlags()
 	ballCount::Instance().ResetHitFlag(); // ボールカウントをリセット
 	TrackingData::Instance().Reset(); // トラッキングデータをリセット
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
+	Combo::Instance().ResetHitFlag(); // コンボのヒットフラグをリセット
 	FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
 }
 
@@ -1182,10 +1192,10 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 
 		float animation_duration = currentPitcher->animations[current_animation_index].duration;
 
-		if (!isBallThrown)
+		/*if (!isBallThrown)
 		{
 			ResetPitchFlags();
-		}
+		}*/
 
 		if (!isBallThrown && animation_time >= throwTiming * animation_duration)
 		{

@@ -10,6 +10,7 @@
 #include "Player.h"
 #include <algorithm>
 #include <cmath>
+#include "Combo.h"
 
 namespace
 {
@@ -588,7 +589,7 @@ void ballSprite::Update(float elapsedTime)
 		ApplyTagetSpritePosition(currentScreenPos);
 	}
 
-	if (pitchingState && wp.z < -0.5f && wp.z > -1.0f && !strikeJudgeDone)
+	if (pitchingState && wp.z < -2.5f && wp.z > -3.0f && !strikeJudgeDone)
 	{
 		strikeJudgeDone = true;
 
@@ -606,7 +607,8 @@ void ballSprite::Update(float elapsedTime)
 
 		if (isPitchJudgedStrike)
 		{
-			ballCount::Instance().DecreaseRemainingBalls(1);		
+			ballCount::Instance().DecreaseRemainingBalls(1);	
+			Combo::Instance().ResetCombo();// ストライク判定時はコンボをリセット
 		}
 		else
 		{
@@ -615,6 +617,7 @@ void ballSprite::Update(float elapsedTime)
 				// ボール球を振っていた → リセット
 				Money::Instance().ResetBallZoneBonus();
 				ballCount::Instance().DecreaseRemainingBalls(1);
+				Combo::Instance().ResetCombo();// ストライク判定時はコンボをリセット
 				if (consoleLog)
 					consoleLog->push_back(u8"[Info] ボール球スイングでボールゾーン倍率をリセットしました。by ballSprite");
 			}

@@ -329,6 +329,7 @@ void Ball::AttachToHand(const std::vector<gltf_model::node>& animatedNodes, cons
 	modelAngle = { 0.0f, 0.0f, 0.0f };
 	modelRotationSpeed = { 0.0f, 0.0f, 0.0f };
 
+	Ball::Instance().SetHasCollidedWithBat(false);
 	UpdateWorldTransform();
 }
 

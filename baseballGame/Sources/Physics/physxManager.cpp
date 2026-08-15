@@ -16,6 +16,7 @@
 #include "BallNet.h"
 #include <ballCount.h>
 #include "Money.h"
+#include "Combo.h"
 #define NET_COUNT 4
 
 // グローバルまたはクラス内にキューを用意
@@ -555,6 +556,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				Ball::Instance().SetHasCollidedWithFence(true);
 				Ball::Instance().SetHasCollidedWithGround(true);
 				Ball::Instance().SetIsFoulConfirmed(false); // 念のため明示的にファウルを打ち消す
+				
 
 				OutputDebugStringA("ホームラン！：ポールに衝突");
 				if (consoleLog)
@@ -588,6 +590,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 				Ball::Instance().SetHasCollidedWithFence(true);
 				Ball::Instance().SetHasCollidedWithGround(true);
+				
 
 				const char* otherName = ballIsActor0 ?
 					pairHeader.actors[1]->getName() : pairHeader.actors[0]->getName();
@@ -682,6 +685,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Ground") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Ground"))
 		{
+			
 
 			// キューに速度変更リクエストを追加
 			{
@@ -739,6 +743,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				if (ballCollider && !Ball::Instance().GetHasCollidedWithGround())
 				{
 					Ball::Instance().SetHasCollidedWithGround(true); // 地面衝突フラグを設定
+					Ball::Instance().SetHasBeenJudged(true);
 
 					physx::PxVec3 ballPosition = ballCollider->getGlobalPose().p;
 					DirectX::XMFLOAT3 ballHitPos = Ball::Instance().GetBallHitPosition();
@@ -769,7 +774,13 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 					ballHorizontalDistance = horizontalDistance;
 					lastDistanceWasTotal = false; // グラウンド着地時は実測飛距離として扱う
+
+					if (!Ball::Instance().GetHasPassedHomeRunZone() && Ball::Instance().GetHasCollidedWithBat())
+					{
+						Combo::Instance().ResetCombo(); // グラウンドに着地したらコンボをリセット
+					}
 				}
+				
 			}
 		}
 
@@ -814,6 +825,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 				Ball::Instance().SetHasCollidedWithFence(true);
 				Ball::Instance().SetHasCollidedWithGround(true);
+				Ball::Instance().SetHasBeenJudged(true);
 
 				//フェアの状態で1度グラウンドについたら、その後のファウル判定と飛距離計算はしない
 				if (wasAlreadyGrounded && !Ball::Instance().GetIsFoulConfirmed())
@@ -886,7 +898,14 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 					ballHorizontalDistance = horizontalDistance;
 					lastDistanceWasTotal = false; // フェンス衝突時は実測飛距離として扱う
+
+					if (!Ball::Instance().GetHasPassedHomeRunZone() && Ball::Instance().GetHasCollidedWithBat())
+					{
+						Combo::Instance().ResetCombo(); // グラウンドに着地したらコンボをリセット
+					}
 				}
+
+				
 			}
 		}
 
@@ -924,6 +943,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				OutputDebugStringA("ネットに衝突！\n");
 				if (consoleLog)
 					consoleLog->push_back(u8"[Hit] ネットに衝突！");
+				Combo::Instance().ResetCombo(); // ネットに衝突したらコンボをリセット
 			}
 		}
 
@@ -1017,6 +1037,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				OutputDebugStringA("ファウルゾーン通過！\n");
 				if (consoleLog)
 					consoleLog->push_back(u8"[Hit] ファウルゾーン通過！");
+				Combo::Instance().ResetCombo(); // ファウルゾーン通過したらコンボをリセット
 			}
 		}
 
@@ -1031,6 +1052,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 
 			if (!ballAndBat) continue;
 			if (pair.status != physx::PxPairFlag::eNOTIFY_TOUCH_FOUND) continue;
+			if (Ball::Instance().GetHasBeenJudged()) continue;
 			if (Ball::Instance().GetHasCollidedWithBat()) continue;
 			if (!Player::Instance().IsSwinging()) continue; // スイング中のみ判定
 

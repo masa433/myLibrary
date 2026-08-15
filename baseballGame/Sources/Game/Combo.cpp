@@ -32,6 +32,7 @@ void Combo::Uninitialize()
 {
 	numberFont.Uninitialize();
 	labelFont.Uninitialize();
+	consoleLog = nullptr;
 }
 
 void Combo::AddCombo(int amount)

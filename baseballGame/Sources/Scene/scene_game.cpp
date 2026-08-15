@@ -29,7 +29,7 @@
 #include <random>
 #include <ballCount.h>
 #include "RoundManager.h"
-
+#include "Combo.h"
 
 using json = nlohmann::json;
 
@@ -47,6 +47,7 @@ void scene_game::initialize()
     Player::Instance().SetConsoleLog(&consoleLog);
     ballSprite::Instance().SetConsoleLog(&consoleLog);
 	Money::Instance().SetConsoleLog(&consoleLog);
+	Combo::Instance().SetConsoleLog(&consoleLog);
 
     // カメラ設定をここに移動
     float screenWidth = Graphics::Instance().GetScreenWidth();
