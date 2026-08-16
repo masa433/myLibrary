@@ -106,6 +106,11 @@ void RoundManager::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
+	const auto pitcherState = Pitcher::Instance().GetCurrentState();
+
+	//selectˆÈŠO‚ÌŽž‚Í•`‰æ‚µ‚È‚¢
+	if (pitcherState != Pitcher::State::SelectingPitch) return;
+
 	if(roundSpriteData && roundSprite)
 	{
 		roundSprite->render(dc,
@@ -134,6 +139,8 @@ void RoundManager::Render()
 
 void RoundManager::DrawGUI()
 {
+	ImGui::DragInt("currentRound", &currentRound, 1, 1, totalRounds);
+
 	if (ImGui::CollapsingHeader("Round Font"))
 	{
 		ImGui::Text("Current Round: %d / %d", currentRound, totalRounds);

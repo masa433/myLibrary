@@ -36,7 +36,7 @@ public:
 	{
 		homeRunCount = 0;
 		previousHomeRunCount = 0;
-		numberDisplayScale = 3.0f; 
+		numberDisplayScale = 1.0f; 
 		numberAlpha = 1.0f; 
 	}
 
@@ -85,12 +85,11 @@ private:
 	float goldColorTime = 0.0f; // ゴールドカラーの時間経過を追跡する変数
 
 	//カウントポップアニメーション
-	float numberDisplayScale = 3.0f;      // 実際に描画に使う現在のスケール
-	float numberPopScaleMultiplier = 1.8f; // 増えた瞬間に何倍まで大きくするか
-	float numberScaleAnimSpeed = 6.0f;    // 元のサイズへ戻る速度（大きいほど速い）
-	float slashDisplayScale = 3.0f;      // 実際に描画に使う現在のスケール
-	float targetDisplayScale = 3.0f; // 元のサイズに戻すための目標スケール
-
+	float numberDisplayScale = 1.0f;      // 実際に描画に使う現在のスケール
+	float numberPopScaleMultiplier = 2.0f; // 増えた瞬間に何倍まで大きくするか
+	float numberScaleAnimSpeed = 3.0f;    // 元のサイズへ戻る速度（大きいほど速い）
+	float slashDisplayScale = 1.0f;      // 実際に描画に使う現在のスケール
+	float targetDisplayScale = 1.0f; // 元のサイズに戻すための目標スケール
 	//透明度を徐々に0にするための変数
 	float numberAlpha = 1.0f; // 現在の透明度
 	float alphaDecreaseSpeed = 1.0f; // 透明度を減少させる速度（大きいほど速い）

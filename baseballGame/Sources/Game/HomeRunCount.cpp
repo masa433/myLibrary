@@ -38,9 +38,9 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 	// フォントレンダラーの初期化
 	homeRunCountFont.Initialize(device,
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
-		28.0f,
+		100.0f,
 		screenWidth, screenHeight,
-		512, 512,
+		1024, 1024,
 		&homeRunCountCodepoints);
 
 	Combo::Instance().Initialize(device);
@@ -80,16 +80,24 @@ void HomeRunCount::Update(float elapsedTime)
 
 	}
 
+	bool isHomeRun = Ball::Instance().GetHasPassedHomeRunZone() ||
+		Ball::Instance().GetHasCollidedWithPole();
+	bool isHitFinished = Ball::Instance().GetHasCollidedWithFence() ||
+		Ball::Instance().GetHasCollidedWithGround();
+
 	if (isAnimating)
 	{
 		countColor = DirectX::XMFLOAT4(1.0f, 0.84f, 0.0f, 1.0f); // 金色
 	}
-	else if(goldColorTime > 0.0f)
+	else if (goldColorTime > 0.0f || (isHitFinished && isHomeRun))
 	{
-		goldColorTime -= elapsedTime;
+		if (goldColorTime > 0.0f)
+		{
+			goldColorTime -= elapsedTime;
+		}
 		countColor = DirectX::XMFLOAT4(1.0f, 0.84f, 0.0f, 1.0f); // 金色
 	}
-
+	
 	else
 	{
 		countColor = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // 白色
@@ -218,8 +226,11 @@ void HomeRunCount::DrawGUI()
 		ImGui::DragFloat("Label Scale", &labelScale);
 		ImGui::DragFloat2("Number Position", &numberPositionX);
 		ImGui::DragFloat("Number Scale", &numberScale);
+		ImGui::DragFloat("Number Display Scale", &numberDisplayScale);
 		ImGui::ColorEdit4("Number Count Color", &countColor.x);
+		ImGui::DragFloat("Slash Scale", &slashDisplayScale);
 		ImGui::ColorEdit4("Number Slash Color", &slashColor.x);
+		ImGui::DragFloat("Target Scale", &targetDisplayScale);
 		ImGui::ColorEdit4("Number Target Color", &targetColor.x);
 
 		ImGui::Separator();
@@ -245,6 +256,9 @@ void HomeRunCount::SaveToJson(nlohmann::json& j)
 		{"labelScale", labelScale},
 		{"numberPosition", {numberPositionX, numberPositionY}},
 		{"numberScale", numberScale},
+		{"numberDisplayScale", numberDisplayScale},
+		{"slashScale", slashDisplayScale},
+		{"targetScale", targetDisplayScale},
 		{"numberCountColor", {countColor.x, countColor.y, countColor.z, countColor.w}},
 		{"numberSlashColor", {slashColor.x, slashColor.y, slashColor.z, slashColor.w}},
 		{"numberTargetColor", {targetColor.x, targetColor.y, targetColor.z, targetColor.w}}
@@ -354,6 +368,13 @@ void HomeRunCount::LoadFromJson(const nlohmann::json& j)
 				targetColor.w = color[3].get<float>();
 			}
 		}
+		if (fontJson.contains("numberDisplayScale"))
+			numberDisplayScale = fontJson["numberDisplayScale"].get<float>();
+		if (fontJson.contains("slashScale"))
+			slashDisplayScale = fontJson["slashScale"].get<float>();
+		if (fontJson.contains("targetScale"))
+			targetDisplayScale = fontJson["targetScale"].get<float>();
+		
 	}
 
 	Combo::Instance().LoadFromJson(j["combo"]);
