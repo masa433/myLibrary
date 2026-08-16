@@ -38,6 +38,7 @@ public:
 	void AddCombo(int amount);
 	int GetMaxCombo() { return maxCombo; }
 	void ResetHitFlag() { hasCountedHit = false; } // ヒットカウントフラグをリセットする関数
+	int GetCurrentCombo() { return currentCombo; } // 現在のコンボ数を取得する関数
 
 private:
 	int currentCombo = 0;

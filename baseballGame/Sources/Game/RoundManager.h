@@ -4,6 +4,7 @@
 #include <memory>
 #include <wrl.h>
 #include "FontRenderer.h"
+#include "sprite.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -54,4 +55,24 @@ private:
 
 	bool isGameOver = false; // ゲームオーバー状態を示すフラグ
 	bool isGameClear = false; // ゲームクリア状態を示すフラグ
+
+	struct RoundSpriteData
+	{
+		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+
+	std::unique_ptr<RoundSpriteData> roundSpriteData;
+	std::unique_ptr<sprite> roundSprite;
+
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixel_shader;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout;
+	
+	DirectX::XMFLOAT2 spritePosition = { 100.0f, 100.0f };
+	DirectX::XMFLOAT2 spriteSize = { 200.0f, 50.0f };
+	DirectX::XMFLOAT4 spriteColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 };

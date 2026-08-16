@@ -7,6 +7,7 @@
 #include "FontRenderer.h"
 #include "Pitcher.h"
 #include "UiEasing.h"
+#include "Combo.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -69,6 +70,10 @@ private:
 
 	//変化球を打ったときの倍率ボーナス
 	float breakingBallBonus = 1.05f;
+
+	//コンボ時の倍率ボーナス
+	float comboBonus = 1.0f; // コンボボーナスの倍率
+	float comboBonusIncrement = 0.1f; // コンボボーナスの増加量
 
 	struct MoneyData
 	{

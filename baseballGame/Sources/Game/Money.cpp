@@ -104,6 +104,23 @@ void Money::Initialize(ID3D11Device* device)
 		&bonusCodepoints);
 	bonusItems.push_back(std::move(breakingBallBonusItem));
 
+	// コンボボーナスアイテムの初期化
+	BonusItem comboBonusItem;
+	comboBonusItem.name = "Combo";
+	comboBonusItem.info = { { 300.0f, 190.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	comboBonusItem.data = std::make_unique<MoneyData>();
+	comboBonusItem.data->texturePath = L".\\resources\\textures\\comboBonusBoard.png";
+	comboBonusItem.sprite = std::make_unique<sprite>(device, context, comboBonusItem.data->texturePath.c_str());
+	comboBonusItem.fontRenderer = std::make_unique<FontRenderer>();
+	comboBonusItem.fontRenderer->Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		28.0f,
+		static_cast<int>(Graphics::Instance().GetScreenWidth()),
+		static_cast<int>(Graphics::Instance().GetScreenHeight()),
+		512, 512,
+		&bonusCodepoints);
+	bonusItems.push_back(std::move(comboBonusItem));
+
 	BonusItem totalItem;
 	totalItem.name = "Total";
 	totalItem.info = { { 300.0f, 260.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
@@ -200,7 +217,16 @@ void Money::Update(float elapsedTime)
 			}
 		}
 
-		
+		if(Combo::Instance().GetCurrentCombo() >= 2 && isHomeRun)
+		{
+			comboBonus = 1.0f + (Combo::Instance().GetCurrentCombo()) * comboBonusIncrement;
+			totalMultiplier *= comboBonus;
+			if(consoleLog)
+			{
+				consoleLog->push_back(u8"[Info]コンボボーナスが適用されました。");
+				consoleLog->push_back(u8"[Info]現在のコンボボーナス倍率: " + FormatFloat(comboBonus));
+			}
+		}
 
 		// 最終的な距離に倍率を適用して加算
 		finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier));
@@ -335,6 +361,10 @@ void Money::Render()
 				else if (item.name == "BreakingBall")
 				{
 					bonusText = " x " + FormatFloat(breakingBallBonus);
+				}
+				else if (item.name == "Combo")
+				{
+					bonusText = " x " + FormatFloat(comboBonus);
 				}
 				else if (item.name == "Total")
 				{
@@ -476,6 +506,10 @@ void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
 			bonusItem.isActive = true;
 		}
 		else if (bonusItem.name == "BreakingBall" && isHomeRun && isBreaking)
+		{
+			bonusItem.isActive = true;
+		}
+		else if(bonusItem.name == "Combo" && isHomeRun && Combo::Instance().GetCurrentCombo() >= 2)
 		{
 			bonusItem.isActive = true;
 		}
