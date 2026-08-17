@@ -342,4 +342,35 @@ public:
 		Ball,
 	};
 	BallDisplayMode display = BallDisplayMode::Target;
+
+public:
+	struct BallSpinFlip
+	{
+		std::unique_ptr<Sprite> spriteData;
+		std::unique_ptr<sprite> sprite;
+		int frameCount = 0;//スプライトシートのフレーム数
+		int frameW = 400;//スプライトシートのフレーム幅
+		int frameH = 400;//スプライトシートのフレーム高さ
+		float frameAccum = 0.0f;//フレームの累積時間
+ 	};
+
+	BallSpinFlip straightFlip;
+	BallSpinFlip forkFlip;
+	BallSpinFlip leftCurveFlip;
+	BallSpinFlip rightCurveFlip;
+	BallSpinFlip sliderFlip;
+	BallSpinFlip verticalSliderFlip;
+	BallSpinFlip* currentSpinFlip = nullptr; // 今の球種に対応するもの
+
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> scissorRasterizerState;
+
+	void InitSpinFlip(ID3D11Device* device, ID3D11DeviceContext* context);
+	void SelectSpinFlipForPitch(int pitchBreakIndex, bool isRightPitcher);
+	void UpdateSpinFlip(float elapsedTime);
+	void RenderSpinFlip(ID3D11DeviceContext* dc, BallSpinFlip& flip, bool reverse, 
+		const DirectX::XMFLOAT2& screenPos, const DirectX::XMFLOAT2& screenSize,
+		const DirectX::XMFLOAT4& color);
+
+	bool currentSpinReverse = false; // 現在の球種のスピン反転状態（右投手か左投手か）
+	float currentSpinRPM = 1500.0f; // 現在の球種のスピン回転数（RPM）
 };

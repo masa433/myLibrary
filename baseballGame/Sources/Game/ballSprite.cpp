@@ -127,6 +127,29 @@ namespace
 		return EvalCubicBezier2D(p0, p1, p2, targetScreenPos, Clamp01(t));
 	}
 
+	constexpr float kPitchSpinRPM[19] =
+	{
+		2500.0f, // Fastball
+		1700.0f, // TwoSeam
+		2000.0f, // Cutter
+		1700.0f, // Slider
+		1800.0f, // Curveball
+		1500.0f, // Changeup
+		 700.0f, // Forkball
+		1500.0f, // Sinker
+		2000.0f, // VerticalSlider
+		1000.0f, // Splitter
+		1200.0f, // SlowCurve
+		2200.0f, // Shooter
+		 300.0f, // Knuckleball
+		 500.0f, // SlowBall
+		2000.0f, // Sweeper
+		 300.0f, // Palm
+		2200.0f, // NaturalShoot
+		2200.0f, // CutFastball
+		2500.0f  // BlazingFastball
+	};
+
 }
 static DirectX::XMFLOAT2 WorldToZoneScreen(
 	float worldX, float worldY,
@@ -318,6 +341,97 @@ void ballSprite::Initialize(ID3D11Device* device)
 		&pitchInfoCodepoints);
 
 	TrackingData::Instance().Initialize(device);
+
+	InitSpinFlip(device, context);
+}
+
+void ballSprite::InitSpinFlip(ID3D11Device* device, ID3D11DeviceContext* context)
+{
+	auto setUpFlip = [&](BallSpinFlip& flip, const wchar_t* path, int frameCount)
+		{
+			flip.spriteData = std::make_unique<Sprite>();
+			flip.spriteData->texturePath = path;
+			flip.spriteData->rotation = 0.0f;
+			flip.spriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+			flip.sprite = std::make_unique<sprite>(device, context, flip.spriteData->texturePath.c_str());
+			flip.frameCount = frameCount;
+			flip.frameW = 400;
+			flip.frameH = 400;
+			flip.frameAccum = 0.0f;
+		};
+
+	setUpFlip(straightFlip, L".\\resources\\textures\\ballTypeSpriteSheet\\straight.png", 8);
+	setUpFlip(sliderFlip, L".\\resources\\textures\\ballTypeSpriteSheet\\slider.png", 8);
+	setUpFlip(rightCurveFlip, L".\\resources\\textures\\ballTypeSpriteSheet\\rightCurve.png", 8);
+	setUpFlip(leftCurveFlip, L".\\resources\\textures\\ballTypeSpriteSheet\\leftCurve.png", 8);
+	setUpFlip(verticalSliderFlip, L".\\resources\\textures\\ballTypeSpriteSheet\\verticalSlider.png", 8);
+	setUpFlip(forkFlip, L".\\resources\\textures\\ballTypeSpriteSheet\\fork.png", 16);
+
+	// ボール表示範囲だけを描画対象にするためのラスタライザステート
+	D3D11_RASTERIZER_DESC rsDesc = {};
+	rsDesc.FillMode = D3D11_FILL_SOLID;
+	rsDesc.CullMode = D3D11_CULL_NONE;
+	rsDesc.DepthClipEnable = TRUE;
+	rsDesc.ScissorEnable = TRUE;
+	device->CreateRasterizerState(&rsDesc, scissorRasterizerState.GetAddressOf());
+}
+
+void ballSprite::SelectSpinFlipForPitch(int pitchBreakIndex, bool isRightPitcher)
+{
+	if (pitchBreakIndex >= 0 && pitchBreakIndex < PITCH_TYPE_COUNT)
+	{
+		currentSpinRPM = kPitchSpinRPM[pitchBreakIndex];
+	}
+	else
+	{
+		currentSpinRPM = 1500.0f; // デフォルト値
+	}
+
+	switch (pitchBreakIndex)
+	{
+		//ストレート系
+	case 0: case 5: case 13: case 16: case 17: case 18:
+		currentSpinFlip = &straightFlip;
+		return;
+		// フォーク系
+	case 1: case 6: case 9: case 12: case 15:
+		currentSpinFlip = &forkFlip;
+		return;
+		//スライダー系
+	case 2: case 3: case 11: case 14:
+		currentSpinFlip = &sliderFlip;
+		currentSpinReverse = !isRightPitcher; // 左投手なら反転
+		return;
+		//カーブ系
+	case 4: case 10:
+		currentSpinFlip = isRightPitcher ? &rightCurveFlip : &leftCurveFlip;
+		return;
+	case 7://シンカー・スクリュー
+		currentSpinFlip = isRightPitcher ? &rightCurveFlip : &leftCurveFlip;
+		currentSpinReverse = true;
+		return;
+	case 8: // 縦スライダー
+		currentSpinFlip = &verticalSliderFlip;
+		currentSpinReverse = true;
+		return;
+	default:
+		currentSpinFlip = nullptr; // 未対応の球種だけ静止画フォールバック
+		return;
+	}
+}
+
+void ballSprite::UpdateSpinFlip(float elapsedTime)
+{
+	if (!currentSpinFlip) return;
+
+	
+	const float rotationPerSec = currentSpinRPM / 60.0f; // 1秒あたりの回転数
+	const float framesPerSec = rotationPerSec * static_cast<float>(currentSpinFlip->frameCount); // 1秒あたりのフレーム数
+
+	currentSpinFlip->frameAccum += framesPerSec * elapsedTime;// 経過時間に応じてフレームを進める
+	currentSpinFlip->frameAccum = fmodf(currentSpinFlip->frameAccum, static_cast<float>(currentSpinFlip->frameCount)); // フレーム数でループ
+	if(currentSpinFlip->frameAccum < 0.0f)
+		currentSpinFlip->frameAccum += static_cast<float>(currentSpinFlip->frameCount); // 負の値になった場合は補正
 }
 
 void ballSprite::Uninitialize()
@@ -343,9 +457,19 @@ void ballSprite::Update(float elapsedTime)
 	Ball& ball = Ball::Instance();
 
 	currentPitchIndex = Pitcher::PitchTypeToBreakIndex(pitcher.GetSelectedPitchType());
+	
 
 	const bool pitchingState = (pitcher.GetCurrentState() == Pitcher::State::Throwing);
 	const bool nowThrown = pitcher.GetIsBallThrown();
+	if(nowThrown)
+	{
+		SelectSpinFlipForPitch(currentPitchIndex, pitcher.IsRightPitcher());
+		UpdateSpinFlip(elapsedTime);
+	}
+	else
+	{
+		currentSpinFlip = nullptr; // 投球前は静止画
+	}
 
 	DirectX::XMFLOAT2 ballCenter = {
 			ballDebugSpriteData->position.x + ballDebugSpriteData->size.x * 0.5f,
@@ -542,6 +666,10 @@ void ballSprite::Update(float elapsedTime)
 		{
 			display = BallDisplayMode::Ball;
 		}
+		sliderFlip.frameAccum = 0.0f;
+		forkFlip.frameAccum = 0.0f;
+		leftCurveFlip.frameAccum = 0.0f;
+		rightCurveFlip.frameAccum = 0.0f;
 	}
 	prevThrown = nowThrown;
 
@@ -686,6 +814,41 @@ float ballSprite::GetYMoveScale(int currentPitchIndex, float finalScreenPosY, fl
 	return 1.0f;
 }
 
+void ballSprite::RenderSpinFlip(ID3D11DeviceContext* dc, BallSpinFlip& flip, bool reversed,
+	const DirectX::XMFLOAT2& screenPos, const DirectX::XMFLOAT2& screenSize,
+	const DirectX::XMFLOAT4& color)
+{
+	if (!flip.sprite) return;
+
+	const int baseIndex = static_cast<int>(flip.frameAccum) % flip.frameCount;
+	const int frameIndex = reversed ? (flip.frameCount - 1 - baseIndex) : baseIndex;
+
+	// シート全体を「1コマ=ボール表示サイズ」になるまで引き伸ばして描画し、
+	// 見せたいコマだけが screenPos の位置に来るよう左へずらす
+	const float stripDrawWith = screenSize.x * static_cast<float>(flip.frameCount);
+	const float stripDrawX = screenPos.x - screenSize.x * static_cast<float>(frameIndex);
+
+	// スプライト描画時に scissorRect を設定して、ボール表示範囲だけを描画対象にする
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> prevRS;
+	dc->RSGetState(prevRS.GetAddressOf());
+
+	D3D11_RECT scissorRect;
+	scissorRect.left = static_cast<LONG>(screenPos.x);
+	scissorRect.top = static_cast<LONG>(screenPos.y);
+	scissorRect.right = static_cast<LONG>(screenPos.x + screenSize.x);
+	scissorRect.bottom = static_cast<LONG>(screenPos.y + screenSize.y);
+	dc->RSSetScissorRects(1, &scissorRect);// scissorRect を設定して、ボール表示範囲だけを描画対象にする
+	dc->RSSetState(scissorRasterizerState.Get());
+
+	flip.sprite->render(dc,
+		stripDrawX, screenPos.y,
+		stripDrawWith, screenSize.y,
+		color.x, color.y, color.z, color.w,
+		0.0f);
+
+	dc->RSSetState(prevRS.Get());
+}
+
 void ballSprite::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
@@ -726,7 +889,13 @@ void ballSprite::Render()
 
 		if(display == BallDisplayMode::Ball)
 		{
-			if (ballDebugSprite && ballDebugSpriteData)
+			if (currentSpinFlip)
+			{
+				RenderSpinFlip(dc, *currentSpinFlip, currentSpinReverse,
+					ballDebugSpriteData->position, ballDebugSpriteData->size, ballDebugSpriteData->color);
+			}
+
+			else if (ballDebugSprite && ballDebugSpriteData)
 			{
 				ballDebugSprite->render(dc,
 					ballDebugSpriteData->position.x, ballDebugSpriteData->position.y,
