@@ -213,6 +213,7 @@ public:
 	//投手1人分・球種16個分の変化量を設定する
 	struct PitchBreakSet
 	{
+		ballBreak2D baseBreaks[19];
 		ballBreak2D breaks[19];
 		Pitcher::BreakGrade grades[19] = {
 			Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C, Pitcher::BreakGrade::C,

@@ -1069,11 +1069,10 @@ void ballSprite::DrawGUI()
 		{
 			activeSet->grades[editIndex] = static_cast<Pitcher::BreakGrade>(gradeIndex);
 			// グレード基準の形状（=C相当の向き）に対して倍率をかけ直す
-			const float baseScale = GetBreakGradeScale(Pitcher::BreakGrade::C);
+			
 			const float newScale = GetBreakGradeScale(activeSet->grades[editIndex]);
-			const float ratio = newScale / baseScale;
-			activeSet->breaks[editIndex].breakX = brk.breakX * ratio;
-			activeSet->breaks[editIndex].breakY = brk.breakY * ratio;
+			activeSet->breaks[editIndex].breakX = activeSet->baseBreaks[editIndex].breakX * newScale;
+			activeSet->breaks[editIndex].breakY = activeSet->baseBreaks[editIndex].breakY * newScale;
 			brk = activeSet->breaks[editIndex];
 		}
 		ImGui::Spacing();
@@ -1137,10 +1136,10 @@ void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
 	}
 
 	// この時点のpitchBreaks[16]を「グレードCの基準形状」として使用する
-	ballBreak2D baseShape[19];
+	
 	for(int i = 0; i < 19; ++i)
 	{
-		baseShape[i] = pitchBreaks[i];
+		breakSet.baseBreaks[i] = pitchBreaks[i];
 		breakSet.breaks[i] = pitchBreaks[i];
 		breakSet.grades[i] = Pitcher::BreakGrade::C; // デフォルトはグレードC
 		breakSet.powerGrades[i] = Pitcher::Power::C; // デフォルトはパワーC
@@ -1167,8 +1166,8 @@ void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
 
 		// グレードに応じて変化量を調整する
 		const float scale = GetBreakGradeScale(entry.breakGrade);
-		breakSet.breaks[breakIndex].breakX = baseShape[breakIndex].breakX * scale;
-		breakSet.breaks[breakIndex].breakY = baseShape[breakIndex].breakY * scale;
+		breakSet.breaks[breakIndex].breakX = breakSet.baseBreaks[breakIndex].breakX * scale;
+		breakSet.breaks[breakIndex].breakY = breakSet.baseBreaks[breakIndex].breakY * scale;
 		breakSet.grades[breakIndex] = entry.breakGrade;
 		breakSet.powerGrades[breakIndex] = entry.power;
 	}
@@ -1246,6 +1245,8 @@ void ballSprite::SaveToJson(json& j)
 			breaksArr.push_back({
 				{"breakX", realPitcherBreaks[rp].breaks[i].breakX},
 				{"breakY", realPitcherBreaks[rp].breaks[i].breakY},
+				{"baseBreakX", realPitcherBreaks[rp].baseBreaks[i].breakX},
+				{"baseBreakY", realPitcherBreaks[rp].baseBreaks[i].breakY},
 				{"grade", static_cast<int>(realPitcherBreaks[rp].grades[i])},
 				{"power", static_cast<int>(realPitcherBreaks[rp].powerGrades[i])}
 				});
@@ -1375,6 +1376,10 @@ void ballSprite::LoadFromJson(const json& j)
 					realPitcherBreaks[rp].breaks[i].breakX = breaksArr[i]["breakX"].get<float>();
 				if (breaksArr[i].contains("breakY"))
 					realPitcherBreaks[rp].breaks[i].breakY = breaksArr[i]["breakY"].get<float>();
+				if (breaksArr[i].contains("baseBreakX"))
+					realPitcherBreaks[rp].baseBreaks[i].breakX = breaksArr[i]["baseBreakX"].get<float>();
+				if (breaksArr[i].contains("baseBreakY"))
+					realPitcherBreaks[rp].baseBreaks[i].breakY = breaksArr[i]["baseBreakY"].get<float>();
 				if (breaksArr[i].contains("grade"))
 					realPitcherBreaks[rp].grades[i] = static_cast<Pitcher::BreakGrade>(breaksArr[i]["grade"].get<int>());
 				if (breaksArr[i].contains("power"))
@@ -1386,7 +1391,7 @@ void ballSprite::LoadFromJson(const json& j)
 
 	// 現在選択中の実在投手のデータを強制再反映
 	lastAppliedPitcher = Pitcher::RealPitcher::None;
-	SyncRealPitcherBreaks();
+	//SyncRealPitcherBreaks();
 
 	// 全14球種の変化量を配列から復元
 	if (j.contains("pitchBreaks") && j["pitchBreaks"].is_array())
