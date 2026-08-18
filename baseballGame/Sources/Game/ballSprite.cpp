@@ -343,6 +343,8 @@ void ballSprite::Initialize(ID3D11Device* device)
 	TrackingData::Instance().Initialize(device);
 
 	InitSpinFlip(device, context);
+
+	SyncRealPitcherBreaks();// 投手の変化量データをボールスプライトに同期
 }
 
 void ballSprite::InitSpinFlip(ID3D11Device* device, ID3D11DeviceContext* context)
@@ -1085,6 +1087,11 @@ void ballSprite::DrawGUI()
 			activeSet->powerGrades[editIndex] = static_cast<Pitcher::Power>(powerIndex);
 			pitchPowers[editIndex] = activeSet->powerGrades[editIndex]; // 投手専用データにも反映
 		}
+	}
+	if(activeSet == nullptr)
+	{
+		ImGui::TextColored(ImVec4(0.3f, 0.9f, 1.0f, 1.0f), u8"曲がりグレード : %s", GetBreakGradeLabel(Pitcher::BreakGrade::C));
+		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.2f, 1.0f), u8"球威グレード : %s", GetPowerGradeLabel(Pitcher::Power::C));
 	}
 
 	// ----- 数値での微調整（従来通り） -----
