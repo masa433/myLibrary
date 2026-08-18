@@ -127,27 +127,27 @@ namespace
 		return EvalCubicBezier2D(p0, p1, p2, targetScreenPos, Clamp01(t));
 	}
 
-	constexpr float kPitchSpinRPM[19] =
+	static float kPitchSpinRPM[19] =
 	{
-		2500.0f, // Fastball
-		1700.0f, // TwoSeam
-		2000.0f, // Cutter
-		1700.0f, // Slider
-		1800.0f, // Curveball
-		1500.0f, // Changeup
-		 700.0f, // Forkball
-		1500.0f, // Sinker
-		2000.0f, // VerticalSlider
-		1000.0f, // Splitter
-		1200.0f, // SlowCurve
-		2200.0f, // Shooter
-		 300.0f, // Knuckleball
-		 500.0f, // SlowBall
-		2000.0f, // Sweeper
-		 300.0f, // Palm
-		2200.0f, // NaturalShoot
-		2200.0f, // CutFastball
-		2500.0f  // BlazingFastball
+		250.0f, // Fastball
+		170.0f, // TwoSeam
+		200.0f, // Cutter
+		170.0f, // Slider
+		180.0f, // Curveball
+		150.0f, // Changeup
+		 70.0f, // Forkball
+		150.0f, // Sinker
+		200.0f, // VerticalSlider
+		100.0f, // Splitter
+		120.0f, // SlowCurve
+		220.0f, // Shooter
+		 30.0f, // Knuckleball
+		 50.0f, // SlowBall
+		200.0f, // Sweeper
+		 30.0f, // Palm
+		220.0f, // NaturalShoot
+		220.0f, // CutFastball
+		250.0f  // BlazingFastball
 	};
 
 }
@@ -392,26 +392,33 @@ void ballSprite::SelectSpinFlipForPitch(int pitchBreakIndex, bool isRightPitcher
 		//ストレート系
 	case 0: case 5: case 13: case 16: case 17: case 18:
 		currentSpinFlip = &straightFlip;
+		currentSpinReverse = false;
 		return;
 		// フォーク系
 	case 1: case 6: case 9: case 12: case 15:
 		currentSpinFlip = &forkFlip;
+		currentSpinReverse = false;
 		return;
 		//スライダー系
-	case 2: case 3: case 11: case 14:
+	case 2: case 3: case 14:
 		currentSpinFlip = &sliderFlip;
 		currentSpinReverse = !isRightPitcher; // 左投手なら反転
 		return;
 		//カーブ系
 	case 4: case 10:
 		currentSpinFlip = isRightPitcher ? &rightCurveFlip : &leftCurveFlip;
+		currentSpinReverse = false;
 		return;
 	case 7://シンカー・スクリュー
-		currentSpinFlip = isRightPitcher ? &rightCurveFlip : &leftCurveFlip;
-		currentSpinReverse = true;
+		currentSpinFlip = isRightPitcher ? &leftCurveFlip : &rightCurveFlip;
+		currentSpinReverse = false;
 		return;
 	case 8: // 縦スライダー
 		currentSpinFlip = &verticalSliderFlip;
+		currentSpinReverse = true;
+		return;
+	case 11: // シュート
+		currentSpinFlip = &sliderFlip;
 		currentSpinReverse = true;
 		return;
 	default:
@@ -524,7 +531,6 @@ void ballSprite::Update(float elapsedTime)
 				switch (currentPitchIndex)
 				{
 				case 3:  // スライダー
-				case 2:  // カットボール
 				case 11: // シュート
 				
 				case 8:  // 縦スライダー
@@ -581,6 +587,7 @@ void ballSprite::Update(float elapsedTime)
 
 
 				case 1:  // ツーシーム
+				case 2:  // カットボール
 				case 6:  // フォークボール
 				case 9:  // スプリット
 				{
@@ -1093,6 +1100,8 @@ void ballSprite::DrawGUI()
 		}
 	}
 
+	ImGui::DragFloat(u8"スピン回転数 (RPM)", &kPitchSpinRPM[editIndex], 1.0f, 0.0f, 3000.0f);
+
 	ImGui::Checkbox(u8"変化量を反映", &useBallBreak);
 
 	ImGui::Separator();
@@ -1152,7 +1161,8 @@ void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
 		breakSet.powerGrades[breakIndex] = entry.power;
 	}
 
-	breakSet.initialized = true;
+	//breakSet.initialized = true;
+
 }
 
 void ballSprite::SyncRealPitcherBreaks()
@@ -1257,6 +1267,13 @@ void ballSprite::SaveToJson(json& j)
 	{
 		j["pitchSpeedOffsets"].push_back({ pitchSpeedOffsets[i].x, pitchSpeedOffsets[i].y });
 	}
+
+	json rpmArray = json::array();
+	for (int i = 0; i < PITCH_TYPE_COUNT; ++i)
+	{
+		rpmArray.push_back(kPitchSpinRPM[i]);
+	}
+	j["kPitchSpinRPM"] = rpmArray;
 
 	//トラッキングデータの保存
 	TrackingData::Instance().SaveToJson(j);
@@ -1398,6 +1415,16 @@ void ballSprite::LoadFromJson(const json& j)
 		{
 			pitchSpeedOffsets[i].x = speedOffsetsArray[i][0].get<float>();
 			pitchSpeedOffsets[i].y = speedOffsetsArray[i][1].get<float>();
+		}
+	}
+
+	if (j.contains("kPitchSpinRPM") && j["kPitchSpinRPM"].is_array())
+	{
+		const auto& rpmArray = j["kPitchSpinRPM"];
+		int size = (std::min)(PITCH_TYPE_COUNT, (int)rpmArray.size());
+		for (int i = 0; i < size; ++i)
+		{
+			kPitchSpinRPM[i] = rpmArray[i].get<float>();
 		}
 	}
 
