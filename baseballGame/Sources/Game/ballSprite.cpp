@@ -431,6 +431,11 @@ void ballSprite::UpdateSpinFlip(float elapsedTime)
 {
 	if (!currentSpinFlip) return;
 
+	if(Ball::Instance().GetHasCollidedWithBat())
+	{
+		// バットに当たったらスピンアニメーションを止める
+		return;
+	}
 	
 	const float rotationPerSec = currentSpinRPM / 60.0f; // 1秒あたりの回転数
 	const float framesPerSec = rotationPerSec * static_cast<float>(currentSpinFlip->frameCount); // 1秒あたりのフレーム数

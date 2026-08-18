@@ -1300,8 +1300,23 @@ void Pitcher::ThrowBallBezier()
 		base2.z + params.bezierCtrl2.z
 	};
 
+	DirectX::XMFLOAT3 rotationSpeed = params.visualRotationSpeed;
+
+	//スライダー、カットボール、スイーパー、縦スライダー
+	//ナチュラルシュート、真っスラ、シンカー、シュートは左ピッチャーの時は回転軸を反転させる
+	if ((selectedPitchType == PitchType::Slider || selectedPitchType == PitchType::Cutter || 
+		selectedPitchType == PitchType::Sweeper || selectedPitchType == PitchType::VerticalSlider
+		|| selectedPitchType == PitchType::NaturalShoot || selectedPitchType == PitchType::CutFastball || 
+		selectedPitchType == PitchType::Sinker || selectedPitchType == PitchType::Shooter)
+		&& !IsRightPitcher())
+	{
+		rotationSpeed = { -rotationSpeed.x, -rotationSpeed.y, -rotationSpeed.z };
+	}
+
 	Ball::BezierPitchData data{ p0,p1,p2,p3,durationSec };
-	Ball::Instance().ThrowBezier(data, params.visualRotationSpeed, params.visualAngle);
+	Ball::Instance().ThrowBezier(data, rotationSpeed, params.visualAngle);
+	
+
 }
 
 // ===== 新規追加: 球種から角速度を計算 =====
