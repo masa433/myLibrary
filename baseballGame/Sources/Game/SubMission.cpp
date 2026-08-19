@@ -108,6 +108,15 @@ void SubMission::Update(float elapsedTime)
 		SelectMissionForRound(targetLevel);
 		currentRoundCache = currentRound;
 	}
+	
+	if (currentMission && !currentMission->cleared)
+	{
+		if (currentMission->description.find(u8"連続") != std::string::npos)
+		{
+			currentMission->current = Combo::Instance().GetCurrentCombo();
+		}
+	}
+
 	// 現在のミッションが存在する場合、進行状況を評価
 	bool isHomeRun = Ball::Instance().GetHasPassedHomeRunZone() ||
 		Ball::Instance().GetHasCollidedWithPole();
@@ -242,6 +251,19 @@ void SubMission::EvaluateCurrentMission()
 void SubMission::CheckMission(MissionData& mission)
 {
 	if (mission.cleared) return;
+	//コンボ系のサブミッションは現在のコンボ数をそのままcurrentに加算する
+	if(mission.description.find(u8"連続") != std::string::npos)
+	{
+		mission.current = Combo::Instance().GetCurrentCombo();
+
+		if(mission.current >= mission.required)
+		{
+			mission.cleared = true;
+			totalReward += mission.reward;
+		}
+		return;
+	}
+
 	int previousCurrent = mission.current;
 	for (const auto& condition : mission.conditions)
 	{

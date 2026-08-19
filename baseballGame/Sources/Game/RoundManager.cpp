@@ -6,6 +6,7 @@
 #include "Pitcher.h"
 #include "HomeRunCount.h"
 #include "SubMission.h"
+#include <Combo.h>
 
 void RoundManager::Initialize(ID3D11Device* device)
 {
@@ -77,6 +78,7 @@ void RoundManager::Update(float elapsedTime)
 				IncreaseRound();
 				ballCount::Instance().ResetRemainingBalls();
 				HomeRunCount::Instance().ResetCount();
+				Combo::Instance().ResetCombo();
 			}
 		}
 		else
