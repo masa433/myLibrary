@@ -217,6 +217,9 @@
     <ClCompile Include="Sources\Game\Combo.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\SubMission.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -457,6 +460,9 @@
       <Filter>Sources\Game</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Game\Combo.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\SubMission.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>

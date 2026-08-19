@@ -34,6 +34,7 @@ public:
 	//最高飛距離を取得する関数
 	float GetMaxDistance() const { return std::round(maxDistance); }
 	float GetCurrentDistance() const { return std::round(currentDistance); }
+	float GetFinalDistance() const { return std::round(finalDistance); }
 
 	//最高飛距離をリセットする関数
 	void ResetMaxDistance() { maxDistance = 0.0f; }
@@ -51,6 +52,7 @@ private:
 
 	float currentDistance = 0.0f;
 	float maxDistance = 0.0f;
+	float finalDistance = 0.0f;//最終的な飛距離を保持する変数
 	char distanceText[32] = "";
 	bool hasDistanceText = false;
 	bool isDistanceLocked = false;

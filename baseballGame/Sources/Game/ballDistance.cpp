@@ -90,6 +90,9 @@ void BallDistance::Update(float elapsedTime)
 			? Physics::Instance().GetBallTotalDistance()
 			: Physics::Instance().GetBallHorizontalDistance();
 
+		// 最終的な飛距離を保持する
+		finalDistance = currentDistance;
+
 		snprintf(distanceText, sizeof(distanceText), "%.fm", currentDistance);
 		hasDistanceText = true;
 		isDistanceLocked = true; // 以後は加算・更新しない

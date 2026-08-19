@@ -45,8 +45,8 @@ public:
 
 private:
 	int currentRound = 1;
-	int totalRounds = 5;
-	std::vector<int> targetHomeRuns = { 0,1,2,3,5 };
+	int totalRounds = 7;
+	std::vector<int> targetHomeRuns = { 0,1,2,2,3,3,5 };
 
 	FontRenderer roundFont;
 	DirectX::XMFLOAT2 roundTextPosition = { 20.0f, 20.0f };

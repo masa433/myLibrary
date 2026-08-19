@@ -254,6 +254,9 @@
     <ClCompile Include="Sources\Game\stage.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Game\SubMission.cpp">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
     <ClCompile Include="Sources\Game\TrackingData.cpp" />
     <ClCompile Include="Sources\Game\Wind.cpp">
       <DeploymentContent>false</DeploymentContent>
@@ -406,6 +409,9 @@
     <ClInclude Include="Sources\Game\Result.h" />
     <ClInclude Include="Sources\Game\RoundManager.h" />
     <ClInclude Include="Sources\Game\stage.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\SubMission.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Sources\Game\TrackingData.h" />

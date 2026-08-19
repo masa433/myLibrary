@@ -5,6 +5,7 @@
 #include "ballCount.h"
 #include "Pitcher.h"
 #include "HomeRunCount.h"
+#include "SubMission.h"
 
 void RoundManager::Initialize(ID3D11Device* device)
 {
@@ -46,11 +47,15 @@ void RoundManager::Initialize(ID3D11Device* device)
 	isGameOver = false;
 
 	currentRound = 1; // 初期ラウンドを設定
+	totalRounds = 7; // 総ラウンド数を設定
+
+	SubMission::Instance().Initialize(device);
 }
 
 void RoundManager::Uninitialize()
 {
 	roundFont.Uninitialize();
+	SubMission::Instance().Uninitialize();
 }
 
 void RoundManager::Update(float elapsedTime)
@@ -80,11 +85,11 @@ void RoundManager::Update(float elapsedTime)
 		}
 	}
 
-	if (currentRound <= 2)
+	if (currentRound <= 3)
 	{
 		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::slowSpeed);
 	}
-	else if(currentRound <= 4)
+	else if(currentRound <= 6)
 	{
 		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::highSpeed);
 	}
@@ -92,6 +97,8 @@ void RoundManager::Update(float elapsedTime)
 	{
 		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::realSpeed);
 	}
+
+	SubMission::Instance().Update(elapsedTime);
 }
 
 void RoundManager::Render()
@@ -129,6 +136,8 @@ void RoundManager::Render()
 		roundTextScale,
 		roundTextColor.x, roundTextColor.y, roundTextColor.z, roundTextColor.w);
 
+	SubMission::Instance().Render();
+
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
 	dc->IASetInputLayout(nullptr);
@@ -159,7 +168,7 @@ void RoundManager::DrawGUI()
 void RoundManager::SaveToJson(json& j)
 {
 	
-	j["totalRounds"] = totalRounds;
+	//j["totalRounds"] = totalRounds;
 	j["roundTextPosition"] = { roundTextPosition.x, roundTextPosition.y };
 	j["roundTextScale"] = roundTextScale;
 	j["roundTextColor"] = { roundTextColor.x, roundTextColor.y, roundTextColor.z, roundTextColor.w };
@@ -171,7 +180,7 @@ void RoundManager::SaveToJson(json& j)
 
 void RoundManager::LoadFromJson(const json& j)
 {
-	if (j.contains("totalRounds")) totalRounds = j["totalRounds"].get<int>();
+	//if (j.contains("totalRounds")) totalRounds = j["totalRounds"].get<int>();
 	if (j.contains("roundTextPosition"))
 	{
 		auto pos = j["roundTextPosition"];
