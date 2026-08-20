@@ -45,6 +45,11 @@ private:
 
 	FontRenderer ballDistanceFont;
 
+	FontRenderer directionFont;
+	DirectX::XMFLOAT2 directionFontPosition;
+	float directionFontSize = 1.0f;
+	DirectX::XMFLOAT4 directionFontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 	//フォントの位置とサイズと色
 	DirectX::XMFLOAT2 fontPosition;
 	float fontSize = 1.0f;
@@ -54,6 +59,7 @@ private:
 	float maxDistance = 0.0f;
 	float finalDistance = 0.0f;//最終的な飛距離を保持する変数
 	char distanceText[32] = "";
+	char directionLabel[32] = u8"";
 	bool hasDistanceText = false;
 	bool isDistanceLocked = false;
 	

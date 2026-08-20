@@ -2,6 +2,7 @@
 #include "shader.h"
 #include <imgui.h>
 #include <Ball.h>
+#include <Player.h>
 
 void TrackingData::Initialize(ID3D11Device* device)
 {
@@ -35,6 +36,7 @@ void TrackingData::Initialize(ID3D11Device* device)
 		u8"角度速度方向"
 		u8"0123456789.度"
 		u8"Tracking Data"
+		u8"レフトセンターライト"
 	);
 
 	// フォントレンダラーの初期化
@@ -86,6 +88,7 @@ void TrackingData::Update(float elapsedTime)
 	
 
 }
+
 
 void TrackingData::Reset()
 {
@@ -145,8 +148,31 @@ void TrackingData::Render()
 	char speedLabel[16];     snprintf(speedLabel, sizeof(speedLabel), u8"速度　");
 	char speedValue[32];     snprintf(speedValue, sizeof(speedValue), u8"%.fkm/h", FormatRoundedValue(Physics::Instance().GetBallSpeed()));
 
+
+	char directionLabel[32];
+
+	float originalDirection = Physics::Instance().GetBallOriginalDirection();
+
+	if(originalDirection >= -15.0f && originalDirection <= 15.0f)
+	{
+		snprintf(directionLabel, sizeof(directionLabel), u8"センター方向");
+	}
+	else if(originalDirection < -15.0f)
+	{
+		snprintf(directionLabel, sizeof(directionLabel), u8"レフト方向");
+	}
+	else if(originalDirection > 15.0f)
+	{
+		snprintf(directionLabel, sizeof(directionLabel), u8"ライト方向");
+	}
+
+	char directionValue[32]; snprintf(directionValue, sizeof(directionValue), u8"%.f度", FormatRoundedValue(Physics::Instance().GetBallDirection()));
+
+	
+
+	
 	//画像の左上付近にTrackingDataのラベルを表示する
-	char trackingDataLabel[32]; snprintf(trackingDataLabel, sizeof(trackingDataLabel), "Tracking Data");
+	//char trackingDataLabel[32]; snprintf(trackingDataLabel, sizeof(trackingDataLabel), "Tracking Data");
 
 	
 	/*char directionLabel[16]; snprintf(directionLabel, sizeof(directionLabel), u8"方向　");
@@ -186,10 +212,10 @@ void TrackingData::Render()
 			}			
 		};
 
-	DrawLabelAndValue(trackingDataLabel, "", lineY + TrackingDataLabelOffsetY, { 0.0f, 0.0f }, { 0.0f, 0.0f });
+	//DrawLabelAndValue(trackingDataLabel, "", lineY + TrackingDataLabelOffsetY, { 0.0f, 0.0f }, { 0.0f, 0.0f });
 	DrawLabelAndValue(angleLabel, angleValue, lineY, angleLabelOffset, angleValueOffset);
 	DrawLabelAndValue(speedLabel, speedValue, lineY + lineHeight, speedLabelOffset, speedValueOffset);
-	//DrawLabelAndValue(directionLabel, directionValue, lineY + 2 * lineHeight, directionLabelOffset, directionValueOffset);
+	DrawLabelAndValue(directionLabel , directionValue, lineY + 2 * lineHeight, directionLabelOffset, directionValueOffset);
 
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -224,9 +250,9 @@ void TrackingData::DrawGUI()
 			ImGui::DragFloat2("Speed Label Offset", &speedLabelOffset.x, 0.5f, -200.0f, 200.0f);
 			ImGui::DragFloat2("Speed Value Offset", &speedValueOffset.x, 0.5f, -200.0f, 200.0f);
 
-			/*ImGui::Text(u8"方向");
+			ImGui::Text(u8"方向");
 			ImGui::DragFloat2("Direction Label Offset", &directionLabelOffset.x, 0.5f, -200.0f, 200.0f);
-			ImGui::DragFloat2("Direction Value Offset", &directionValueOffset.x, 0.5f, -200.0f, 200.0f);*/
+			ImGui::DragFloat2("Direction Value Offset", &directionValueOffset.x, 0.5f, -200.0f, 200.0f);
 
 			ImGui::TreePop();
 		}

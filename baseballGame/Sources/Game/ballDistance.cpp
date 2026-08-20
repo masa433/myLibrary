@@ -1,9 +1,10 @@
-#include "ballDistance.h"
+﻿#include "ballDistance.h"
 #include "Graphics.h"
 #include "Ball.h"
 #include "physxManager.h"
 #include <imgui.h>
 #include <shader.h>
+#include <Player.h>
 
 void BallDistance::Initialize(ID3D11Device* device)
 {
@@ -15,6 +16,7 @@ void BallDistance::Initialize(ID3D11Device* device)
 	// 球種名と球速表示に必要な文字だけをベイクする
 	std::vector<int> pitchInfoCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789m"
+		u8"引っ張りセンター流し打ち"
 	);
 
 	// 日本語グリフを持つフォントを用意して配置する
@@ -23,6 +25,13 @@ void BallDistance::Initialize(ID3D11Device* device)
 		100.0f,
 		screenWidth, screenHeight,
 		512, 512,
+		&pitchInfoCodepoints);
+
+	directionFont.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		100.0f,
+		screenWidth, screenHeight,
+		1024, 1024,
 		&pitchInfoCodepoints);
 
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -61,6 +70,23 @@ void BallDistance::Update(float elapsedTime)
 		hasDistanceText = false;
 		isDistanceLocked = false;
 		return;
+	}
+
+	float originalDirection = Physics::Instance().GetBallOriginalDirection();
+	bool isRightBatter = Player::Instance().IsRightBatter();
+
+
+	if (originalDirection >= -15.0f && originalDirection <= 15.0f)
+	{
+		snprintf(directionLabel, sizeof(directionLabel), u8"センター");
+	}
+	else if (isRightBatter && originalDirection < -15.0f || !isRightBatter && originalDirection > 15.0f)
+	{
+		snprintf(directionLabel, sizeof(directionLabel), u8"引っ張り");
+	}
+	else if (isRightBatter && originalDirection > 15.0f || !isRightBatter && originalDirection < -15.0f)
+	{
+		snprintf(directionLabel, sizeof(directionLabel), u8"流し打ち");
 	}
 
 	// ボールがバットに当たった後、地面またはフェンスに当たるまでの間、距離を表示する
@@ -155,6 +181,12 @@ void BallDistance::Render()
 	ballDistanceFont.DrawTextW(dc, distanceText, fontPos.x, fontPos.y, fontSize,
 		fontColor.x, fontColor.y, fontColor.z, fontColor.w);
 
+	
+
+	
+	directionFont.DrawTextW(dc, directionLabel, directionFontPosition.x, directionFontPosition.y, directionFontSize,
+		directionFontColor.x, directionFontColor.y, directionFontColor.z, directionFontColor.w);
+
 	// 後始末（Wind と同じ）
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -187,6 +219,15 @@ void BallDistance::DrawGUI()
 		ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&distanceBackColor));
 	}
 
+	if(ImGui::CollapsingHeader("Direction Font Settings"))
+	{
+		ImGui::Text("Direction Font Position");
+		ImGui::DragFloat2("Position", &directionFontPosition.x);
+		ImGui::Text("Direction Font Size");
+		ImGui::SliderFloat("Size", &directionFontSize, 0.1f, 5.0f);
+		ImGui::Text("Direction Font Color");
+		ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&directionFontColor));
+	}
 
 	ImGui::Text(" maxDistance: %.f", maxDistance);
 }
@@ -200,6 +241,14 @@ void BallDistance::SaveToJson(nlohmann::json& j)
 	j["fontColorG"] = fontColor.y;
 	j["fontColorB"] = fontColor.z;
 	j["fontColorA"] = fontColor.w;
+
+	j["directionFontPositionX"] = directionFontPosition.x;
+	j["directionFontPositionY"] = directionFontPosition.y;
+	j["directionFontSize"] = directionFontSize;
+	j["directionFontColorR"] = directionFontColor.x;
+	j["directionFontColorG"] = directionFontColor.y;
+	j["directionFontColorB"] = directionFontColor.z;
+	j["directionFontColorA"] = directionFontColor.w;
 
 	//飛距離表示の背景の保存
 	j["distanceBackPositionX"] = distanceBackPosition.x;
@@ -230,6 +279,23 @@ void BallDistance::LoadFromJson(const nlohmann::json& j)
 		fontColor.y = j["fontColorG"].get<float>();
 		fontColor.z = j["fontColorB"].get<float>();
 		fontColor.w = j["fontColorA"].get<float>();
+	}
+
+	if(j.contains("directionFontPositionX") && j.contains("directionFontPositionY"))
+	{
+		directionFontPosition.x = j["directionFontPositionX"].get<float>();
+		directionFontPosition.y = j["directionFontPositionY"].get<float>();
+	}
+	if (j.contains("directionFontSize"))
+	{
+		directionFontSize = j["directionFontSize"].get<float>();
+	}
+	if(j.contains("directionFontColorR") && j.contains("directionFontColorG") && j.contains("directionFontColorB") && j.contains("directionFontColorA"))
+	{
+		directionFontColor.x = j["directionFontColorR"].get<float>();
+		directionFontColor.y = j["directionFontColorG"].get<float>();
+		directionFontColor.z = j["directionFontColorB"].get<float>();
+		directionFontColor.w = j["directionFontColorA"].get<float>();
 	}
 
 	if (j.contains("distanceBackPositionX") && j.contains("distanceBackPositionY"))

@@ -21,7 +21,7 @@ bool SubMission::ClearDirection(Direction direction) const
 
 	int count = 0;
 
-	enum class FieldArea { Left, Center, Right, OutOfBounds };
+	enum class FieldArea { Left, Center, Right, OutOfBounds };// フィールドのエリアを定義(
 	FieldArea hitArea = FieldArea::OutOfBounds;
 	
 	if (BallDistance::Instance().GetFinalDistance() > 0.0f)

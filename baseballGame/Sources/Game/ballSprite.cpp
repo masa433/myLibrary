@@ -421,7 +421,7 @@ void ballSprite::SelectSpinFlipForPitch(int pitchBreakIndex, bool isRightPitcher
 		return;
 	case 11: // シュート
 		currentSpinFlip = &sliderFlip;
-		currentSpinReverse = true;
+		currentSpinReverse = isRightPitcher;
 		return;
 	default:
 		currentSpinFlip = nullptr; // 未対応の球種だけ静止画フォールバック
