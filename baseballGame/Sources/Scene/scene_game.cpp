@@ -30,6 +30,7 @@
 #include <ballCount.h>
 #include "RoundManager.h"
 #include "Combo.h"
+#include "EffectManager.h"
 
 using json = nlohmann::json;
 
@@ -435,6 +436,8 @@ void scene_game::update(float elapsed_time)
 
 	RoundManager::Instance().Update(elapsed_time);
 
+	//EffectManager::Instance().Update(elapsed_time);
+
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
 
@@ -721,6 +724,7 @@ void scene_game::render(float elapsedTime)
 
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
+    //EffectManager::Instance().Render(camera.GetView(), camera.GetProjection());
    
     BatSprite::Instance().Render();
 

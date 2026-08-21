@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USE_IMGUI;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\imgui;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\imgui;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -104,7 +104,7 @@
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>.\External\DirectXTK-main\DirectXTK-main\Bin\Desktop_2019\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;%(AdditionalDependencies);Effekseer.lib;EffekseerRendererDX11.lib</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -121,15 +121,16 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\resources\shader;.\midi;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\Sources\Effect;.\resources\shader;.\midi;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>.\External\DirectXTK-main\DirectXTK-main\Bin\Desktop_2019\x64\Debug;.\External\PhysX\bin\win.x86_64.vc143.mt\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;PhysX_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXCommon_static_64.lib;PhysXCooking_static_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXVehicle_static_64.lib;PhysXVehicle2_static_64.lib;PVDRuntime_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\External\Effekseer\lib\Debug;.\External\DirectXTK-main\DirectXTK-main\Bin\Desktop_2019\x64\Debug;.\External\PhysX\bin\win.x86_64.vc143.mt\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;PhysX_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXCommon_static_64.lib;PhysXCooking_static_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXVehicle_static_64.lib;PhysXVehicle2_static_64.lib;PVDRuntime_64.lib;Effekseerd.lib;EffekseerRendererDX11d.lib;EffekseerRendererCommond.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/VERBOSE:LIB %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -148,7 +149,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\imgui;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\imgui;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -158,7 +159,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>.\External\DirectXTK-main\DirectXTK-main\Bin\Desktop_2019\x64\Release</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;%(AdditionalDependencies);Effekseer.lib;EffekseerRendererDX11.lib</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -177,7 +178,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\resources\shader;.\midi;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\Sources\Effect;.\resources\shader;.\midi;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -186,8 +187,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>.\External\DirectXTK-main\DirectXTK-main\Bin\Desktop_2019\x64\Release;.\External\PhysX\bin\win.x86_64.vc143.mt\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;PhysX_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXCommon_static_64.lib;PhysXCooking_static_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXVehicle_static_64.lib;PhysXVehicle2_static_64.lib;PVDRuntime_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\External\Effekseer\lib\Release;.\External\DirectXTK-main\DirectXTK-main\Bin\Desktop_2019\x64\Release;.\External\PhysX\bin\win.x86_64.vc143.mt\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;DirectXTK.lib;xinput.lib;PhysX_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXCommon_static_64.lib;PhysXCooking_static_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXVehicle_static_64.lib;PhysXVehicle2_static_64.lib;PVDRuntime_64.lib;Effekseer.lib;EffekseerRendererDX11.lib;EffekseerRendererCommon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -226,6 +227,8 @@
     <ClCompile Include="Sources\Collision\collision.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Effect\Effect.cpp" />
+    <ClCompile Include="Sources\Effect\EffectManager.cpp" />
     <ClCompile Include="Sources\Game\Ball.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -382,6 +385,8 @@
     <ClInclude Include="Sources\Collision\collision.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Effect\Effect.h" />
+    <ClInclude Include="Sources\Effect\EffectManager.h" />
     <ClInclude Include="Sources\Game\Ball.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

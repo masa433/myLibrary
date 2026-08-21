@@ -4,7 +4,40 @@
     <ClCompile Include="Sources\Game\Ball.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\ballCount.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\ballDistance.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\BallNet.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\ballSprite.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\batSprite.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\catcher.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\Combo.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\FoulSprite.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\GameTimer.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
     <ClCompile Include="Sources\Game\game_object.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\HomeRunCount.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\Money.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Game\Pitcher.cpp">
@@ -13,11 +46,26 @@
     <ClCompile Include="Sources\Game\Player.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\Result.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\RoundManager.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
     <ClCompile Include="Sources\Game\stage.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\SubMission.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Game\TrackingData.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Game\Wind.cpp">
       <Filter>Sources\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Graphics\FrustumCulling.cpp">
+      <Filter>Sources\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Graphics\GpuResourceUtils.cpp">
       <Filter>Sources\Graphics</Filter>
@@ -31,10 +79,16 @@
     <ClCompile Include="Sources\Graphics\texture.cpp">
       <Filter>Sources\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Camera\BroadcastCamera.cpp">
+      <Filter>Sources\Camera</Filter>
+    </ClCompile>
     <ClCompile Include="Sources\Camera\camera.cpp">
       <Filter>Sources\Camera</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Camera\camera_controller.cpp">
+      <Filter>Sources\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Camera\FreeCameraController.cpp">
       <Filter>Sources\Camera</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Input\game_pad.cpp">
@@ -58,8 +112,26 @@
     <ClCompile Include="Sources\System\main.cpp">
       <Filter>Sources\System</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Scene\batterSelectScene.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Scene\sceneManager.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="Sources\Scene\scene_game.cpp">
       <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Scene\scene_loading.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Scene\scene_title.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Renderer\BloomRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Renderer\FontRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Renderer\ModelRenderer.cpp">
       <Filter>Sources\Renderer</Filter>
@@ -67,7 +139,13 @@
     <ClCompile Include="Sources\Renderer\PrimitiveRenderer.cpp">
       <Filter>Sources\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Renderer\ShadowRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="Sources\Renderer\shapeRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Renderer\SkyRenderer.cpp">
       <Filter>Sources\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Renderer\sprite.cpp">
@@ -91,6 +169,9 @@
     <ClCompile Include="Sources\Shader\BasicShader.cpp">
       <Filter>Sources\Shader</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Shader\Hextransitioneffect.cpp">
+      <Filter>Sources\Shader</Filter>
+    </ClCompile>
     <ClCompile Include="Sources\Shader\LambertShader.cpp">
       <Filter>Sources\Shader</Filter>
     </ClCompile>
@@ -99,6 +180,15 @@
     </ClCompile>
     <ClCompile Include="Sources\Collision\collision.cpp">
       <Filter>Sources\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\UI\ButtonManager.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\UI\ScrollView.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\UI\UIEasing.cpp">
+      <Filter>Sources\UI</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui.cpp">
       <Filter>imgui</Filter>
@@ -124,108 +214,60 @@
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\Renderer\SkyRenderer.cpp">
-      <Filter>Sources\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Renderer\ShadowRenderer.cpp">
-      <Filter>Sources\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Camera\FreeCameraController.cpp">
-      <Filter>Sources\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\ballSprite.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\batSprite.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Renderer\FontRenderer.cpp">
-      <Filter>Sources\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Scene\scene_title.cpp">
-      <Filter>Sources\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Scene\sceneManager.cpp">
-      <Filter>Sources\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Scene\scene_loading.cpp">
-      <Filter>Sources\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Graphics\FrustumCulling.cpp">
-      <Filter>Sources\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\TrackingData.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\GameTimer.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\HomeRunCount.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\FoulSprite.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Camera\BroadcastCamera.cpp">
-      <Filter>Sources\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\catcher.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Shader\Hextransitioneffect.cpp">
-      <Filter>Sources\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\ballDistance.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\UI\UIEasing.cpp">
-      <Filter>Sources\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\UI\ButtonManager.cpp">
-      <Filter>Sources\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Scene\batterSelectScene.cpp">
-      <Filter>Sources\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="midi\devmidi.cpp">
       <Filter>midi</Filter>
     </ClCompile>
     <ClCompile Include="midi\midi_wrap.cpp">
       <Filter>midi</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\UI\ScrollView.cpp">
-      <Filter>Sources\UI</Filter>
+    <ClCompile Include="Sources\Effect\Effect.cpp">
+      <Filter>Sources\Effect</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\Renderer\BloomRenderer.cpp">
-      <Filter>Sources\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\Result.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\BallNet.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\ballCount.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\Money.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\RoundManager.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\Combo.cpp">
-      <Filter>Sources\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Game\SubMission.cpp">
-      <Filter>Sources\Game</Filter>
+    <ClCompile Include="Sources\Effect\EffectManager.cpp">
+      <Filter>Sources\Effect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\Game\ballCount.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\ballDistance.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\BallNet.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\ballSprite.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\batSprite.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\catcher.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\Combo.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\FoulSprite.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\GameTimer.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
     <ClInclude Include="Sources\Game\game_object.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\HitJudge2D.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\HomeRunCount.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\Money.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Game\Pitcher.h">
@@ -234,11 +276,26 @@
     <ClInclude Include="Sources\Game\Player.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\Game\Result.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\RoundManager.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
     <ClInclude Include="Sources\Game\stage.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\SubMission.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\TrackingData.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Game\Wind.h">
       <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Graphics\FrustumCulling.h">
+      <Filter>Sources\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Graphics\GpuResourceUtils.h">
       <Filter>Sources\Graphics</Filter>
@@ -255,10 +312,16 @@
     <ClInclude Include="Sources\Graphics\texture.h">
       <Filter>Sources\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\Camera\BroadcastCamera.h">
+      <Filter>Sources\Camera</Filter>
+    </ClInclude>
     <ClInclude Include="Sources\Camera\camera.h">
       <Filter>Sources\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Camera\camera_controller.h">
+      <Filter>Sources\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Camera\FreeCameraController.h">
       <Filter>Sources\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Input\game_pad.h">
@@ -285,11 +348,32 @@
     <ClInclude Include="Sources\System\misc.h">
       <Filter>Sources\System</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\Scene\batterSelectScene.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="Sources\Scene\scene.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Scene\sceneManager.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Scene\sceneTransition.h">
       <Filter>Sources\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Scene\scene_game.h">
       <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Scene\scene_loading.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Scene\scene_title.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Renderer\BloomRenderer.h">
+      <Filter>Sources\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Renderer\FontRenderer.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Renderer\ModelRenderer.h">
       <Filter>Sources\Renderer</Filter>
@@ -297,7 +381,13 @@
     <ClInclude Include="Sources\Renderer\PrimitiveRenderer.h">
       <Filter>Sources\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\Renderer\ShadowRenderer.h">
+      <Filter>Sources\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="Sources\Renderer\shapeRenderer.h">
+      <Filter>Sources\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Renderer\SkyRenderer.h">
       <Filter>Sources\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Renderer\sprite.h">
@@ -321,6 +411,9 @@
     <ClInclude Include="Sources\Shader\BasicShader.h">
       <Filter>Sources\Shader</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\Shader\Hextransitioneffect.h">
+      <Filter>Sources\Shader</Filter>
+    </ClInclude>
     <ClInclude Include="Sources\Shader\LambertShader.h">
       <Filter>Sources\Shader</Filter>
     </ClInclude>
@@ -335,6 +428,15 @@
     </ClInclude>
     <ClInclude Include="Sources\Light\Light.h">
       <Filter>Sources\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\UI\ButtonManager.h">
+      <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\UI\ScrollView.h">
+      <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\UI\UiEasing.h">
+      <Filter>Sources\UI</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imconfig.h">
       <Filter>imgui</Filter>
@@ -360,72 +462,6 @@
     <ClInclude Include="imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="Sources\Renderer\SkyRenderer.h">
-      <Filter>Sources\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Renderer\ShadowRenderer.h">
-      <Filter>Sources\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Camera\FreeCameraController.h">
-      <Filter>Sources\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\ballSprite.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\batSprite.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\HitJudge2D.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Renderer\FontRenderer.h">
-      <Filter>Sources\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Scene\scene_title.h">
-      <Filter>Sources\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Scene\sceneManager.h">
-      <Filter>Sources\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Scene\scene_loading.h">
-      <Filter>Sources\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Graphics\FrustumCulling.h">
-      <Filter>Sources\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\TrackingData.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\GameTimer.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\HomeRunCount.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\FoulSprite.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Camera\BroadcastCamera.h">
-      <Filter>Sources\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\catcher.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Shader\Hextransitioneffect.h">
-      <Filter>Sources\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\ballDistance.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\UI\UiEasing.h">
-      <Filter>Sources\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\UI\ButtonManager.h">
-      <Filter>Sources\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Scene\batterSelectScene.h">
-      <Filter>Sources\Scene</Filter>
-    </ClInclude>
     <ClInclude Include="midi\devmidi.h">
       <Filter>midi</Filter>
     </ClInclude>
@@ -435,35 +471,11 @@
     <ClInclude Include="midi\midi_wrap.h">
       <Filter>midi</Filter>
     </ClInclude>
-    <ClInclude Include="Sources\UI\ScrollView.h">
-      <Filter>Sources\UI</Filter>
+    <ClInclude Include="Sources\Effect\Effect.h">
+      <Filter>Sources\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="Sources\Renderer\BloomRenderer.h">
-      <Filter>Sources\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\Result.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Scene\sceneTransition.h">
-      <Filter>Sources\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\BallNet.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\ballCount.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\Money.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\RoundManager.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\Combo.h">
-      <Filter>Sources\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Sources\Game\SubMission.h">
-      <Filter>Sources\Game</Filter>
+    <ClInclude Include="Sources\Effect\EffectManager.h">
+      <Filter>Sources\Effect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -535,6 +547,12 @@
     <FxCompile Include="Shaders\blur_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\burstEffect_ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\burstEffect_vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
     <FxCompile Include="Shaders\cascade_shadowmap_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
@@ -551,6 +569,15 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\gltf_model_vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\gltf_model_vs_instanced.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HextransitionPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HextransitionVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\LambertPS.hlsl">
@@ -592,6 +619,12 @@
     <FxCompile Include="Shaders\shadowmap_caster_vs.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\sky_ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\sky_vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
     <FxCompile Include="Shaders\SolidShapeRendererPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
@@ -616,79 +649,61 @@
     <FxCompile Include="Shaders\WiredShapeRendererVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\sky_ps.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\sky_vs.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\HextransitionVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\HextransitionPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\burstEffect_ps.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\burstEffect_vs.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\gltf_model_vs_instanced.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
-      <UniqueIdentifier>{494d4a33-6da1-4d0c-9c4a-ec920d8e2edf}</UniqueIdentifier>
+      <UniqueIdentifier>{e145d7e1-b928-4c25-b29c-065306d17f55}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources">
-      <UniqueIdentifier>{b2b685b0-b90c-4ad6-b4b4-094a1595781d}</UniqueIdentifier>
+      <UniqueIdentifier>{2b89e856-ae20-4318-a427-6c7d2899e562}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Game">
-      <UniqueIdentifier>{04788b4d-6f9e-45ea-8191-5fa2ad194895}</UniqueIdentifier>
+      <UniqueIdentifier>{83b06ce3-81d7-4780-b6a4-a8953b127d05}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Graphics">
-      <UniqueIdentifier>{dd0dad3b-4da2-4dba-8c20-6894f0edb335}</UniqueIdentifier>
+      <UniqueIdentifier>{2cff6eae-a306-4bce-b128-265306d826c4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Camera">
-      <UniqueIdentifier>{ff412376-5748-4b3b-9bdf-a4c8c7dc0fae}</UniqueIdentifier>
+      <UniqueIdentifier>{00d90c97-9a0e-4a5e-ae39-434a8c07319e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Input">
-      <UniqueIdentifier>{57359179-92b6-4170-99bf-5aef13ac36f1}</UniqueIdentifier>
+      <UniqueIdentifier>{a5bfd25d-d067-4bbb-93bc-e061875849a8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\System">
-      <UniqueIdentifier>{45a230a9-2045-488e-8f36-6ec4617f3cec}</UniqueIdentifier>
+      <UniqueIdentifier>{1de9774f-263c-429b-a215-284f2978da6e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Scene">
-      <UniqueIdentifier>{37da5fc5-aed5-48b9-8e3e-30f43ee85867}</UniqueIdentifier>
+      <UniqueIdentifier>{58b57fee-3c8c-438b-aa51-c426dfb9ed6e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Renderer">
-      <UniqueIdentifier>{226768c4-6420-4e75-baf3-52fead8aca61}</UniqueIdentifier>
+      <UniqueIdentifier>{99ab5773-5d16-435a-bfa9-c78346930927}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Physics">
-      <UniqueIdentifier>{17c91ea1-509a-4051-a549-93f832eb02a2}</UniqueIdentifier>
+      <UniqueIdentifier>{3f130d55-4d5f-4f22-bf99-593764bac0bf}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Model">
-      <UniqueIdentifier>{1b78184c-5cc2-4d76-8a70-170f76450b14}</UniqueIdentifier>
+      <UniqueIdentifier>{82f2674a-1be3-4f78-a027-7fcaf35e6ae9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Shader">
-      <UniqueIdentifier>{d8eed747-570a-42fe-b6ad-603c7c9c9d63}</UniqueIdentifier>
+      <UniqueIdentifier>{26b4e549-3f7d-4e3f-b605-2bebafb78fc1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Collision">
-      <UniqueIdentifier>{9fee84d0-ae30-4b26-82e8-6e2e75fe01da}</UniqueIdentifier>
+      <UniqueIdentifier>{3f709745-e9ce-4d77-9c33-9f100af273f3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Light">
-      <UniqueIdentifier>{eacc021f-f0d6-48e9-aea5-1b6f501388f3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="imgui">
-      <UniqueIdentifier>{9cd9027c-6af9-4aff-b409-0824fabee4ea}</UniqueIdentifier>
+      <UniqueIdentifier>{81733707-5ee0-40bd-8aaa-dea9ebf7b8e5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\UI">
-      <UniqueIdentifier>{301a6216-c2b9-42a9-a426-36a8f125caa8}</UniqueIdentifier>
+      <UniqueIdentifier>{46bdaad7-9409-432f-9713-e3b50f4ba66d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{8cfb044d-e24e-403b-a6c9-8456945d4e68}</UniqueIdentifier>
     </Filter>
     <Filter Include="midi">
-      <UniqueIdentifier>{f7d8df72-fc4d-423e-b00f-66587d108522}</UniqueIdentifier>
+      <UniqueIdentifier>{f46724f7-3dd3-45ba-8985-c361dd07bc92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Effect">
+      <UniqueIdentifier>{25bbb952-ecc8-46ea-9c52-e4b0d9bf8bde}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

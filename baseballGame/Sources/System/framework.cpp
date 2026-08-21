@@ -2,7 +2,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "input.h"
-
+#include "EffectManager.h"
 
 // 垂直同期間隔設定
 static const int syncInterval = 1;
@@ -41,7 +41,8 @@ framework::framework(HWND hwnd) : hwnd(hwnd)
 	//グラフィックス初期化
 	Graphics::Instance().Initialize(hwnd);
 
-
+	//エフェクトマネージャー初期化
+	//EffectManager::Instance().Initialize();
 
 	//framebuffers[0] = std::make_unique<framebuffer>(device.Get(), 1280, 720);
 	//framebuffers[1] = std::make_unique<framebuffer>(device.Get(), 1280 / 2, 720 / 2);
@@ -111,9 +112,12 @@ bool framework::uninitialize()
 
 framework::~framework()
 {
-
+	//シーンマネージャーのクリア
 	sceneManager::Instance().Clear();
 
+	//エフェクトマネージャーの終了処理
+	//EffectManager::Instance().Uninitialize();
 
+	//グラフィックス終了処理
 	ReleaseDC(hwnd, hDC);
 }
