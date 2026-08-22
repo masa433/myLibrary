@@ -65,7 +65,7 @@ private:
 	std::unique_ptr<Sprite> homeRunCountSpriteData;
 
 	FontRenderer homeRunCountFont;
-	FontRenderer homeRunCountLabelFont;
+	FontRenderer missionFont;
 
 	// シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
@@ -83,6 +83,9 @@ private:
 	DirectX::XMFLOAT4 slashColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	DirectX::XMFLOAT4 targetColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float goldColorTime = 0.0f; // ゴールドカラーの時間経過を追跡する変数
+
+	DirectX::XMFLOAT2 missionLabelPosition = { 10.0f, 100.0f };
+	float missionLabelScale = 1.0f;
 
 	//カウントポップアニメーション
 	float numberDisplayScale = 1.0f;      // 実際に描画に使う現在のスケール

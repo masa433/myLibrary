@@ -117,6 +117,12 @@ void RoundManager::Render()
 
 	const auto pitcherState = Pitcher::Instance().GetCurrentState();
 
+	SubMission::Instance().Render();
+
+	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
+	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
+	dc->IASetInputLayout(input_layout.Get());
+
 	//selectˆÈŠO‚ÌŽž‚Í•`‰æ‚µ‚È‚¢
 	if (pitcherState != Pitcher::State::SelectingPitch) return;
 
@@ -137,8 +143,6 @@ void RoundManager::Render()
 		roundTextPosition.x, roundTextPosition.y,
 		roundTextScale,
 		roundTextColor.x, roundTextColor.y, roundTextColor.z, roundTextColor.w);
-
-	SubMission::Instance().Render();
 
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -165,6 +169,8 @@ void RoundManager::DrawGUI()
 		ImGui::DragFloat2("Sprite Size", &spriteSize.x, 1.0f, 0.0f, 1920.0f);
 		ImGui::ColorEdit4("Sprite Color", &spriteColor.x);
 	}
+
+	SubMission::Instance().DrawGUI();
 }
 
 void RoundManager::SaveToJson(json& j)
@@ -178,6 +184,8 @@ void RoundManager::SaveToJson(json& j)
 	j["spritePosition"] = { spritePosition.x, spritePosition.y };
 	j["spriteSize"] = { spriteSize.x, spriteSize.y };
 	j["spriteColor"] = { spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w };
+
+	SubMission::Instance().SaveToJson(j);
 }
 
 void RoundManager::LoadFromJson(const json& j)
@@ -245,4 +253,6 @@ void RoundManager::LoadFromJson(const json& j)
 			spriteColor.w = color[3].get<float>();
 		}
 	}
+
+	SubMission::Instance().LoadFromJson(j);
 }

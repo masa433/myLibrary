@@ -34,9 +34,17 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 	// ホームラン数表示に必要な文字だけをベイクする
 	std::vector<int> homeRunCountCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789HOMERUN/"
-	u8"お金をためよう！");
+	u8"お金をためよう！"
+	u8"ホームランを打とう");
 	// フォントレンダラーの初期化
 	homeRunCountFont.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		100.0f,
+		screenWidth, screenHeight,
+		1024, 1024,
+		&homeRunCountCodepoints);
+
+	missionFont.Initialize(device,
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
 		100.0f,
 		screenWidth, screenHeight,
@@ -51,6 +59,7 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 void HomeRunCount::Uninitialize()
 {
 	homeRunCountFont.Uninitialize();
+	missionFont.Uninitialize();
 	homeRunCountSprite.reset();
 	homeRunCountSpriteData.reset();
 	Combo::Instance().Uninitialize();
@@ -126,13 +135,7 @@ void HomeRunCount::Render()
 		homeRunCountSpriteData->color.z, homeRunCountSpriteData->color.w,
 		homeRunCountSpriteData->rotation);
 	
-	// "HOMERUN" ラベルをそのまま描画
-	//homeRunCountFont.DrawTextW(dc,
-	//	"HOMERUN",
-	//	labelPositionX,
-	//	labelPositionY,
-	//	labelScale,
-	//	1.0f, 1.0f, 1.0f, 1.0f); // 白色
+	
 
 	// 数字だけ大きく、ラベルの下に描画
 	int currentHomeRunTarget = RoundManager::Instance().GetCurrentTarget();
@@ -142,6 +145,13 @@ void HomeRunCount::Render()
 	{
 		sprintf_s(roundBuffer, sizeof(roundBuffer), u8"お金をためよう！");
 	}
+	else
+	{
+		sprintf_s(roundBuffer, sizeof(roundBuffer), u8"ホームランを打とう！");
+	}
+	
+
+		
 	
 
 	char countBuffer[16];
@@ -192,6 +202,14 @@ void HomeRunCount::Render()
 			numberPositionY,
 			targetDisplayScale,
 			targetColor.x, targetColor.y, targetColor.z, targetColor.w); // 金色にして目立たせる例
+
+		missionFont.DrawTextW(dc,
+			roundBuffer,
+			missionLabelPosition.x,
+			missionLabelPosition.y,
+			missionLabelScale,
+			1.0f, 1.0f, 1.0f, 1.0f); // 白色
+
 	}
 
 	bool isFinished = Ball::Instance().GetHasPassedHomeRunZone() && (Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround());
@@ -236,6 +254,10 @@ void HomeRunCount::DrawGUI()
 		ImGui::Separator();
 		ImGui::DragFloat("Pop Scale Multiplier", &numberPopScaleMultiplier, 0.05f, 1.0f, 5.0f);
 		ImGui::DragFloat("Pop Anim Speed", &numberScaleAnimSpeed, 0.1f, 0.5f, 20.0f);
+
+		ImGui::Separator();
+		ImGui::DragFloat2("Mission Label Position", &missionLabelPosition.x);
+		ImGui::DragFloat("Mission Label Scale", &missionLabelScale);
 	}
 	Combo::Instance().DrawGUI();
 
@@ -261,7 +283,9 @@ void HomeRunCount::SaveToJson(nlohmann::json& j)
 		{"targetScale", targetDisplayScale},
 		{"numberCountColor", {countColor.x, countColor.y, countColor.z, countColor.w}},
 		{"numberSlashColor", {slashColor.x, slashColor.y, slashColor.z, slashColor.w}},
-		{"numberTargetColor", {targetColor.x, targetColor.y, targetColor.z, targetColor.w}}
+		{"numberTargetColor", {targetColor.x, targetColor.y, targetColor.z, targetColor.w}},
+		{"missionLabelPosition", {missionLabelPosition.x, missionLabelPosition.y}},
+		{"missionLabelScale", missionLabelScale}
 	};
 
 	Combo::Instance().SaveToJson(j["combo"]);
@@ -374,6 +398,17 @@ void HomeRunCount::LoadFromJson(const nlohmann::json& j)
 			slashDisplayScale = fontJson["slashScale"].get<float>();
 		if (fontJson.contains("targetScale"))
 			targetDisplayScale = fontJson["targetScale"].get<float>();
+		if (fontJson.contains("missionLabelPosition"))
+			{
+			const auto& pos = fontJson["missionLabelPosition"];
+			if (pos.is_array() && pos.size() == 2)
+			{
+				missionLabelPosition.x = pos[0].get<float>();
+				missionLabelPosition.y = pos[1].get<float>();
+			}
+		}
+		if (fontJson.contains("missionLabelScale"))
+			missionLabelScale = fontJson["missionLabelScale"].get<float>();
 		
 	}
 

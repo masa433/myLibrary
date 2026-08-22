@@ -83,11 +83,15 @@ void SubMission::Initialize(ID3D11Device* device)
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
 	std::vector<int> codepoints = FontRenderer::Utf8ToCodepoints(
-		u8"0123456789m/[]達成挑戦中変化球引っ張り流しセンター方向以上の打とうホームランを本球連続にしよう!");
+		u8"0123456789m/[]達成挑戦中変化球引っ張り流しセンター方向以上ので打とうホームランを本球連続にしよう!");
 
 	missionFont.Initialize(device,
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
-		100.0f, screenWidth, screenHeight, 2048, 2048, &codepoints);
+		200.0f, screenWidth, screenHeight, 4096, 4096, &codepoints);
+
+	progressFont.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		150.0f, screenWidth, screenHeight, 4096, 4096, &codepoints);
 
 	BuildMissionList();
 	currentRoundCache = -1; // ラウンドキャッシュを初期化
@@ -96,6 +100,7 @@ void SubMission::Initialize(ID3D11Device* device)
 void SubMission::Uninitialize()
 {
 	missionFont.Uninitialize();
+	progressFont.Uninitialize();
 }
 
 void SubMission::Update(float elapsedTime)
@@ -147,11 +152,62 @@ void SubMission::Render()
 		? DirectX::XMFLOAT4(1.0f, 0.84f, 0.0f, 1.0f)
 		: DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
-	std::string line = (currentMission->cleared ? u8"[達成] " : u8"[挑戦中] ")
-		+ currentMission->description
-		+ " (" + std::to_string(currentMission->current) + "/" + std::to_string(currentMission->required) + ")";
+	std::string line = currentMission->description;
+	//進捗状況の文字列
+	std::string progress = std::to_string(currentMission->current) + " / " + std::to_string(currentMission->required);
 
-	missionFont.DrawTextW(dc, line.c_str(), listPosition.x, listPosition.y, fontSize,
+	//文字数を計算する
+	size_t charCount = 0;
+	for (size_t i = 0; i < line.size();)
+	{
+		unsigned char c = static_cast<unsigned char>(line[i]);// UTF-8の先頭バイトを取得
+		if (c < 0x80)
+		{
+			i += 1; // ASCII文字
+		}
+		else if ((c & 0xE0) == 0xC0)
+		{
+			i += 2; // 2バイト文字
+		}
+		else if ((c & 0xF0) == 0xE0)
+		{
+			i += 3; // 3バイト文字
+		}
+		else if ((c & 0xF8) == 0xF0)
+		{
+			i += 4; // 4バイト文字
+		}
+		else
+		{
+			i += 1; // 不正なUTF-8シーケンスとして扱う
+		}
+		charCount++;
+	}
+
+	//基準の文字数を超えたらスケールを徐々に小さくする
+	dynamicFontSize = fontSize;
+	const size_t baseCharCount = 16; // 基準の文字数
+	if (charCount > baseCharCount)
+	{
+		float shrinkRatio = 1.0f - static_cast<float>(charCount - baseCharCount) * 0.1f;// 文字数が1増えるごとに0.001ずつ縮小
+		if (shrinkRatio < 0.6f) shrinkRatio = 0.6f; // 最小スケールを0.6に制限
+		dynamicFontSize *= shrinkRatio;
+	}
+
+	//Textを中央ぞろえで描画する
+	float drawWidth = 0.0f, drawHeight = 0.0f;
+
+	missionFont.MeasureText(line.c_str(), dynamicFontSize, drawWidth, drawHeight);// 描画するテキストの幅と高さを取得
+
+	float drawX = listPosition.x - drawWidth / 2.0f; // 中央ぞろえのためにX座標を調整
+
+	missionFont.DrawTextW(dc, line.c_str(), drawX, listPosition.y, dynamicFontSize,
+		color.x, color.y, color.z, color.w);
+
+	float progressWidth = 0.0f, progressHeight = 0.0f;
+	progressFont.MeasureText(progress.c_str(), progressFontSize, progressWidth, progressHeight);
+	float progressX = progressPosition.x - progressWidth / 2.0f; // 中央ぞろえのためにX座標を調整
+	progressFont.DrawTextW(dc, progress.c_str(), progressX, progressPosition.y, progressFontSize,
 		color.x, color.y, color.z, color.w);
 }
 
@@ -180,9 +236,9 @@ void SubMission::BuildMissionList()
 
 	//ラウンド2と3のレベル1ミッションを追加
 	MissionPool& level1Pool = missionPool[1];
-	add(level1Pool, u8"変化球をホームランにしよう！", 100, 1, 1, { [this]() { return ClearBreakingBall(true); } });
-	add(level1Pool, u8"引っ張り方向に130m以上のホームランを打とう！", 100, 1, 1, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(130.0f); } });
-	add(level1Pool, u8"流し方向に130m以上のホームランを打とう！", 100, 1, 1, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(130.0f); } });
+	add(level1Pool, u8"変化球を1球ホームランにしよう！", 100, 1, 1, { [this]() { return ClearBreakingBall(true); } });
+	add(level1Pool, u8"引っ張り方向に130m以上のホームランを1本打とう！", 100, 1, 1, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(130.0f); } });
+	add(level1Pool, u8"流し方向に130m以上のホームランを1本打とう！", 100, 1, 1, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(130.0f); } });
 	add(level1Pool, u8"130m以上のホームランを2本打とう！", 100, 1, 2, { [this]() { return ClearDistance(130.0f); } });
 	add(level1Pool, u8"140m以上のホームランを1本打とう！", 100, 1, 1, { [this]() { return ClearDistance(140.0f) && ClearHomeRunCount(1); } });
 	add(level1Pool, u8"2球連続でホームランを打とう！", 200, 1, 2, { [this]() { return ClearCombo(1); } });
@@ -277,4 +333,106 @@ void SubMission::CheckMission(MissionData& mission)
 		mission.cleared = true;
 		totalReward += mission.reward;
 	}
+}
+
+void SubMission::ResetSubMission()
+{
+	currentMission.reset();
+	currentMissionIndex = -1;
+	totalReward = 0;
+	currentRoundCache = -1; // ラウンドキャッシュをリセット
+}
+
+void SubMission::DrawGUI()
+{
+	if (ImGui::CollapsingHeader(u8"フォント設定"))
+	{
+		ImGui::DragFloat2(u8"位置", &listPosition.x, 1.0f, 0.0f, Graphics::Instance().GetScreenWidth());
+		ImGui::SliderFloat(u8"フォントサイズ", &fontSize, 0.1f, 1.0f);
+		ImGui::Separator();
+
+		ImGui::DragFloat2(u8"進捗位置", &progressPosition.x, 1.0f, 0.0f, Graphics::Instance().GetScreenWidth());
+		ImGui::SliderFloat(u8"進捗フォントサイズ", &progressFontSize, 0.1f, 1.0f);
+	}
+
+	// 現在アクティブなミッションの編集・クリアテスト
+	if (currentMission && ImGui::CollapsingHeader(u8"現在進行中のミッション"))
+	{
+		ImGui::Text(u8"説明: %s", currentMission->description.c_str());
+		ImGui::Checkbox(u8"クリア済みフラグ", &currentMission->cleared);
+		ImGui::DragInt(u8"現在のカウント (current)", &currentMission->current, 1, 0, currentMission->required);
+		ImGui::DragInt(u8"必要カウント (required)", &currentMission->required, 1, 1, 100);
+		ImGui::DragInt(u8"報酬額 (reward)", &currentMission->reward, 10, 0, 10000);
+
+		if (ImGui::Button(u8"即時クリア適用"))
+		{
+			currentMission->current = currentMission->required;
+			currentMission->cleared = true;
+			totalReward += currentMission->reward;
+		}
+	}
+
+	// 全ミッションのリスト表示・選択機能
+	if (ImGui::CollapsingHeader(u8"サブミッション一覧 & 変更"))
+	{
+		for (auto& pair : missionPool)
+		{
+			int round = pair.first;
+			MissionPool& pool = pair.second; // 参照で取得
+
+			if (ImGui::TreeNode((u8"レベル " + std::to_string(round)).c_str()))
+			{
+				for (size_t i = 0; i < pool.size(); ++i)
+				{
+					// ラムダ式生成前のミッション情報を一時確認用として生成
+					MissionData tempMission = pool[i]();
+
+					ImGui::PushID(static_cast<int>(i));
+
+					// ツリーノードで各ミッションを展開
+					if (ImGui::TreeNode(tempMission.description.c_str()))
+					{
+						ImGui::Text(u8"報酬: %d | 達成条件: %d", tempMission.reward, tempMission.required);
+
+						// ボタンを押したらそのミッションを強制的に現在アクティブなミッションにセット
+						if (ImGui::Button(u8"このミッションに切り替える"))
+						{
+							currentMission = std::make_unique<MissionData>(tempMission);
+							currentMissionIndex = static_cast<int>(i);
+						}
+
+						ImGui::TreePop();
+					}
+					ImGui::PopID();
+				}
+				ImGui::TreePop();
+			}
+		}
+	}
+}
+
+void SubMission::SaveToJson(json& j)
+{
+	
+	j["listPosition"] = { listPosition.x, listPosition.y };
+	//j["fontSize"] = fontSize;
+	j["progressPosition"] = { progressPosition.x, progressPosition.y };
+	j["progressFontSize"] = progressFontSize;
+}
+
+void SubMission::LoadFromJson(const json& j)
+{
+
+	if (j.contains("listPosition") && j["listPosition"].is_array() && j["listPosition"].size() == 2)
+	{
+		listPosition.x = j["listPosition"][0].get<float>();
+		listPosition.y = j["listPosition"][1].get<float>();
+	}
+	//fontSize = j.value("fontSize", 0.3f);
+	if(j.contains("progressPosition") && j["progressPosition"].is_array() && j["progressPosition"].size() == 2)
+	{
+		progressPosition.x = j["progressPosition"][0].get<float>();
+		progressPosition.y = j["progressPosition"][1].get<float>();
+	}
+	progressFontSize = j.value("progressFontSize", 0.25f);
 }

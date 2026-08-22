@@ -88,6 +88,7 @@ private:
 	std::mt19937 rng{ std::random_device{}() };
 
 	FontRenderer missionFont;
+	FontRenderer progressFont;
 
 	std::map<int, MissionPool> missionPool; // ラウンドごとのミッションプール
 	std::unique_ptr<MissionData> currentMission; // 現在のミッションを保持するポインタ
@@ -96,7 +97,11 @@ private:
 	bool homeRunEventConsumed = false;//ホームランイベントが消費されたかどうかを示すフラグ
 
 	DirectX::XMFLOAT2 listPosition = { 40.0f, 100.0f };
-	float fontSize = 0.3f;
+	float fontSize = 0.15f;
+	float dynamicFontSize = 0.15f; // 動的に変化するフォントサイズ
+
+	DirectX::XMFLOAT2 progressPosition = { 40.0f, 150.0f };
+	float progressFontSize = 0.25f;
 
 };
 

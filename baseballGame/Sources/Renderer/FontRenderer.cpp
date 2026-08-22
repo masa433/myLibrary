@@ -404,7 +404,9 @@ void FontRenderer::DrawText(
 	vertices.reserve(codepoints.size() * 6);
 
 	float penX = x;
-	const float penY = y;
+	float penY = y;
+
+	const float lineHeight = pixelHeight_ * scale * 1.2f;
 
 	const float invW = 2.0f / static_cast<float>(screenWidth_);
 	const float invH = 2.0f / static_cast<float>(screenHeight_);
@@ -418,6 +420,13 @@ void FontRenderer::DrawText(
 
 	for (int cp : codepoints)
 	{
+		if (cp == '\n')
+		{
+			penX = x;
+			penY += lineHeight;
+			continue;
+		}
+
 		auto it = glyphs_.find(cp);
 		if (it == glyphs_.end())
 		{
