@@ -8,6 +8,7 @@
 #include "sprite.h"
 #include "FontRenderer.h"
 #include <json.hpp>
+#include "BroadcastCamera.h"
 
 using json = nlohmann::json;
 
@@ -98,4 +99,6 @@ private:
 	float alphaDecreaseSpeed = 1.0f; // 透明度を減少させる速度（大きいほど速い）
 
 	bool isAnimating = false; // アニメーション中かどうかのフラグ
+
+	BroadcastCamera broadcastCamera; // ブロードキャストカメラのインスタンスz
 };

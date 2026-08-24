@@ -83,14 +83,16 @@ void SubMission::Initialize(ID3D11Device* device)
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
 	std::vector<int> codepoints = FontRenderer::Utf8ToCodepoints(
-		u8"0123456789m/[]達成挑戦中変化球引っ張り流しセンター方向以上ので打とうホームランを本球連続にしよう!");
+		u8"0123456789m/[]"
+		u8"達成挑戦中変化球引っ張り流しセンター方向"
+		u8"以上ので打とうホームランを本球連続にしよう！");
 
 	missionFont.Initialize(device,
-		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf",
 		200.0f, screenWidth, screenHeight, 4096, 4096, &codepoints);
 
 	progressFont.Initialize(device,
-		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		L".\\resources\\fonts\\Futur12.ttf",
 		150.0f, screenWidth, screenHeight, 4096, 4096, &codepoints);
 
 	BuildMissionList();

@@ -127,6 +127,7 @@ void Pitcher::Initialize()
 		ballTypeSprite[i] = std::make_unique<sprite>(device, context, ballTypeData[i]->texturePath.c_str());
 	}
 
+	rosinEffect = std::make_unique<Effect>(".\\resources\\effects\\smoke.efk");
 
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 	aiStrikeRate = 0.75f; // AIのストライク率を初期化
@@ -351,7 +352,7 @@ void Pitcher::Update(float elapsedTime)
 	}
 	else if (isBallThrown && !Ball::Instance().IsBezierFlying())
 	{
-		//ApplyPhysicsToBall(elapsedTime);
+		ApplyPhysicsToBall(elapsedTime);
 		Ball::Instance().UpdateFromPhysics(elapsedTime);
 	}
 
@@ -1158,8 +1159,8 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 	}
 	else
 	{
-		ApplyPhysicsToBall(elapsedTime);
-		Ball::Instance().UpdateFromPhysics(elapsedTime);
+		/*ApplyPhysicsToBall(elapsedTime);
+		Ball::Instance().UpdateFromPhysics(elapsedTime);*/
 
 		if (Ball::Instance().GetWorldPosition().y < 0.0f)
 		{
@@ -1223,6 +1224,9 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 			ThrowBallBezier();
 			//コライダーから角速度を設定
 			Ball::Instance().GetBallCollider()->setAngularVelocity(GetSpinAxisFromPitchType());
+
+			//エフェクト再生
+			if (rosinEffect) rosinEffect->Play(DirectX::XMFLOAT3(ballStartPosition.x, ballStartPosition.y, ballStartPosition.z), 1.2f);
 
 			char debugMessage[128];
 			snprintf(debugMessage, sizeof(debugMessage), u8"Throw Speed: %.2f km/h\n", initialVelocity.magnitude() * 3.6f);

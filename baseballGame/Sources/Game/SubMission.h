@@ -13,6 +13,7 @@
 #include <random>
 #include "json.hpp"
 
+
 using json = nlohmann::json;
 
 
@@ -56,7 +57,7 @@ private:
 		int required = 1;//ミッションの達成条件
 		int current = 0;//現在の進行状況
 		bool cleared = false;//ミッションがクリアされたかどうか
-		std::vector<std::function<bool()>> conditions; // 全部trueでクリア(AND)
+		std::vector<std::function<bool()>> conditions;
 	};
 
 	//ミッションプールの定義
@@ -97,8 +98,8 @@ private:
 	bool homeRunEventConsumed = false;//ホームランイベントが消費されたかどうかを示すフラグ
 
 	DirectX::XMFLOAT2 listPosition = { 40.0f, 100.0f };
-	float fontSize = 0.15f;
-	float dynamicFontSize = 0.15f; // 動的に変化するフォントサイズ
+	float fontSize = 0.22f;
+	float dynamicFontSize = 0.22f; // 動的に変化するフォントサイズ
 
 	DirectX::XMFLOAT2 progressPosition = { 40.0f, 150.0f };
 	float progressFontSize = 0.25f;

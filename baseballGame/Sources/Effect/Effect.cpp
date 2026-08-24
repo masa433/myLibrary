@@ -4,6 +4,9 @@
 
 Effect::Effect(const char* fileName)
 {
+	//エフェクトを読み込む前にロックする
+	std::lock_guard<std::mutex> lock(Graphics::Instance().GetMutex());
+
 	//Effekseerのリソースを読み込む
 	char16_t utf16FileName[256];
 	Effekseer::ConvertUtf8ToUtf16(utf16FileName, 256, fileName);

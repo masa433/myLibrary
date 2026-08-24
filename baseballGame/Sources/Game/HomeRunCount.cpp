@@ -4,6 +4,7 @@
 #include "RoundManager.h"
 #include "Combo.h"
 #include <Pitcher.h>
+#include "SubMission.h"
 
 void HomeRunCount::Initialize(ID3D11Device* device)
 {
@@ -53,6 +54,8 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 
 	Combo::Instance().Initialize(device);
 
+	SubMission::Instance().Initialize(device);
+
 	ResetCount(); // ホームラン数を初期化
 }
 
@@ -63,6 +66,7 @@ void HomeRunCount::Uninitialize()
 	homeRunCountSprite.reset();
 	homeRunCountSpriteData.reset();
 	Combo::Instance().Uninitialize();
+	SubMission::Instance().Uninitialize();
 }
 
 void HomeRunCount::Update(float elapsedTime)
@@ -113,120 +117,133 @@ void HomeRunCount::Update(float elapsedTime)
 	}
 
 	Combo::Instance().Update(elapsedTime);
+
+	SubMission::Instance().Update(elapsedTime);
+
+	broadcastCamera.Update(elapsedTime, Ball::Instance().GetHasCollidedWithBat());
 }
 
 void HomeRunCount::Render()
 {
-	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
-	RenderState* renderState = Graphics::Instance().GetRenderState();
-
-	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
-	dc->PSSetShader(spritePS.Get(), nullptr, 0);
-	dc->IASetInputLayout(spriteInputLayout.Get());
-
-	dc->OMSetDepthStencilState(
-		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
-
-	// ホームラン数の描画
-	homeRunCountSprite->render(Graphics::Instance().GetDeviceContext(),
-		homeRunCountSpriteData->position.x, homeRunCountSpriteData->position.y,
-		homeRunCountSpriteData->size.x, homeRunCountSpriteData->size.y,
-		homeRunCountSpriteData->color.x, homeRunCountSpriteData->color.y,
-		homeRunCountSpriteData->color.z, homeRunCountSpriteData->color.w,
-		homeRunCountSpriteData->rotation);
 	
-	
+	bool isSelectPitching = Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch;
+	bool isTracking = broadcastCamera.IsTrackingBall();
 
-	// 数字だけ大きく、ラベルの下に描画
-	int currentHomeRunTarget = RoundManager::Instance().GetCurrentTarget();
-	int currentRound = RoundManager::Instance().GetCurrentRound();
-	char roundBuffer[64];
-	if(currentRound ==1)
+	bool shouldRenderHomeRunCount = isSelectPitching || isTracking;// セレクト中かつヒットカメラでない場合、またはセレクト中でなくヒットカメラの場合に描画する
+	if (shouldRenderHomeRunCount) 
 	{
-		sprintf_s(roundBuffer, sizeof(roundBuffer), u8"お金をためよう！");
+		ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+		RenderState* renderState = Graphics::Instance().GetRenderState();
+
+		dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+		dc->PSSetShader(spritePS.Get(), nullptr, 0);
+		dc->IASetInputLayout(spriteInputLayout.Get());
+
+		dc->OMSetDepthStencilState(
+			renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+		// ホームラン数の描画
+		homeRunCountSprite->render(Graphics::Instance().GetDeviceContext(),
+			homeRunCountSpriteData->position.x, homeRunCountSpriteData->position.y,
+			homeRunCountSpriteData->size.x, homeRunCountSpriteData->size.y,
+			homeRunCountSpriteData->color.x, homeRunCountSpriteData->color.y,
+			homeRunCountSpriteData->color.z, homeRunCountSpriteData->color.w,
+			homeRunCountSpriteData->rotation);
+
+
+
+		// 数字だけ大きく、ラベルの下に描画
+		int currentHomeRunTarget = RoundManager::Instance().GetCurrentTarget();
+		int currentRound = RoundManager::Instance().GetCurrentRound();
+		char roundBuffer[64];
+		if (currentRound == 1)
+		{
+			sprintf_s(roundBuffer, sizeof(roundBuffer), u8"お金をためよう！");
+		}
+		else
+		{
+			sprintf_s(roundBuffer, sizeof(roundBuffer), u8"ホームランを打とう！");
+		}
+
+
+
+
+
+		char countBuffer[16];
+		char slashBuffer[4] = " / ";
+		char targetBuffer[16];
+		sprintf_s(countBuffer, sizeof(countBuffer), "%d", homeRunCount);
+		sprintf_s(targetBuffer, sizeof(targetBuffer), "%d", currentHomeRunTarget);
+
+		// 中央寄せしたい場合は幅を測ってから位置を調整
+		float countWidth = 0.0f, countHeight = 0.0f;
+		float slashWidth = 0.0f, slashHeight = 0.0f;
+		float targetWidth = 0.0f, targetHeight = 0.0f;
+		homeRunCountFont.MeasureText(countBuffer, numberDisplayScale, countWidth, countHeight);
+		homeRunCountFont.MeasureText(slashBuffer, slashDisplayScale, slashWidth, slashHeight);
+		homeRunCountFont.MeasureText(targetBuffer, targetDisplayScale, targetWidth, targetHeight);
+
+		float totalWidth = countWidth + slashWidth + targetWidth;
+		float startX = homeRunCountSpriteData->position.x + (homeRunCountSpriteData->size.x - totalWidth) / 2.0f;
+
+		if (currentRound == 1)
+		{
+			homeRunCountFont.DrawTextW(dc,
+				roundBuffer,
+				labelPositionX,
+				labelPositionY,
+				labelScale,
+				1.0f, 1.0f, 1.0f, 1.0f); // 白色
+		}
+		else
+		{
+			homeRunCountFont.DrawTextW(dc,
+				countBuffer,
+				startX,
+				numberPositionY,
+				numberDisplayScale,
+				countColor.x, countColor.y, countColor.z, countColor.w); // 金色にして目立たせる例
+
+			homeRunCountFont.DrawTextW(dc,
+				slashBuffer,
+				startX + countWidth,
+				numberPositionY,
+				slashDisplayScale,
+				slashColor.x, slashColor.y, slashColor.z, slashColor.w); // 金色にして目立たせる例
+
+			homeRunCountFont.DrawTextW(dc,
+				targetBuffer,
+				startX + countWidth + slashWidth,
+				numberPositionY,
+				targetDisplayScale,
+				targetColor.x, targetColor.y, targetColor.z, targetColor.w); // 金色にして目立たせる例
+
+			missionFont.DrawTextW(dc,
+				roundBuffer,
+				missionLabelPosition.x,
+				missionLabelPosition.y,
+				missionLabelScale,
+				1.0f, 1.0f, 1.0f, 1.0f); // 白色
+
+		}
+
+		bool isFinished = Ball::Instance().GetHasPassedHomeRunZone() && (Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround());
+
+		if (isFinished && Pitcher::Instance().GetCurrentState() == Pitcher::State::WaitingForResult)
+		{
+			Combo::Instance().Render();
+		}
+
+		SubMission::Instance().Render();
+
+		// 後始末（Wind と同じ）
+		dc->VSSetShader(nullptr, nullptr, 0);
+		dc->PSSetShader(nullptr, nullptr, 0);
+		dc->IASetInputLayout(nullptr);
+
+		dc->OMSetDepthStencilState(
+			renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 	}
-	else
-	{
-		sprintf_s(roundBuffer, sizeof(roundBuffer), u8"ホームランを打とう！");
-	}
-	
-
-		
-	
-
-	char countBuffer[16];
-	char slashBuffer[4] = " / ";
-	char targetBuffer[16];
-	sprintf_s(countBuffer, sizeof(countBuffer), "%d", homeRunCount);
-	sprintf_s(targetBuffer, sizeof(targetBuffer), "%d", currentHomeRunTarget);
-
-	// 中央寄せしたい場合は幅を測ってから位置を調整
-	float countWidth = 0.0f, countHeight = 0.0f;
-	float slashWidth = 0.0f, slashHeight = 0.0f;
-	float targetWidth = 0.0f, targetHeight = 0.0f;
-	homeRunCountFont.MeasureText(countBuffer, numberDisplayScale, countWidth, countHeight);
-	homeRunCountFont.MeasureText(slashBuffer, slashDisplayScale, slashWidth, slashHeight);
-	homeRunCountFont.MeasureText(targetBuffer, targetDisplayScale, targetWidth, targetHeight);
-
-	float totalWidth = countWidth + slashWidth + targetWidth;
-	float startX = homeRunCountSpriteData->position.x + (homeRunCountSpriteData->size.x - totalWidth) / 2.0f;
-
-	if(currentRound == 1)
-	{
-		homeRunCountFont.DrawTextW(dc,
-			roundBuffer,
-			labelPositionX,
-			labelPositionY,
-			labelScale,
-			1.0f, 1.0f, 1.0f, 1.0f); // 白色
-	}
-	else
-	{
-		homeRunCountFont.DrawTextW(dc,
-			countBuffer,
-			startX,
-			numberPositionY,
-			numberDisplayScale,
-			countColor.x, countColor.y, countColor.z, countColor.w); // 金色にして目立たせる例
-
-		homeRunCountFont.DrawTextW(dc,
-			slashBuffer,
-			startX + countWidth,
-			numberPositionY,
-			slashDisplayScale,
-			slashColor.x, slashColor.y, slashColor.z, slashColor.w); // 金色にして目立たせる例
-
-		homeRunCountFont.DrawTextW(dc,
-			targetBuffer,
-			startX + countWidth + slashWidth,
-			numberPositionY,
-			targetDisplayScale,
-			targetColor.x, targetColor.y, targetColor.z, targetColor.w); // 金色にして目立たせる例
-
-		missionFont.DrawTextW(dc,
-			roundBuffer,
-			missionLabelPosition.x,
-			missionLabelPosition.y,
-			missionLabelScale,
-			1.0f, 1.0f, 1.0f, 1.0f); // 白色
-
-	}
-
-	bool isFinished = Ball::Instance().GetHasPassedHomeRunZone() && (Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround());
-		
-	if(isFinished && Pitcher::Instance().GetCurrentState() == Pitcher::State::WaitingForResult)
-	{
-		Combo::Instance().Render();
-	}
-	
-
-	// 後始末（Wind と同じ）
-	dc->VSSetShader(nullptr, nullptr, 0);
-	dc->PSSetShader(nullptr, nullptr, 0);
-	dc->IASetInputLayout(nullptr);
-
-	dc->OMSetDepthStencilState(
-		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 }
 
 void HomeRunCount::DrawGUI()
@@ -261,6 +278,7 @@ void HomeRunCount::DrawGUI()
 	}
 	Combo::Instance().DrawGUI();
 
+	SubMission::Instance().DrawGUI();
 }
 
 void HomeRunCount::SaveToJson(nlohmann::json& j)
@@ -289,6 +307,8 @@ void HomeRunCount::SaveToJson(nlohmann::json& j)
 	};
 
 	Combo::Instance().SaveToJson(j["combo"]);
+
+	SubMission::Instance().SaveToJson(j);
 }
 
 void HomeRunCount::LoadFromJson(const nlohmann::json& j)
@@ -413,6 +433,8 @@ void HomeRunCount::LoadFromJson(const nlohmann::json& j)
 	}
 
 	Combo::Instance().LoadFromJson(j["combo"]);
+
+	SubMission::Instance().LoadFromJson(j);
 
 	ResetCount();
 }

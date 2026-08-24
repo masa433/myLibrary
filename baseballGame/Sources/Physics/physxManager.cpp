@@ -95,6 +95,10 @@ void Physics::Initialize()
 		pxMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 		_ASSERT_EXPR(pxMaterial != nullptr, "Failed pxPhysics->createMaterial");
 	}
+
+	//エフェクト読み込み
+	hitEffect = std::make_unique<Effect>("resources/effects/hit.efk");
+	hitSmoke = std::make_unique<Effect>("resources/effects/smoke.efk");
 }
 
 // 終了化
@@ -753,9 +757,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
 					// フェア/ファウル判定
 					constexpr float kFoulLineTolerance = 0.05f; // 5cm程度の許容誤差
-					float ballRadius = Ball::Instance().GetDebugRadius();
 					bool isFair = (ballPosition.z >= 0.0f) &&
-						(std::fabs(ballPosition.x) <= ballPosition.z + kFoulLineTolerance + ballRadius);
+						(std::fabs(ballPosition.x) <= ballPosition.z + kFoulLineTolerance);
 					if (!isFair)
 					{
 						Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
@@ -1187,7 +1190,8 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			{
 				batterPowerScale *= 1.1f;
 			}
-
+			
+			
 			estimatedExitVelocity *= batterPowerScale;
 			estimatedExitVelocity *= pitchPowerScale;
 			
@@ -1315,6 +1319,21 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			outAngle = launchAngleDeg;
 			outDirection = hitDirectionAngleDeg;
 			outOriginalDirection = originalAngleDeg;
+
+			//エフェクト再生
+
+			float speedKmh = newBallVelocity.magnitude() * 3.6f;
+
+			if (speedKmh >= 150.0f && speedKmh < 170.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 40.0f)
+			{
+				if (hitSmoke) hitSmoke->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z), 0.8f);
+			}
+			else if (speedKmh >= 170.0f && launchAngleDeg >= 15.0f && launchAngleDeg <= 40.0f)
+			{
+				if (hitEffect) hitEffect->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z));
+			}
+			
+
 		}
 
 

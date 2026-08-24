@@ -42,7 +42,7 @@ framework::framework(HWND hwnd) : hwnd(hwnd)
 	Graphics::Instance().Initialize(hwnd);
 
 	//エフェクトマネージャー初期化
-	//EffectManager::Instance().Initialize();
+	EffectManager::Instance().Initialize();
 
 	//framebuffers[0] = std::make_unique<framebuffer>(device.Get(), 1280, 720);
 	//framebuffers[1] = std::make_unique<framebuffer>(device.Get(), 1280 / 2, 720 / 2);
@@ -82,6 +82,10 @@ void framework::update(float elapsed_time/*Elapsed seconds from last frame*/)
 }
 void framework::render(float elapsed_time/*Elapsed seconds from last frame*/)
 {
+	//別スレッド中にデバイスコンテキストが使われていた時に
+	//同時アクセスしないように排他制御する
+	std::lock_guard<std::mutex> lock(Graphics::Instance().GetMutex());
+
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 
 	//Graphics::Instance().Clear(0.5f, 0.8f, 1.0f, 1.0f);
@@ -116,7 +120,7 @@ framework::~framework()
 	sceneManager::Instance().Clear();
 
 	//エフェクトマネージャーの終了処理
-	//EffectManager::Instance().Uninitialize();
+	EffectManager::Instance().Uninitialize();
 
 	//グラフィックス終了処理
 	ReleaseDC(hwnd, hDC);

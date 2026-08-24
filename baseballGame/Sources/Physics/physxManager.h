@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include <PxPhysicsAPI.h>
 #include <string>
+#include "Effect.h"
 
 class Physics 
 	:public physx::PxSimulationEventCallback
@@ -139,4 +140,8 @@ public:
 
 	bool lastDistanceWasTotal = false; //前回の距離が総距離だったかどうかを判定する変数
 	bool GetLastDistanceWasTotal() const { return lastDistanceWasTotal; }
+
+private:
+	std::unique_ptr<Effect> hitEffect;//打球エフェクトのインスタンス
+	std::unique_ptr<Effect> hitSmoke;//打球煙エフェクトのインスタンス
 };

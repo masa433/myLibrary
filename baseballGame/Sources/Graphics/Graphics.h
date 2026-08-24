@@ -7,6 +7,7 @@
 #include "PrimitiveRenderer.h"
 #include "Light.h"
 #include "ModelRenderer.h"
+#include <mutex>
 
 
 class Graphics
@@ -75,6 +76,9 @@ public:
 
 	//レンダーターゲットビューのアドレスを取得
 	ID3D11RenderTargetView** GetRenderTargetViewAddress() { return renderTargetView.GetAddressOf(); }
+
+	//ミューテックス取得
+	std::mutex& GetMutex() { return mutex; }
 private:
 	HWND											hWnd = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11Device>			device;
@@ -92,4 +96,6 @@ private:
 	std::unique_ptr<ShapeRenderer>					shapeRenderer;
 	std::unique_ptr<PrimitiveRenderer>				primitiveRenderer;
 	std::unique_ptr<ModelRenderer>					modelRenderer;
+
+	std::mutex mutex; // スレッドセーフのためのミューテックス
 };

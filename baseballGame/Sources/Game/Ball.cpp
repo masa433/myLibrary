@@ -369,9 +369,9 @@ void Ball::UpdateFromPhysics(float elapsedTime)
 	{
 		trailRecordDelayTime += elapsedTime;
 
-		if(trailRecordDelayTime >= 2.0f)
+		if(trailRecordDelayTime >= 1.0f)
 		{
-			trailRecordDelayTime = 2.0f; // 遅延時間の上限を設定
+			trailRecordDelayTime = 1.0f; // 遅延時間の上限を設定
 			trailRecordTimer += elapsedTime;
 			if (trailRecordTimer >= TrailRecordInterval)
 			{

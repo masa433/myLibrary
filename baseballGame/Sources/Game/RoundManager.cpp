@@ -5,7 +5,6 @@
 #include "ballCount.h"
 #include "Pitcher.h"
 #include "HomeRunCount.h"
-#include "SubMission.h"
 #include <Combo.h>
 
 void RoundManager::Initialize(ID3D11Device* device)
@@ -20,7 +19,7 @@ void RoundManager::Initialize(ID3D11Device* device)
 
 	// フォントレンダラーの初期化
 	roundFont.Initialize(device,
-		L".\\resources\\fonts\\GarpSansNormalItalic.otf",
+		L".\\resources\\fonts\\Futur12.ttf",
 		50.0f,
 		screenWidth, screenHeight,
 		1024, 1024,
@@ -50,13 +49,13 @@ void RoundManager::Initialize(ID3D11Device* device)
 	currentRound = 1; // 初期ラウンドを設定
 	totalRounds = 7; // 総ラウンド数を設定
 
-	SubMission::Instance().Initialize(device);
+	
 }
 
 void RoundManager::Uninitialize()
 {
 	roundFont.Uninitialize();
-	SubMission::Instance().Uninitialize();
+	
 }
 
 void RoundManager::Update(float elapsedTime)
@@ -100,7 +99,6 @@ void RoundManager::Update(float elapsedTime)
 		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::realSpeed);
 	}
 
-	SubMission::Instance().Update(elapsedTime);
 }
 
 void RoundManager::Render()
@@ -116,8 +114,6 @@ void RoundManager::Render()
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
 	const auto pitcherState = Pitcher::Instance().GetCurrentState();
-
-	SubMission::Instance().Render();
 
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
@@ -170,7 +166,7 @@ void RoundManager::DrawGUI()
 		ImGui::ColorEdit4("Sprite Color", &spriteColor.x);
 	}
 
-	SubMission::Instance().DrawGUI();
+	
 }
 
 void RoundManager::SaveToJson(json& j)
@@ -185,7 +181,7 @@ void RoundManager::SaveToJson(json& j)
 	j["spriteSize"] = { spriteSize.x, spriteSize.y };
 	j["spriteColor"] = { spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w };
 
-	SubMission::Instance().SaveToJson(j);
+	
 }
 
 void RoundManager::LoadFromJson(const json& j)
@@ -254,5 +250,4 @@ void RoundManager::LoadFromJson(const json& j)
 		}
 	}
 
-	SubMission::Instance().LoadFromJson(j);
 }

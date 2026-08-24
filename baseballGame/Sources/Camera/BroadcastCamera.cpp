@@ -110,7 +110,7 @@ void BroadcastCamera::SetupDefaultCameras()
 		preset.fovFar = DirectX::XMConvertToRadians(10.0f);// ボールが遠いときのFOV
 		preset.zoomNearDist = 10.0f;// この距離以下でfovNear
 		preset.zoomFarDist = 130.0f;// この距離以上でfovFar
-		preset.type = CameraType::HitCamera;
+		preset.type = CameraType::ReplayCamera;
 		preset.cameraId = 3; // 外野カメラのIDを設定
 		AddCameraPreset(preset);
 	}

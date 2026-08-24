@@ -14,6 +14,7 @@
 #include "Ball.h"
 #include "json.hpp"
 #include <unordered_map>
+#include "Effect.h"
 
 using json = nlohmann::json;
 
@@ -480,5 +481,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
 
-
+	std::unique_ptr<Effect> rosinEffect;//投げる際の滑り止め(ロジン)エフェクト
 };
