@@ -374,4 +374,6 @@ public:
 
 	bool currentSpinReverse = false; // 現在の球種のスピン反転状態（右投手か左投手か）
 	float currentSpinRPM = 1500.0f; // 現在の球種のスピン回転数（RPM）
+
+	bool pendingBallZoneBonus = false; // ボールゾーンのボーナス表示を次のフレームで行うかどうか
 };

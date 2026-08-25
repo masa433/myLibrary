@@ -34,24 +34,36 @@ public:
 	// 外からボール判定時に呼ぶ関数
 	void IncrementBallZoneBonus() 
 	{
-		currentBallZoneBonus += ballZoneBonusIncrement;
+		currentBallZoneBonusMoney += ballZoneBonusIncrement;
 		if (consoleLog)
 		{
 			consoleLog->push_back(u8"[Info]ボールゾーンボーナスが増加しました。");
-			consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + std::to_string(currentBallZoneBonus));
+			consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + std::to_string(currentBallZoneBonusMoney));
 		}
 	}
 
 	// 倍率を初期値に戻す関数
 	void ResetBallZoneBonus() 
 	{ 
-		currentBallZoneBonus = baseBallZoneBonus;
+		currentBallZoneBonusMoney = baseBallZoneBonusMoney;
 		if(consoleLog)
 		{
 			consoleLog->push_back(u8"[Info]ボールゾーンボーナスがリセットされました。");
-			consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + std::to_string(currentBallZoneBonus));
+			consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + std::to_string(currentBallZoneBonusMoney));
 		}
 		
+	}
+
+	//現在のボール球見逃しボーナスを適用する関数
+	void ApplyBallZoneBonus()
+	{
+		AddMoney(currentBallZoneBonusMoney);
+		TriggerBallZoneBonusAnimation();
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"[Info]ボールゾーンボーナスが適用されました。");
+			consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + std::to_string(currentBallZoneBonusMoney));
+		}
 	}
 
 private:
@@ -60,12 +72,13 @@ private:
 	int currentMoney = 0;
 	int targetMoney = 0; // 目標金額
 
+	//ボール球を見送った時の倍率ボーナス
+	int baseBallZoneBonusMoney = 50;//ボール球を見送った時の基本ボーナス金額
+	int currentBallZoneBonusMoney = 50; //現在のボールゾーンボーナス金額
+	int ballZoneBonusIncrement = 50; // ボールゾーンボーナスの増加量
+
 	//ホームラン時の倍率ボーナス
 	float homerunBonus = 1.05f;
-	float baseBallZoneBonus = 1.0f; //ボールゾーンを見逃したときの倍率ボーナス
-	float currentBallZoneBonus = 1.0f; //現在のボールゾーン倍率ボーナス
-	float showBallZoneBonus = 1.0f; //表示用のボールゾーン倍率ボーナス
-	float ballZoneBonusIncrement = 0.05f; // ボールゾーンボーナスの増加量
 	int finalDistance = 0; //最終的な飛距離
 
 	//変化球を打ったときの倍率ボーナス
@@ -147,6 +160,6 @@ private:
 	//ボーナスのレイアウト再計算処理
 
 	void TriggerBonusAnimation(bool isHomeRun, bool isBreaking);
-	
+	void TriggerBallZoneBonusAnimation();
 
 };

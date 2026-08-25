@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include "ballDistance.h"
 #include "Ball.h"
+#include "ballSprite.h"
 #include <cstdio>
 #include <string>
 
@@ -51,7 +52,7 @@ void Money::Initialize(ID3D11Device* device)
 	moneySprite = std::make_unique<sprite>(device, context, moneyData->texturePath.c_str());
 
 	bonusItems.clear();
-	std::vector<int> bonusCodepoints = FontRenderer::Utf8ToCodepoints(u8"0123456789.x ");
+	std::vector<int> bonusCodepoints = FontRenderer::Utf8ToCodepoints(u8"0123456789.xG ");
 
 	// ホームランボーナスアイテムの初期化
 	BonusItem homeRunBonusItem;
@@ -190,18 +191,7 @@ void Money::Update(float elapsedTime)
 				consoleLog->push_back(u8"[Info]ホームランボーナスが適用されました。");
 				consoleLog->push_back(u8"[Info]現在のホームランボーナス倍率: " + FormatFloat(homerunBonus));
 			}
-
-			// ボールゾーンボーナスを適用
-			totalMultiplier *= currentBallZoneBonus;
-			if (consoleLog)
-			{
-				consoleLog->push_back(u8"[Info]ボールゾーンボーナスが適用されました。");
-				consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + FormatFloat(currentBallZoneBonus));
-			}
 		}
-		
-		// 表示用のボールゾーンボーナスを更新
-		showBallZoneBonus = currentBallZoneBonus;
 
 		// 変化球ボーナスを適用
 		if(Pitcher::Instance().IsBreakingBallBonus() && isHomeRun)
@@ -232,14 +222,6 @@ void Money::Update(float elapsedTime)
 		finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier));
 		AddMoney(finalDistance);
 		
-		if (isHomeRun)
-		{
-			ResetBallZoneBonus();
-			if (consoleLog)
-			{
-				consoleLog->push_back(u8"[Info] ボールゾーンボーナスがリセットされました。by Money");
-			}
-		}
 	}
 
 	if(isBonusAnimating)
@@ -356,7 +338,7 @@ void Money::Render()
 				}
 				else if (item.name == "BallZone")
 				{
-					bonusText = " x " + FormatFloat(showBallZoneBonus);
+					bonusText = std::to_string(currentBallZoneBonusMoney) + " G";
 				}
 				else if (item.name == "BreakingBall")
 				{
@@ -368,7 +350,7 @@ void Money::Render()
 				}
 				else if (item.name == "Total")
 				{
-					bonusText = std::to_string(finalDistance);
+					bonusText = std::to_string(finalDistance) + " G";
 				}
 				float fontSize = 1.5f; // フォントサイズを適切に設定
 				float textWidth = 0.0f;
@@ -501,10 +483,6 @@ void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
 		{
 			bonusItem.isActive = true;
 		}
-		else if (bonusItem.name == "BallZone" && isHomeRun && currentBallZoneBonus > baseBallZoneBonus)
-		{
-			bonusItem.isActive = true;
-		}
 		else if (bonusItem.name == "BreakingBall" && isHomeRun && isBreaking)
 		{
 			bonusItem.isActive = true;
@@ -539,4 +517,27 @@ void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
 	{
 		isBonusAnimating = false;
 	}
+}
+
+void Money::TriggerBallZoneBonusAnimation()
+{
+	float startY = 310.0f; // 初期Y座標
+	
+	for (auto& bonusItem : bonusItems)
+	{
+		if (bonusItem.name == "BallZone")
+		{
+			bonusItem.isActive = true;
+			bonusItem.startPos = { 2000.0f, startY };
+			bonusItem.targetPos = { 1500.0f, startY };
+			bonusItem.currentPos = bonusItem.startPos;
+		}
+		else
+		{
+			bonusItem.isActive = false;
+		}
+	}
+	
+	isBonusAnimating = true;
+	bonusAnimTimer = 0.0f;
 }

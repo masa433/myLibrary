@@ -498,6 +498,12 @@ void ballSprite::Update(float elapsedTime)
 	isBall = (ballCenter.x < szTopLeft.x || ballCenter.x > szBottomRight.x ||
 		ballCenter.y < szTopLeft.y || ballCenter.y > szBottomRight.y);
 
+	if (pendingBallZoneBonus && Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
+	{
+		Money::Instance().ApplyBallZoneBonus();
+		pendingBallZoneBonus = false;
+	}
+
 	const DirectX::XMFLOAT3& wp = ball.GetWorldPosition();
 
 	auto AddTrailPoint = [&](const DirectX::XMFLOAT2& currentScreenPos)
@@ -675,7 +681,6 @@ void ballSprite::Update(float elapsedTime)
 		isPitchJudgedStrike = false;
 		Player::Instance().ResetSwungThisPitch();
 		Ball::Instance().SetHasCollidedWithBat(false);
-
 		if (showSpriteTimer >= showSpriteDelay)
 		{
 			display = BallDisplayMode::Ball;
@@ -756,8 +761,6 @@ void ballSprite::Update(float elapsedTime)
 		{
 			if (Player::Instance().HasSwungThisPitch())
 			{
-				// ボール球を振っていた → リセット
-				Money::Instance().ResetBallZoneBonus();
 				ballCount::Instance().DecreaseRemainingBalls(1);
 				Combo::Instance().ResetCombo();// ストライク判定時はコンボをリセット
 				if (consoleLog)
@@ -765,10 +768,9 @@ void ballSprite::Update(float elapsedTime)
 			}
 			else
 			{
-				// 見逃しボール → ボーナス上昇
-				Money::Instance().IncrementBallZoneBonus();
+				isBall = true;
+				pendingBallZoneBonus = true;
 			}
-			
 		}
 
 		if (consoleLog)
@@ -782,20 +784,20 @@ void ballSprite::Update(float elapsedTime)
 		}
 	}
 
-	//ストライクゾーンを空振りまたは見逃しで倍率をリセットする
-	if (pitchingState && wp.z < -8.0f && wp.z > -8.5f && isPitchJudgedStrike)
-	{
-		//この範囲内でバットに当たったらリセットしない
-		//空振りまたは見逃しでストライクゾーンに入った場合のみリセットする
-		if(!Ball::Instance().GetHasCollidedWithBat())
-		{
-			Money::Instance().ResetBallZoneBonus();
-			if (consoleLog)
-			{
-				consoleLog->push_back(u8"[Info] ボールゾーン倍率をリセットしました。by ballSprite");
-			}
-		}
-	}
+	////ストライクゾーンを空振りまたは見逃しで倍率をリセットする
+	//if (pitchingState && wp.z < -8.0f && wp.z > -8.5f && isPitchJudgedStrike)
+	//{
+	//	//この範囲内でバットに当たったらリセットしない
+	//	//空振りまたは見逃しでストライクゾーンに入った場合のみリセットする
+	//	if(!Ball::Instance().GetHasCollidedWithBat())
+	//	{
+	//		Money::Instance().ResetBallZoneBonus();
+	//		if (consoleLog)
+	//		{
+	//			consoleLog->push_back(u8"[Info] ボールゾーン倍率をリセットしました。by ballSprite");
+	//		}
+	//	}
+	//}
 
 	// 3Dボールとバットが当たった段階で、2Dボールの動きを当たった位置で止める
 	if (Ball::Instance().GetHasCollidedWithBat())

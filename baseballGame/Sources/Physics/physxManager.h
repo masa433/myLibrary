@@ -143,5 +143,6 @@ public:
 
 private:
 	std::unique_ptr<Effect> hitEffect;//打球エフェクトのインスタンス
-	std::unique_ptr<Effect> hitSmoke;//打球煙エフェクトのインスタンス
+	std::unique_ptr<Effect> hitSmallEffect;//打球小エフェクトのインスタンス
+	std::unique_ptr<Effect> hitBigEffect;//打球大エフェクトのインスタンス
 };

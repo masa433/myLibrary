@@ -98,7 +98,8 @@ void Physics::Initialize()
 
 	//エフェクト読み込み
 	hitEffect = std::make_unique<Effect>("resources/effects/hit.efk");
-	hitSmoke = std::make_unique<Effect>("resources/effects/smoke.efk");
+	hitSmallEffect = std::make_unique<Effect>("resources/effects/hitSmall.efk");
+	hitBigEffect = std::make_unique<Effect>("resources/effects/hitBig.efk");
 }
 
 // 終了化
@@ -1324,13 +1325,17 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 
 			float speedKmh = newBallVelocity.magnitude() * 3.6f;
 
-			if (speedKmh >= 150.0f && speedKmh < 170.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 40.0f)
+			if (speedKmh >= 150.0f && speedKmh < 160.0f && launchAngleDeg >= 15.0f && launchAngleDeg <= 40.0f)
 			{
-				if (hitSmoke) hitSmoke->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z), 0.8f);
+				if (hitSmallEffect) hitSmallEffect->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z), 0.8f);
+			}
+			if(speedKmh >= 160.0f && speedKmh < 170.0f && launchAngleDeg >= 15.0f && launchAngleDeg <= 40.0f)
+			{
+				if (hitEffect) hitEffect->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z));
 			}
 			else if (speedKmh >= 170.0f && launchAngleDeg >= 15.0f && launchAngleDeg <= 40.0f)
 			{
-				if (hitEffect) hitEffect->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z));
+				if (hitBigEffect) hitBigEffect->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z));
 			}
 			
 
