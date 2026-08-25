@@ -562,14 +562,58 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				Ball::Instance().SetHasCollidedWithGround(true);
 				Ball::Instance().SetIsFoulConfirmed(false); // 念のため明示的にファウルを打ち消す
 				
+				physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+				if (ballCollider)
+				{
+					physx::PxVec3 ballPosition = ballCollider->getGlobalPose().p;
+					DirectX::XMFLOAT3 ballHitPos = Ball::Instance().GetBallHitPosition();
 
+					float distanceX = ballPosition.x - ballHitPos.x;
+					float distanceZ = ballPosition.z - ballHitPos.z;
+					float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
+
+					physx::PxVec3 ballVelocity = ballCollider->getLinearVelocity();
+					float exitVelocity = ballVelocity.magnitude();
+					float estimatedDistance = 0.0f;
+
+					if (exitVelocity > 0.1f)
+					{
+						float launchAngle = std::atan2(ballVelocity.y,
+							sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z));
+
+						float initialHeight = ballHitPos.y;
+						float v_y = exitVelocity * sinf(launchAngle);
+						float a = 0.5f * 9.81f;
+						float b = -v_y;
+						float c = -initialHeight;
+						float discriminant = b * b - 4.0f * a * c;
+
+						if (discriminant >= 0.0f)
+						{
+							float t = (-b + sqrtf(discriminant)) / (2.0f * a);
+							if (t > 0.0f)
+							{
+								estimatedDistance = exitVelocity * cosf(launchAngle) * t;
+							}
+						}
+					}
+
+					float totalDistance = horizontalDistance + estimatedDistance;
+
+					ballTotalDistance = totalDistance;
+					lastDistanceWasTotal = true;
+				}
+
+				HomeRunCount::Instance().IncrementCount();
+
+			
 				OutputDebugStringA("ホームラン！：ポールに衝突");
 				if (consoleLog)
 					consoleLog->push_back(u8"[Hit] ホームラン！：ポールに衝突");
 
-				HomeRunCount::Instance().IncrementCount();
+				
 			}
-			break;
+			continue;// このペアはホームランとして処理済みなので以降の個別判定はスキップ
 		}
 	}
 
@@ -577,11 +621,6 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 	{
 
 		const physx::PxContactPair& pair = pairs[i];
-
-		if (Ball::Instance().GetHasCollidedWithPole())
-		{
-			continue;
-		}
 
 		// エンタイトルツーベース以外でホームラントリガーをダイレクトで通過した場合、
 		// 以降どのオブジェクトに衝突しても無条件でホームランにする
@@ -712,7 +751,12 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					{
 						// フェンス衝突後かどうかで減衰率を変更
 						float dampingFactor;
-						if (Ball::Instance().GetHasCollidedWithFence())
+						if (Ball::Instance().GetHasCollidedWithPole())
+						{
+							// ポール衝突後にグラウンドへ着地: 速度を強く減衰させる
+							dampingFactor = 0.90f;
+						}
+						else if (Ball::Instance().GetHasCollidedWithFence())
 						{
 							// フェンス衝突後: 速度を大きく減速（1%に低下）
 							dampingFactor = 0.97f;
@@ -807,6 +851,12 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						// スタンドはグラウンドより摩擦が強い想定で少し強めに減衰
 						float dampingFactor = 0.95f;
 
+						if(Ball::Instance().GetHasCollidedWithPole())
+						{
+							// ポール衝突後にスタンドへ着地: 速度を強く減衰させる
+							dampingFactor = 0.90f;
+						}
+						
 						velocity *= dampingFactor;
 
 						physx::PxVec3 angularVelocity = ballCollider->getAngularVelocity();

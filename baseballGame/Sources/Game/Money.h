@@ -152,7 +152,7 @@ private:
 
 	std::vector<BonusItem> bonusItems;
 	float bonusAnimTimer = 0.0f;
-	const float BONUS_ANIM_DURATION = 2.5f; // ボーナスアニメーションの時間(秒)
+	float BONUS_ANIM_DURATION = 2.5f; // ボーナスアニメーションの時間(秒)
 	bool isBonusAnimating = false; // ボーナスアニメーション中かどうかのフラグ
 	float textXOffset = 0.0f; // ボーナステキストのX座標
 	float textYOffset = 0.0f; // ボーナステキストのY座標

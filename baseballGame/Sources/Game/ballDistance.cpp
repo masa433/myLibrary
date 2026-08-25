@@ -129,7 +129,7 @@ void BallDistance::Update(float elapsedTime)
 			maxDistance = currentDistance;
 		}
 
-		if (Ball::Instance().GetHasPassedHomeRunZone())
+		if (Ball::Instance().GetHasPassedHomeRunZone() || Ball::Instance().GetHasCollidedWithPole())
 		{
 			fontColor = { 1.0f,0.85f,0.0f,1.0f };// ホームランゾーンを超えたら、金色にする
 		}

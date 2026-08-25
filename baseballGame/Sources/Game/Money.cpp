@@ -249,6 +249,13 @@ void Money::Update(float elapsedTime)
 			}
 
 			// アニメーションの進行度を計算
+			//ボール球の時はBONUS_ANIM_DURATIONを短くする
+			if (item.name == "BallZone")
+			{
+				// ボール球ボーナスのアニメーション時間を短くする
+				BONUS_ANIM_DURATION = 2.0f; // 2.0秒に設定
+			}
+
 			float myProgress = myTime / BONUS_ANIM_DURATION;//	0.0fから1.0fの範囲に正規化
 
 			if (myProgress < 1.0f)

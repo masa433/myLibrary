@@ -227,7 +227,7 @@ void HomeRunCount::Render()
 
 		}
 
-		bool isFinished = Ball::Instance().GetHasPassedHomeRunZone() && (Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround());
+		bool isFinished = (Ball::Instance().GetHasPassedHomeRunZone() && (Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround()) || Ball::Instance().GetHasCollidedWithPole());
 
 		if (isFinished && Pitcher::Instance().GetCurrentState() == Pitcher::State::WaitingForResult)
 		{

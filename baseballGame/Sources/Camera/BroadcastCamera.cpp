@@ -237,8 +237,9 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 	bool passedHomeRun = Ball::Instance().GetHasPassedHomeRunZone();
 	bool hitGroundOrStand = Ball::Instance().GetHasCollidedWithGround() ||
 		Ball::Instance().GetHasCollidedWithFence();
+	bool hitPole = Ball::Instance().GetHasCollidedWithPole();
 
-	if(passedHomeRun && hitGroundOrStand && !hasTriggeredImpactZoom)
+	if ((passedHomeRun && hitGroundOrStand && !hasTriggeredImpactZoom) || (hitPole && !hasTriggeredImpactZoom))
 	{
 		zoomStartDelay += elapsed_time;
 
