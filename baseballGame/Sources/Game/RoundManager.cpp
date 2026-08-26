@@ -176,7 +176,7 @@ void RoundManager::SaveToJson(json& j)
 	j["roundTextPosition"] = { roundTextPosition.x, roundTextPosition.y };
 	j["roundTextScale"] = roundTextScale;
 	j["roundTextColor"] = { roundTextColor.x, roundTextColor.y, roundTextColor.z, roundTextColor.w };
-	j["targetHomeRuns"] = targetHomeRuns; 
+	//j["targetHomeRuns"] = targetHomeRuns; 
 	j["spritePosition"] = { spritePosition.x, spritePosition.y };
 	j["spriteSize"] = { spriteSize.x, spriteSize.y };
 	j["spriteColor"] = { spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w };
@@ -208,7 +208,7 @@ void RoundManager::LoadFromJson(const json& j)
 			roundTextColor.w = color[3].get<float>();
 		}
 	}
-	if(j.contains("targetHomeRuns"))
+	/*if(j.contains("targetHomeRuns"))
 	{
 		auto targets = j["targetHomeRuns"];
 		if (targets.is_array())
@@ -219,7 +219,7 @@ void RoundManager::LoadFromJson(const json& j)
 				targetHomeRuns.push_back(target.get<int>());
 			}
 		}
-	}
+	}*/
 	if(j.contains("spritePosition"))
 	{
 		auto pos = j["spritePosition"];

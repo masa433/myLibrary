@@ -226,6 +226,9 @@
     <ClCompile Include="Sources\Effect\EffectManager.cpp">
       <Filter>Sources\Effect</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\SpecialAbility.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -476,6 +479,9 @@
     </ClInclude>
     <ClInclude Include="Sources\Effect\EffectManager.h">
       <Filter>Sources\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\SpecialAbility.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
