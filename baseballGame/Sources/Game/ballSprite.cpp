@@ -679,6 +679,8 @@ void ballSprite::Update(float elapsedTime)
 		ballTrail2D.clear();
 		strikeJudgeDone = false;
 		isPitchJudgedStrike = false;
+		isHighBall = false;
+		isLowBall = false;
 		Player::Instance().ResetSwungThisPitch();
 		Ball::Instance().SetHasCollidedWithBat(false);
 		if (showSpriteTimer >= showSpriteDelay)
@@ -751,6 +753,10 @@ void ballSprite::Update(float elapsedTime)
 
 		isPitchJudgedStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
 			ballCenter.y >= szTopLeft.y && ballCenter.y <= szBottomRight.y);
+
+		float oneThirdHeight = (szBottomRight.y - szTopLeft.y) / 3.0f;
+		isHighBall = (ballCenter.y >= szTopLeft.y) && (ballCenter.y < szTopLeft.y + oneThirdHeight);
+		isLowBall = (ballCenter.y <= szBottomRight.y) && (ballCenter.y > szBottomRight.y - oneThirdHeight);
 
 		if (isPitchJudgedStrike)
 		{

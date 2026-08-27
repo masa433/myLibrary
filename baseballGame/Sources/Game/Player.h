@@ -372,4 +372,16 @@ private:
 
 	bool showSwingTimingSprite = false;
 	float remainingTime = 0.0f; // 残り時間
+
+private:
+	int baseBatterPower = 0;// 選択された実在打者の基本威力
+	int baseBatterContact = 0;// 選択された実在打者の基本ミート力
+
+public:
+    void ApplyRoundStatBonus(int powerBonus, int contactBonus)
+    {
+        SetSelectedRealBatterPower(baseBatterPower + powerBonus);
+        SetSelectedRealBatterContact(baseBatterContact + contactBonus);
+        BatSprite::Instance().UpdateCursorSizeByContact(GetSelectedRealBatterContact());
+    }
 };

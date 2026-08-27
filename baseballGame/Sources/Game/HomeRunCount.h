@@ -47,6 +47,12 @@ public:
 		return homeRunCount >= targetCount;
 	}
 
+	//現在のホームラン数が目標値からどれだけ離れているかを計算する関数
+	int GetHomeRunCountDifference(int targetCount) const
+	{
+		return targetCount - homeRunCount;
+	}
+
 private:
 	int homeRunCount = 0;//ホームラン数を保持する変数
 	int previousHomeRunCount = 0;//前回のホームラン数を保持する変数

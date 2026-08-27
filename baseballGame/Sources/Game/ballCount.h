@@ -28,7 +28,9 @@ public:
 
 	int GetRemainingBalls() const { return remainingBalls; }
 	void SetRemainingBalls(int balls) { remainingBalls = balls; }
-	void ResetRemainingBalls() { remainingBalls = 10; } //球数をリセットする関数
+	void ResetRemainingBalls() { remainingBalls = initialBalls; } //球数をリセットする関数
+	void SetInitialBalls(int balls) { initialBalls = balls; remainingBalls = balls; }
+	int GetInitialBalls() const { return initialBalls; }
 
 	//球数を減らす関数
 	void DecreaseRemainingBalls(int amount)
@@ -73,6 +75,7 @@ private:
 
 
 	//残りの球数
+	int initialBalls = 10; //初期の球数
 	int remainingBalls = 10;
 	bool hasCountedHit = false; //ヒット判定済みかどうか
 

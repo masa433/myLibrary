@@ -92,6 +92,11 @@ public:
 		}
 	}
 
+	bool IsFastball() const
+	{
+		return selectedPitchType == PitchType::Fastball || selectedPitchType == PitchType::CutFastball || selectedPitchType == PitchType::BlazingFastball || selectedPitchType == PitchType::NaturalShoot;
+	}
+
 public:
 
 	enum class PitchType

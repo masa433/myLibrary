@@ -69,11 +69,16 @@ private:
 	bool isBall = false;
 	bool isPitchJudgedStrike = false;
 
+	bool isHighBall = false; // 高めのボールかどうか
+	bool isLowBall = false;  // 低めのボールかどうか
+
 public:
 
 	bool IsStrike() const { return isStrike; }
 	bool IsBall() const { return isBall; }
 	bool IsPitchJudgedStrike() const { return isPitchJudgedStrike; }
+	bool IsHighBall() const { return isHighBall; }
+	bool IsLowBall() const { return isLowBall; }
 
 	//2Dスクリーン座標上のストライクゾーンの中心とサイズ
 	DirectX::XMFLOAT2 zone3DCenter = { 0.0f, 0.8f };

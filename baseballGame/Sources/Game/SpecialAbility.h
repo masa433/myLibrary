@@ -9,6 +9,7 @@
 #include "FontRenderer.h"
 #include "sprite.h"
 #include "json.hpp"
+#include <random>
 
 #define ABILITY_COUNT 17
 
@@ -22,6 +23,44 @@ public:
 		static SpecialAbility instance;
 		return instance;
 	}
+
+	enum class AbilityID
+	{
+		WideAngleBatting,//広角打法
+		CenterReturn,//センター返し
+		PullHitter,//プルヒッター
+		OppositeHitter,//流し打ち
+		RomanCannon,//ロマン砲
+		HighBallHitter,//ハイボールヒッター
+		LowBallHitter,//ローボールヒッター
+		LastStand,//背水の陣
+		FullSwing,//フルスイング
+		LastBall,//ラストボール
+		FirstPitcher,//初球
+		Combo,//連発
+		MoneyMaker,//マネーメーカー
+		JackPot,//一攫千金
+		Intimidation,//威圧感
+		VsFastBall,//対速球
+		VsBreakingBall,//対変化球
+		Count
+	};
+	static_assert(static_cast<int>(AbilityID::Count) == ABILITY_COUNT, "ABILITY_COUNTとenumの数が一致していません");
+
+	struct BattingBonus
+	{
+		float power = 0.0f; // 打撃力ボーナス
+		float contact = 0.0f; // ミート力ボーナス
+		float ballSpeed = 0.0f; // 球速ボーナス
+	};
+
+	struct MoneyBonus
+	{
+		float percentBonus = 0.0f; // 獲得金額のボーナス率
+		bool jackPotTriggered = false; // 一攫千金が発動したかどうか
+		float jackPotMultiplier = 0.0f; // 一攫千金の倍率
+	};
+
 	void Initialize(ID3D11Device* device);
 	void Uninitialize();
 	void Update(float elapsedTime);
@@ -31,6 +70,45 @@ public:
 	void LoadFromJson(const json& j);
 
 	void InitializeAbilities(ID3D11Device* device, ID3D11DeviceContext* context);
+	void BuildAbility();
+
+	BattingBonus EvaluateOnHit(); // ヒット時のボーナスを評価する関数
+	MoneyBonus EvaluateOnHomeRun(); // 獲得金額のボーナスを評価する関数
+	bool IsOwned(AbilityID id) const { return abilities[(int)id].isOwned; }
+	void SetOwned(AbilityID id, bool owned) { abilities[(int)id].isOwned = owned; }
+
+	bool RollActivation(float ratePercent);// 能力の発動判定を行う関数
+	void RollRoundActivation(); // ラウンドごとの能力発動判定を行う関数
+
+	void ApplyRoundStartAbilities(); // ラウンド開始時に適用される能力を処理する関数
+
+	//途中で能力が適用されるときに呼び出す関数
+	void ApplyMidRoundAbilities();
+
+	//ランダムな3つの特殊能力のIDを表示する関数
+	std::vector<AbilityID> GetRandomAbilities(int count)
+	{
+		std::vector<AbilityID> allAbilities;
+		for (int i = 0; i < ABILITY_COUNT; ++i)
+		{
+			// 所有していない能力のみを対象にする
+			if (!abilities[i].isOwned)
+			{
+				allAbilities.push_back(static_cast<AbilityID>(i));
+			}
+		}
+		std::shuffle(allAbilities.begin(), allAbilities.end(), rng);// ランダムにシャッフル
+		if (static_cast<int>(allAbilities.size()) > count)
+		{
+			allAbilities.resize(count); // countがallAbilitiesのサイズより大きい場合、サイズを調整
+		}
+		return allAbilities;
+	}
+
+	//選択画面用のアイコンを描画する関数
+	void RenderAbilityIcons(AbilityID id, const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, bool isHighlighted);
+
+	const std::string& GetName(AbilityID id) const { return abilities[(int)id].name; }
 
 private:
 
@@ -46,4 +124,59 @@ private:
 
 	std::unique_ptr<Sprite> abilitySpriteData[ABILITY_COUNT];
 	std::unique_ptr<sprite> abilitySprite[ABILITY_COUNT];
+
+
+
+	//シェーダー関連
+	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
+
+	struct AbilityData
+	{
+		
+		std::wstring texturePath;//テクスチャのファイルパス
+		std::string name; // 能力の名前
+		float power = 0.0f; // 打撃力ボーナス
+		float contact = 0.0f; // ミート力ボーナス
+		std::function<bool()> condition; // 能力の発動条件
+
+		float ballSpeed = 0.0f; // 球速ボーナス
+		std::function<bool()> ballCondition; // 球速ボーナスの発動条件
+		float ballSpeedPenalty = 0.0f; // 球速ボーナスのペナルティ
+		std::function<bool()> ballPenaltyCondition; // 球速ボーナスのペナルティ条件
+
+		float activationRate = 0.0f; // 能力の発動率(0～100)
+		bool isOwned = false; // 能力を所有しているかどうか
+		bool isHovered = false; // マウスオーバー状態かどうか
+
+		float comboPowerPerStack = 0.0f; // 連発能力のスタックごとの打撃力ボーナス
+		float moneyMakerBonus = 0.0f; // マネーメーカー能力のボーナス
+		float jackPotMultiplier = 0.0f; // 一攫千金能力の倍率
+		float jackPotChance = 0.0f; // 一攫千金能力の発動確率
+		float pitcherPowerPenalty = 0.0f; // 威圧感能力の投手へのペナルティ
+
+		bool isActiveThisRound = false; // 今回のラウンドで能力が発動したかどうか
+	};
+
+	AbilityData abilities[ABILITY_COUNT];
+
+	std::mt19937 rng{ std::random_device{}() }; // 乱数生成器
+
+private:
+
+	enum class Direction { Pull, Center, Opposite };
+	Direction direction = Direction::Center;
+
+	//条件判定ヘルパー
+	bool IsDirection(Direction direction) const;//方向判定
+	bool IsHighBall() const;//高めのボール判定
+	bool IsLowBall() const;//低めのボール判定
+	bool IsFastBall() const;//速球判定
+	bool IsBreakingBall() const;//変化球判定
+	bool IsFirstPitch() const;//初球判定
+	bool IsLastBall() const;//ラストボール判定
+	bool ComboCount() const;//連発判定
+	bool IsLastStandCondition() const;//背水の陣判定
+	bool IsHomeRunCondition() const;//ホームラン判定
 };

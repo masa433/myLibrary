@@ -31,6 +31,7 @@
 #include "RoundManager.h"
 #include "Combo.h"
 #include "EffectManager.h"
+#include "SpecialAbility.h"
 
 using json = nlohmann::json;
 
@@ -156,6 +157,8 @@ void scene_game::initialize()
 	Money::Instance().Initialize(device);
 
     RoundManager::Instance().Initialize(device);
+
+	SpecialAbility::Instance().Initialize(device);
 
     shadowRenderer.Initialize();
 
@@ -421,12 +424,11 @@ void scene_game::update(float elapsed_time)
     Physics::Instance().Update(elapsed_time);
 
     //GameTimer::Instance().Update(elapsed_time);
+	BallDistance::Instance().Update(elapsed_time);
 
     HomeRunCount::Instance().Update(elapsed_time);
 
     Catcher::Instance().Update(elapsed_time);
-
-	BallDistance::Instance().Update(elapsed_time);
 
 	Result::Instance().Update(elapsed_time);
 
@@ -437,6 +439,8 @@ void scene_game::update(float elapsed_time)
 	RoundManager::Instance().Update(elapsed_time);
 
 	EffectManager::Instance().Update(elapsed_time);
+
+	SpecialAbility::Instance().Update(elapsed_time);
 
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
@@ -742,6 +746,8 @@ void scene_game::render(float elapsedTime)
 
 	RoundManager::Instance().Render();
 
+	SpecialAbility::Instance().Render();
+
     // ShapeRenderer の描画実行
 
     if (showPhysxDebug)
@@ -812,6 +818,7 @@ void scene_game::uninitialize()
 	BallNet::Instance().Uninitialize();
 	Money::Instance().Uninitialize();
 	RoundManager::Instance().Uninitialize();
+	SpecialAbility::Instance().Uninitialize();
 
     skyRenderer.Uninitialize();
 	shadowRenderer.Uninitialize();
@@ -903,6 +910,8 @@ void scene_game::DrawGUI()
 		if (ImGui::CollapsingHeader("Money")) { Money::Instance().DrawGUI(); }
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Round Manager")) { RoundManager::Instance().DrawGUI(); }
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Special Ability")) { SpecialAbility::Instance().DrawGUI(); }
 
         ImGui::End();
 

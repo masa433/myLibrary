@@ -6,6 +6,7 @@
 #include "FontRenderer.h"
 #include "sprite.h"
 #include "json.hpp"
+#include "SpecialAbility.h"
 
 using json = nlohmann::json;
 
@@ -18,6 +19,14 @@ public:
 		static RoundManager instance;
 		return instance;
 	}
+
+	//ラウンドステート
+	enum class RoundState
+	{
+		Playing,
+		SelectAbility,
+	};
+
 	void Initialize(ID3D11Device* device);
 	void Uninitialize();
 	void Update(float elapsedTime);
@@ -31,6 +40,8 @@ public:
 	bool IsGameOver() const {return isGameOver;}
 	bool IsGameClear() const { return isGameClear; }
 	int GetCurrentRound() const { return currentRound; }
+
+	bool IsAbilitySelecting() const { return currentState == RoundState::SelectAbility; }
 
 	int GetCurrentTarget() const
 	{
@@ -75,4 +86,26 @@ private:
 	DirectX::XMFLOAT2 spritePosition = { 100.0f, 100.0f };
 	DirectX::XMFLOAT2 spriteSize = { 200.0f, 50.0f };
 	DirectX::XMFLOAT4 spriteColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	RoundState currentState = RoundState::Playing;
+
+	std::vector<SpecialAbility::AbilityID> abilitiesChoice; // 選択された特殊能力のIDを保持するベクター
+	int hoveredAbilityIndex = -1; // ホバー中の特殊能力のインデックス
+
+	//アイコンの位置は三角形に配置
+	DirectX::XMFLOAT2 abilityIconPositions[3] =
+	{
+		{ 960.0f, 400.0f }, // 1つ目のアイコンの位置
+		{ 560.0f, 600.0f }, // 2つ目のアイコンの位置
+		{ 1360.0f, 600.0f }  // 3つ目のアイコンの位置
+	};
+
+	DirectX::XMFLOAT2 abilityIconSize = { 600.0f, 100.0f }; // アイコンのサイズ
+
+	std::unique_ptr<RoundSpriteData> abilityBackSpriteData;
+	std::unique_ptr<sprite> abilityBackSprite;
+
+	void EnterSelectAbilityState();
+	void UpdateSelectAbilityState();
+	void ProcessedToNextRound();
 };

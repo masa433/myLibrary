@@ -44,6 +44,12 @@ public:
 
 	int GetTotalReward() const { return totalReward; }
 
+	//サブミッションをクリアしているかどうかを返す関数
+	bool IsCurrentMissionCleared() const
+	{
+		return currentMission && currentMission->cleared;
+	}
+
 private:
 	
 	int totalReward = 0;//累計報酬

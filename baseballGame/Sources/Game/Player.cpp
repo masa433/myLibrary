@@ -1347,6 +1347,8 @@ void Player::SelectRealBatter(RealBatter rb)
 
 	//利き手を設定
 	realBatterInfo = arsenal;
+	baseBatterPower = GetSelectedRealBatterPower();//パワーを設定
+	baseBatterContact = GetSelectedRealBatterContact();//ミートを設定
 
     BatSprite::Instance().UpdateCursorSizeByContact(GetSelectedRealBatterContact());
 
