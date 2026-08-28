@@ -87,14 +87,14 @@ bool SpecialAbility::IsLastBall() const
 	return ballCount::Instance().GetRemainingBalls() == 1;
 }
 
-// 残り球数が3球以下、かつ目標本塁打数まであと1以内のときに発動する
+// 残り球数が3球以下、かつ目標本塁打数まであと3以内のときに発動する
 bool SpecialAbility::IsLastStandCondition() const
 {
 	int remainingBalls = ballCount::Instance().GetRemainingBalls();
 	int homeRunTarget = RoundManager::Instance().GetCurrentTarget();
 	int difference = HomeRunCount::Instance().GetHomeRunCountDifference(homeRunTarget);
 
-	return remainingBalls <= 3 && difference <= 1;
+	return remainingBalls <= 3 && difference > 0 && difference <= 3;
 }
 
 bool SpecialAbility::ComboCount() const
@@ -265,8 +265,10 @@ void SpecialAbility::BuildAbility()
 	// 威圧感
 	a[(int)AbilityID::Intimidation].name = u8"威圧感";
 	a[(int)AbilityID::Intimidation].texturePath = L".\\resources\\textures\\specialAbilityList\\intimidation.png";
-	a[(int)AbilityID::Intimidation].pitcherPowerPenalty = 5.0f; // 投手へのペナルティ
-
+	a[(int)AbilityID::Intimidation].pitcherPowerPenalty = 1.0f; // 投手へのペナルティ(球威をワンランクダウンさせる)
+	a[(int)AbilityID::Intimidation].pitcherBreakBallPenalty = 1.0f; // 変化球へのペナルティ(変化球をワンランクダウンさせる)
+	a[(int)AbilityID::Intimidation].activationRate = 100.0f;
+	a[(int)AbilityID::Intimidation].condition = [this]() { return true; }; // 常に発動可能
 	// 対速球
 	a[(int)AbilityID::VsFastBall].name = u8"対速球";
 	a[(int)AbilityID::VsFastBall].texturePath = L".\\resources\\textures\\specialAbilityList\\vsFastBall.png";
@@ -301,7 +303,29 @@ void SpecialAbility::Uninitialize()
 
 void SpecialAbility::Update(float elapsedTime)
 {
-	// Update logic for special abilities can be added here
+	int powerBonus = 0;
+	int contactBonus = 0;
+	int pitcherPowerPenalty = 0;
+	int pitcherBreakPenalty = 0;
+	
+	for (auto& ability : abilities)
+	{
+		if (ability.isOwned && ability.isActiveThisRound && ability.condition())
+		{
+			powerBonus += ability.power;
+			contactBonus += ability.contact;
+		}
+
+		if(ability.isOwned && ability.isActiveThisRound && ability.condition())
+		{
+			pitcherPowerPenalty += static_cast<int>(ability.pitcherPowerPenalty);
+			pitcherBreakPenalty += static_cast<int>(ability.pitcherBreakBallPenalty);
+		}
+	}
+
+	Player::Instance().ApplyRoundStatBonus(powerBonus, contactBonus);
+	ballSprite::Instance().ApplyPowerRankDown(pitcherPowerPenalty);
+	ballSprite::Instance().ApplyBreakRankDown(pitcherBreakPenalty);
 }
 
 void SpecialAbility::Render()
@@ -455,34 +479,3 @@ void SpecialAbility::RollRoundActivation()
 	}
 }
 
-void SpecialAbility::ApplyRoundStartAbilities()
-{
-	int powerBonus = 0;
-	int contactBonus = 0;
-
-	for (auto& ability : abilities)
-	{
-		if (ability.isOwned && ability.isActiveThisRound && ability.condition())
-		{
-			powerBonus += ability.power;
-			contactBonus += ability.contact;
-		}
-	}
-
-	Player::Instance().ApplyRoundStatBonus(powerBonus, contactBonus);
-}
-
-void SpecialAbility::ApplyMidRoundAbilities()
-{
-	int powerBonus = 0;
-	int contactBonus = 0;
-	for (auto& ability : abilities)
-	{
-		if (ability.isOwned && ability.isActiveThisRound && ability.condition())
-		{
-			powerBonus += ability.power;
-			contactBonus += ability.contact;
-		}
-	}
-	Player::Instance().ApplyRoundStatBonus(powerBonus, contactBonus);
-}

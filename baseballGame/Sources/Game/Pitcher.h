@@ -53,6 +53,8 @@ public:
 
 	float GetBallSpeedKmh() const { return ballSpeedKmh; }
 
+	void SetBallSpeedKmh(float speed) { ballSpeedKmh = speed; }
+
 	void ResetPitchFlags(); // pitchFlagsをリセットする関数
 
 	bool IsBezierTargetCenter(float threshold = 0.1f) const
@@ -376,6 +378,8 @@ public:
 		Power power = Power::C;
 	};
 
+	
+
 	// 実在投手プリセットを選択する。球種別球速をpitchParametersへ反映し、
 	// 配球AI（ChooseAIPitchType）が実測の投球割合に基づいて球種を選ぶようになる。
 	void SelectRealPitcher(RealPitcher rp);
@@ -487,4 +491,35 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
 
 	std::unique_ptr<Effect> rosinEffect;//投げる際の滑り止め(ロジン)エフェクト
+public:
+	
+	void SetRealPitcherPower(Power power)
+	{
+		if (realPitcherArsenal.empty()) return;
+		realPitcherArsenal[0].power = power;// 0番目の球種のパワーを設定
+	}
+
+	int GetRealPitcherPower() const
+	{
+		if (realPitcherArsenal.empty()) return 0;
+		return static_cast<int>(realPitcherArsenal[0].power);// 0番目の球種のパワーを取得
+	}
+
+	// ランクダウンを適用して球速を取得する関数
+	static Power GetPowerRankDown(Power power, int rankDown)
+	{
+		if (power == Power::F || rankDown <= 0) return power;
+		int index = static_cast<int>(power);
+		int newIndex = (std::max)(static_cast<int>(Power::F), index - rankDown);
+		return static_cast<Power>(newIndex);
+	}
+
+	// ランクダウンを適用して変化球のグレードを取得する関数
+	static BreakGrade GetBreakGradeRankDown(BreakGrade grade, int rankDown)
+	{
+		if (grade == BreakGrade::F || rankDown <= 0) return grade;
+		int index = static_cast<int>(grade);
+		int newIndex = (std::max)(static_cast<int>(BreakGrade::F), index - rankDown);
+		return static_cast<BreakGrade>(newIndex);
+	}
 };

@@ -1368,7 +1368,7 @@ void Pitcher::SelectPitchTypeByAI()
 	const float speedVariance = GetSpeedVarianceKmh(selectedPitchType);
 	ballSpeedKmh += GenerateRandomFloat(-speedVariance, speedVariance);
 	ballSpeedKmh = (std::max)(60.0f, (std::min)(ballSpeedKmh, 180.0f));
-
+	
 	ApplyAIBezierTarget();
 
 	// 配球履歴を更新（直近 kPitchHistorySize 球分だけ保持）

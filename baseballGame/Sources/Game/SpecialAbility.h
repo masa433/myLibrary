@@ -80,11 +80,6 @@ public:
 	bool RollActivation(float ratePercent);// 能力の発動判定を行う関数
 	void RollRoundActivation(); // ラウンドごとの能力発動判定を行う関数
 
-	void ApplyRoundStartAbilities(); // ラウンド開始時に適用される能力を処理する関数
-
-	//途中で能力が適用されるときに呼び出す関数
-	void ApplyMidRoundAbilities();
-
 	//ランダムな3つの特殊能力のIDを表示する関数
 	std::vector<AbilityID> GetRandomAbilities(int count)
 	{
@@ -155,6 +150,8 @@ private:
 		float jackPotMultiplier = 0.0f; // 一攫千金能力の倍率
 		float jackPotChance = 0.0f; // 一攫千金能力の発動確率
 		float pitcherPowerPenalty = 0.0f; // 威圧感能力の投手へのペナルティ
+		float pitcherBreakBallPenalty = 0.0f; // 威圧感能力の変化球へのペナルティ
+		float pitcherBallSpeedPenalty = 0.0f; // 威圧感能力の球速へのペナルティ
 
 		bool isActiveThisRound = false; // 今回のラウンドで能力が発動したかどうか
 	};

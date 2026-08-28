@@ -466,7 +466,7 @@ void ballSprite::Update(float elapsedTime)
 {
 	//実在投手の切り替えを検知し、その投手の球種に応じた変化量を設定する
 	SyncRealPitcherBreaks();
-
+	
 	Pitcher& pitcher = Pitcher::Instance();
 	Ball& ball = Ball::Instance();
 
@@ -653,14 +653,21 @@ void ballSprite::Update(float elapsedTime)
 			display = BallDisplayMode::None;
 		}
 
+		ballBreak2D scaledBreak = pitchBreaks[currentPitchIndex];
+		float breakScale = GetCurrentPitchBreakScale();
+		scaledBreak.breakX *= breakScale;
+		scaledBreak.breakY *= breakScale;
+
 	// ワインドアップ開始の立ち上がりを検知
 	if (pitchingState && !prevPitchingState)
 	{
+		
+
 		// 目標地点(生のaiTargetScreen)ではなく、breakX/breakYを考慮した見かけ上のスタート地点(p0)へスナップする
 		// hasAITargetブロックが!nowThrown時に計算するp0と全く同じ式・同じ引数にすることで、直後のジャンプを防ぐ
 		DirectX::XMFLOAT2 snapPos = EvalPitchBreakScreenPath(
 			aiTargetScreen,
-			pitchBreaks[currentPitchIndex],
+			scaledBreak,
 			strikeZoneSpriteData->size,
 			currentPitchIndex,
 			0.0f,
@@ -712,7 +719,7 @@ void ballSprite::Update(float elapsedTime)
 		// 開始点はゾーン中心（見た目上「まっすぐ来た場合」の基準点）
 		startScreenPos = EvalPitchBreakScreenPath(
 			finalScreenPos,
-			pitchBreaks[currentPitchIndex],
+			scaledBreak,
 			strikeZoneSpriteData->size,
 			currentPitchIndex,
 			0.0f, // t=0で開始点を取得
@@ -1093,6 +1100,25 @@ void ballSprite::DrawGUI()
 		{
 			activeSet->powerGrades[editIndex] = static_cast<Pitcher::Power>(powerIndex);
 			pitchPowers[editIndex] = activeSet->powerGrades[editIndex]; // 投手専用データにも反映
+		}
+
+		if (ImGui::CollapsingHeader(u8"球威デバッグ"))
+		{
+			Pitcher::Power baseGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)]
+				.powerGrades[currentPitchIndex];
+			Pitcher::Power effectiveGrade = Pitcher::GetPowerRankDown(baseGrade, currentPowerRankDown);
+
+			Pitcher::BreakGrade baseBreakGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)]
+				.grades[currentPitchIndex];
+			Pitcher::BreakGrade effectiveBreakGrade = Pitcher::GetBreakGradeRankDown(baseBreakGrade, currentBreakRankDown);
+
+			ImGui::Text(u8"ランクダウン量 : %d", currentPowerRankDown);
+			ImGui::Text(u8"基礎グレード   : %s", GetPowerGradeLabel(baseGrade));
+			ImGui::Text(u8"実効グレード   : %s", GetPowerGradeLabel(effectiveGrade));
+			ImGui::Text(u8"曲がりランクダウン量 : %d", currentBreakRankDown);
+			ImGui::Text(u8"基礎曲がりグレード   : %s", GetBreakGradeLabel(baseBreakGrade));
+			ImGui::Text(u8"実効曲がりグレード   : %s", GetBreakGradeLabel(effectiveBreakGrade));
+
 		}
 	}
 	if(activeSet == nullptr)

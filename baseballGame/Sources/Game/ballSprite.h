@@ -11,6 +11,7 @@
 #include "FontRenderer.h"
 
 
+
 using json = nlohmann::json;
 
 class ballSprite
@@ -246,12 +247,6 @@ public:
 	Pitcher::Power::C, Pitcher::Power::C, Pitcher::Power::C
 	};
 
-	//現在投げている球種の球威スケールを取得
-	float GetCurrentPitchPowerScale() const
-	{
-		return GetPowerGradeScale(realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)].powerGrades[currentPitchIndex]);
-	}
-
 	// インデックスは Pitcher::RealPitcher の値（Noneは未使用）
 	// 投手ごとに完全に独立したデータを持つため、他の投手の値を書き換えることはない
 	std::array<PitchBreakSet, static_cast<size_t>(Pitcher::RealPitcher::Count)> realPitcherBreaks;
@@ -381,4 +376,35 @@ public:
 	float currentSpinRPM = 1500.0f; // 現在の球種のスピン回転数（RPM）
 
 	bool pendingBallZoneBonus = false; // ボールゾーンのボーナス表示を次のフレームで行うかどうか
+
+private:
+
+	int currentPowerRankDown = 0; // 現在の球威ランクダウンの段階（0～6）
+	int currentBreakRankDown = 0; // 現在の変化量ランクダウンの段階（0～6）
+
+public:
+	void ApplyPowerRankDown(int rankDown)
+	{
+		currentPowerRankDown = rankDown;
+	}
+
+	void ApplyBreakRankDown(int rankDown)
+	{
+		currentBreakRankDown = rankDown;
+	}
+
+	float GetCurrentPitchPowerScale() const
+	{
+		Pitcher::Power baseGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)].powerGrades[currentPitchIndex];
+		Pitcher::Power effectiveGrade = Pitcher::GetPowerRankDown(baseGrade, currentPowerRankDown); // 参照時に補正
+		return GetPowerGradeScale(effectiveGrade);
+	}
+
+	float GetCurrentPitchBreakScale() const
+	{
+		Pitcher::BreakGrade baseGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)].grades[currentPitchIndex];
+		Pitcher::BreakGrade effectiveGrade = Pitcher::GetBreakGradeRankDown(baseGrade, currentBreakRankDown); // 参照時に補正
+		return GetBreakGradeScale(effectiveGrade);
+	}
+
 };

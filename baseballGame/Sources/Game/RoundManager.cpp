@@ -61,7 +61,6 @@ void RoundManager::Initialize(ID3D11Device* device)
 	totalRounds = 7; // 総ラウンド数を設定
 
 	SpecialAbility::Instance().RollRoundActivation(); // ラウンドごとの能力発動判定を行う
-	SpecialAbility::Instance().ApplyRoundStartAbilities(); // ラウンド開始時に適用される能力を処理する
 }
 
 void RoundManager::Uninitialize()
@@ -185,7 +184,6 @@ void RoundManager::ProcessedToNextRound()
 	currentState = RoundState::Playing;
 
 	SpecialAbility::Instance().RollRoundActivation(); // ラウンドごとの能力発動判定を行う
-	SpecialAbility::Instance().ApplyRoundStartAbilities(); // ラウンド開始時に適用される能力を処理する
 }
 
 void RoundManager::Render()
