@@ -159,6 +159,9 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::WideAngleBatting].ballSpeed = 5.0f;
 	a[(int)AbilityID::WideAngleBatting].activationRate = 100.0f;
 	a[(int)AbilityID::WideAngleBatting].ballCondition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::WideAngleBatting].power = 5.0f;// 打撃力ボーナス
+	a[(int)AbilityID::WideAngleBatting].contact = 7.0f;// ミート力ボーナス
+	a[(int)AbilityID::WideAngleBatting].condition = [this]() { return true; }; // 常に発動可能
 
 	// センター返し
 	a[(int)AbilityID::CenterReturn].name = u8"センター返し";
@@ -166,6 +169,9 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::CenterReturn].ballSpeed = 5.0f;
 	a[(int)AbilityID::CenterReturn].activationRate = 30.0f;
 	a[(int)AbilityID::CenterReturn].ballCondition = [this]() { return IsDirection(Direction::Center); }; // センター方向のボールで発動
+	a[(int)AbilityID::CenterReturn].power = 3.0f;
+	a[(int)AbilityID::CenterReturn].contact = 7.0f;
+	a[(int)AbilityID::CenterReturn].condition = [this]() { return true; }; // 常に発動可能
 
 	// プルヒッター
 	a[(int)AbilityID::PullHitter].name = u8"プルヒッター";
@@ -175,6 +181,8 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::PullHitter].ballCondition = [this]() { return IsDirection(Direction::Pull); }; // プル方向のボールで発動
 	a[(int)AbilityID::PullHitter].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::PullHitter].ballPenaltyCondition = [this]() { return IsDirection(Direction::Opposite); }; // 流し方向のボールでペナルティ
+	a[(int)AbilityID::PullHitter].power = 5.0f;
+	a[(int)AbilityID::PullHitter].condition = [this]() { return true; }; // 常に発動可能
 
 	// 流し打ち
 	a[(int)AbilityID::OppositeHitter].name = u8"流し打ち";
@@ -184,6 +192,9 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::OppositeHitter].ballCondition = [this]() { return IsDirection(Direction::Opposite); }; // 流し方向のボールで発動
 	a[(int)AbilityID::OppositeHitter].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::OppositeHitter].ballPenaltyCondition = [this]() { return IsDirection(Direction::Pull); }; // プル方向のボールでペナルティ
+	a[(int)AbilityID::OppositeHitter].power = 3.0f;
+	a[(int)AbilityID::OppositeHitter].contact = 7.0f;
+	a[(int)AbilityID::OppositeHitter].condition = [this]() { return true; }; // 常に発動可能
 
 	// ロマン砲
 	a[(int)AbilityID::RomanCannon].name = u8"ロマン砲";
@@ -253,14 +264,17 @@ void SpecialAbility::BuildAbility()
 	// マネーメーカー
 	a[(int)AbilityID::MoneyMaker].name = u8"マネーメーカー";
 	a[(int)AbilityID::MoneyMaker].texturePath = L".\\resources\\textures\\specialAbilityList\\moneyMaker.png";
-	a[(int)AbilityID::MoneyMaker].moneyMakerBonus = 0.2f; // 獲得金額の20%ボーナス
+	a[(int)AbilityID::MoneyMaker].moneyMakerBonus = 20.0f; // 獲得金額の20%ボーナス
 	a[(int)AbilityID::MoneyMaker].activationRate = 100.0f;
+	a[(int)AbilityID::MoneyMaker].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::MoneyMaker].isMoneyMakerActive = true;
 
 	// 一攫千金
 	a[(int)AbilityID::JackPot].name = u8"一攫千金";
 	a[(int)AbilityID::JackPot].texturePath = L".\\resources\\textures\\specialAbilityList\\jackPot.png";
 	a[(int)AbilityID::JackPot].jackPotMultiplier = 5.0f; // 一攫千金の倍率
-	a[(int)AbilityID::JackPot].jackPotChance = 10.0f;
+	a[(int)AbilityID::JackPot].jackPotChance = 60.0f;
+	a[(int)AbilityID::JackPot].activationRate = 100.0f;
 
 	// 威圧感
 	a[(int)AbilityID::Intimidation].name = u8"威圧感";
@@ -268,6 +282,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::Intimidation].pitcherPowerPenalty = 1.0f; // 投手へのペナルティ(球威をワンランクダウンさせる)
 	a[(int)AbilityID::Intimidation].pitcherBreakBallPenalty = 1.0f; // 変化球へのペナルティ(変化球をワンランクダウンさせる)
 	a[(int)AbilityID::Intimidation].activationRate = 100.0f;
+	a[(int)AbilityID::Intimidation].power = 5.0f; // 打撃力ボーナス
 	a[(int)AbilityID::Intimidation].condition = [this]() { return true; }; // 常に発動可能
 	// 対速球
 	a[(int)AbilityID::VsFastBall].name = u8"対速球";
@@ -480,4 +495,46 @@ float SpecialAbility::GetBallVelocityBonus() const
 	}
 
 	return ballSpeedBonus;
+}
+
+float SpecialAbility::GetMoneyMakerBonus() const
+{
+	float moneyBonus = 0.0f;
+	
+	for (auto& ability : abilities)
+	{
+		if (ability.isOwned && ability.isActiveThisRound)
+		{
+			if (ability.condition && ability.condition() && ability.isMoneyMakerActive)
+			{
+				moneyBonus += (ability.moneyMakerBonus / 100.0f);
+				if (consoleLog)
+				{
+					consoleLog->push_back(u8"マネーメーカー発動: " + ability.name);
+				}
+			}
+		}
+	}
+	
+	return moneyBonus;
+}
+
+float SpecialAbility::RollJackPotMultiplier()
+{
+	float multiplier = 1.0f;
+	for (auto& ability : abilities)
+	{
+		if (ability.isOwned && ability.isActiveThisRound)
+		{
+			if(RollActivation(ability.jackPotChance))
+			{
+				multiplier *= ability.jackPotMultiplier;
+				if (consoleLog)
+				{
+					consoleLog->push_back(u8"一攫千金発動: " + ability.name);
+				}
+			}
+		}
+	}
+	return multiplier;
 }

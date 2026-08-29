@@ -88,6 +88,9 @@ private:
 	float comboBonus = 1.0f; // コンボボーナスの倍率
 	float comboBonusIncrement = 0.1f; // コンボボーナスの増加量
 
+	float moneyMakerBonus = 0.0f; // MoneyMakerボーナスの金額
+	float jackpotBonus = 0.0f; // 一攫千金ボーナスの金額
+
 	struct MoneyData
 	{
 		std::wstring texturePath;

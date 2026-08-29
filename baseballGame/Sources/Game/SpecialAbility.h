@@ -106,6 +106,19 @@ public:
 	//打球速度ボーナスの増減関数
 	float GetBallVelocityBonus() const;
 
+	//マネーメーカー能力のボーナスを取得する関数
+	float GetMoneyMakerBonus() const;
+
+	//一攫千金ボーナスを発動するかの抽選
+	float RollJackPotMultiplier();
+
+	//マネーメーカーがアクティブかどうか
+	bool IsMoneyMakerActive() const
+	{ 
+		const auto& ability = abilities[(int)AbilityID::MoneyMaker];
+		return ability.isMoneyMakerActive && ability.isActiveThisRound && ability.isOwned; 
+	}
+
 private:
 
 	//テクスチャ関連
@@ -155,6 +168,7 @@ private:
 		float pitcherBallSpeedPenalty = 0.0f; // 威圧感能力の球速へのペナルティ
 
 		bool isActiveThisRound = false; // 今回のラウンドで能力が発動したかどうか
+		bool isMoneyMakerActive = false;
 	};
 
 	AbilityData abilities[ABILITY_COUNT];

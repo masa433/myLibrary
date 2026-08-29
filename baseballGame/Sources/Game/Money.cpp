@@ -7,6 +7,7 @@
 #include "ballSprite.h"
 #include <cstdio>
 #include <string>
+#include "SpecialAbility.h"
 
 // 小数点以下の不要な 0 を削除する関数(小数第1位は消さない)
 std::string FormatFloat(float value)
@@ -52,7 +53,7 @@ void Money::Initialize(ID3D11Device* device)
 	moneySprite = std::make_unique<sprite>(device, context, moneyData->texturePath.c_str());
 
 	bonusItems.clear();
-	std::vector<int> bonusCodepoints = FontRenderer::Utf8ToCodepoints(u8"0123456789.xG ");
+	std::vector<int> bonusCodepoints = FontRenderer::Utf8ToCodepoints(u8"0123456789.xG +%");
 
 	// ホームランボーナスアイテムの初期化
 	BonusItem homeRunBonusItem;
@@ -121,6 +122,40 @@ void Money::Initialize(ID3D11Device* device)
 		512, 512,
 		&bonusCodepoints);
 	bonusItems.push_back(std::move(comboBonusItem));
+
+	// マネーメーカーボーナスアイテムの初期化
+	BonusItem moneyMakerBonusItem;
+	moneyMakerBonusItem.name = "MoneyMaker";
+	moneyMakerBonusItem.info = { { 300.0f, 190.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	moneyMakerBonusItem.data = std::make_unique<MoneyData>();
+	moneyMakerBonusItem.data->texturePath = L".\\resources\\textures\\moneyMakerBonusBoard.png";
+	moneyMakerBonusItem.sprite = std::make_unique<sprite>(device, context, moneyMakerBonusItem.data->texturePath.c_str());
+	moneyMakerBonusItem.fontRenderer = std::make_unique<FontRenderer>();
+	moneyMakerBonusItem.fontRenderer->Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		28.0f,
+		static_cast<int>(Graphics::Instance().GetScreenWidth()),
+		static_cast<int>(Graphics::Instance().GetScreenHeight()),
+		512, 512,
+		&bonusCodepoints);
+	bonusItems.push_back(std::move(moneyMakerBonusItem));
+
+	//一攫千金ボーナスアイテムの初期化
+	BonusItem jackPotBonusItem;
+	jackPotBonusItem.name = "JackPot";
+	jackPotBonusItem.info = { { 300.0f, 190.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	jackPotBonusItem.data = std::make_unique<MoneyData>();
+	jackPotBonusItem.data->texturePath = L".\\resources\\textures\\jackPotBonusBoard.png";
+	jackPotBonusItem.sprite = std::make_unique<sprite>(device, context, jackPotBonusItem.data->texturePath.c_str());
+	jackPotBonusItem.fontRenderer = std::make_unique<FontRenderer>();
+	jackPotBonusItem.fontRenderer->Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		28.0f,
+		static_cast<int>(Graphics::Instance().GetScreenWidth()),
+		static_cast<int>(Graphics::Instance().GetScreenHeight()),
+		512, 512,
+		&bonusCodepoints);
+	bonusItems.push_back(std::move(jackPotBonusItem));
 
 	BonusItem totalItem;
 	totalItem.name = "Total";
@@ -216,6 +251,25 @@ void Money::Update(float elapsedTime)
 				consoleLog->push_back(u8"[Info]コンボボーナスが適用されました。");
 				consoleLog->push_back(u8"[Info]現在のコンボボーナス倍率: " + FormatFloat(comboBonus));
 			}
+		}
+
+		//マネーメーカーの特殊能力ボーナスを適用
+		if(SpecialAbility::Instance().IsMoneyMakerActive())
+		{
+			moneyMakerBonus = SpecialAbility::Instance().GetMoneyMakerBonus();
+			totalMultiplier += moneyMakerBonus;
+			if(consoleLog)
+			{
+				consoleLog->push_back(u8"[Info]マネーメーカーの特殊能力ボーナスが適用されました。");
+				consoleLog->push_back(u8"[Info]現在のマネーメーカー倍率: " + FormatFloat(moneyMakerBonus));
+			}
+		}
+
+		//一攫千金の特殊能力ボーナスを適用
+		if (isHomeRun)
+		{
+			jackpotBonus = SpecialAbility::Instance().RollJackPotMultiplier();
+			totalMultiplier *= jackpotBonus;//一攫千金の倍率を適用
 		}
 
 		// 最終的な距離に倍率を適用して加算
@@ -354,6 +408,16 @@ void Money::Render()
 				else if (item.name == "Combo")
 				{
 					bonusText = " x " + FormatFloat(comboBonus);
+				}
+				else if (item.name == "MoneyMaker")
+				{
+					int bonusPercent = (moneyMakerBonus * 100.0f);
+					bonusText = " + " + std::to_string(bonusPercent) + " %";
+				}
+				else if (item.name == "JackPot")
+				{
+					int jackpot = jackpotBonus;
+					bonusText = " x " + std::to_string(jackpot);
 				}
 				else if (item.name == "Total")
 				{
@@ -495,6 +559,15 @@ void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
 			bonusItem.isActive = true;
 		}
 		else if(bonusItem.name == "Combo" && isHomeRun && Combo::Instance().GetCurrentCombo() >= 2)
+		{
+			bonusItem.isActive = true;
+		}
+		// マネーメーカーがアクティブな場合は度の打球に対してもボーナスを表示する
+		else if (bonusItem.name == "MoneyMaker" && SpecialAbility::Instance().IsMoneyMakerActive())
+		{
+			bonusItem.isActive = true;
+		}
+		else if (bonusItem.name == "JackPot" && isHomeRun)
 		{
 			bonusItem.isActive = true;
 		}
