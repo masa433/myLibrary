@@ -72,8 +72,6 @@ public:
 	void InitializeAbilities(ID3D11Device* device, ID3D11DeviceContext* context);
 	void BuildAbility();
 
-	BattingBonus EvaluateOnHit(); // ヒット時のボーナスを評価する関数
-	MoneyBonus EvaluateOnHomeRun(); // 獲得金額のボーナスを評価する関数
 	bool IsOwned(AbilityID id) const { return abilities[(int)id].isOwned; }
 	void SetOwned(AbilityID id, bool owned) { abilities[(int)id].isOwned = owned; }
 
@@ -104,6 +102,9 @@ public:
 	void RenderAbilityIcons(AbilityID id, const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, bool isHighlighted);
 
 	const std::string& GetName(AbilityID id) const { return abilities[(int)id].name; }
+
+	//打球速度ボーナスの増減関数
+	float GetBallVelocityBonus() const;
 
 private:
 
@@ -176,4 +177,11 @@ private:
 	bool ComboCount() const;//連発判定
 	bool IsLastStandCondition() const;//背水の陣判定
 	bool IsHomeRunCondition() const;//ホームラン判定
+
+public:
+	// コンソールログへのポインタをセット
+	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }
+
+private:
+	std::vector<std::string>* consoleLog = nullptr;
 };

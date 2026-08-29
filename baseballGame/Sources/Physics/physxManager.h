@@ -119,12 +119,13 @@ public:
 	void ClearBallWasHit() { ballWasHit = false; }
 
 	//打球速度・打球角度・打球方向を取得するゲッター
-	float GetBallSpeed() const { return outSpeed; }
-	float GetBallAngle() const { return outAngle; }
-	float GetBallDirection() const { return outDirection; }
-	float GetBallOriginalDirection() const { return outOriginalDirection; }
-	float GetBallHorizontalDistance() const { return ballHorizontalDistance; }
-	float GetBallTotalDistance() const { return ballTotalDistance; }
+	float GetBallSpeed() const { return outSpeed; }//打球速度
+	float GetBallAngle() const { return outAngle; }//打球角度
+	float GetBallDirection() const { return outDirection; }//打球方向
+	float GetBallOriginalDirection() const { return outOriginalDirection; }//打球方向（元の方向）
+	void SetBallOriginalDirection(float value) { outOriginalDirection = value; }//打球方向（元の方向）を設定するセッター
+	float GetBallHorizontalDistance() const { return ballHorizontalDistance; }//打球の水平距離
+	float GetBallTotalDistance() const { return ballTotalDistance; }//打球の総距離
 
 	float outSpeed = 0.0f; //打球速度
 	float outAngle = 0.0f; //打球角度

@@ -485,19 +485,25 @@ void ballSprite::Update(float elapsedTime)
 		currentSpinFlip = nullptr; // 投球前は静止画
 	}
 
-	DirectX::XMFLOAT2 ballCenter = {
+	if (pitchingState)
+	{
+		DirectX::XMFLOAT2 ballCenter = {
 			ballDebugSpriteData->position.x + ballDebugSpriteData->size.x * 0.5f,
 			ballDebugSpriteData->position.y + ballDebugSpriteData->size.y * 0.5f
-	};
-	DirectX::XMFLOAT2 szTopLeft, szBottomRight;
-	GetStrikeZoneScreenBounds(szTopLeft, szBottomRight);
+		};
+		DirectX::XMFLOAT2 szTopLeft, szBottomRight;
+		GetStrikeZoneScreenBounds(szTopLeft, szBottomRight);
 
-	isStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
-		ballCenter.y >= szTopLeft.y && ballCenter.y <= szBottomRight.y);
+		isStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
+			ballCenter.y >= szTopLeft.y && ballCenter.y <= szBottomRight.y);
+		isBall = !isStrike;
 
-	isBall = (ballCenter.x < szTopLeft.x || ballCenter.x > szBottomRight.x ||
-		ballCenter.y < szTopLeft.y || ballCenter.y > szBottomRight.y);
+		float oneThirdHeight = (szBottomRight.y - szTopLeft.y) / 3.0f;
+		isHighBall = (ballCenter.y >= szTopLeft.y) && (ballCenter.y < szTopLeft.y + oneThirdHeight);
+		isLowBall = (ballCenter.y <= szBottomRight.y) && (ballCenter.y > szBottomRight.y - oneThirdHeight);
+	}
 
+	
 	if (pendingBallZoneBonus && Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
 	{
 		Money::Instance().ApplyBallZoneBonus();
@@ -761,9 +767,7 @@ void ballSprite::Update(float elapsedTime)
 		isPitchJudgedStrike = (ballCenter.x >= szTopLeft.x && ballCenter.x <= szBottomRight.x &&
 			ballCenter.y >= szTopLeft.y && ballCenter.y <= szBottomRight.y);
 
-		float oneThirdHeight = (szBottomRight.y - szTopLeft.y) / 3.0f;
-		isHighBall = (ballCenter.y >= szTopLeft.y) && (ballCenter.y < szTopLeft.y + oneThirdHeight);
-		isLowBall = (ballCenter.y <= szBottomRight.y) && (ballCenter.y > szBottomRight.y - oneThirdHeight);
+		
 
 		if (isPitchJudgedStrike)
 		{

@@ -171,7 +171,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::PullHitter].name = u8"プルヒッター";
 	a[(int)AbilityID::PullHitter].texturePath = L".\\resources\\textures\\specialAbilityList\\pullHitter.png";
 	a[(int)AbilityID::PullHitter].ballSpeed = 5.0f;
-	a[(int)AbilityID::PullHitter].activationRate = 30.0f;
+	a[(int)AbilityID::PullHitter].activationRate = 100.0f;
 	a[(int)AbilityID::PullHitter].ballCondition = [this]() { return IsDirection(Direction::Pull); }; // プル方向のボールで発動
 	a[(int)AbilityID::PullHitter].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::PullHitter].ballPenaltyCondition = [this]() { return IsDirection(Direction::Opposite); }; // 流し方向のボールでペナルティ
@@ -190,7 +190,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::RomanCannon].texturePath = L".\\resources\\textures\\specialAbilityList\\romanCannon.png";
 	a[(int)AbilityID::RomanCannon].power = 10.0f;
 	a[(int)AbilityID::RomanCannon].contact = -15.0f;
-	a[(int)AbilityID::RomanCannon].activationRate = 30.0f;
+	a[(int)AbilityID::RomanCannon].activationRate = 100.0f;
 	a[(int)AbilityID::RomanCannon].condition = [this]() { return true; }; // 常に発動可能
 
 	// ハイボールヒッター
@@ -198,7 +198,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::HighBallHitter].texturePath = L".\\resources\\textures\\specialAbilityList\\highBallHitter.png";
 	a[(int)AbilityID::HighBallHitter].ballSpeed = 5.0f;
 	a[(int)AbilityID::HighBallHitter].ballCondition = [this]() { return IsHighBall(); }; // 高めのボールで発動
-	a[(int)AbilityID::HighBallHitter].activationRate = 30.0f;
+	a[(int)AbilityID::HighBallHitter].activationRate = 100.0f;
 	a[(int)AbilityID::HighBallHitter].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::HighBallHitter].ballPenaltyCondition = [this]() { return IsLowBall(); }; // 低めのボールでペナルティ
 
@@ -299,6 +299,8 @@ void SpecialAbility::Uninitialize()
 	{
 		abilitySprite[i].reset();
 	}
+
+	consoleLog = nullptr;
 }
 
 void SpecialAbility::Update(float elapsedTime)
@@ -310,16 +312,18 @@ void SpecialAbility::Update(float elapsedTime)
 	
 	for (auto& ability : abilities)
 	{
-		if (ability.isOwned && ability.isActiveThisRound && ability.condition())
+		if (ability.isOwned && ability.isActiveThisRound && ability.condition && ability.condition())
 		{
 			powerBonus += ability.power;
 			contactBonus += ability.contact;
+
 		}
 
-		if(ability.isOwned && ability.isActiveThisRound && ability.condition())
+		if(ability.isOwned && ability.isActiveThisRound && ability.condition && ability.condition())
 		{
 			pitcherPowerPenalty += static_cast<int>(ability.pitcherPowerPenalty);
 			pitcherBreakPenalty += static_cast<int>(ability.pitcherBreakBallPenalty);
+
 		}
 	}
 
@@ -427,43 +431,6 @@ void SpecialAbility::DrawGUI()
 	ImGui::End();
 }
 
-SpecialAbility::BattingBonus SpecialAbility::EvaluateOnHit()
-{
-	BattingBonus bonus;
-	for (const auto& ability : abilities)
-	{
-		if (ability.isOwned && ability.isActiveThisRound && ability.condition())// 能力が所有されており、発動判定に成功し、条件を満たしている場合
-		{
-			bonus.power += ability.power;
-			bonus.contact += ability.contact;
-			bonus.ballSpeed += ability.ballSpeed;
-			if (ability.ballPenaltyCondition && ability.ballPenaltyCondition())
-			{
-				bonus.ballSpeed -= ability.ballSpeedPenalty;
-			}
-		}
-	}
-	return bonus;
-}
-
-SpecialAbility::MoneyBonus SpecialAbility::EvaluateOnHomeRun()
-{
-	MoneyBonus bonus;
-	for (const auto& ability : abilities)
-	{
-		if (ability.isOwned && ability.isActiveThisRound && ability.condition())// 能力が所有されており、発動判定に成功し、条件を満たしている場合
-		{
-			bonus.percentBonus += ability.moneyMakerBonus;
-			if (RollActivation(ability.jackPotChance))
-			{
-				bonus.jackPotTriggered = true;
-				bonus.jackPotMultiplier = ability.jackPotMultiplier;
-			}
-		}
-	}
-	return bonus;
-}
-
 void SpecialAbility::RollRoundActivation()
 {
 	for (auto& ability : abilities)
@@ -479,3 +446,36 @@ void SpecialAbility::RollRoundActivation()
 	}
 }
 
+float SpecialAbility::GetBallVelocityBonus() const
+{
+	float ballSpeedBonus = 1.0f;
+
+	for(auto& ability : abilities)
+	{
+		if (ability.isOwned && ability.isActiveThisRound)
+		{
+			if (ability.ballCondition && ability.ballCondition())
+			{
+				//ボーナスをパーセントに変換して加算する
+				ballSpeedBonus += (ability.ballSpeed / 100.0f);
+
+				if(consoleLog)
+				{
+					consoleLog->push_back(u8"球速ボーナス発動: " + ability.name);
+				}
+
+			}
+			else if (ability.ballPenaltyCondition && ability.ballPenaltyCondition())
+			{
+				ballSpeedBonus -= (ability.ballSpeedPenalty / 100.0f);
+
+				if(consoleLog)
+				{
+					consoleLog->push_back(u8"球速ペナルティ発動: " + ability.name);
+				}
+			}
+		}
+	}
+
+	return ballSpeedBonus;
+}

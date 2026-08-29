@@ -50,6 +50,7 @@ void scene_game::initialize()
     ballSprite::Instance().SetConsoleLog(&consoleLog);
 	Money::Instance().SetConsoleLog(&consoleLog);
 	Combo::Instance().SetConsoleLog(&consoleLog);
+	SpecialAbility::Instance().SetConsoleLog(&consoleLog);
 
     // カメラ設定をここに移動
     float screenWidth = Graphics::Instance().GetScreenWidth();

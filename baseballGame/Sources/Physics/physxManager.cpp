@@ -17,6 +17,7 @@
 #include <ballCount.h>
 #include "Money.h"
 #include "Combo.h"
+#include "SpecialAbility.h"
 #define NET_COUNT 4
 
 // グローバルまたはクラス内にキューを用意
@@ -1187,6 +1188,9 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			{
 				launchDirection = batVelocity.getNormalized();
 			}
+
+			float originalAngleDegEarly = std::atan2(launchDirection.x, launchDirection.z) * (180.0f / PI);
+			Physics::Instance().SetBallOriginalDirection(originalAngleDegEarly);
 			//else
 			//{
 			//	// バットの速度がほぼゼロの場合は、バットの前方方向を使用
@@ -1242,9 +1246,12 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				batterPowerScale *= 1.1f;
 			}
 			
+			//特殊能力による打球速度補正
+			float SpecialAbilityScale = SpecialAbility::Instance().GetBallVelocityBonus();
 			
 			estimatedExitVelocity *= batterPowerScale;
 			estimatedExitVelocity *= pitchPowerScale;
+			estimatedExitVelocity *= SpecialAbilityScale;
 			
 			// 2D判定の仰角を使用
 			float launchAngleDeg = result.launchAngle2DDeg;
@@ -1305,6 +1312,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 
 			// 打球方向判定
 			float originalAngleDeg = std::atan2(newBallVelocity.x, newBallVelocity.z) * (180.0f / PI);
+			SetBallOriginalDirection(originalAngleDeg);
 			float hitDirectionAngleDeg = std::fabs(originalAngleDeg);
 			const char* hitResult = u8"ファウル";
 			if (hitDirectionAngleDeg <= 45.0f)
