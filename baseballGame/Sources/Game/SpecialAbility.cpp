@@ -157,7 +157,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::WideAngleBatting].name = u8"広角打法";
 	a[(int)AbilityID::WideAngleBatting].texturePath = L".\\resources\\textures\\specialAbilityList\\wideAngleBatting.png";
 	a[(int)AbilityID::WideAngleBatting].ballSpeed = 5.0f;
-	a[(int)AbilityID::WideAngleBatting].activationRate = 30.0f;
+	a[(int)AbilityID::WideAngleBatting].activationRate = 100.0f;
 	a[(int)AbilityID::WideAngleBatting].ballCondition = [this]() { return true; }; // 常に発動可能
 
 	// センター返し
@@ -309,6 +309,7 @@ void SpecialAbility::Update(float elapsedTime)
 	int contactBonus = 0;
 	int pitcherPowerPenalty = 0;
 	int pitcherBreakPenalty = 0;
+	int comboPowerBonus = 0;
 	
 	for (auto& ability : abilities)
 	{
@@ -316,6 +317,7 @@ void SpecialAbility::Update(float elapsedTime)
 		{
 			powerBonus += ability.power;
 			contactBonus += ability.contact;
+			comboPowerBonus += static_cast<int>(ability.comboPowerPerStack * Combo::Instance().GetCurrentCombo());
 
 		}
 
@@ -327,7 +329,7 @@ void SpecialAbility::Update(float elapsedTime)
 		}
 	}
 
-	Player::Instance().ApplyRoundStatBonus(powerBonus, contactBonus);
+	Player::Instance().ApplyRoundStatBonus(powerBonus + comboPowerBonus, contactBonus);
 	ballSprite::Instance().ApplyPowerRankDown(pitcherPowerPenalty);
 	ballSprite::Instance().ApplyBreakRankDown(pitcherBreakPenalty);
 }
