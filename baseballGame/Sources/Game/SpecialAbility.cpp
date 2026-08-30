@@ -272,9 +272,11 @@ void SpecialAbility::BuildAbility()
 	// 一攫千金
 	a[(int)AbilityID::JackPot].name = u8"一攫千金";
 	a[(int)AbilityID::JackPot].texturePath = L".\\resources\\textures\\specialAbilityList\\jackPot.png";
-	a[(int)AbilityID::JackPot].jackPotMultiplier = 5.0f; // 一攫千金の倍率
-	a[(int)AbilityID::JackPot].jackPotChance = 60.0f;
+	a[(int)AbilityID::JackPot].jackPotMultiplier = 4.0f; // 一攫千金の倍率
+	a[(int)AbilityID::JackPot].jackPotChance = 10.0f;
 	a[(int)AbilityID::JackPot].activationRate = 100.0f;
+	a[(int)AbilityID::JackPot].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::JackPot].isJackPotActive = true;
 
 	// 威圧感
 	a[(int)AbilityID::Intimidation].name = u8"威圧感";
@@ -333,11 +335,6 @@ void SpecialAbility::Update(float elapsedTime)
 			powerBonus += ability.power;
 			contactBonus += ability.contact;
 			comboPowerBonus += static_cast<int>(ability.comboPowerPerStack * Combo::Instance().GetCurrentCombo());
-
-		}
-
-		if(ability.isOwned && ability.isActiveThisRound && ability.condition && ability.condition())
-		{
 			pitcherPowerPenalty += static_cast<int>(ability.pitcherPowerPenalty);
 			pitcherBreakPenalty += static_cast<int>(ability.pitcherBreakBallPenalty);
 
@@ -364,7 +361,7 @@ void SpecialAbility::Render()
 	//特殊能力のスプライトを描画
 	for(int i = 0; i < ABILITY_COUNT; ++i)
 	{
-		if (abilities[i].isOwned)
+		if (abilities[i].isOwned && abilities[i].condition && abilities[i].condition() && Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
 		{
 			abilitySprite[i]->render(dc,
 				abilitySpriteData[i]->position.x, abilitySpriteData[i]->position.y,
@@ -411,41 +408,55 @@ bool SpecialAbility::RollActivation(float ratePercent)
 
 void SpecialAbility::DrawGUI()
 {
-	ImGui::Begin("Special Abilities");
-
-	for (int i = 0; i < ABILITY_COUNT; ++i)
+	if (ImGui::CollapsingHeader("Special Abilities"))
 	{
-		ImGui::PushID(i);
-
-		// 能力名を表示（16文字幅で整列）
-		ImGui::Text("%-16s", abilities[i].name.c_str());
-		ImGui::SameLine();
-
-		// ===== 1. 所持 / 未所持ボタン =====
-		const char* buttonText = abilities[i].isOwned ? u8"[所持中]" : u8"[未所持]";
-		if (ImGui::Button(buttonText))
+		for (int i = 0; i < ABILITY_COUNT; ++i)
 		{
-			abilities[i].isOwned = !abilities[i].isOwned;
-		}
+			ImGui::PushID(i);
 
-		ImGui::SameLine();
+			// 能力名を表示（16文字幅で整列）
+			ImGui::Text("%-16s", abilities[i].name.c_str());
+			ImGui::SameLine();
 
-		// ===== 2. 発動状態の表示（色分け） =====
-		if (abilities[i].isActiveThisRound)
-		{
-			// 発動中：緑色で強調表示 (R, G, B, A)
-			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.2f, 1.0f), u8"発動中");
-		}
-		else
-		{
-			// 停止中・条件外：グレーアウト表示
-			ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), u8"  --  ");
-		}
+			// ===== 1. 所持 / 未所持ボタン =====
+			const char* buttonText = abilities[i].isOwned ? u8"[所持中]" : u8"[未所持]";
+			if (ImGui::Button(buttonText))
+			{
+				abilities[i].isOwned = !abilities[i].isOwned;
+			}
+			ImGui::SameLine();
 
-		ImGui::PopID();
+			// ===== 2. 発動状態の表示（色分け） =====
+			if (abilities[i].isActiveThisRound && abilities[i].condition && abilities[i].condition())
+			{
+				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.2f, 1.0f), u8"発動中");
+			}
+			else
+			{
+				ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), u8"  --  ");
+			}
+
+			// ===== 3. パラメータ編集（折りたたみ） =====
+			if (ImGui::TreeNode(u8"詳細設定"))
+			{
+				ImGui::DragFloat(u8"発動確率(%)", &abilities[i].activationRate, 0.5f, 0.0f, 100.0f, "%.1f");
+				ImGui::DragFloat(u8"パワー上昇量", &abilities[i].power, 0.1f, -50.0f, 50.0f, "%.1f");
+				ImGui::DragFloat(u8"ミート上昇量", &abilities[i].contact, 0.1f, -50.0f, 50.0f, "%.1f");
+				ImGui::DragFloat(u8"連発パワー/スタック", &abilities[i].comboPowerPerStack, 0.1f, -20.0f, 20.0f, "%.1f");
+				ImGui::DragFloat(u8"球速ボーナス", &abilities[i].ballSpeed, 0.1f, -20.0f, 20.0f, "%.1f");
+				ImGui::DragFloat(u8"球速ペナルティ", &abilities[i].ballSpeedPenalty, 0.1f, 0.0f, 20.0f, "%.1f");
+				ImGui::DragFloat(u8"マネーメーカー(%)", &abilities[i].moneyMakerBonus, 1.0f, 0.0f, 100.0f, "%.1f");
+				ImGui::DragFloat(u8"一攫千金倍率", &abilities[i].jackPotMultiplier, 0.1f, 1.0f, 10.0f, "%.1f");
+				ImGui::DragFloat(u8"威圧感:球威ダウン", &abilities[i].pitcherPowerPenalty, 1.0f, 0.0f, 6.0f, "%.0f");
+				ImGui::DragFloat(u8"威圧感:変化量ダウン", &abilities[i].pitcherBreakBallPenalty, 1.0f, 0.0f, 6.0f, "%.0f");
+				ImGui::DragFloat(u8"威圧感:球速ダウン", &abilities[i].pitcherBallSpeedPenalty, 0.5f, 0.0f, 30.0f, "%.1f");
+
+				ImGui::TreePop();
+			}
+
+			ImGui::PopID();
+		}
 	}
-
-	ImGui::End();
 }
 
 void SpecialAbility::RollRoundActivation()

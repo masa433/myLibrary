@@ -266,7 +266,7 @@ void Money::Update(float elapsedTime)
 		}
 
 		//一攫千金の特殊能力ボーナスを適用
-		if (isHomeRun)
+		if (isHomeRun && SpecialAbility::Instance().IsJackPotActive())
 		{
 			jackpotBonus = SpecialAbility::Instance().RollJackPotMultiplier();
 			totalMultiplier *= jackpotBonus;//一攫千金の倍率を適用
@@ -567,7 +567,7 @@ void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
 		{
 			bonusItem.isActive = true;
 		}
-		else if (bonusItem.name == "JackPot" && isHomeRun)
+		else if (bonusItem.name == "JackPot" && isHomeRun && SpecialAbility::Instance().IsJackPotActive())
 		{
 			bonusItem.isActive = true;
 		}

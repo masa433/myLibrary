@@ -119,6 +119,13 @@ public:
 		return ability.isMoneyMakerActive && ability.isActiveThisRound && ability.isOwned; 
 	}
 
+	//一攫千金がアクティブかどうか
+	bool IsJackPotActive() const
+	{
+		const auto& ability = abilities[(int)AbilityID::JackPot];
+		return  ability.isJackPotActive && ability.isActiveThisRound && ability.isOwned;
+	}
+
 private:
 
 	//テクスチャ関連
@@ -169,6 +176,7 @@ private:
 
 		bool isActiveThisRound = false; // 今回のラウンドで能力が発動したかどうか
 		bool isMoneyMakerActive = false;
+		bool isJackPotActive = false; // 一攫千金が発動したかどうか
 	};
 
 	AbilityData abilities[ABILITY_COUNT];
