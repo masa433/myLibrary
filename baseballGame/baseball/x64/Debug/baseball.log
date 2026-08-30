@@ -5,8 +5,8 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Money.cpp(419,18): 
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(144,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(144,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
   SpecialAbility.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(335,25): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(336,27): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(355,25): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(356,27): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
   SubMission.cpp
   physxManager.cpp
   scene_game.cpp

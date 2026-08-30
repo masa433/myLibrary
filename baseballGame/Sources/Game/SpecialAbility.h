@@ -89,6 +89,56 @@ public:
 			{
 				allAbilities.push_back(static_cast<AbilityID>(i));
 			}
+
+			//方向系、高低系、球種系は同タイプのものをすでに持っていたら除外する
+			if (abilities[i].type == AbilityType::Directional)
+			{
+				bool hasDirectional = false;
+				for (const auto& ability : abilities)
+				{
+					if (ability.type == AbilityType::Directional && ability.isOwned)
+					{
+						hasDirectional = true;
+						break;
+					}
+				}
+				if (hasDirectional)
+				{
+					allAbilities.erase(std::remove(allAbilities.begin(), allAbilities.end(), static_cast<AbilityID>(i)), allAbilities.end());
+				}
+			}
+			else if (abilities[i].type == AbilityType::Height)
+			{
+				bool hasHeight = false;
+				for (const auto& ability : abilities)
+				{
+					if (ability.type == AbilityType::Height && ability.isOwned)
+					{
+						hasHeight = true;
+						break;
+					}
+				}
+				if (hasHeight)
+				{
+					allAbilities.erase(std::remove(allAbilities.begin(), allAbilities.end(), static_cast<AbilityID>(i)), allAbilities.end());
+				}
+			}
+			else if (abilities[i].type == AbilityType::PitchType)
+			{
+				bool hasPitchType = false;
+				for (const auto& ability : abilities)
+				{
+					if (ability.type == AbilityType::PitchType && ability.isOwned)
+					{
+						hasPitchType = true;
+						break;
+					}
+				}
+				if (hasPitchType)
+				{
+					allAbilities.erase(std::remove(allAbilities.begin(), allAbilities.end(), static_cast<AbilityID>(i)), allAbilities.end());
+				}
+			}
 		}
 		std::shuffle(allAbilities.begin(), allAbilities.end(), rng);// ランダムにシャッフル
 		if (static_cast<int>(allAbilities.size()) > count)
@@ -126,6 +176,8 @@ public:
 		return  ability.isJackPotActive && ability.isActiveThisRound && ability.isOwned;
 	}
 
+	void TriggerShowAbilities();
+
 private:
 
 	//テクスチャ関連
@@ -138,15 +190,35 @@ private:
 		DirectX::XMFLOAT4 color;
 	};
 
-	std::unique_ptr<Sprite> abilitySpriteData[ABILITY_COUNT];
-	std::unique_ptr<sprite> abilitySprite[ABILITY_COUNT];
 
+	struct AbilitySprite
+	{
+		std::unique_ptr<Sprite> spriteData;
+		std::unique_ptr<sprite> sprite;
+		
+		DirectX::XMFLOAT2 iconPosition = { 0.0f, 900.0f };
 
+	};
+
+	std::unique_ptr<AbilitySprite> abilitySprites[ABILITY_COUNT];
 
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   spriteInputLayout;
+
+	//特殊能力のタイプ
+	enum class AbilityType
+	{
+		None,        // 無し
+		Directional, // 方向系能力
+		Height,      // 高低系能力
+		PitchType,   // 球種系能力
+		Money,      // お金系能力
+		PowerContact, // 打撃力・ミート力系能力
+		Situation,    // 状況系能力
+		PitcherPenalty, // 投手へのペナルティ系能力
+	};
 
 	struct AbilityData
 	{
@@ -177,6 +249,9 @@ private:
 		bool isActiveThisRound = false; // 今回のラウンドで能力が発動したかどうか
 		bool isMoneyMakerActive = false;
 		bool isJackPotActive = false; // 一攫千金が発動したかどうか
+
+		AbilityType type = AbilityType::None; // 能力のタイプ
+
 	};
 
 	AbilityData abilities[ABILITY_COUNT];

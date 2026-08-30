@@ -139,13 +139,15 @@ void SpecialAbility::InitializeAbilities(ID3D11Device* device, ID3D11DeviceConte
 	// 各能力のスプライトを初期化
 	for (int i = 0; i < ABILITY_COUNT; ++i)
 	{
-		abilitySpriteData[i] = std::make_unique<Sprite>();
-		abilitySpriteData[i]->texturePath = abilities[i].texturePath;
-		abilitySpriteData[i]->position = { 100.0f + i * 60.0f, 100.0f }; // 適切な位置に配置
-		abilitySpriteData[i]->size = { 300.0f, 50.0f };
-		abilitySpriteData[i]->rotation = 0.0f;
-		abilitySpriteData[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		abilitySprite[i] = std::make_unique<sprite>(device, context, abilitySpriteData[i]->texturePath.c_str());
+		
+		abilitySprites[i] = std::make_unique<AbilitySprite>();
+		abilitySprites[i]->spriteData = std::make_unique<Sprite>();
+		abilitySprites[i]->spriteData->texturePath = abilities[i].texturePath;
+		abilitySprites[i]->spriteData->position = abilitySprites[i]->iconPosition; // 適切な位置に配置
+		abilitySprites[i]->spriteData->size = { 300.0f, 50.0f };
+		abilitySprites[i]->spriteData->rotation = 0.0f;
+		abilitySprites[i]->spriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		abilitySprites[i]->sprite = std::make_unique<sprite>(device, context, abilitySprites[i]->spriteData->texturePath.c_str());
 	}
 }
 
@@ -162,6 +164,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::WideAngleBatting].power = 5.0f;// 打撃力ボーナス
 	a[(int)AbilityID::WideAngleBatting].contact = 7.0f;// ミート力ボーナス
 	a[(int)AbilityID::WideAngleBatting].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::WideAngleBatting].type = AbilityType::Directional;
 
 	// センター返し
 	a[(int)AbilityID::CenterReturn].name = u8"センター返し";
@@ -172,6 +175,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::CenterReturn].power = 3.0f;
 	a[(int)AbilityID::CenterReturn].contact = 7.0f;
 	a[(int)AbilityID::CenterReturn].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::CenterReturn].type = AbilityType::Directional;
 
 	// プルヒッター
 	a[(int)AbilityID::PullHitter].name = u8"プルヒッター";
@@ -183,6 +187,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::PullHitter].ballPenaltyCondition = [this]() { return IsDirection(Direction::Opposite); }; // 流し方向のボールでペナルティ
 	a[(int)AbilityID::PullHitter].power = 5.0f;
 	a[(int)AbilityID::PullHitter].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::PullHitter].type = AbilityType::Directional;
 
 	// 流し打ち
 	a[(int)AbilityID::OppositeHitter].name = u8"流し打ち";
@@ -195,6 +200,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::OppositeHitter].power = 3.0f;
 	a[(int)AbilityID::OppositeHitter].contact = 7.0f;
 	a[(int)AbilityID::OppositeHitter].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::OppositeHitter].type = AbilityType::Directional;
 
 	// ロマン砲
 	a[(int)AbilityID::RomanCannon].name = u8"ロマン砲";
@@ -203,6 +209,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::RomanCannon].contact = -15.0f;
 	a[(int)AbilityID::RomanCannon].activationRate = 100.0f;
 	a[(int)AbilityID::RomanCannon].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::RomanCannon].type = AbilityType::PowerContact;
 
 	// ハイボールヒッター
 	a[(int)AbilityID::HighBallHitter].name = u8"ハイボールヒッター";
@@ -212,6 +219,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::HighBallHitter].activationRate = 100.0f;
 	a[(int)AbilityID::HighBallHitter].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::HighBallHitter].ballPenaltyCondition = [this]() { return IsLowBall(); }; // 低めのボールでペナルティ
+	a[(int)AbilityID::HighBallHitter].type = AbilityType::Height;
 
 	// ローボールヒッター
 	a[(int)AbilityID::LowBallHitter].name = u8"ローボールヒッター";
@@ -221,6 +229,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::LowBallHitter].activationRate = 30.0f;
 	a[(int)AbilityID::LowBallHitter].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::LowBallHitter].ballPenaltyCondition = [this]() { return IsHighBall(); }; // 高めのボールでペナルティ
+	a[(int)AbilityID::LowBallHitter].type = AbilityType::Height;
 
 	// 背水の陣
 	a[(int)AbilityID::LastStand].name = u8"背水の陣";
@@ -229,6 +238,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::LastStand].contact = 15.0f;
 	a[(int)AbilityID::LastStand].activationRate = 100.0f;
 	a[(int)AbilityID::LastStand].condition = [this]() { return IsLastStandCondition(); }; // 背水の陣の条件で発動
+	a[(int)AbilityID::LastStand].type = AbilityType::Situation;
 
 	// フルスイング
 	a[(int)AbilityID::FullSwing].name = u8"フルスイング";
@@ -237,6 +247,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::FullSwing].contact = -10.0f;
 	a[(int)AbilityID::FullSwing].activationRate = 30.0f;
 	a[(int)AbilityID::FullSwing].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::FullSwing].type = AbilityType::PowerContact;
 
 	//ラストボール
 	a[(int)AbilityID::LastBall].name = u8"ラストボール";
@@ -245,6 +256,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::LastBall].contact = 10.0f;
 	a[(int)AbilityID::LastBall].activationRate = 100.0f;
 	a[(int)AbilityID::LastBall].condition = [this]() { return IsLastBall(); }; // ラストボールの条件で発動
+	a[(int)AbilityID::LastBall].type = AbilityType::Situation;
 
 	// 初球
 	a[(int)AbilityID::FirstPitcher].name = u8"初球";
@@ -253,6 +265,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::FirstPitcher].contact = 10.0f;
 	a[(int)AbilityID::FirstPitcher].activationRate = 100.0f;
 	a[(int)AbilityID::FirstPitcher].condition = [this]() { return IsFirstPitch(); }; // 初球の条件で発動
+	a[(int)AbilityID::FirstPitcher].type = AbilityType::Situation;
 
 	// 連発
 	a[(int)AbilityID::Combo].name = u8"連発";
@@ -260,6 +273,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::Combo].comboPowerPerStack = 2.0f;
 	a[(int)AbilityID::Combo].activationRate = 100.0f;
 	a[(int)AbilityID::Combo].condition = [this]() { return ComboCount(); }; // 連発の条件で発動
+	a[(int)AbilityID::Combo].type = AbilityType::Situation;
 
 	// マネーメーカー
 	a[(int)AbilityID::MoneyMaker].name = u8"マネーメーカー";
@@ -268,6 +282,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::MoneyMaker].activationRate = 100.0f;
 	a[(int)AbilityID::MoneyMaker].condition = [this]() { return true; }; // 常に発動可能
 	a[(int)AbilityID::MoneyMaker].isMoneyMakerActive = true;
+	a[(int)AbilityID::MoneyMaker].type = AbilityType::Money;
 
 	// 一攫千金
 	a[(int)AbilityID::JackPot].name = u8"一攫千金";
@@ -277,6 +292,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::JackPot].activationRate = 100.0f;
 	a[(int)AbilityID::JackPot].condition = [this]() { return true; }; // 常に発動可能
 	a[(int)AbilityID::JackPot].isJackPotActive = true;
+	a[(int)AbilityID::JackPot].type = AbilityType::Money;
 
 	// 威圧感
 	a[(int)AbilityID::Intimidation].name = u8"威圧感";
@@ -286,6 +302,8 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::Intimidation].activationRate = 100.0f;
 	a[(int)AbilityID::Intimidation].power = 5.0f; // 打撃力ボーナス
 	a[(int)AbilityID::Intimidation].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::Intimidation].type = AbilityType::PitcherPenalty;
+	
 	// 対速球
 	a[(int)AbilityID::VsFastBall].name = u8"対速球";
 	a[(int)AbilityID::VsFastBall].texturePath = L".\\resources\\textures\\specialAbilityList\\vsFastBall.png";
@@ -294,6 +312,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::VsFastBall].activationRate = 30.0f; 
 	a[(int)AbilityID::VsFastBall].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::VsFastBall].ballPenaltyCondition = [this]() { return IsBreakingBall(); }; // 変化球の条件でペナルティ
+	a[(int)AbilityID::VsFastBall].type = AbilityType::PitchType;
 
 	// 対変化球
 	a[(int)AbilityID::VsBreakingBall].name = u8"対変化球";
@@ -303,6 +322,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::VsBreakingBall].activationRate = 30.0f;
 	a[(int)AbilityID::VsBreakingBall].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::VsBreakingBall].ballPenaltyCondition = [this]() { return IsFastBall(); }; // 速球の条件でペナルティ
+	a[(int)AbilityID::VsBreakingBall].type = AbilityType::PitchType;
 }
 
 void SpecialAbility::Uninitialize()
@@ -314,7 +334,7 @@ void SpecialAbility::Uninitialize()
 	// スプライトの解放
 	for (int i = 0; i < ABILITY_COUNT; ++i)
 	{
-		abilitySprite[i].reset();
+		abilitySprites[i].reset();
 	}
 
 	consoleLog = nullptr;
@@ -344,6 +364,8 @@ void SpecialAbility::Update(float elapsedTime)
 	Player::Instance().ApplyRoundStatBonus(powerBonus + comboPowerBonus, contactBonus);
 	ballSprite::Instance().ApplyPowerRankDown(pitcherPowerPenalty);
 	ballSprite::Instance().ApplyBreakRankDown(pitcherBreakPenalty);
+
+	TriggerShowAbilities();
 }
 
 void SpecialAbility::Render()
@@ -361,15 +383,32 @@ void SpecialAbility::Render()
 	//特殊能力のスプライトを描画
 	for(int i = 0; i < ABILITY_COUNT; ++i)
 	{
-		if (abilities[i].isOwned && abilities[i].condition && abilities[i].condition() && Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
+		if (abilities[i].isOwned && abilities[i].isActiveThisRound &&
+			((abilities[i].condition && abilities[i].condition()) ||
+				(abilities[i].ballCondition && abilities[i].ballCondition()) ||
+				(abilities[i].ballPenaltyCondition && abilities[i].ballPenaltyCondition())) 
+			&& Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
 		{
-			abilitySprite[i]->render(dc,
-				abilitySpriteData[i]->position.x, abilitySpriteData[i]->position.y,
-				abilitySpriteData[i]->size.x, abilitySpriteData[i]->size.y,
-				abilitySpriteData[i]->color.x, abilitySpriteData[i]->color.y, abilitySpriteData[i]->color.z, abilitySpriteData[i]->color.w,
-				abilitySpriteData[i]->rotation);
+			/*abilitySprites[i]->sprite->render(dc,
+				abilitySprites[i]->spriteData->position.x, abilitySprites[i]->spriteData->position.y,
+				abilitySprites[i]->spriteData->size.x, abilitySprites[i]->spriteData->size.y,
+				abilitySprites[i]->spriteData->color.x, abilitySprites[i]->spriteData->color.y, abilitySprites[i]->spriteData->color.z, abilitySprites[i]->spriteData->color.w,
+				abilitySprites[i]->spriteData->rotation);*/
+
+			abilitySprites[i]->sprite->render(dc,
+				abilitySprites[i]->iconPosition.x, abilitySprites[i]->iconPosition.y,
+				abilitySprites[i]->spriteData->size.x, abilitySprites[i]->spriteData->size.y,
+				abilitySprites[i]->spriteData->color.x, abilitySprites[i]->spriteData->color.y, abilitySprites[i]->spriteData->color.z, abilitySprites[i]->spriteData->color.w,
+				abilitySprites[i]->spriteData->rotation);
 		}
 	}
+
+	dc->VSSetShader(nullptr, nullptr, 0);
+	dc->PSSetShader(nullptr, nullptr, 0);
+	dc->IASetInputLayout(nullptr);
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 
 }
 
@@ -390,12 +429,11 @@ void SpecialAbility::RenderAbilityIcons(AbilityID id, const DirectX::XMFLOAT2& p
 		hoverSize.y *= 1.1f;
 	}
 
-	abilitySprite[index]->render(dc,
+	abilitySprites[index]->sprite->render(dc,
 		position.x - hoverSize.x / 2.0f, position.y - hoverSize.y / 2.0f,
 		hoverSize.x, hoverSize.y,
 		color.x, color.y, color.z, color.w,
-		abilitySpriteData[index]->rotation);
-
+		abilitySprites[index]->spriteData->rotation);
 	
 }
 
@@ -548,4 +586,23 @@ float SpecialAbility::RollJackPotMultiplier()
 		}
 	}
 	return multiplier;
+}
+
+void SpecialAbility::TriggerShowAbilities()
+{
+	float startX = 50.0f;
+	float spacingX = 300.0f;
+
+	for (int i = 0; i < ABILITY_COUNT; ++i)
+	{
+		auto& ability = abilities[i];
+		if (ability.isOwned && ability.isActiveThisRound
+			&& ((ability.condition && ability.condition()) || 
+				(ability.ballCondition && ability.ballCondition()) || 
+				(ability.ballPenaltyCondition && ability.ballPenaltyCondition())))
+		{
+			abilitySprites[i]->iconPosition = { startX, 950.0f };
+			startX += spacingX;
+		}
+	}
 }
