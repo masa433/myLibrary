@@ -144,7 +144,7 @@ void SpecialAbility::InitializeAbilities(ID3D11Device* device, ID3D11DeviceConte
 		abilitySprites[i]->spriteData = std::make_unique<Sprite>();
 		abilitySprites[i]->spriteData->texturePath = abilities[i].texturePath;
 		abilitySprites[i]->spriteData->position = abilitySprites[i]->iconPosition; // 適切な位置に配置
-		abilitySprites[i]->spriteData->size = { 300.0f, 50.0f };
+		abilitySprites[i]->spriteData->size = abilitySprites[i]->iconSize;
 		abilitySprites[i]->spriteData->rotation = 0.0f;
 		abilitySprites[i]->spriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		abilitySprites[i]->sprite = std::make_unique<sprite>(device, context, abilitySprites[i]->spriteData->texturePath.c_str());
@@ -397,7 +397,7 @@ void SpecialAbility::Render()
 
 			abilitySprites[i]->sprite->render(dc,
 				abilitySprites[i]->iconPosition.x, abilitySprites[i]->iconPosition.y,
-				abilitySprites[i]->spriteData->size.x, abilitySprites[i]->spriteData->size.y,
+				abilitySprites[i]->iconSize.x, abilitySprites[i]->iconSize.y,
 				abilitySprites[i]->spriteData->color.x, abilitySprites[i]->spriteData->color.y, abilitySprites[i]->spriteData->color.z, abilitySprites[i]->spriteData->color.w,
 				abilitySprites[i]->spriteData->rotation);
 		}
@@ -591,7 +591,7 @@ float SpecialAbility::RollJackPotMultiplier()
 void SpecialAbility::TriggerShowAbilities()
 {
 	float startX = 50.0f;
-	float spacingX = 300.0f;
+	float spacingX = 180.0f;
 
 	for (int i = 0; i < ABILITY_COUNT; ++i)
 	{
@@ -602,6 +602,7 @@ void SpecialAbility::TriggerShowAbilities()
 				(ability.ballPenaltyCondition && ability.ballPenaltyCondition())))
 		{
 			abilitySprites[i]->iconPosition = { startX, 950.0f };
+			abilitySprites[i]->iconSize = { 180.0f, 30.0f };
 			startX += spacingX;
 		}
 	}

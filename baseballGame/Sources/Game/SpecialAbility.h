@@ -197,6 +197,7 @@ private:
 		std::unique_ptr<sprite> sprite;
 		
 		DirectX::XMFLOAT2 iconPosition = { 0.0f, 900.0f };
+		DirectX::XMFLOAT2 iconSize = { 100.0f, 100.0f };
 
 	};
 
