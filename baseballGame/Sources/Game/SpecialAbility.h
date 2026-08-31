@@ -8,10 +8,12 @@
 #include <map>
 #include "FontRenderer.h"
 #include "sprite.h"
+#include "Player.h"
 #include "json.hpp"
 #include <random>
 
 #define ABILITY_COUNT 17
+#define BATTER_COUNT 24
 
 using json = nlohmann::json;
 
@@ -190,6 +192,27 @@ private:
 		DirectX::XMFLOAT4 color;
 	};
 
+	std::unique_ptr<Sprite> batterSpriteData[BATTER_COUNT];
+	std::unique_ptr<sprite> batterSprites[BATTER_COUNT];
+
+	DirectX::XMFLOAT2 batterIconPosition = { 50.0f, 850.0f };
+	DirectX::XMFLOAT2 batterIconSize = { 400.0f, 75.0f };
+
+	Player::RealBatter selectedBatter = Player::RealBatter::None; // 選択されたバッターの種類
+	int selectedBatterIndex = -1; // 選択されたバッターのインデックス
+
+	FontRenderer fontRenderer;
+	
+	struct BatterParamFontData
+	{
+		DirectX::XMFLOAT2 position;
+		float scale;
+		DirectX::XMFLOAT4 color;
+	};
+
+	BatterParamFontData powerRankFontData;
+	BatterParamFontData contactRankFontData;
+
 
 	struct AbilitySprite
 	{
@@ -282,4 +305,34 @@ public:
 
 private:
 	std::vector<std::string>* consoleLog = nullptr;
+
+	static const char* GetBatterPowerRankString(Player::BatterPowerRank rank)
+	{
+		switch (rank)
+		{
+		case Player::BatterPowerRank::F: return "F";
+		case Player::BatterPowerRank::E: return "E";
+		case Player::BatterPowerRank::D: return "D";
+		case Player::BatterPowerRank::C: return "C";
+		case Player::BatterPowerRank::B: return "B";
+		case Player::BatterPowerRank::A: return "A";
+		case Player::BatterPowerRank::S: return "S";
+		default: return "";
+		}
+	}
+
+	static const char* GetBatterContactRankString(Player::BatterContactRank rank)
+	{
+		switch (rank)
+		{
+		case Player::BatterContactRank::F: return "F";
+		case Player::BatterContactRank::E: return "E";
+		case Player::BatterContactRank::D: return "D";
+		case Player::BatterContactRank::C: return "C";
+		case Player::BatterContactRank::B: return "B";
+		case Player::BatterContactRank::A: return "A";
+		case Player::BatterContactRank::S: return "S";
+		default: return "";
+		}
+	}
 };

@@ -3,7 +3,6 @@
 #include "imgui.h"
 #include "shader.h"
 #include "physxManager.h"
-#include "Player.h"
 #include "Pitcher.h"
 #include "ballSprite.h"
 #include "ballCount.h"
@@ -126,7 +125,41 @@ void SpecialAbility::Initialize(ID3D11Device* device)
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
-	
+	for(int i = 0; i < BATTER_COUNT; ++i)
+	{
+		batterSpriteData[i] = std::make_unique<Sprite>();
+		batterSpriteData[i]->texturePath = L".\\resources\\textures\\gameBatterParameter\\gameBatterParameter" + std::to_wstring(i + 1) + L".png";
+		batterSpriteData[i]->position = batterIconPosition;
+		batterSpriteData[i]->size = batterIconSize;
+		batterSpriteData[i]->rotation = 0.0f;
+		batterSpriteData[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		batterSprites[i] = std::make_unique<sprite>(device, context, batterSpriteData[i]->texturePath.c_str());
+	}
+
+	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+
+	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
+		u8"0123456789"
+		u8"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	);
+
+	// フォントレンダラーの初期化
+	fontRenderer.Initialize(device,
+		L".\\resources\\fonts\\GarpSansNormalItalic.otf",
+		100.0f,
+		screenWidth, screenHeight,
+		1024, 1024,
+		&trackingDataCodepoints);
+
+	powerRankFontData.position = { 240.0f, 915.0f };
+	powerRankFontData.scale = 1.0f;
+	powerRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	contactRankFontData.position = { 380.0f, 915.0f };
+	contactRankFontData.scale = 1.0f;
+	contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 
 	InitializeAbilities(device, context);
 }
@@ -389,11 +422,7 @@ void SpecialAbility::Render()
 				(abilities[i].ballPenaltyCondition && abilities[i].ballPenaltyCondition())) 
 			&& Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
 		{
-			/*abilitySprites[i]->sprite->render(dc,
-				abilitySprites[i]->spriteData->position.x, abilitySprites[i]->spriteData->position.y,
-				abilitySprites[i]->spriteData->size.x, abilitySprites[i]->spriteData->size.y,
-				abilitySprites[i]->spriteData->color.x, abilitySprites[i]->spriteData->color.y, abilitySprites[i]->spriteData->color.z, abilitySprites[i]->spriteData->color.w,
-				abilitySprites[i]->spriteData->rotation);*/
+			
 
 			abilitySprites[i]->sprite->render(dc,
 				abilitySprites[i]->iconPosition.x, abilitySprites[i]->iconPosition.y,
@@ -402,6 +431,111 @@ void SpecialAbility::Render()
 				abilitySprites[i]->spriteData->rotation);
 		}
 	}
+
+	
+	//現在選択されているバッターを取得
+	Player::RealBatter currentBatterIndex = Player::Instance().GetSelectedRealBatter();
+	selectedBatterIndex = static_cast<int>(currentBatterIndex) - 1;
+
+	if(Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
+	{
+		if (selectedBatterIndex >= 0 && selectedBatterIndex < BATTER_COUNT)
+		{
+			//選択されているバッターのアイコンを描画
+			batterSprites[selectedBatterIndex]->render(dc,
+				batterIconPosition.x, batterIconPosition.y,
+				batterIconSize.x, batterIconSize.y,
+				batterSpriteData[selectedBatterIndex]->color.x, batterSpriteData[selectedBatterIndex]->color.y, batterSpriteData[selectedBatterIndex]->color.z, batterSpriteData[selectedBatterIndex]->color.w,
+				batterSpriteData[selectedBatterIndex]->rotation);
+		}
+
+
+		if (fontRenderer.IsValid())
+		{
+			/*fontRenderer.DrawTextW(dc, "55", 1300.0f, 200.0f, 1.5f, 1.0f, 1.0f, 1.0f, alpha);*/
+
+			//選択中の選手のパワーとミートの値を取得
+			if (selectedBatterIndex >= 0 && selectedBatterIndex < BATTER_COUNT)
+			{
+				int power = Player::Instance().GetSelectedRealBatterPower();
+				int contact = Player::Instance().GetSelectedRealBatterContact();
+				// 関数側が inline const RankData& GetPowerRank(int power) const のような場合
+				Player::BatterPowerRank powerRank = Player::Instance().GetPowerRank(power);
+				Player::BatterContactRank contactRank = Player::Instance().GetContactRank(contact);
+
+				//ランクに応じて色を変える
+				switch (powerRank)
+				{
+				case Player::BatterPowerRank::S:
+					powerRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 白
+					break;
+				case Player::BatterPowerRank::A:
+					powerRankFontData.color = { 1.0f, 0.75f, 0.8f, 1.0f }; // 薄ピンク
+					break;
+				case Player::BatterPowerRank::B:
+					powerRankFontData.color = { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
+					break;
+				case Player::BatterPowerRank::C:
+					powerRankFontData.color = { 1.0f, 0.5f, 0.0f, 1.0f }; // オレンジ
+					break;
+				case Player::BatterPowerRank::D:
+					powerRankFontData.color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色
+					break;
+				case Player::BatterPowerRank::E:
+					powerRankFontData.color = { 0.0f, 1.0f, 0.0f, 1.0f }; // 緑
+					break;
+				case Player::BatterPowerRank::F:
+					powerRankFontData.color = { 0.5f, 0.5f, 0.5f, 1.0f }; // グレー
+					break;
+				default:
+					powerRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // デフォルトはホワイト
+					break;
+				}
+
+				switch (contactRank)
+				{
+				case Player::BatterContactRank::S:
+					contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 白
+					break;
+				case Player::BatterContactRank::A:
+					contactRankFontData.color = { 1.0f, 0.75f, 0.8f, 1.0f }; // 薄ピンク
+					break;
+				case Player::BatterContactRank::B:
+					contactRankFontData.color = { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
+					break;
+				case Player::BatterContactRank::C:
+					contactRankFontData.color = { 1.0f, 0.5f, 0.0f, 1.0f }; // オレンジ
+					break;
+				case Player::BatterContactRank::D:
+					contactRankFontData.color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色
+					break;
+				case Player::BatterContactRank::E:
+					contactRankFontData.color = { 0.0f, 1.0f, 0.0f, 1.0f }; // 緑
+					break;
+				case Player::BatterContactRank::F:
+					contactRankFontData.color = { 0.5f, 0.5f, 0.5f, 1.0f }; // グレー
+					break;
+				default:
+					contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // デフォルトはホワイト
+					break;
+				}
+
+				//パワーとミートの値を描画
+
+				fontRenderer.DrawTextW(dc, GetBatterPowerRankString(powerRank),
+					powerRankFontData.position.x, powerRankFontData.position.y, powerRankFontData.scale,
+					powerRankFontData.color.x, powerRankFontData.color.y, powerRankFontData.color.z, powerRankFontData.color.w);
+
+
+				fontRenderer.DrawTextW(dc, GetBatterContactRankString(contactRank),
+					contactRankFontData.position.x, contactRankFontData.position.y, contactRankFontData.scale,
+					contactRankFontData.color.x, contactRankFontData.color.y, contactRankFontData.color.z, contactRankFontData.color.w);
+
+			}
+
+		}
+	}
+
 
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -494,6 +628,22 @@ void SpecialAbility::DrawGUI()
 
 			ImGui::PopID();
 		}
+	}
+
+	if (ImGui::CollapsingHeader("sprite"))
+	{
+		//バッターアイコン
+		ImGui::DragFloat2("iconPosition", &batterIconPosition.x);
+		ImGui::DragFloat2("iconSize", &batterIconSize.x);
+	}
+
+	if (ImGui::CollapsingHeader("font"))
+	{
+		ImGui::DragFloat2("powerFontPos", &powerRankFontData.position.x);
+		ImGui::DragFloat2("contactFontPos", &contactRankFontData.position.x);
+		ImGui::Separator();
+		ImGui::DragFloat("powerFontSize", &powerRankFontData.scale, 0.1f, 0.1f, 10.0f, "%.1f");
+		ImGui::DragFloat("contactFontSize", &contactRankFontData.scale, 0.1f, 0.1f, 10.0f, "%.1f");
 	}
 }
 
