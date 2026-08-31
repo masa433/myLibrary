@@ -229,6 +229,15 @@
     <ClCompile Include="Sources\Game\SpecialAbility.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Audio\Audio.cpp">
+      <Filter>Sources\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Audio\AudioSource.cpp">
+      <Filter>Sources\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Audio\AudioResource.cpp">
+      <Filter>Sources\Audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -483,6 +492,15 @@
     <ClInclude Include="Sources\Game\SpecialAbility.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\Audio\Audio.h">
+      <Filter>Sources\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Audio\AudioSource.h">
+      <Filter>Sources\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Audio\AudioResource.h">
+      <Filter>Sources\Audio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Basic.hlsli">
@@ -710,6 +728,9 @@
     </Filter>
     <Filter Include="Sources\Effect">
       <UniqueIdentifier>{25bbb952-ecc8-46ea-9c52-e4b0d9bf8bde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Audio">
+      <UniqueIdentifier>{4f59b8d2-0fc8-488f-a139-de9f791d5089}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
 #include "texture.h"
 #include "input.h"
 #include "EffectManager.h"
+#include "..\Sources\Audio\Audio.h"
 
 // 垂直同期間隔設定
 static const int syncInterval = 1;
@@ -34,6 +35,9 @@ framework::framework(HWND hwnd) : hwnd(hwnd)
 
 	SetWindowPos(hwnd, HWND_TOP, 0, 0, screenWidth, screenHeight, SWP_FRAMECHANGED | SWP_NOZORDER);
 #endif
+
+	//オーディオ初期化
+	Audio::Instance().Initialize();
 
 	//インプット初期化
 	Input::Instance().Initialize(hwnd);
@@ -121,6 +125,9 @@ framework::~framework()
 
 	//エフェクトマネージャーの終了処理
 	EffectManager::Instance().Uninitialize();
+
+	//オーディオ終了化
+	Audio::Instance().Finalize();
 
 	//グラフィックス終了処理
 	ReleaseDC(hwnd, hDC);

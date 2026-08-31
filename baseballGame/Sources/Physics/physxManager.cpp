@@ -101,6 +101,8 @@ void Physics::Initialize()
 	hitEffect = std::make_unique<Effect>("resources/effects/hit.efk");
 	hitSmallEffect = std::make_unique<Effect>("resources/effects/hitSmall.efk");
 	hitBigEffect = std::make_unique<Effect>("resources/effects/hitBig.efk");
+
+	hitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRun.wav");	
 }
 
 // 終了化
@@ -123,6 +125,11 @@ void Physics::Finalize()
 	}
 
 	PX_RELEASE(pxFoundation);
+
+	delete hitSound;
+	hitSound = nullptr;
+
+	consoleLog = nullptr;
 }
 
 // 更新処理
@@ -1116,6 +1123,12 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				continue; // 空振り：トリガーなので何も起きない
 
 			//const HitJudge2DResult& result = HitJudge2D::Instance().GetLastResult();
+
+			// 打球音再生
+			if (hitSound)
+			{
+				hitSound->Play(false);
+			}
 		
 			Ball::Instance().SetHasCollidedWithBat(true);
 			Ball::Instance().CancelBezier();
@@ -1395,6 +1408,8 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			{
 				if (hitBigEffect) hitBigEffect->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z));
 			}
+			
+
 			
 
 		}

@@ -8,6 +8,9 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_tables.cpp;C:\Users\
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_widgets.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_widgets.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\midi\devmidi.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\devmidi.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\midi\midi_wrap.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\midi_wrap.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Audio\Audio.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Audio.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Audio\AudioResource.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\AudioResource.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Audio\AudioSource.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\AudioSource.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\BroadcastCamera.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\BroadcastCamera.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\camera.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\camera.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\camera_controller.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\camera_controller.obj

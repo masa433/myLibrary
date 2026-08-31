@@ -5,6 +5,8 @@
 #include <PxPhysicsAPI.h>
 #include <string>
 #include "Effect.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 class Physics 
 	:public physx::PxSimulationEventCallback
@@ -146,4 +148,6 @@ private:
 	std::unique_ptr<Effect> hitEffect;//打球エフェクトのインスタンス
 	std::unique_ptr<Effect> hitSmallEffect;//打球小エフェクトのインスタンス
 	std::unique_ptr<Effect> hitBigEffect;//打球大エフェクトのインスタンス
+
+	AudioSource* hitSound;//打球音のインスタンス
 };
