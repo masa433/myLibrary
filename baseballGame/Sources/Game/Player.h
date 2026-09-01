@@ -10,6 +10,8 @@
 #include "json.hpp"
 #include "HitJudge2D.h"
 #include "sprite.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 using json = nlohmann::json;
 
@@ -384,4 +386,7 @@ public:
         SetSelectedRealBatterContact(baseBatterContact + contactBonus);
         BatSprite::Instance().UpdateCursorSizeByContact(GetSelectedRealBatterContact());
     }
+
+private:
+	AudioSource* swingSound = nullptr;
 };

@@ -340,6 +340,9 @@ void ballSprite::Initialize(ID3D11Device* device)
 		512, 512,
 		&pitchInfoCodepoints);
 
+	catchSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Catch.wav");
+	catchStrongSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CatchStrong.wav");
+
 	TrackingData::Instance().Initialize(device);
 
 	InitSpinFlip(device, context);
@@ -460,6 +463,8 @@ void ballSprite::Uninitialize()
 	pitchInfoFont.Uninitialize();
 	TrackingData::Instance().Uninitialize();
 	consoleLog = nullptr;
+	delete catchSound;
+	delete catchStrongSound;
 }
 
 void ballSprite::Update(float elapsedTime)
@@ -694,6 +699,7 @@ void ballSprite::Update(float elapsedTime)
 		isPitchJudgedStrike = false;
 		isHighBall = false;
 		isLowBall = false;
+		isCatchSoundPlayed = false;
 		Player::Instance().ResetSwungThisPitch();
 		Ball::Instance().SetHasCollidedWithBat(false);
 		if (showSpriteTimer >= showSpriteDelay)
@@ -751,6 +757,25 @@ void ballSprite::Update(float elapsedTime)
 		ApplyTagetSpritePosition(currentScreenPos);
 	}
 
+	if(wp.z < -1.5f && wp.z > -2.0f)
+	{
+		if (!isCatchSoundPlayed)
+		{
+			if (Pitcher::Instance().IsFastball())
+			{
+				if (catchStrongSound) catchStrongSound->Play(false);
+			}
+			else
+			{
+				// 変化球またはその他の球種は通常のキャッチ音
+				if (catchSound) catchSound->Play(false);
+			}
+
+			// いずれかの分岐を通ったら必ずフラグを立てて2度鳴りを防ぐ
+			isCatchSoundPlayed = true;
+		}
+	}
+
 	if (pitchingState && wp.z < -2.5f && wp.z > -3.0f && !strikeJudgeDone)
 	{
 		strikeJudgeDone = true;
@@ -773,6 +798,7 @@ void ballSprite::Update(float elapsedTime)
 		{
 			ballCount::Instance().DecreaseRemainingBalls(1);	
 			Combo::Instance().ResetCombo();// ストライク判定時はコンボをリセット
+
 		}
 		else
 		{

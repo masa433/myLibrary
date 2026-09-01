@@ -102,7 +102,13 @@ void Physics::Initialize()
 	hitSmallEffect = std::make_unique<Effect>("resources/effects/hitSmall.efk");
 	hitBigEffect = std::make_unique<Effect>("resources/effects/hitBig.efk");
 
-	hitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRun.wav");	
+	hitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Hit.wav");	
+	homeRunSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRun.wav");
+	hitClogSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Clog.wav");
+	longHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/LongHit.wav");
+	foulWhistleSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/FoulWhistle.wav");
+	boundSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/BallBound.wav");
+	poleHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Pole.wav");
 }
 
 // 終了化
@@ -128,6 +134,18 @@ void Physics::Finalize()
 
 	delete hitSound;
 	hitSound = nullptr;
+	delete homeRunSound;
+	homeRunSound = nullptr;
+	delete hitClogSound;
+	hitClogSound = nullptr;
+	delete longHitSound;
+	longHitSound = nullptr;
+	delete foulWhistleSound;
+	foulWhistleSound = nullptr;
+	delete boundSound;
+	boundSound = nullptr;
+	delete poleHitSound;
+	poleHitSound = nullptr;
 
 	consoleLog = nullptr;
 }
@@ -147,6 +165,9 @@ void Physics::Update(float elapsedTime)
 			velocityUpdateQueue.pop();    // キューから削除
 		}
 	}
+
+	foulWhistleSound->Update();
+	boundSound->Update();
 }
 
 // 描画
@@ -563,6 +584,13 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 		if ((ballIsActor0 || ballIsActor1) && otherName && strcmp(otherName, "Pole") == 0)
 		{
+			bool isNewTouch = pair.events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
+
+			if (isNewTouch && Ball::Instance().GetHasCollidedWithBat())
+			{
+				if (poleHitSound) poleHitSound->PlayOneShot();
+			}
+
 			if (!Ball::Instance().GetHasCollidedWithFence() && !Ball::Instance().GetHasCollidedWithGround())
 			{
 				Ball::Instance().SetHasCollidedWithPole(true);
@@ -639,6 +667,13 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 			if (ballIsActor0 || ballIsActor1)
 			{
+				bool isNewTouch = pair.events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
+
+				if (isNewTouch && Ball::Instance().GetHasCollidedWithBat())
+				{
+					if (boundSound) boundSound->PlayOneShot();
+				}
+
 
 				Ball::Instance().SetHasCollidedWithFence(true);
 				Ball::Instance().SetHasCollidedWithGround(true);
@@ -737,8 +772,12 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Ground") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Ground"))
 		{
-			
+			bool isNewTouch = pair.events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
+			if (isNewTouch && Ball::Instance().GetHasCollidedWithBat())
+			{
+				if (boundSound) boundSound->PlayOneShot();
+			}
 			// キューに速度変更リクエストを追加
 			{
 				std::lock_guard<std::mutex> lock(queueMutex);
@@ -844,7 +883,12 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		if ((pairHeader.actors[0] == Ball::Instance().GetBallCollider() && pairHeader.actors[1]->getName() == "Stand") ||
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stand"))
 		{
-			
+			bool isNewTouch = pair.events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
+			if (isNewTouch && Ball::Instance().GetHasCollidedWithBat())
+			{
+				if (boundSound) boundSound->PlayOneShot();
+			}
+
 			{
 				std::lock_guard<std::mutex> lock(queueMutex);
 				velocityUpdateQueue.push([]() {
@@ -1100,6 +1144,8 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				if (consoleLog)
 					consoleLog->push_back(u8"[Hit] ファウルゾーン通過！");
 				Combo::Instance().ResetCombo(); // ファウルゾーン通過したらコンボをリセット
+				if(foulWhistleSound)
+					foulWhistleSound->PlayOneShot();
 			}
 		}
 
@@ -1124,11 +1170,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 
 			//const HitJudge2DResult& result = HitJudge2D::Instance().GetLastResult();
 
-			// 打球音再生
-			if (hitSound)
-			{
-				hitSound->Play(false);
-			}
+			
 		
 			Ball::Instance().SetHasCollidedWithBat(true);
 			Ball::Instance().CancelBezier();
@@ -1335,6 +1377,8 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				else                                     hitResult = u8"ライト方向";//+15～+45
 			}
 
+			
+
 			float finalExitVelocityKmh = newBallVelocity.magnitude() * 3.6f;
 
 			// バレルゾーン判定（打球速度が158km/h以上かつ打球角度が25～30以内）
@@ -1409,7 +1453,28 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				if (hitBigEffect) hitBigEffect->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z));
 			}
 			
-
+			
+			//打球音再生
+			if (speedKmh >= 170.0f && launchAngleDeg >= 15.0f)
+			{
+				// 170km/h以上 且つ 角度15度以上：本塁打音
+				if (homeRunSound) homeRunSound->Play(false);
+			}
+			else if (speedKmh >= 150.0f)
+			{
+				// 150km/h以上（170km/h以上のゴロ含む）：長打音
+				if (longHitSound) longHitSound->Play(false);
+			}
+			else if (speedKmh >= 100.0f)
+			{
+				// 100km/h〜150km/h未満：通常ヒット音
+				if (hitSound) hitSound->Play(false);
+			}
+			else
+			{
+				// 上記以外のすべてのケース（100km/h未満）：詰まった音
+				if (hitClogSound) hitClogSound->Play(false);
+			}
 			
 
 		}

@@ -17,6 +17,7 @@
 #include "shader.h"
 
 
+
 // 初期化
 void Player::Initialize()
 {
@@ -185,6 +186,7 @@ void Player::Initialize()
         );
     }
 
+	swingSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Swing.wav");
 
 	SelectRealBatter(selectedRealBatter);
 	UpdateBatterModel();
@@ -214,6 +216,7 @@ void Player::Uninitialize()
     batModel.reset();
     rightBatter.reset();
     leftBatter.reset();
+    delete swingSound;
 }
 
 void Player::UpdateBatterModel()
@@ -411,10 +414,14 @@ void Player::HandleInput(float elapsedTime)
 
     float ballZ = Ball::Instance().GetWorldPosition().z;
 
+    //マウスを取得
+	Input& input = Input::Instance();
     
+	//左クリックでスイング
+	bool isMouseButtonPressed = input.GetMouse().GetButtonDown(); // 左クリック
   
     // スペースキーでスイング
-    if (GetAsyncKeyState(VK_LBUTTON) & 0x8000 && ballZ >= -3.0f)
+    if (isMouseButtonPressed && ballZ >= -3.0f)
     {
         //スイングカウントを増やす
 		IncreaseSwingCount();
@@ -436,7 +443,7 @@ void Player::HandleInput(float elapsedTime)
                 }
             }
             
-        
+            if (swingSound) swingSound->Play(false);
              ChangeState(State::Swinging); 
              if (Pitcher::Instance().GetIsBallThrown())
              {

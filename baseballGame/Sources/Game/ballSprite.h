@@ -9,7 +9,8 @@
 #include "json.hpp"
 #include "Pitcher.h"
 #include "FontRenderer.h"
-
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 
 using json = nlohmann::json;
@@ -407,4 +408,8 @@ public:
 		return GetBreakGradeScale(effectiveGrade);
 	}
 
+private:
+	AudioSource* catchSound = nullptr;
+	AudioSource* catchStrongSound = nullptr;
+	bool isCatchSoundPlayed = false;
 };

@@ -149,5 +149,11 @@ private:
 	std::unique_ptr<Effect> hitSmallEffect;//打球小エフェクトのインスタンス
 	std::unique_ptr<Effect> hitBigEffect;//打球大エフェクトのインスタンス
 
+	AudioSource* longHitSound;//長打音のインスタンス
 	AudioSource* hitSound;//打球音のインスタンス
+	AudioSource* homeRunSound;//ホームラン音のインスタンス
+	AudioSource* hitClogSound;//打球が詰まった時の音
+	AudioSource* foulWhistleSound;//ファウルの笛の音
+	AudioSource* boundSound;//バウンド音のインスタンス
+	AudioSource* poleHitSound;//ポールに当たった時の音のインスタンス
 };
