@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <string>
 #include "SpecialAbility.h"
+#include "SubMission.h"
 
 // 小数点以下の不要な 0 を削除する関数(小数第1位は消さない)
 std::string FormatFloat(float value)
@@ -157,6 +158,23 @@ void Money::Initialize(ID3D11Device* device)
 		&bonusCodepoints);
 	bonusItems.push_back(std::move(jackPotBonusItem));
 
+	//サブミッションクリアボーナス
+	BonusItem subMissionBonusItem;
+	subMissionBonusItem.name = "SubMission";
+	subMissionBonusItem.info = { { 300.0f, 190.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	subMissionBonusItem.data = std::make_unique<MoneyData>();
+	subMissionBonusItem.data->texturePath = L".\\resources\\textures\\subMissionClearBoard.png";
+	subMissionBonusItem.sprite = std::make_unique<sprite>(device, context, subMissionBonusItem.data->texturePath.c_str());
+	subMissionBonusItem.fontRenderer = std::make_unique<FontRenderer>();
+	subMissionBonusItem.fontRenderer->Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		28.0f,
+		static_cast<int>(Graphics::Instance().GetScreenWidth()),
+		static_cast<int>(Graphics::Instance().GetScreenHeight()),
+		512, 512,
+		&bonusCodepoints);
+	bonusItems.push_back(std::move(subMissionBonusItem));
+
 	BonusItem totalItem;
 	totalItem.name = "Total";
 	totalItem.info = { { 300.0f, 260.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
@@ -272,9 +290,26 @@ void Money::Update(float elapsedTime)
 			totalMultiplier *= jackpotBonus;//一攫千金の倍率を適用
 		}
 
+		//サブミッションボーナスを適用
+		if(SubMission::Instance().IsCurrentMissionCleared() &&
+			!SubMission::Instance().HasClaimedCurrentReward())
+		{
+			
+			int subMissionReward = SubMission::Instance().GetCurrentMission()->reward;
+			flatBonus += subMissionReward;
+			SubMission::Instance().ClaimCurrentReward(); // ここで受領済みにする
+
+			if(consoleLog)
+			{
+				consoleLog->push_back(u8"[Info]サブミッションボーナスが適用されました。");
+				consoleLog->push_back(u8"[Info]現在のサブミッション報酬: " + std::to_string(subMissionReward) + " G");
+			}
+		}
+
 		// 最終的な距離に倍率を適用して加算
 		finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier));
 		AddMoney(finalDistance);
+		flatBonus = 0; // フラットボーナスをリセット
 		
 	}
 
@@ -419,9 +454,14 @@ void Money::Render()
 					int jackpot = jackpotBonus;
 					bonusText = " x " + std::to_string(jackpot);
 				}
+				else if( item.name == "SubMission")
+				{
+					int subMissionReward = SubMission::Instance().GetCurrentMission()->reward;
+					bonusText = std::to_string(subMissionReward) + " G";
+				}
 				else if (item.name == "Total")
 				{
-					bonusText = std::to_string(finalDistance) + " G";
+					bonusText = std::to_string(finalDistance + flatBonus) + " G";
 				}
 				float fontSize = 1.5f; // フォントサイズを適切に設定
 				float textWidth = 0.0f;
@@ -568,6 +608,10 @@ void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
 			bonusItem.isActive = true;
 		}
 		else if (bonusItem.name == "JackPot" && isHomeRun && SpecialAbility::Instance().IsJackPotActive())
+		{
+			bonusItem.isActive = true;
+		}
+		else if (bonusItem.name == "SubMission" && SubMission::Instance().IsCurrentMissionCleared() && !SubMission::Instance().HasClaimedCurrentReward())
 		{
 			bonusItem.isActive = true;
 		}

@@ -50,6 +50,23 @@ public:
 		return currentMission && currentMission->cleared;
 	}
 
+	//すでに報酬を受け取ったか
+	bool HasClaimedCurrentReward() const
+	{
+		return currentMission && currentMission->rewardClaimed;
+	}	
+
+	//報酬受領フラグを立てる
+	void ClaimCurrentReward()
+	{
+		if (currentMission && currentMission->cleared && currentMission->current >= currentMission->required)
+		{
+			totalReward += currentMission->reward;
+			currentMission->rewardClaimed = true; // 報酬を受け取ったことを示すフラグを立てる
+		}
+	}
+
+	
 private:
 	
 	int totalReward = 0;//累計報酬
@@ -63,6 +80,7 @@ private:
 		int required = 1;//ミッションの達成条件
 		int current = 0;//現在の進行状況
 		bool cleared = false;//ミッションがクリアされたかどうか
+		bool rewardClaimed = false;//報酬が受け取られたかどうかを示すフラグ
 		std::vector<std::function<bool()>> conditions;
 	};
 
@@ -109,6 +127,14 @@ private:
 
 	DirectX::XMFLOAT2 progressPosition = { 40.0f, 150.0f };
 	float progressFontSize = 0.25f;
+
+public:
+
+	MissionData* GetCurrentMission() const
+	{
+		return currentMission ? currentMission.get() : nullptr;// 現在のミッションが存在する場合はそのポインタを返す、存在しない場合はnullptrを返す
+	}
+
 
 };
 

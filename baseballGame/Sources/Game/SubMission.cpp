@@ -317,7 +317,6 @@ void SubMission::CheckMission(MissionData& mission)
 		if(mission.current >= mission.required)
 		{
 			mission.cleared = true;
-			totalReward += mission.reward;
 		}
 		return;
 	}
@@ -333,7 +332,6 @@ void SubMission::CheckMission(MissionData& mission)
 	if (mission.current >= mission.required)
 	{
 		mission.cleared = true;
-		totalReward += mission.reward;
 	}
 }
 

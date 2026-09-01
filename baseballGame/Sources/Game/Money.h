@@ -165,4 +165,5 @@ private:
 	void TriggerBonusAnimation(bool isHomeRun, bool isBreaking);
 	void TriggerBallZoneBonusAnimation();
 
+	int flatBonus = 0;
 };
