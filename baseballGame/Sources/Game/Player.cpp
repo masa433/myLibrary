@@ -418,7 +418,7 @@ void Player::HandleInput(float elapsedTime)
 	Input& input = Input::Instance();
     
 	//左クリックでスイング
-	bool isMouseButtonPressed = input.GetMouse().GetButtonDown(); // 左クリック
+	bool isMouseButtonPressed = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT; // 左クリック
   
     // スペースキーでスイング
     if (isMouseButtonPressed && ballZ >= -3.0f)

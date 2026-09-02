@@ -95,15 +95,20 @@ private:
 	//アイコンの位置は三角形に配置
 	DirectX::XMFLOAT2 abilityIconPositions[3] =
 	{
-		{ 960.0f, 400.0f }, // 1つ目のアイコンの位置
-		{ 560.0f, 600.0f }, // 2つ目のアイコンの位置
-		{ 1360.0f, 600.0f }  // 3つ目のアイコンの位置
+		{ 960.0f, 350.0f }, // 1つ目のアイコンの位置
+		{ 560.0f, 550.0f }, // 2つ目のアイコンの位置
+		{ 1360.0f, 550.0f }  // 3つ目のアイコンの位置
 	};
 
 	DirectX::XMFLOAT2 abilityIconSize = { 600.0f, 100.0f }; // アイコンのサイズ
 
 	std::unique_ptr<RoundSpriteData> abilityBackSpriteData;
 	std::unique_ptr<sprite> abilityBackSprite;
+
+	FontRenderer abilityBonusFont;
+	DirectX::XMFLOAT2 abilityBonusFontPosition = { 960.0f, 200.0f };
+	float abilityBonusFontScale = 1.0f;
+	DirectX::XMFLOAT4 abilityBonusFontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	void EnterSelectAbilityState();
 	void UpdateSelectAbilityState();

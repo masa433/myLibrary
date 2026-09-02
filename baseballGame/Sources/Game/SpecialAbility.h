@@ -180,6 +180,15 @@ public:
 
 	void TriggerShowAbilities();
 
+	//特殊能力の発動率を個別で設定する関数
+	void SetActivationRate(AbilityID id, float rate)
+	{
+		if (static_cast<int>(id) >= 0 && static_cast<int>(id) < ABILITY_COUNT)
+		{
+			abilities[static_cast<int>(id)].activationRate = rate;
+		}
+	}
+
 private:
 
 	//テクスチャ関連
@@ -217,10 +226,16 @@ private:
 	struct AbilitySprite
 	{
 		std::unique_ptr<Sprite> spriteData;
-		std::unique_ptr<sprite> sprite;
+		std::unique_ptr<sprite> iconSprite;
 		
 		DirectX::XMFLOAT2 iconPosition = { 0.0f, 900.0f };
 		DirectX::XMFLOAT2 iconSize = { 100.0f, 100.0f };
+
+		std::unique_ptr<Sprite> descriptionSpriteData;
+		std::unique_ptr<sprite> descriptionSprite;
+
+		DirectX::XMFLOAT2 descriptionPosition = { 960.0f, 800.0f };
+		DirectX::XMFLOAT2 descriptionSize = { 1200.0f, 350.0f };
 
 	};
 
@@ -248,6 +263,7 @@ private:
 	{
 		
 		std::wstring texturePath;//テクスチャのファイルパス
+		std::wstring descriptionPath; // 能力の説明文
 		std::string name; // 能力の名前
 		float power = 0.0f; // 打撃力ボーナス
 		float contact = 0.0f; // ミート力ボーナス

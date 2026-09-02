@@ -337,6 +337,7 @@ void Money::Update(float elapsedTime)
 
 			totalMultiplier *= 0.5f; // 獲得金額を半減
 
+			// ペナルティ後の金額を計算
 			int postPenaltyAmount = static_cast<int>(std::round(baseDistance * totalMultiplier));
 			penaltyAmount = prePenaltyAmount - postPenaltyAmount; // ペナルティ金額を計算
 			if(consoleLog)

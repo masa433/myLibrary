@@ -180,7 +180,15 @@ void SpecialAbility::InitializeAbilities(ID3D11Device* device, ID3D11DeviceConte
 		abilitySprites[i]->spriteData->size = abilitySprites[i]->iconSize;
 		abilitySprites[i]->spriteData->rotation = 0.0f;
 		abilitySprites[i]->spriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		abilitySprites[i]->sprite = std::make_unique<sprite>(device, context, abilitySprites[i]->spriteData->texturePath.c_str());
+		abilitySprites[i]->iconSprite = std::make_unique<sprite>(device, context, abilitySprites[i]->spriteData->texturePath.c_str());
+
+		abilitySprites[i]->descriptionSpriteData = std::make_unique<Sprite>();
+		abilitySprites[i]->descriptionSpriteData->texturePath = abilities[i].descriptionPath;
+		abilitySprites[i]->descriptionSpriteData->position = abilitySprites[i]->descriptionPosition;
+		abilitySprites[i]->descriptionSpriteData->size = abilitySprites[i]->descriptionSize;
+		abilitySprites[i]->descriptionSpriteData->rotation = 0.0f;
+		abilitySprites[i]->descriptionSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		abilitySprites[i]->descriptionSprite = std::make_unique<sprite>(device, context, abilitySprites[i]->descriptionSpriteData->texturePath.c_str());
 	}
 }
 
@@ -191,8 +199,9 @@ void SpecialAbility::BuildAbility()
 	// 広角打法
 	a[(int)AbilityID::WideAngleBatting].name = u8"広角打法";
 	a[(int)AbilityID::WideAngleBatting].texturePath = L".\\resources\\textures\\specialAbilityList\\wideAngleBatting.png";
+	a[(int)AbilityID::WideAngleBatting].descriptionPath = L".\\resources\\textures\\abilityDescription\\wideAngleBatting.png";
 	a[(int)AbilityID::WideAngleBatting].ballSpeed = 5.0f;
-	a[(int)AbilityID::WideAngleBatting].activationRate = 100.0f;
+	a[(int)AbilityID::WideAngleBatting].activationRate = 30.0f;
 	a[(int)AbilityID::WideAngleBatting].ballCondition = [this]() { return true; }; // 常に発動可能
 	a[(int)AbilityID::WideAngleBatting].power = 5.0f;// 打撃力ボーナス
 	a[(int)AbilityID::WideAngleBatting].contact = 7.0f;// ミート力ボーナス
@@ -202,6 +211,7 @@ void SpecialAbility::BuildAbility()
 	// センター返し
 	a[(int)AbilityID::CenterReturn].name = u8"センター返し";
 	a[(int)AbilityID::CenterReturn].texturePath = L".\\resources\\textures\\specialAbilityList\\centerReturn.png";
+	a[(int)AbilityID::CenterReturn].descriptionPath = L".\\resources\\textures\\abilityDescription\\centerReturn.png";
 	a[(int)AbilityID::CenterReturn].ballSpeed = 5.0f;
 	a[(int)AbilityID::CenterReturn].activationRate = 30.0f;
 	a[(int)AbilityID::CenterReturn].ballCondition = [this]() { return IsDirection(Direction::Center); }; // センター方向のボールで発動
@@ -213,8 +223,9 @@ void SpecialAbility::BuildAbility()
 	// プルヒッター
 	a[(int)AbilityID::PullHitter].name = u8"プルヒッター";
 	a[(int)AbilityID::PullHitter].texturePath = L".\\resources\\textures\\specialAbilityList\\pullHitter.png";
+	a[(int)AbilityID::PullHitter].descriptionPath = L".\\resources\\textures\\abilityDescription\\pullHitter.png";
 	a[(int)AbilityID::PullHitter].ballSpeed = 5.0f;
-	a[(int)AbilityID::PullHitter].activationRate = 100.0f;
+	a[(int)AbilityID::PullHitter].activationRate = 30.0f;
 	a[(int)AbilityID::PullHitter].ballCondition = [this]() { return IsDirection(Direction::Pull); }; // プル方向のボールで発動
 	a[(int)AbilityID::PullHitter].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::PullHitter].ballPenaltyCondition = [this]() { return IsDirection(Direction::Opposite); }; // 流し方向のボールでペナルティ
@@ -225,12 +236,12 @@ void SpecialAbility::BuildAbility()
 	// 流し打ち
 	a[(int)AbilityID::OppositeHitter].name = u8"流し打ち";
 	a[(int)AbilityID::OppositeHitter].texturePath = L".\\resources\\textures\\specialAbilityList\\oppositeHitter.png";
+	a[(int)AbilityID::OppositeHitter].descriptionPath = L".\\resources\\textures\\abilityDescription\\oppositeHitter.png";
 	a[(int)AbilityID::OppositeHitter].ballSpeed = 5.0f;
 	a[(int)AbilityID::OppositeHitter].activationRate = 30.0f;
 	a[(int)AbilityID::OppositeHitter].ballCondition = [this]() { return IsDirection(Direction::Opposite); }; // 流し方向のボールで発動
 	a[(int)AbilityID::OppositeHitter].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::OppositeHitter].ballPenaltyCondition = [this]() { return IsDirection(Direction::Pull); }; // プル方向のボールでペナルティ
-	a[(int)AbilityID::OppositeHitter].power = 3.0f;
 	a[(int)AbilityID::OppositeHitter].contact = 7.0f;
 	a[(int)AbilityID::OppositeHitter].condition = [this]() { return true; }; // 常に発動可能
 	a[(int)AbilityID::OppositeHitter].type = AbilityType::Directional;
@@ -238,18 +249,20 @@ void SpecialAbility::BuildAbility()
 	// ロマン砲
 	a[(int)AbilityID::RomanCannon].name = u8"ロマン砲";
 	a[(int)AbilityID::RomanCannon].texturePath = L".\\resources\\textures\\specialAbilityList\\romanCannon.png";
+	a[(int)AbilityID::RomanCannon].descriptionPath = L".\\resources\\textures\\abilityDescription\\romanCannon.png";
 	a[(int)AbilityID::RomanCannon].power = 10.0f;
 	a[(int)AbilityID::RomanCannon].contact = -15.0f;
-	a[(int)AbilityID::RomanCannon].activationRate = 100.0f;
+	a[(int)AbilityID::RomanCannon].activationRate = 30.0f;
 	a[(int)AbilityID::RomanCannon].condition = [this]() { return true; }; // 常に発動可能
 	a[(int)AbilityID::RomanCannon].type = AbilityType::PowerContact;
 
 	// ハイボールヒッター
 	a[(int)AbilityID::HighBallHitter].name = u8"ハイボールヒッター";
 	a[(int)AbilityID::HighBallHitter].texturePath = L".\\resources\\textures\\specialAbilityList\\highBallHitter.png";
+	a[(int)AbilityID::HighBallHitter].descriptionPath = L".\\resources\\textures\\abilityDescription\\highBallHitter.png";
 	a[(int)AbilityID::HighBallHitter].ballSpeed = 5.0f;
 	a[(int)AbilityID::HighBallHitter].ballCondition = [this]() { return IsHighBall(); }; // 高めのボールで発動
-	a[(int)AbilityID::HighBallHitter].activationRate = 100.0f;
+	a[(int)AbilityID::HighBallHitter].activationRate = 30.0f;
 	a[(int)AbilityID::HighBallHitter].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::HighBallHitter].ballPenaltyCondition = [this]() { return IsLowBall(); }; // 低めのボールでペナルティ
 	a[(int)AbilityID::HighBallHitter].type = AbilityType::Height;
@@ -257,6 +270,7 @@ void SpecialAbility::BuildAbility()
 	// ローボールヒッター
 	a[(int)AbilityID::LowBallHitter].name = u8"ローボールヒッター";
 	a[(int)AbilityID::LowBallHitter].texturePath = L".\\resources\\textures\\specialAbilityList\\lowBallHitter.png";
+	a[(int)AbilityID::LowBallHitter].descriptionPath = L".\\resources\\textures\\abilityDescription\\lowBallHitter.png";
 	a[(int)AbilityID::LowBallHitter].ballSpeed = 5.0f;
 	a[(int)AbilityID::LowBallHitter].ballCondition = [this]() { return IsLowBall(); }; // 低めのボールで発動
 	a[(int)AbilityID::LowBallHitter].activationRate = 30.0f;
@@ -267,6 +281,7 @@ void SpecialAbility::BuildAbility()
 	// 背水の陣
 	a[(int)AbilityID::LastStand].name = u8"背水の陣";
 	a[(int)AbilityID::LastStand].texturePath = L".\\resources\\textures\\specialAbilityList\\lastStand.png";
+	a[(int)AbilityID::LastStand].descriptionPath = L".\\resources\\textures\\abilityDescription\\lastStand.png";
 	a[(int)AbilityID::LastStand].power = 15.0f;
 	a[(int)AbilityID::LastStand].contact = 15.0f;
 	a[(int)AbilityID::LastStand].activationRate = 100.0f;
@@ -276,6 +291,7 @@ void SpecialAbility::BuildAbility()
 	// フルスイング
 	a[(int)AbilityID::FullSwing].name = u8"フルスイング";
 	a[(int)AbilityID::FullSwing].texturePath = L".\\resources\\textures\\specialAbilityList\\fullSwing.png";
+	a[(int)AbilityID::FullSwing].descriptionPath = L".\\resources\\textures\\abilityDescription\\fullSwing.png";
 	a[(int)AbilityID::FullSwing].power = 10.0f;
 	a[(int)AbilityID::FullSwing].contact = -10.0f;
 	a[(int)AbilityID::FullSwing].activationRate = 30.0f;
@@ -285,6 +301,7 @@ void SpecialAbility::BuildAbility()
 	//ラストボール
 	a[(int)AbilityID::LastBall].name = u8"ラストボール";
 	a[(int)AbilityID::LastBall].texturePath = L".\\resources\\textures\\specialAbilityList\\lastBall.png";
+	a[(int)AbilityID::LastBall].descriptionPath = L".\\resources\\textures\\abilityDescription\\lastBall.png";
 	a[(int)AbilityID::LastBall].power = 10.0f;
 	a[(int)AbilityID::LastBall].contact = 10.0f;
 	a[(int)AbilityID::LastBall].activationRate = 100.0f;
@@ -294,6 +311,7 @@ void SpecialAbility::BuildAbility()
 	// 初球
 	a[(int)AbilityID::FirstPitcher].name = u8"初球";
 	a[(int)AbilityID::FirstPitcher].texturePath = L".\\resources\\textures\\specialAbilityList\\firstPitcher.png";
+	a[(int)AbilityID::FirstPitcher].descriptionPath = L".\\resources\\textures\\abilityDescription\\firstPitcher.png";
 	a[(int)AbilityID::FirstPitcher].power = 10.0f;
 	a[(int)AbilityID::FirstPitcher].contact = 10.0f;
 	a[(int)AbilityID::FirstPitcher].activationRate = 100.0f;
@@ -303,6 +321,7 @@ void SpecialAbility::BuildAbility()
 	// 連発
 	a[(int)AbilityID::Combo].name = u8"連発";
 	a[(int)AbilityID::Combo].texturePath = L".\\resources\\textures\\specialAbilityList\\combo.png";
+	a[(int)AbilityID::Combo].descriptionPath = L".\\resources\\textures\\abilityDescription\\combo.png";
 	a[(int)AbilityID::Combo].comboPowerPerStack = 2.0f;
 	a[(int)AbilityID::Combo].activationRate = 100.0f;
 	a[(int)AbilityID::Combo].condition = [this]() { return ComboCount(); }; // 連発の条件で発動
@@ -311,8 +330,9 @@ void SpecialAbility::BuildAbility()
 	// マネーメーカー
 	a[(int)AbilityID::MoneyMaker].name = u8"マネーメーカー";
 	a[(int)AbilityID::MoneyMaker].texturePath = L".\\resources\\textures\\specialAbilityList\\moneyMaker.png";
+	a[(int)AbilityID::MoneyMaker].descriptionPath = L".\\resources\\textures\\abilityDescription\\moneyMaker.png";
 	a[(int)AbilityID::MoneyMaker].moneyMakerBonus = 20.0f; // 獲得金額の20%ボーナス
-	a[(int)AbilityID::MoneyMaker].activationRate = 100.0f;
+	a[(int)AbilityID::MoneyMaker].activationRate = 30.0f;
 	a[(int)AbilityID::MoneyMaker].condition = [this]() { return true; }; // 常に発動可能
 	a[(int)AbilityID::MoneyMaker].isMoneyMakerActive = true;
 	a[(int)AbilityID::MoneyMaker].type = AbilityType::Money;
@@ -320,7 +340,8 @@ void SpecialAbility::BuildAbility()
 	// 一攫千金
 	a[(int)AbilityID::JackPot].name = u8"一攫千金";
 	a[(int)AbilityID::JackPot].texturePath = L".\\resources\\textures\\specialAbilityList\\jackPot.png";
-	a[(int)AbilityID::JackPot].jackPotMultiplier = 4.0f; // 一攫千金の倍率
+	a[(int)AbilityID::JackPot].descriptionPath = L".\\resources\\textures\\abilityDescription\\jackPot.png";
+	a[(int)AbilityID::JackPot].jackPotMultiplier = 5.0f; // 一攫千金の倍率
 	a[(int)AbilityID::JackPot].jackPotChance = 10.0f;
 	a[(int)AbilityID::JackPot].activationRate = 100.0f;
 	a[(int)AbilityID::JackPot].condition = [this]() { return true; }; // 常に発動可能
@@ -330,16 +351,19 @@ void SpecialAbility::BuildAbility()
 	// 威圧感
 	a[(int)AbilityID::Intimidation].name = u8"威圧感";
 	a[(int)AbilityID::Intimidation].texturePath = L".\\resources\\textures\\specialAbilityList\\intimidation.png";
+	a[(int)AbilityID::Intimidation].descriptionPath = L".\\resources\\textures\\abilityDescription\\intimidation.png";
 	a[(int)AbilityID::Intimidation].pitcherPowerPenalty = 1.0f; // 投手へのペナルティ(球威をワンランクダウンさせる)
 	a[(int)AbilityID::Intimidation].pitcherBreakBallPenalty = 1.0f; // 変化球へのペナルティ(変化球をワンランクダウンさせる)
-	a[(int)AbilityID::Intimidation].activationRate = 100.0f;
-	a[(int)AbilityID::Intimidation].power = 5.0f; // 打撃力ボーナス
+	a[(int)AbilityID::Intimidation].activationRate = 30.0f;
+	a[(int)AbilityID::Intimidation].power = 3.0f; // 打撃力ボーナス
+	a[(int)AbilityID::Intimidation].contact = 3.0f; // ミート力ボーナス
 	a[(int)AbilityID::Intimidation].condition = [this]() { return true; }; // 常に発動可能
 	a[(int)AbilityID::Intimidation].type = AbilityType::PitcherPenalty;
 	
 	// 対速球
 	a[(int)AbilityID::VsFastBall].name = u8"対速球";
 	a[(int)AbilityID::VsFastBall].texturePath = L".\\resources\\textures\\specialAbilityList\\vsFastBall.png";
+	a[(int)AbilityID::VsFastBall].descriptionPath = L".\\resources\\textures\\abilityDescription\\vsFastBall.png";
 	a[(int)AbilityID::VsFastBall].ballSpeed = 5.0f;
 	a[(int)AbilityID::VsFastBall].ballCondition = [this]() { return IsFastBall(); }; // 速球の条件で発動
 	a[(int)AbilityID::VsFastBall].activationRate = 30.0f; 
@@ -350,6 +374,7 @@ void SpecialAbility::BuildAbility()
 	// 対変化球
 	a[(int)AbilityID::VsBreakingBall].name = u8"対変化球";
 	a[(int)AbilityID::VsBreakingBall].texturePath = L".\\resources\\textures\\specialAbilityList\\vsBreakingBall.png";
+	a[(int)AbilityID::VsBreakingBall].descriptionPath = L".\\resources\\textures\\abilityDescription\\vsBreakingBall.png";
 	a[(int)AbilityID::VsBreakingBall].ballSpeed = 5.0f;
 	a[(int)AbilityID::VsBreakingBall].ballCondition = [this]() { return IsBreakingBall(); }; // 変化球の条件で発動
 	a[(int)AbilityID::VsBreakingBall].activationRate = 30.0f;
@@ -413,6 +438,8 @@ void SpecialAbility::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
+	if (RoundManager::Instance().IsAbilitySelecting()) return;// 能力選択中は描画しない
+
 	//特殊能力のスプライトを描画
 	for(int i = 0; i < ABILITY_COUNT; ++i)
 	{
@@ -424,7 +451,7 @@ void SpecialAbility::Render()
 		{
 			
 
-			abilitySprites[i]->sprite->render(dc,
+			abilitySprites[i]->iconSprite->render(dc,
 				abilitySprites[i]->iconPosition.x, abilitySprites[i]->iconPosition.y,
 				abilitySprites[i]->iconSize.x, abilitySprites[i]->iconSize.y,
 				abilitySprites[i]->spriteData->color.x, abilitySprites[i]->spriteData->color.y, abilitySprites[i]->spriteData->color.z, abilitySprites[i]->spriteData->color.w,
@@ -563,11 +590,24 @@ void SpecialAbility::RenderAbilityIcons(AbilityID id, const DirectX::XMFLOAT2& p
 		hoverSize.y *= 1.1f;
 	}
 
-	abilitySprites[index]->sprite->render(dc,
+	
+
+	abilitySprites[index]->iconSprite->render(dc,
 		position.x - hoverSize.x / 2.0f, position.y - hoverSize.y / 2.0f,
 		hoverSize.x, hoverSize.y,
 		color.x, color.y, color.z, color.w,
 		abilitySprites[index]->spriteData->rotation);
+
+	//ホバー中に、対応している能力の説明を描画する
+	if (isHighlighted)
+	{
+		abilitySprites[index]->descriptionSprite->render(dc,
+			abilitySprites[index]->descriptionPosition.x - abilitySprites[index]->descriptionSize.x / 2.0f,
+			abilitySprites[index]->descriptionPosition.y - abilitySprites[index]->descriptionSize.y / 2.0f,
+			abilitySprites[index]->descriptionSize.x, abilitySprites[index]->descriptionSize.y,
+			color.x, color.y, color.z, color.w,
+			abilitySprites[index]->spriteData->rotation);
+	}
 	
 }
 
@@ -635,6 +675,8 @@ void SpecialAbility::DrawGUI()
 		//バッターアイコン
 		ImGui::DragFloat2("iconPosition", &batterIconPosition.x);
 		ImGui::DragFloat2("iconSize", &batterIconSize.x);
+		ImGui::Separator();
+
 	}
 
 	if (ImGui::CollapsingHeader("font"))

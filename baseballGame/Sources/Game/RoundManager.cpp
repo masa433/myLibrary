@@ -18,11 +18,19 @@ void RoundManager::Initialize(ID3D11Device* device)
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
-		u8"0123456789/");
+		u8"0123456789/"
+		u8"特殊能力を1つ選ぼう！");
 
 	// フォントレンダラーの初期化
 	roundFont.Initialize(device,
 		L".\\resources\\fonts\\Futur12.ttf",
+		50.0f,
+		screenWidth, screenHeight,
+		1024, 1024,
+		&trackingDataCodepoints);
+
+	abilityBonusFont.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
 		50.0f,
 		screenWidth, screenHeight,
 		1024, 1024,
@@ -66,7 +74,7 @@ void RoundManager::Initialize(ID3D11Device* device)
 void RoundManager::Uninitialize()
 {
 	roundFont.Uninitialize();
-	
+	abilityBonusFont.Uninitialize();
 }
 
 void RoundManager::Update(float elapsedTime)
@@ -223,6 +231,20 @@ void RoundManager::Render()
 			SpecialAbility::Instance().RenderAbilityIcons(abilitiesChoice[i], abilityIconPositions[i], abilityIconSize, isHightlighted);
 		}
 
+		//中央ぞろえでテキストを描画
+		float textWidth, textHeight;
+		std::string bonusText = u8"特殊能力を1つ選ぼう！";
+
+		abilityBonusFont.MeasureText(bonusText.c_str(), abilityBonusFontScale, textWidth, textHeight);
+
+		// 中央ぞろえの位置を計算
+		abilityBonusFontPosition.x = (Graphics::Instance().GetScreenWidth() - textWidth) / 2.0f;
+		
+		abilityBonusFont.DrawTextW(Graphics::Instance().GetDeviceContext(), bonusText.c_str(),
+			abilityBonusFontPosition.x, abilityBonusFontPosition.y,
+			abilityBonusFontScale,
+			abilityBonusFontColor.x, abilityBonusFontColor.y, abilityBonusFontColor.z, abilityBonusFontColor.w);
+
 		dc->OMSetDepthStencilState(
 			renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 		return; // 選択中は通常のラウンド表示をしない
@@ -274,7 +296,12 @@ void RoundManager::DrawGUI()
 		ImGui::DragFloat2("Sprite Size", &spriteSize.x, 1.0f, 0.0f, 1920.0f);
 		ImGui::ColorEdit4("Sprite Color", &spriteColor.x);
 	}
-
+	if(ImGui::CollapsingHeader("Ability Bonus Font"))
+	{
+		ImGui::DragFloat2("Font Position", &abilityBonusFontPosition.x, 1.0f, 0.0f, 1920.0f);
+		ImGui::DragFloat("Font Scale", &abilityBonusFontScale, 0.1f, 5.0f);
+		ImGui::ColorEdit4("Font Color", &abilityBonusFontColor.x);
+	}
 }
 
 void RoundManager::SaveToJson(json& j)
@@ -288,7 +315,9 @@ void RoundManager::SaveToJson(json& j)
 	j["spritePosition"] = { spritePosition.x, spritePosition.y };
 	j["spriteSize"] = { spriteSize.x, spriteSize.y };
 	j["spriteColor"] = { spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w };
-
+	j["abilityFontPosition"] = { abilityBonusFontPosition.x, abilityBonusFontPosition.y }; 
+	j["abilityFontScale"] = abilityBonusFontScale;
+	j["abilityFontColor"] = { abilityBonusFontColor.x, abilityBonusFontColor.y, abilityBonusFontColor.z, abilityBonusFontColor.w };
 	
 }
 
@@ -357,5 +386,25 @@ void RoundManager::LoadFromJson(const json& j)
 			spriteColor.w = color[3].get<float>();
 		}
 	}
-
+	if(j.contains("abilityFontPosition"))
+	{
+		auto pos = j["abilityFontPosition"];
+		if (pos.is_array() && pos.size() == 2)
+		{
+			abilityBonusFontPosition.x = pos[0].get<float>();
+			abilityBonusFontPosition.y = pos[1].get<float>();
+		}
+	}
+	if (j.contains("abilityFontScale")) abilityBonusFontScale = j["abilityFontScale"].get<float>();
+	if(j.contains("abilityFontColor"))
+	{
+		auto color = j["abilityFontColor"];
+		if (color.is_array() && color.size() == 4)
+		{
+			abilityBonusFontColor.x = color[0].get<float>();
+			abilityBonusFontColor.y = color[1].get<float>();
+			abilityBonusFontColor.z = color[2].get<float>();
+			abilityBonusFontColor.w = color[3].get<float>();
+		}
+	}
 }
