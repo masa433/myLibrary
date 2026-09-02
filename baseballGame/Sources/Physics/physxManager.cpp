@@ -1050,6 +1050,18 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 				if (consoleLog)
 					consoleLog->push_back(u8"[Hit] ネットに衝突！");
 				Combo::Instance().ResetCombo(); // ネットに衝突したらコンボをリセット
+
+				physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+
+				physx::PxVec3 ballFencePosition = ballCollider->getGlobalPose().p;
+				DirectX::XMFLOAT3 ballHitPos = Ball::Instance().GetBallHitPosition();
+
+				float distanceX = ballFencePosition.x - ballHitPos.x;
+				float distanceZ = ballFencePosition.z - ballHitPos.z;
+				float horizontalDistance = sqrtf(distanceX * distanceX + distanceZ * distanceZ);
+
+				ballHorizontalDistance = horizontalDistance;
+				lastDistanceWasTotal = false; // グラウンド着地時は実測飛距離として扱う
 			}
 		}
 

@@ -54,7 +54,7 @@ void Money::Initialize(ID3D11Device* device)
 	moneySprite = std::make_unique<sprite>(device, context, moneyData->texturePath.c_str());
 
 	bonusItems.clear();
-	std::vector<int> bonusCodepoints = FontRenderer::Utf8ToCodepoints(u8"0123456789.xG +%");
+	std::vector<int> bonusCodepoints = FontRenderer::Utf8ToCodepoints(u8"0123456789.xG +%-");
 
 	// ホームランボーナスアイテムの初期化
 	BonusItem homeRunBonusItem;
@@ -175,6 +175,23 @@ void Money::Initialize(ID3D11Device* device)
 		&bonusCodepoints);
 	bonusItems.push_back(std::move(subMissionBonusItem));
 
+	//ネット衝突ペナルティ
+	BonusItem netCollisionPenaltyItem;
+	netCollisionPenaltyItem.name = "NetCollision";
+	netCollisionPenaltyItem.info = { { 300.0f, 190.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	netCollisionPenaltyItem.data = std::make_unique<MoneyData>();
+	netCollisionPenaltyItem.data->texturePath = L".\\resources\\textures\\netCollisionPenaltyBoard.png";
+	netCollisionPenaltyItem.sprite = std::make_unique<sprite>(device, context, netCollisionPenaltyItem.data->texturePath.c_str());
+	netCollisionPenaltyItem.fontRenderer = std::make_unique<FontRenderer>();
+	netCollisionPenaltyItem.fontRenderer->Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		28.0f,
+		static_cast<int>(Graphics::Instance().GetScreenWidth()),
+		static_cast<int>(Graphics::Instance().GetScreenHeight()),
+		512, 512,
+		&bonusCodepoints);
+	bonusItems.push_back(std::move(netCollisionPenaltyItem));
+
 	BonusItem totalItem;
 	totalItem.name = "Total";
 	totalItem.info = { { 300.0f, 260.0f }, { 500.0f, 80.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
@@ -227,10 +244,14 @@ void Money::Update(float elapsedTime)
 
 	if (isLocked && !prevDistanceLocked)
 	{
+		flatBonus = 0; // フラットボーナスをリセット
+		penaltyAmount = 0; // ペナルティ金額をリセット
+
 		float baseDistance = BallDistance::Instance().GetCurrentDistance();
 		float totalMultiplier = 1.0f;
 
 		bool isHomeRun = Ball::Instance().GetHasPassedHomeRunZone() || Ball::Instance().GetHasCollidedWithPole();
+		bool isCollisionNet = Ball::Instance().GetHasCollidedWithNet();
 
 		TriggerBonusAnimation(isHomeRun, Pitcher::Instance().IsBreakingBallBonus());
 
@@ -306,10 +327,29 @@ void Money::Update(float elapsedTime)
 			}
 		}
 
+		
+		//速度が1.0以上でネットに衝突したら、獲得金額を半減にする
+		if(isCollisionNet)
+		{
+			
+			//ペナルティ発動前にもらえる予定の金額を計算
+			int prePenaltyAmount = static_cast<int>(std::round(baseDistance * totalMultiplier));
+
+			totalMultiplier *= 0.5f; // 獲得金額を半減
+
+			int postPenaltyAmount = static_cast<int>(std::round(baseDistance * totalMultiplier));
+			penaltyAmount = prePenaltyAmount - postPenaltyAmount; // ペナルティ金額を計算
+			if(consoleLog)
+			{
+				consoleLog->push_back(u8"[Info]ネット衝突ペナルティが適用されました。");
+				consoleLog->push_back(u8"[Info]現在の倍率: " + FormatFloat(totalMultiplier));
+			}
+			
+		}
+
 		// 最終的な距離に倍率を適用して加算
 		finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier));
 		AddMoney(finalDistance);
-		flatBonus = 0; // フラットボーナスをリセット
 		
 	}
 
@@ -458,6 +498,10 @@ void Money::Render()
 				{
 					int subMissionReward = SubMission::Instance().GetCurrentMission()->reward;
 					bonusText = std::to_string(subMissionReward) + " G";
+				}
+				else if (item.name == "NetCollision")
+				{
+					bonusText = " -" + std::to_string(penaltyAmount) + " G";
 				}
 				else if (item.name == "Total")
 				{
@@ -612,6 +656,10 @@ void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
 			bonusItem.isActive = true;
 		}
 		else if (bonusItem.name == "SubMission" && SubMission::Instance().IsCurrentMissionCleared() && !SubMission::Instance().HasClaimedCurrentReward())
+		{
+			bonusItem.isActive = true;
+		}
+		else if (bonusItem.name == "NetCollision" && Ball::Instance().GetHasCollidedWithNet())
 		{
 			bonusItem.isActive = true;
 		}

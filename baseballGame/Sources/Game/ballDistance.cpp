@@ -90,7 +90,7 @@ void BallDistance::Update(float elapsedTime)
 	}
 
 	// ボールがバットに当たった後、地面またはフェンスに当たるまでの間、距離を表示する
-	bool isFinished = Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround();
+	bool isFinished = Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround() || Ball::Instance().GetHasCollidedWithNet();
 
 	// ボールが地面またはフェンスに当たったら、距離をロックする
 	if (isDistanceLocked) return;

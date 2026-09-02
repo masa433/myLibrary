@@ -166,4 +166,5 @@ private:
 	void TriggerBallZoneBonusAnimation();
 
 	int flatBonus = 0;
+	int penaltyAmount = 0; // ペナルティ金額
 };
