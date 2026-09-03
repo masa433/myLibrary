@@ -62,6 +62,40 @@ void RoundManager::Initialize(ID3D11Device* device)
 	abilityBackSpriteData->color = { 1.0f, 1.0f, 1.0f, 0.5f };
 	abilityBackSprite = std::make_unique<sprite>(device, context, abilityBackSpriteData->texturePath.c_str());
 
+	//スピードモードのテクスチャ初期化
+	SpeedMode slowSpeedMode;
+	slowSpeedMode.name = "slowSpeed";
+	slowSpeedMode.speedModeSpriteData = std::make_unique<RoundSpriteData>();
+	slowSpeedMode.speedModeSpriteData->texturePath = L".\\resources\\textures\\slowSpeed.png";
+	slowSpeedMode.speedModeSpriteData->position = { slowSpeedMode.position.x, slowSpeedMode.position.y };
+	slowSpeedMode.speedModeSpriteData->size = { slowSpeedMode.size.x, slowSpeedMode.size.y };
+	slowSpeedMode.speedModeSpriteData->rotation = 0.0f;
+	slowSpeedMode.speedModeSpriteData->color = { slowSpeedMode.color.x, slowSpeedMode.color.y, slowSpeedMode.color.z, slowSpeedMode.color.w };
+	slowSpeedMode.speedModeSprite = std::make_unique<sprite>(device, context, slowSpeedMode.speedModeSpriteData->texturePath.c_str());
+	speedModes.push_back(std::move(slowSpeedMode));
+
+	SpeedMode highSpeedMode;
+	highSpeedMode.name = "highSpeed";
+	highSpeedMode.speedModeSpriteData = std::make_unique<RoundSpriteData>();
+	highSpeedMode.speedModeSpriteData->texturePath = L".\\resources\\textures\\highSpeed.png";
+	highSpeedMode.speedModeSpriteData->position = { highSpeedMode.position.x, highSpeedMode.position.y };
+	highSpeedMode.speedModeSpriteData->size = { highSpeedMode.size.x, highSpeedMode.size.y };
+	highSpeedMode.speedModeSpriteData->rotation = 0.0f;
+	highSpeedMode.speedModeSpriteData->color = { highSpeedMode.color.x, highSpeedMode.color.y, highSpeedMode.color.z, highSpeedMode.color.w };
+	highSpeedMode.speedModeSprite = std::make_unique<sprite>(device, context, highSpeedMode.speedModeSpriteData->texturePath.c_str());
+	speedModes.push_back(std::move(highSpeedMode));
+
+	SpeedMode realSpeedMode;
+	realSpeedMode.name = "realSpeed";
+	realSpeedMode.speedModeSpriteData = std::make_unique<RoundSpriteData>();
+	realSpeedMode.speedModeSpriteData->texturePath = L".\\resources\\textures\\realSpeed.png";
+	realSpeedMode.speedModeSpriteData->position = { realSpeedMode.position.x, realSpeedMode.position.y };
+	realSpeedMode.speedModeSpriteData->size = { realSpeedMode.size.x, realSpeedMode.size.y };
+	realSpeedMode.speedModeSpriteData->rotation = 0.0f;
+	realSpeedMode.speedModeSpriteData->color = { realSpeedMode.color.x, realSpeedMode.color.y, realSpeedMode.color.z, realSpeedMode.color.w };
+	realSpeedMode.speedModeSprite = std::make_unique<sprite>(device, context, realSpeedMode.speedModeSpriteData->texturePath.c_str());
+	speedModes.push_back(std::move(realSpeedMode));
+
 	isGameClear = false;
 	isGameOver = false;
 
@@ -69,12 +103,36 @@ void RoundManager::Initialize(ID3D11Device* device)
 	totalRounds = 7; // 総ラウンド数を設定
 
 	SpecialAbility::Instance().RollRoundActivation(); // ラウンドごとの能力発動判定を行う
+	TriggerSpeedModeActive(currentRound);
 }
 
 void RoundManager::Uninitialize()
 {
 	roundFont.Uninitialize();
 	abilityBonusFont.Uninitialize();
+}
+
+void RoundManager::TriggerSpeedModeActive(int currentRound)
+{
+	for (auto& speedMode : speedModes)
+	{
+		speedMode.isActive = false; // すべてのスピードモードを一旦非アクティブにする
+		if (speedMode.name == "slowSpeed" && currentRound <= 3)
+		{
+			speedMode.isActive = true;
+			break;
+		}
+		else if (speedMode.name == "highSpeed" && currentRound > 3 && currentRound <= 6)
+		{
+			speedMode.isActive = true;
+			break;
+		}
+		else if (speedMode.name == "realSpeed" && currentRound > 6)
+		{
+			speedMode.isActive = true;
+			break;
+		}
+	}
 }
 
 void RoundManager::Update(float elapsedTime)
@@ -113,11 +171,13 @@ void RoundManager::Update(float elapsedTime)
 		}
 	}
 
+	TriggerSpeedModeActive(currentRound);
+
 	if (currentRound <= 3)
 	{
 		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::slowSpeed);
 	}
-	else if(currentRound <= 6)
+	else if (currentRound <= 6)
 	{
 		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::highSpeed);
 	}
@@ -253,6 +313,20 @@ void RoundManager::Render()
 	//select以外の時は描画しない
 	if (pitcherState != Pitcher::State::SelectingPitch) return;
 
+	//スピードモードの描画
+	for (const auto& speedMode : speedModes)
+	{
+		if (speedMode.speedModeSprite && speedMode.speedModeSpriteData && speedMode.isActive)
+		{
+			speedMode.speedModeSprite->render(dc,
+				speedMode.position.x - speedMode.size.x / 2.0f,
+				speedMode.position.y - speedMode.size.y / 2.0f,
+				speedMode.size.x, speedMode.size.y,
+				speedMode.color.x, speedMode.color.y, speedMode.color.z, speedMode.color.w,
+				speedMode.speedModeSpriteData->rotation);
+		}
+	}
+
 	if(roundSpriteData && roundSprite)
 	{
 		roundSprite->render(dc,
@@ -270,6 +344,8 @@ void RoundManager::Render()
 		roundTextPosition.x, roundTextPosition.y,
 		roundTextScale,
 		roundTextColor.x, roundTextColor.y, roundTextColor.z, roundTextColor.w);
+
+	
 
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);

@@ -113,4 +113,20 @@ private:
 	void EnterSelectAbilityState();
 	void UpdateSelectAbilityState();
 	void ProcessedToNextRound();
+
+	struct SpeedMode
+	{
+		std::unique_ptr<RoundSpriteData> speedModeSpriteData;
+		std::unique_ptr<sprite> speedModeSprite;
+		std::string name;
+		bool isActive = false;
+
+		DirectX::XMFLOAT2 position = { 1700.0f,950.0f };
+		DirectX::XMFLOAT2 size = { 400.0f,120.0f };
+		DirectX::XMFLOAT4 color = { 1.0f,1.0f,1.0f,1.0f };
+	};
+	
+	std::vector<SpeedMode> speedModes;
+
+	void TriggerSpeedModeActive(int currentRound);
 };

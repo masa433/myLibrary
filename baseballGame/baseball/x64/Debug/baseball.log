@@ -1,12 +1,11 @@
 ﻿  HomeRunCount.cpp
   RoundManager.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(152,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(152,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(212,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(212,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
   SpecialAbility.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(413,25): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(414,27): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
   SubMission.cpp
-  physxManager.cpp
   scene_game.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
   (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
