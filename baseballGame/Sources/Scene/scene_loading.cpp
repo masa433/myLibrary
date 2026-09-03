@@ -2,6 +2,7 @@
 #include "input.h"
 #include "scene_loading.h"
 #include "sceneManager.h"
+#include "LoadingTips.h"
 
 void scene_loading::initialize()
 {
@@ -9,6 +10,34 @@ void scene_loading::initialize()
 
 	//スレッド開始
 	thread = std::make_unique<std::thread>(LoadingThread, this);
+
+	ID3D11Device* device = Graphics::Instance().GetDevice();
+	ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
+	//シェーダー
+	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
+	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
+
+	alpha = 0.0f; // 初期透明度を設定
+	alphaSpeed = 1.0f; // 透明度の変化速度を設定
+
+	// ロード画面のスプライトデータを作成
+	loadingBackSpriteData = std::make_unique<SpriteData>();
+	loadingBackSpriteData->texturePath = L".\\resources\\textures\\loadingBack.png";
+	loadingBackSpriteData->position = spritePosition;
+	loadingBackSpriteData->size = spriteSize;
+	loadingBackSpriteData->rotation = 0.0f;
+	loadingBackSpriteData->color = { spriteColor.x, spriteColor.y, spriteColor.z, alpha };
+	loadingBackSprite = std::make_unique<sprite>(device, deviceContext, loadingBackSpriteData->texturePath.c_str());
+
+	LoadingTips::Instance().Initialize(device);
 }
 
 void scene_loading::uninitialize()
@@ -20,32 +49,83 @@ void scene_loading::uninitialize()
 		thread->join(); // スレッドの終了を待機
 		thread = nullptr;
 	}
+
+	loadingBackSpriteData.reset();
+	loadingBackSprite.reset();
+
+	LoadingTips::Instance().Uninitialize();
 }
 
 void scene_loading::update(float elapsed_time)
 {
-	// ロード画面の更新処理
-	// ここでリソースのロードや初期化を行うことができます
-	// 例: ロードが完了したら次のシーンに切り替える
-	// sceneManager::Instance().ChangeScene(new scene_main());
+
+	// 透明度のアニメーション
+	alpha += alphaSpeed * elapsed_time;
+
+	if (alpha > 1.0f)
+	{
+		alpha = 1.0f;
+
+	}
+	else if (alpha < 0.0f)
+	{
+		alpha = 0.0f;
+	}
 
 	//次のシーンの準備が完了したらシーンを切り替える
-	if (nextScene != nullptr && nextScene->IsReady())
+	if (alpha >= 1.0f && nextScene != nullptr && nextScene->IsReady())
 	{
 		sceneManager::Instance().ChangeScene(nextScene.release());
 		nextScene = nullptr;
 	}
+
+	LoadingTips::Instance().Update(elapsed_time);
+	
 }
 
 void scene_loading::render(float elapsed_time)
 {
 	// ロード画面の描画処理
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	RenderState* renderState = Graphics::Instance().GetRenderState();
 	float clear_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
 	dc->ClearRenderTargetView(backBufferRTV, clear_color);
 	dc->ClearDepthStencilView(Graphics::Instance().GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	dc->OMSetRenderTargets(1, &backBufferRTV, Graphics::Instance().GetDepthStencilView());
+
+
+	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+	dc->PSSetShader(spritePS.Get(), nullptr, 0);
+	dc->IASetInputLayout(spriteInputLayout.Get());
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
+
+	if(loadingBackSprite && loadingBackSpriteData)
+	{
+		loadingBackSprite->render(dc,
+			spritePosition.x,
+			spritePosition.y,
+			spriteSize.x, spriteSize.y,
+			spriteColor.x, spriteColor.y, spriteColor.z, alpha,
+			loadingBackSpriteData->rotation);
+	}
+
+	LoadingTips::Instance().Render(alpha);
+
+	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+
+	// 描画後の状態をリセット
+	dc->VSSetShader(nullptr, nullptr, 0);
+	dc->PSSetShader(nullptr, nullptr, 0);
+	dc->IASetInputLayout(nullptr);
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+
 }
 
 void scene_loading::DrawGUI()
