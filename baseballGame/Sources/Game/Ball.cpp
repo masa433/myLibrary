@@ -340,29 +340,44 @@ void Ball::UpdateFromPhysics(float elapsedTime)
 		return;
 	}
 
+	physx::PxTransform pose = collider->getGlobalPose();
+
 	// 1. PhysXコライダーからは「位置」だけを取得する
 	if (!bezierFlying)
 	{
-		physx::PxTransform pose = collider->getGlobalPose();
 		worldPosition = DirectX::XMFLOAT3(pose.p.x, pose.p.y, pose.p.z);
 	}
 
-	// 2. 「回転」はコライダーを完全に無視し、純粋なパラメーター(rotationSpeed)のみで自前計算する
-	// rotationSpeed は「度/秒(deg/s)」で計算されているため、経過時間を掛けて今フレームの回転量を求める
-	modelAngle.x += DirectX::XMConvertToRadians(modelRotationSpeed.x) * elapsedTime;
-	modelAngle.y += DirectX::XMConvertToRadians(modelRotationSpeed.y) * elapsedTime;
-	modelAngle.z += DirectX::XMConvertToRadians(modelRotationSpeed.z) * elapsedTime;
 
-	// 3. 角度が無限に増え続けないように 0 ～ 2π の範囲に丸める
-	auto WrapAngle = [](float& angle) {
-		const float twoPi = 2.0f * 3.14159265f;
-		if (angle > twoPi) angle -= twoPi;
-		if (angle < 0.0f) angle += twoPi;
-		};
-	WrapAngle(modelAngle.x);
-	WrapAngle(modelAngle.y);
-	WrapAngle(modelAngle.z);
-	UpdateWorldTransform();
+	if (hasCollidedWithBat)
+	{
+		// バット衝突後：見た目の回転をPhysXコライダーの実際の姿勢にリンクさせる
+		//   これでボールが物理的に止まれば見た目も一緒に止まる
+		DirectX::XMVECTOR quat = DirectX::XMVectorSet(pose.q.x, pose.q.y, pose.q.z, pose.q.w);
+		DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(quat);
+		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(worldScale.x, worldScale.y, worldScale.z);
+		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(worldPosition.x, worldPosition.y, worldPosition.z);
+		DirectX::XMStoreFloat4x4(&worldTransform, S * R * T);
+	}
+	else
+	{
+		// 2. 「回転」はコライダーを完全に無視し、純粋なパラメーター(rotationSpeed)のみで自前計算する
+		// rotationSpeed は「度/秒(deg/s)」で計算されているため、経過時間を掛けて今フレームの回転量を求める
+		modelAngle.x += DirectX::XMConvertToRadians(modelRotationSpeed.x) * elapsedTime;
+		modelAngle.y += DirectX::XMConvertToRadians(modelRotationSpeed.y) * elapsedTime;
+		modelAngle.z += DirectX::XMConvertToRadians(modelRotationSpeed.z) * elapsedTime;
+
+		// 3. 角度が無限に増え続けないように 0 ～ 2π の範囲に丸める
+		auto WrapAngle = [](float& angle) {
+			const float twoPi = 2.0f * 3.14159265f;
+			if (angle > twoPi) angle -= twoPi;
+			if (angle < 0.0f) angle += twoPi;
+			};
+		WrapAngle(modelAngle.x);
+		WrapAngle(modelAngle.y);
+		WrapAngle(modelAngle.z);
+		UpdateWorldTransform();
+	}
 
 	// 物理演算中（飛んでいる時）にトレイルを記録
 	if (hasCollidedWithBat)
