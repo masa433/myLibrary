@@ -11,6 +11,8 @@
 class scene_loading : public scene
 {
 public:
+
+
 	scene_loading(scene* nextScene) : nextScene(nextScene) {}
 	~scene_loading() override {}
 
@@ -54,6 +56,8 @@ private:
 	//透明度アニメーション
 	float alpha = 0.0f;
 	float alphaSpeed = 1.0f; // 透明度の変化速度
+	float fadeIndelayTime = 1.0f; // フェードインの遅延時間
 	
+	bool isFadingOut = false; // フェードアウト中かどうかのフラグ
 
 };

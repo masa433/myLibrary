@@ -38,6 +38,7 @@ void scene_loading::initialize()
 	loadingBackSprite = std::make_unique<sprite>(device, deviceContext, loadingBackSpriteData->texturePath.c_str());
 
 	LoadingTips::Instance().Initialize(device);
+
 }
 
 void scene_loading::uninitialize()
@@ -58,25 +59,39 @@ void scene_loading::uninitialize()
 
 void scene_loading::update(float elapsed_time)
 {
-
-	// 透明度のアニメーション
-	alpha += alphaSpeed * elapsed_time;
-
-	if (alpha > 1.0f)
+	Input& input = Input::Instance();
+	
+	if (nextScene != nullptr && nextScene->IsReady() && !isFadingOut)
 	{
-		alpha = 1.0f;
-
-	}
-	else if (alpha < 0.0f)
-	{
-		alpha = 0.0f;
+		isFadingOut = true; // フェードアウトを開始
 	}
 
-	//次のシーンの準備が完了したらシーンを切り替える
-	if (alpha >= 1.0f && nextScene != nullptr && nextScene->IsReady())
+	if(isFadingOut)
 	{
-		sceneManager::Instance().ChangeScene(nextScene.release());
-		nextScene = nullptr;
+		alpha -= (alphaSpeed * 5.0f) * elapsed_time; // 透明度を減少させる
+		if (alpha <= 0.0f)
+		{
+			alpha = 0.0f;
+			// シーン切り替え
+			sceneManager::Instance().ChangeScene(nextScene.release());
+			nextScene = nullptr;
+			return;// シーン切り替え後はupdate処理を終了
+		}
+	}
+	else
+	{
+		fadeIndelayTime -= elapsed_time; // フェードインの遅延時間を減少させる
+
+		if (fadeIndelayTime <= 0.0f)
+		{
+			fadeIndelayTime = 0.0f; // 遅延時間が0以下にならないようにする
+
+			alpha += alphaSpeed * elapsed_time; // 透明度を増加させる
+			if (alpha > 1.0f)
+			{
+				alpha = 1.0f;
+			}
+		}
 	}
 
 	LoadingTips::Instance().Update(elapsed_time);

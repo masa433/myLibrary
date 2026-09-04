@@ -58,6 +58,19 @@ void batterSelectScene::initialize()
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
+	std::vector<int> pitchInfoCodepoints = FontRenderer::Utf8ToCodepoints(
+		u8"詳細確認");
+
+	fontRenderer.Initialize(device,
+		L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf", // 日本語対応フォント
+		32.0f, // フォントサイズ
+		screenWidth,
+		screenHeight,
+		1024, // アトラス幅
+		1024,  // アトラス高さ
+		&pitchInfoCodepoints
+	);
+
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -88,15 +101,7 @@ void batterSelectScene::initialize()
 	pitcherParamBackGroundData->color = { 1.0f, 1.0f, 1.0f, 0.8f };
 	pitcherParamBackGroundSprite = std::make_unique<sprite>(device, context, pitcherParamBackGroundData->texturePath.c_str());
 
-	//閉じるボタンのスプライトデータを初期化
-	closeButtonData = std::make_unique<BatterSelectSpriteData>();
-	closeButtonData->texturePath = L".\\resources\\textures\\closeButton.png";
-	closeButtonData->position = { 1800.0f, 100.0f };
-	closeButtonData->size = { 100.0f, 100.0f };
-	closeButtonData->rotation = 0.0f;
-	closeButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	closeButtonSprite = std::make_unique<sprite>(device, context, closeButtonData->texturePath.c_str());
-
+	
 	//ピッチャーのスプライトデータを初期化
 	for (size_t i = 0; i < PITCHER_COUNT; ++i)
 	{
@@ -512,12 +517,25 @@ void batterSelectScene::render(float elapsedTime)
 			pitcherNameSpriteData[selectedPitcherIndex]->rotation);
 	}
 
-	
-
 	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Return);
 	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Start);
 	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Reroll);
 	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::ShowPitchParam);
+
+	if (fontRenderer.IsValid())
+	{
+		float textWidth, textHeight;
+
+		fontRenderer.MeasureText(u8"詳細確認", fontSize, textWidth, textHeight);
+
+		float drawX = fontPosition.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
+		float drawY = fontPosition.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
+
+		fontRenderer.DrawTextW(dc,
+			u8"詳細確認",
+			drawX, drawY, fontSize,
+			fontColor.x, fontColor.y, fontColor.z, fontColor.w * returnAlpha);
+	}
 
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
@@ -639,7 +657,6 @@ void batterSelectScene::uninitialize()
 	playerScrollView.reset();
 	VSSprite.reset();
 	pitcherParamBackGroundSprite.reset();
-	closeButtonSprite.reset();
 	backGroundSprite.reset();
 
 }
@@ -663,6 +680,10 @@ void batterSelectScene::DrawGUI()
 	{
 		ImGui::DragFloat2("pitcherInfo Position", &pitcherSpriteDataArray[selectedPitcherIndex]->position.x, 1.0f);
 		ImGui::DragFloat2("pitcherInfo Size", &pitcherSpriteDataArray[selectedPitcherIndex]->size.x, 1.0f);
+
+		ImGui::DragFloat2("font Position", &fontPosition.x, 1.0f);
+		ImGui::DragFloat("font Size", &fontSize, 1.0f, 1.0f, 100.0f);
+		ImGui::ColorEdit4("font Color", &fontColor.x);
 	}
 
 	//ImGuiでもランダムにピッチャーを選択するボタンを追加

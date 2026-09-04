@@ -44,9 +44,8 @@ private:
 	
 	ButtonManager buttonManager; // ボタンマネージャーのインスタンス
 	FontRenderer fontRenderer;
-	char text[32] = "batter";
-	DirectX::XMFLOAT2 fontPosition = { 960.0f, 540.0f };
-	float fontSize = 2.0f;
+	DirectX::XMFLOAT2 fontPosition = { 1680.0f, 857.0f };
+	float fontSize = 1.0f;
 	DirectX::XMFLOAT4 fontColor = { 1.0f,1.0f,1.0f,1.0f };
 
 	struct BatterSelectSpriteData
@@ -80,9 +79,6 @@ private:
 	DirectX::XMFLOAT2 pitcherNamePosition = { 960.0f, 100.0f };
 	DirectX::XMFLOAT2 pitcherNameSize = { 400.0f, 100.0f };
 	DirectX::XMFLOAT4 pitcherNameColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-	std::unique_ptr<BatterSelectSpriteData> closeButtonData;
-	std::unique_ptr<sprite> closeButtonSprite;
 
 	std::unique_ptr<BatterSelectSpriteData> pitcherImageSpriteDataArray[PITCHER_IMAGE_COUNT];
 	std::unique_ptr<sprite> pitcherImageSprites[PITCHER_IMAGE_COUNT];
