@@ -190,6 +190,12 @@ void SpecialAbility::InitializeAbilities(ID3D11Device* device, ID3D11DeviceConte
 		abilitySprites[i]->descriptionSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		abilitySprites[i]->descriptionSprite = std::make_unique<sprite>(device, context, abilitySprites[i]->descriptionSpriteData->texturePath.c_str());
 	}
+
+	//‚·‚×‚Ä‚Ì”\—Í‚ğ–¢Šó‘Ô‚É‚·‚é
+	for (int i = 0; i < ABILITY_COUNT; ++i)
+	{
+		abilities[i].isOwned = false;
+	}
 }
 
 void SpecialAbility::BuildAbility()
