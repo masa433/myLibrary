@@ -135,4 +135,6 @@ private:
 	std::vector<SpeedMode> speedModes;
 
 	void TriggerSpeedModeActive(int currentRound);
+
+	bool isShopClosingStarted = false; // ショップが閉じるアニメーションを開始したかどうかのフラグ
 };

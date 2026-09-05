@@ -146,6 +146,9 @@ void RoundManager::Update(float elapsedTime)
 	bool isPitchFinished = (ballCount::Instance().GetRemainingBalls() <= 0 &&
 		Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch);
 
+	ShopManager::Instance().Update(elapsedTime);
+
+
 	if(currentState == RoundState::SelectAbility)
 	{
 		UpdateSelectAbilityState();
@@ -201,6 +204,7 @@ void RoundManager::Update(float elapsedTime)
 		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::realSpeed);
 	}
 
+
 }
 
 void RoundManager::EnterSelectAbilityState()
@@ -221,14 +225,28 @@ void RoundManager::EnterSelectAbilityState()
 void RoundManager::EnterShopState()
 {
 	currentState = RoundState::Shop;
+	ShopManager::Instance().OpenShop();
 }
 
 void RoundManager::UpdateShopState()
 {
-	//仮でエンターキーを押したらショップを終了する
+	if(ShopManager::Instance().IsClosing())
+	{
+		return; // ショップが閉じるアニメーション中は何もしない
+	}
+
+	if (!ShopManager::Instance().IsShopOpen() && !ShopManager::Instance().IsClosing() && isShopClosingStarted)
+	{
+		isShopClosingStarted = false;
+		ProcessedToNextRound();
+		return;
+	}
+
+	// 仮でエンターキーを押したらショップを閉じるアニメーションを開始
 	if (GetKeyState(VK_RETURN) & 0x8000)
 	{
-		ProcessedToNextRound();
+		ShopManager::Instance().CloseShop();
+		isShopClosingStarted = true; // クローズ開始フラグ
 	}
 }
 
@@ -413,6 +431,8 @@ void RoundManager::DrawGUI()
 
 	//ステートを変える
 	ImGui::Combo("Round State", reinterpret_cast<int*>(&currentState), "Playing\0SelectAbility\0Shop\0");
+
+	ShopManager::Instance().DrawGUI();
 }
 
 void RoundManager::SaveToJson(json& j)

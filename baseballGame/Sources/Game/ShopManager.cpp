@@ -2,6 +2,9 @@
 #include "Graphics.h"
 #include "imgui.h"
 #include "shader.h"
+#include "UiEasing.h"
+#include "Money.h"
+
 
 void ShopManager::Initialize(ID3D11Device* device)
 {
@@ -27,6 +30,22 @@ void ShopManager::Initialize(ID3D11Device* device)
 	shopBackSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	shopBackSprite = std::make_unique<sprite>(device, context, shopBackSpriteData->texturePath.c_str());
 
+	currentPosition = startPosition;
+	moneyFontCurrentPosition = moneyFontStartPosition;
+
+	static std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
+		u8"0123456789");
+
+	moneyFont.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		50.0f,
+		screenWidth,
+		screenHeight,
+		1024, 1024,
+		&trackingDataCodepoints);
+
+	
+
 }
 
 void ShopManager::Uninitialize()
@@ -40,7 +59,45 @@ void ShopManager::Uninitialize()
 
 void ShopManager::Update(float elapsedTime)
 {
-	// Update logic for the shop manager, if any
+	if(!isAnimating)
+	{
+		return; // アニメーション中でない場合は更新しない
+	}
+
+	if(isShopOpen)
+	{
+		// タイマーを加算
+		easingTimer += elapsedTime;
+
+		// 0.0f ～ 1.0f の範囲にクランプ
+		float t = easingTimer / easingDuration;
+		if (t > 1.0f) t = 1.0f;
+
+		// イージングで現在位置を計算
+		currentPosition = UiEasing::Lerp(startPosition, targetPosition, t, UiEasing::EasingType::OutBack);
+		moneyFontCurrentPosition = UiEasing::Lerp(moneyFontStartPosition, moneyFontTargetPosition, t, UiEasing::EasingType::OutBack);
+		if (t >= 1.0f)
+		{
+			isAnimating = false; // アニメーション終了
+		}
+	}
+	else if(isShopClosed)
+	{
+		// タイマーを加算
+		easingTimer += elapsedTime;
+		// 0.0f ～ 1.0f の範囲にクランプ
+		//倍速で再生する
+		float t = easingTimer / (easingDuration * 0.5f);
+		if (t > 1.0f) t = 1.0f;
+		// イージングで現在位置を計算
+		currentPosition = UiEasing::Lerp(startPosition, targetPosition, t, UiEasing::EasingType::InCubic);
+		moneyFontCurrentPosition = UiEasing::Lerp(moneyFontStartPosition, moneyFontTargetPosition, t, UiEasing::EasingType::InCubic);
+		if (t >= 1.0f)
+		{
+			isAnimating = false; // アニメーション終了
+			isShopClosed = false; // ショップが閉じた状態にする
+		}
+	}
 }
 
 void ShopManager::Render()
@@ -59,8 +116,8 @@ void ShopManager::Render()
 	if (shopBackSprite)
 	{
 		shopBackSprite->render(context,
-			shopBackSpriteData->position.x - shopBackSpriteData->size.x / 2.0f,
-			shopBackSpriteData->position.y - shopBackSpriteData->size.y / 2.0f,
+			currentPosition.x - shopBackSpriteData->size.x / 2.0f,
+			currentPosition.y - shopBackSpriteData->size.y / 2.0f,
 			shopBackSpriteData->size.x,
 			shopBackSpriteData->size.y,
 			shopBackSpriteData->color.x,
@@ -70,6 +127,20 @@ void ShopManager::Render()
 			shopBackSpriteData->rotation);
 	}
 
+	float moneyWidth, moneyHeight;
+
+	moneyFont.MeasureText(std::to_string(Money::Instance().GetCurrentMoney()).c_str(), moneyFontScale, moneyWidth, moneyHeight);
+
+	float adjustedX = moneyFontCurrentPosition.x - moneyWidth / 2.0f; // 中央揃えのためにX座標を調整
+	float adjustedY = moneyFontCurrentPosition.y - moneyHeight / 2.0f; // 中央揃えのためにY座標を調整
+
+	moneyFont.DrawTextW(context, std::to_string(Money::Instance().GetCurrentMoney()).c_str(),
+		adjustedX, adjustedY,
+		moneyFontScale,
+		moneyFontColor.x, moneyFontColor.y, moneyFontColor.z, moneyFontColor.w);
+
+
+
 	//シェーダーの設定を解除
 	context->VSSetShader(nullptr, nullptr, 0);
 	context->PSSetShader(nullptr, nullptr, 0);
@@ -77,4 +148,12 @@ void ShopManager::Render()
 
 	context->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+}
+
+void ShopManager::DrawGUI()
+{
+	if(ImGui::CollapsingHeader("ShopManager"))
+	{
+		ImGui::DragFloat2("fontPosition", &moneyFontPosition.x, 1.0f, 0.0f);
+	}
 }

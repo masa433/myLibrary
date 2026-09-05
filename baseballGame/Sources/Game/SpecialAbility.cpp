@@ -453,7 +453,7 @@ void SpecialAbility::Render()
 			((abilities[i].condition && abilities[i].condition()) ||
 				(abilities[i].ballCondition && abilities[i].ballCondition()) ||
 				(abilities[i].ballPenaltyCondition && abilities[i].ballPenaltyCondition())) 
-			&& Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
+			&& Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch && RoundManager::Instance().IsPlaying())
 		{
 			
 
