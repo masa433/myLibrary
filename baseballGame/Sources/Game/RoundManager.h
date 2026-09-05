@@ -25,6 +25,7 @@ public:
 	{
 		Playing,
 		SelectAbility,
+		Shop,
 	};
 
 	void Initialize(ID3D11Device* device);
@@ -41,7 +42,9 @@ public:
 	bool IsGameClear() const { return isGameClear; }
 	int GetCurrentRound() const { return currentRound; }
 
+	bool IsPlaying() const { return currentState == RoundState::Playing; }
 	bool IsAbilitySelecting() const { return currentState == RoundState::SelectAbility; }
+	bool IsShopState() const { return currentState == RoundState::Shop; }
 
 	int GetCurrentTarget() const
 	{
@@ -113,6 +116,9 @@ private:
 	void EnterSelectAbilityState();
 	void UpdateSelectAbilityState();
 	void ProcessedToNextRound();
+
+	void EnterShopState();
+	void UpdateShopState();
 
 	struct SpeedMode
 	{

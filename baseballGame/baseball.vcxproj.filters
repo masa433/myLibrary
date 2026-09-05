@@ -241,6 +241,9 @@
     <ClCompile Include="Sources\Game\LoadingTips.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\ShopManager.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -505,6 +508,9 @@
       <Filter>Sources\Audio</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Game\LoadingTips.h">
+      <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\ShopManager.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>

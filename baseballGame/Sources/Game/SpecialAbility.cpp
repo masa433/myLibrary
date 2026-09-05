@@ -444,7 +444,7 @@ void SpecialAbility::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	if (RoundManager::Instance().IsAbilitySelecting()) return;// 能力選択中は描画しない
+	if (RoundManager::Instance().IsAbilitySelecting() && RoundManager::Instance().IsShopState()) return;// 能力選択中は描画しない
 
 	//特殊能力のスプライトを描画
 	for(int i = 0; i < ABILITY_COUNT; ++i)
@@ -470,7 +470,7 @@ void SpecialAbility::Render()
 	Player::RealBatter currentBatterIndex = Player::Instance().GetSelectedRealBatter();
 	selectedBatterIndex = static_cast<int>(currentBatterIndex) - 1;
 
-	if(Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
+	if(Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch && RoundManager::Instance().IsPlaying())
 	{
 		if (selectedBatterIndex >= 0 && selectedBatterIndex < BATTER_COUNT)
 		{

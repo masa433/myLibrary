@@ -258,6 +258,7 @@
     </ClCompile>
     <ClCompile Include="Sources\Game\Result.cpp" />
     <ClCompile Include="Sources\Game\RoundManager.cpp" />
+    <ClCompile Include="Sources\Game\ShopManager.cpp" />
     <ClCompile Include="Sources\Game\SpecialAbility.cpp" />
     <ClCompile Include="Sources\Game\stage.cpp">
       <DeploymentContent>false</DeploymentContent>
@@ -422,6 +423,7 @@
     </ClInclude>
     <ClInclude Include="Sources\Game\Result.h" />
     <ClInclude Include="Sources\Game\RoundManager.h" />
+    <ClInclude Include="Sources\Game\ShopManager.h" />
     <ClInclude Include="Sources\Game\SpecialAbility.h" />
     <ClInclude Include="Sources\Game\stage.h">
       <DeploymentContent>false</DeploymentContent>

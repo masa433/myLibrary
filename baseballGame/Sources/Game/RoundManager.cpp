@@ -9,6 +9,7 @@
 #include <algorithm>	
 #include "input.h"
 #include "SubMission.h"
+#include "ShopManager.h"
 
 void RoundManager::Initialize(ID3D11Device* device)
 {
@@ -62,6 +63,8 @@ void RoundManager::Initialize(ID3D11Device* device)
 	abilityBackSpriteData->color = { 1.0f, 1.0f, 1.0f, 0.5f };
 	abilityBackSprite = std::make_unique<sprite>(device, context, abilityBackSpriteData->texturePath.c_str());
 
+	
+
 	//スピードモードのテクスチャ初期化
 	SpeedMode slowSpeedMode;
 	slowSpeedMode.name = "slowSpeed";
@@ -102,6 +105,8 @@ void RoundManager::Initialize(ID3D11Device* device)
 	currentRound = 1; // 初期ラウンドを設定
 	totalRounds = 7; // 総ラウンド数を設定
 
+	ShopManager::Instance().Initialize(device); // ショップマネージャーの初期化
+
 	SpecialAbility::Instance().RollRoundActivation(); // ラウンドごとの能力発動判定を行う
 	TriggerSpeedModeActive(currentRound);
 }
@@ -110,6 +115,7 @@ void RoundManager::Uninitialize()
 {
 	roundFont.Uninitialize();
 	abilityBonusFont.Uninitialize();
+	ShopManager::Instance().Uninitialize();
 }
 
 void RoundManager::TriggerSpeedModeActive(int currentRound)
@@ -145,6 +151,11 @@ void RoundManager::Update(float elapsedTime)
 		UpdateSelectAbilityState();
 		return;
 	}
+	else if(currentState == RoundState::Shop)
+	{
+		UpdateShopState();
+		return;
+	}
 	
 	if (isPitchFinished)
 	{
@@ -159,6 +170,10 @@ void RoundManager::Update(float elapsedTime)
 			else if(currentRound % 2 ==0 && SubMission::Instance().IsCurrentMissionCleared())
 			{
 				EnterSelectAbilityState();
+			}
+			else if(!IsFinalRound())
+			{
+				EnterShopState();
 			}
 			else
 			{
@@ -203,6 +218,20 @@ void RoundManager::EnterSelectAbilityState()
 	}
 }
 
+void RoundManager::EnterShopState()
+{
+	currentState = RoundState::Shop;
+}
+
+void RoundManager::UpdateShopState()
+{
+	//仮でエンターキーを押したらショップを終了する
+	if (GetKeyState(VK_RETURN) & 0x8000)
+	{
+		ProcessedToNextRound();
+	}
+}
+
 void RoundManager::UpdateSelectAbilityState()
 {
 	Input& input = Input::Instance();
@@ -233,7 +262,7 @@ void RoundManager::UpdateSelectAbilityState()
 				// 選択された能力を有効化
 				SpecialAbility::Instance().SetOwned(abilityID, true);
 				abilitiesChoice.clear(); // 選択肢をクリア
-				ProcessedToNextRound();
+				EnterShopState(); // ショップ画面に遷移
 				return;
 			}
 		}
@@ -267,10 +296,6 @@ void RoundManager::Render()
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
 	const auto pitcherState = Pitcher::Instance().GetCurrentState();
-
-	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
-	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
-	dc->IASetInputLayout(input_layout.Get());
 
 	if (currentState == RoundState::SelectAbility)
 	{
@@ -308,6 +333,13 @@ void RoundManager::Render()
 		dc->OMSetDepthStencilState(
 			renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 		return; // 選択中は通常のラウンド表示をしない
+	}
+
+	if(currentState == RoundState::Shop)
+	{
+		
+		ShopManager::Instance().Render();
+		return; // ショップ中は通常のラウンド表示をしない
 	}
 
 	//select以外の時は描画しない
@@ -378,6 +410,9 @@ void RoundManager::DrawGUI()
 		ImGui::DragFloat("Font Scale", &abilityBonusFontScale, 0.1f, 5.0f);
 		ImGui::ColorEdit4("Font Color", &abilityBonusFontColor.x);
 	}
+
+	//ステートを変える
+	ImGui::Combo("Round State", reinterpret_cast<int*>(&currentState), "Playing\0SelectAbility\0Shop\0");
 }
 
 void RoundManager::SaveToJson(json& j)
