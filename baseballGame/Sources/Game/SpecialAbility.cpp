@@ -430,6 +430,14 @@ void SpecialAbility::Update(float elapsedTime)
 	ballSprite::Instance().ApplyBreakRankDown(pitcherBreakPenalty);
 
 	TriggerShowAbilities();
+
+	if(RoundManager::Instance().IsShopState())
+	{
+		for (auto& ability : abilities)
+		{
+			ability.isActiveThisRound = false;
+		}
+	}
 }
 
 void SpecialAbility::Render()

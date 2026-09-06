@@ -91,6 +91,37 @@ void ShopManager::Uninitialize()
 
 void ShopManager::Update(float elapsedTime)
 {
+	// 右シフトキーが「押された瞬間」だけパワーを1増やす
+	static bool isRShiftPressed = false;
+	if (GetAsyncKeyState(VK_RSHIFT) & 0x8000)
+	{
+		if (!isRShiftPressed)
+		{
+			Player::Instance().IncreaseBaseBatterPower(1);
+			isRShiftPressed = true;
+		}
+	}
+	else
+	{
+		isRShiftPressed = false;
+	}
+
+	// 右コントロールキーが「押された瞬間」だけミートを1増やす
+	static bool isRControlPressed = false;
+	if (GetAsyncKeyState(VK_RCONTROL) & 0x8000)
+	{
+		if (!isRControlPressed)
+		{
+			Player::Instance().IncreaseBaseBatterContact(1);
+			isRControlPressed = true;
+		}
+	}
+	else
+	{
+		isRControlPressed = false;
+	}
+
+
 	if(!isAnimating)
 	{
 		return; // アニメーション中でない場合は更新しない
@@ -128,6 +159,9 @@ void ShopManager::Update(float elapsedTime)
 			isShopClosed = false; // ショップが閉じた状態にする
 		}
 	}
+
+	
+
 }
 
 void ShopManager::Render()
@@ -272,7 +306,7 @@ void ShopManager::Render()
 
 				//パワーとミートの値を描画
 
-				//ラムダ式
+				// ラムダ関数を使って、パワーとミートのY座標を計算
 				auto GetPositionForPowerAndContact = [this](float& outPowerY, float& outContactY,float& outPowerRankY,float& outContactRankY)
 				{
 					

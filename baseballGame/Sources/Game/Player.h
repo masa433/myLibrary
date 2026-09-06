@@ -284,7 +284,7 @@ public:
     void SetSelectedRealBatterPower(int power)
     {
         if (realBatterInfo.empty()) return;
-        realBatterInfo[0].power = power; // 仮に1つ目の情報を設定
+        realBatterInfo[0].power = (std::min)(power, 99); // 仮に1つ目の情報を設定
     }
 
     int GetSelectedRealBatterContact() const
@@ -296,7 +296,7 @@ public:
     void SetSelectedRealBatterContact(int contact)
     {
         if (realBatterInfo.empty()) return;
-        realBatterInfo[0].contact = contact; // 仮に1つ目の情報を設定
+        realBatterInfo[0].contact = (std::min)(contact, 99); // 仮に1つ目の情報を設定
     }
 
 private:
@@ -386,6 +386,21 @@ public:
         SetSelectedRealBatterContact(baseBatterContact + contactBonus);
         BatSprite::Instance().UpdateCursorSizeByContact(GetSelectedRealBatterContact());
     }
+
+    void IncreaseBaseBatterPower(int amount)
+    {
+        baseBatterPower += amount;
+        baseBatterPower = (std::min)(baseBatterPower, 99);
+        SetSelectedRealBatterPower(baseBatterPower);
+	}
+
+    void IncreaseBaseBatterContact(int amount)
+    {
+        baseBatterContact += amount;
+		baseBatterContact = (std::min)(baseBatterContact, 99);
+        SetSelectedRealBatterContact(baseBatterContact);
+        BatSprite::Instance().UpdateCursorSizeByContact(GetSelectedRealBatterContact());        
+	}
 
 private:
 	AudioSource* swingSound = nullptr;
