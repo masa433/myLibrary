@@ -1,4 +1,18 @@
-﻿  SpecialAbility.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(419,25): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(420,27): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
+﻿  RoundManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(238,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/RoundManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(239,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/RoundManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(259,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(259,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  ShopManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(238,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(239,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+  コードを生成中...
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

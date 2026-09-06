@@ -49,20 +49,6 @@ public:
 	};
 	static_assert(static_cast<int>(AbilityID::Count) == ABILITY_COUNT, "ABILITY_COUNTとenumの数が一致していません");
 
-	struct BattingBonus
-	{
-		float power = 0.0f; // 打撃力ボーナス
-		float contact = 0.0f; // ミート力ボーナス
-		float ballSpeed = 0.0f; // 球速ボーナス
-	};
-
-	struct MoneyBonus
-	{
-		float percentBonus = 0.0f; // 獲得金額のボーナス率
-		bool jackPotTriggered = false; // 一攫千金が発動したかどうか
-		float jackPotMultiplier = 0.0f; // 一攫千金の倍率
-	};
-
 	void Initialize(ID3D11Device* device);
 	void Uninitialize();
 	void Update(float elapsedTime);
