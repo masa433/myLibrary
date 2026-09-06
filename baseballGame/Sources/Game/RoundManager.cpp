@@ -449,7 +449,7 @@ void RoundManager::SaveToJson(json& j)
 	j["abilityFontPosition"] = { abilityBonusFontPosition.x, abilityBonusFontPosition.y }; 
 	j["abilityFontScale"] = abilityBonusFontScale;
 	j["abilityFontColor"] = { abilityBonusFontColor.x, abilityBonusFontColor.y, abilityBonusFontColor.z, abilityBonusFontColor.w };
-	
+	ShopManager::Instance().SaveToJson(j["ShopManager"]);
 }
 
 void RoundManager::LoadFromJson(const json& j)
@@ -538,4 +538,5 @@ void RoundManager::LoadFromJson(const json& j)
 			abilityBonusFontColor.w = color[3].get<float>();
 		}
 	}
+	ShopManager::Instance().LoadFromJson(j["ShopManager"]);
 }

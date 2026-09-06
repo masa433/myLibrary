@@ -6,6 +6,9 @@
 #include "FontRenderer.h"
 #include "sprite.h"
 #include "json.hpp"
+#include "Player.h"
+
+#define BATTER_COUNT 24
 
 using json = nlohmann::json;
 class ShopManager
@@ -44,9 +47,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout;
 
-	DirectX::XMFLOAT2 startPosition = { 960.0f, -540.0f }; // 初期位置を画面外の上部に設定
-	DirectX::XMFLOAT2 currentPosition = { 960.0f, -540.0f }; // 初期位置を画面外の上部に設定
-	DirectX::XMFLOAT2 targetPosition = { 960.0f, 540.0f }; // 目標位置を画面中央に設定
 
 	float easingDuration = 1.0f; // イージングの時間（秒）
 	float easingTimer = 0.0f; // イージングのタイマー
@@ -60,9 +60,35 @@ private:
 	float moneyFontScale = 1.0f;
 	DirectX::XMFLOAT4 moneyFontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-	DirectX::XMFLOAT2 moneyFontStartPosition = { 1550.0f, -128.0f };
-	DirectX::XMFLOAT2 moneyFontCurrentPosition = { 1550.0f, -128.0f };
-	DirectX::XMFLOAT2 moneyFontTargetPosition = { 1550.0f, -28.0f };
+	int selectedBatterIndex = -1; // 選択されたバッターのインデックス
+
+	FontRenderer fontRenderer;
+
+	std::unique_ptr<ShopSprite> batterSpriteData[BATTER_COUNT];
+	std::unique_ptr<sprite> batterSprites[BATTER_COUNT];
+
+	DirectX::XMFLOAT2 batterParamBackPosition = { 1450.0f, 550.0f };
+	DirectX::XMFLOAT2 batterParamBackSize = { 550.0f, 450.0f };
+
+	struct BatterParamFontData
+	{
+		DirectX::XMFLOAT2 position;
+		float scale;
+		DirectX::XMFLOAT4 color;
+	};
+
+	BatterParamFontData powerFontData;
+	BatterParamFontData contactFontData;
+	BatterParamFontData powerRankFontData;
+	BatterParamFontData contactRankFontData;
+
+	float currentOffsetY = -1080.0f; // 初期位置を画面外の上部に設定
+	float startOffsetY = -1080.0f; // 初期位置を画面外の上部に設定
+	float targetOffsetY = 0.0f; // 目標位置を画面中央に設定
+
+	const DirectX::XMFLOAT2 baseShopBackPos = { 960.0f, 540.0f };
+	const DirectX::XMFLOAT2 baseMoneyFontPos = { 1550.0f, 128.0f };
+	const DirectX::XMFLOAT2 baseBatterParamPos = { 1450.0f, 550.0f };
 
 public:
 	void OpenShop()
@@ -70,12 +96,9 @@ public:
 		isAnimating = true;
 		isShopOpen = true;
 		easingTimer = 0.0f;
-		startPosition = { 960.0f, -540.0f };
-		targetPosition = { 960.0f, 540.0f }; // 目標位置を画面中央に設定
-		currentPosition = startPosition; // 現在位置を初期位置に設定
-		moneyFontStartPosition = { 1550.0f, -872.0f }; // お金フォントの初期位置を設定
-		moneyFontTargetPosition = { 1550.0f, 128.0f }; // お金フォントの目標位置を設定
-		moneyFontCurrentPosition = moneyFontStartPosition; // 現在位置を初期位置に設定
+		startOffsetY = currentOffsetY; // 現在位置を初期位置に設定
+		targetOffsetY = 0.0f; // 目標位置を画面中央に設定
+		
 	}
 
 	void CloseShop()
@@ -84,10 +107,9 @@ public:
 		isShopClosed = true;
 		isShopOpen = false;
 		easingTimer = 0.0f;
-		startPosition = currentPosition; // 現在位置を初期位置に設定
-		targetPosition = { 960.0f, -540.0f }; // 目標位置を画面外の上部に設定
-		moneyFontStartPosition = moneyFontCurrentPosition; // お金フォントの現在位置を初期位置に設定
-		moneyFontTargetPosition = { 1550.0f, -872.0f }; // お金フォントの目標位置を画面外の上部に設定
+		startOffsetY = currentOffsetY; // 現在位置を初期位置に設定
+		targetOffsetY = -1080.0f; // 目標位置を画面外の上部に設定
+		
 	}
 
 	bool IsShopOpen() const
@@ -98,5 +120,37 @@ public:
 	bool IsClosing() const
 	{
 		return isShopClosed && isAnimating;
+	}
+
+private:
+
+	static const char* GetBatterPowerRankString(Player::BatterPowerRank rank)
+	{
+		switch (rank)
+		{
+		case Player::BatterPowerRank::F: return "F";
+		case Player::BatterPowerRank::E: return "E";
+		case Player::BatterPowerRank::D: return "D";
+		case Player::BatterPowerRank::C: return "C";
+		case Player::BatterPowerRank::B: return "B";
+		case Player::BatterPowerRank::A: return "A";
+		case Player::BatterPowerRank::S: return "S";
+		default: return "";
+		}
+	}
+
+	static const char* GetBatterContactRankString(Player::BatterContactRank rank)
+	{
+		switch (rank)
+		{
+		case Player::BatterContactRank::F: return "F";
+		case Player::BatterContactRank::E: return "E";
+		case Player::BatterContactRank::D: return "D";
+		case Player::BatterContactRank::C: return "C";
+		case Player::BatterContactRank::B: return "B";
+		case Player::BatterContactRank::A: return "A";
+		case Player::BatterContactRank::S: return "S";
+		default: return "";
+		}
 	}
 };
