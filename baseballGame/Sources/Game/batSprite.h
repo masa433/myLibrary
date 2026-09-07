@@ -80,4 +80,7 @@ private:
 
 public:
 	void UpdateCursorSizeByContact(int contact);
+
+	//ミートアシストを有効化する関数
+	void SetMeetAssistEnabled(bool enabled) { isMeetAssistEnabled = enabled; }
 };

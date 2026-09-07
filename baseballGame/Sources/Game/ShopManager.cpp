@@ -7,6 +7,7 @@
 #include "RoundManager.h"
 #include "input.h"
 #include "ballCount.h"
+#include "batSprite.h"
 
 bool ShopManager::AbilityIsOwned() const
 {
@@ -48,6 +49,11 @@ void ShopManager::PitcherBreakBallRankDown(int penalty)
 {
 	shopBreakRankDown += penalty;
 	ballSprite::Instance().ApplyShopBreakRankDown(shopBreakRankDown);
+}
+
+void ShopManager::EnableMeetAssist()
+{
+	BatSprite::Instance().SetMeetAssistEnabled(true);
 }
 
 void ShopManager::Initialize(ID3D11Device* device)
@@ -217,8 +223,9 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"ミートアシスト";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\meetAssist.png";
 	a[index].price = 1000;
-	a[index].appearanceRate = 5.0f;// 5%の確率で出現
+	a[index].appearanceRate = 100.0f;// 5%の確率で出現
 	a[index].level = 1;
+	a[index].onButtonPressed = [this]() { this->EnableMeetAssist(); }; // ボタンが押されたときの処理を設定
 	++index;
 
 

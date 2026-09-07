@@ -8,6 +8,7 @@
 #include "Player.h"
 #include <TrackingData.h>
 #include <GameTimer.h>
+#include "RoundManager.h"
 
 //ラープ関数
 float Lerp(float a, float b, float t)
@@ -127,7 +128,7 @@ void BatSprite::Update(float elapsedTime)
 		}
 
 		//アシスト中はカーソルの位置をボールの位置に合わせる
-		if (isAssisting)
+		if (isAssisting && RoundManager::Instance().IsPlaying())
 		{
 			assistTimer += elapsedTime;
 

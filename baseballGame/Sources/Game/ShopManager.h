@@ -320,6 +320,7 @@ private:
 	void IncreaseBreakingBallMultiplier(float multiplier);
 	void PitcherPowerRankDown(int penalty);
 	void PitcherBreakBallRankDown(int penalty);
+	void EnableMeetAssist();//ミートアシストを有効化する関数
 
 	int shopPowerRankDown = 0; //ショップでの威圧感能力の投手へのペナルティ
 	int shopBreakRankDown = 0; //ショップでの威圧感能力の変化球へのペナルティ
