@@ -77,6 +77,20 @@ public:
 		targetMoney = currentMoney; // 現在のお金を即座に更新
 	}
 
+	//ホームラン倍率をアップする関数
+	void IncreaseHomerunBonus(float increment)
+	{
+		homerunBonus += increment;
+		
+	}
+
+	//変化球倍率をアップする関数
+	void IncreaseBreakingBallBonus(float increment)
+	{
+		breakingBallBonus += increment;
+		
+	}
+
 private:
 	
 
@@ -89,11 +103,11 @@ private:
 	int ballZoneBonusIncrement = 50; // ボールゾーンボーナスの増加量
 
 	//ホームラン時の倍率ボーナス
-	float homerunBonus = 1.05f;
+	float homerunBonus = 1.1f;
 	int finalDistance = 0; //最終的な飛距離
 
 	//変化球を打ったときの倍率ボーナス
-	float breakingBallBonus = 1.05f;
+	float breakingBallBonus = 1.1f;
 
 	//コンボ時の倍率ボーナス
 	float comboBonus = 1.0f; // コンボボーナスの倍率

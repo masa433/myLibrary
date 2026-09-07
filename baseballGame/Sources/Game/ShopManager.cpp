@@ -28,6 +28,16 @@ void ShopManager::IncreaseBallCount(int count)
 	ballCount::Instance().IncreaseInitialBalls(count);
 }
 
+void ShopManager::IncreaseHomeRunMultiplier(float multiplier)
+{
+	Money::Instance().IncreaseHomerunBonus(multiplier);
+}
+
+void ShopManager::IncreaseBreakingBallMultiplier(float multiplier)
+{
+	Money::Instance().IncreaseBreakingBallBonus(multiplier);
+}
+
 void ShopManager::Initialize(ID3D11Device* device)
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
@@ -257,6 +267,7 @@ void ShopManager::BuildShopItem()
 	a[index].appearanceRate = 7.0f;// 7%の確率で出現
 	a[index].level = 1;
 	a[index].homerunMultiplierUp = 0.1f; // ホームラン倍率を10%増加
+	a[index].onButtonPressed = [this, multiplier = a[index].homerunMultiplierUp]() { this->IncreaseHomeRunMultiplier(multiplier); }; // ボタンが押されたときの処理を設定
 	++index;
 
 	//変化球倍率アップ
@@ -267,6 +278,7 @@ void ShopManager::BuildShopItem()
 	a[index].appearanceRate = 7.0f;// 7%の確率で出現
 	a[index].level = 1;
 	a[index].breakingBallMultiplierUp = 0.1f; // 変化球倍率を10%増加
+	a[index].onButtonPressed = [this, multiplier = a[index].breakingBallMultiplierUp]() { this->IncreaseBreakingBallMultiplier(multiplier); }; // ボタンが押されたときの処理を設定
 	++index;
 
 	//重力変化

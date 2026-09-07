@@ -316,4 +316,6 @@ private:
 	void ApplyPowerUp(int power);
 	void ApplyContactUp(int contact);
 	void IncreaseBallCount(int count);
+	void IncreaseHomeRunMultiplier(float multiplier);
+	void IncreaseBreakingBallMultiplier(float multiplier);
 };
