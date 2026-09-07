@@ -60,6 +60,19 @@ public:
 	void InitializeAbilities(ID3D11Device* device, ID3D11DeviceContext* context);
 	void BuildAbility();
 
+	//能力を所持しているかを判定する関数
+	bool IsOwned() const
+	{
+		for (const auto& ability : abilities)
+		{
+			if (ability.isOwned)
+			{
+				return true; // 1つでも所有していればtrueを返す
+			}
+		}
+		return false; // 所有している能力がなければfalseを返す
+	}
+
 	bool IsOwned(AbilityID id) const { return abilities[(int)id].isOwned; }
 	void SetOwned(AbilityID id, bool owned) { abilities[(int)id].isOwned = owned; }
 

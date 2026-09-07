@@ -6,7 +6,27 @@
 #include "Money.h"
 #include "RoundManager.h"
 #include "input.h"
+#include "ballCount.h"
 
+bool ShopManager::AbilityIsOwned() const
+{
+	return SpecialAbility::Instance().IsOwned();
+}
+
+void ShopManager::ApplyPowerUp(int power)
+{
+	Player::Instance().IncreaseBaseBatterPower(power);
+}
+
+void ShopManager::ApplyContactUp(int contact)
+{
+	Player::Instance().IncreaseBaseBatterContact(contact);
+}
+
+void ShopManager::IncreaseBallCount(int count)
+{
+	ballCount::Instance().IncreaseInitialBalls(count);
+}
 
 void ShopManager::Initialize(ID3D11Device* device)
 {
@@ -111,6 +131,8 @@ void ShopManager::BuildShopItem()
 	a[index].price = 300;
 	a[index].appearanceRate = 10.0f;// 10%の確率で出現
 	a[index].level = 1;
+	a[index].powerUp = 1;
+	a[index].onButtonPressed = [this, power = a[index].powerUp]() { this->ApplyPowerUp(power); }; // ボタンが押されたときの処理を設定
 	++index;
 
 	//パワーアップレベル2
@@ -120,6 +142,8 @@ void ShopManager::BuildShopItem()
 	a[index].price = 600;
 	a[index].appearanceRate = 5.0f;// 5%の確率で出現
 	a[index].level = 2;
+	a[index].powerUp = 3;
+	a[index].onButtonPressed = [this, power = a[index].powerUp]() { this->ApplyPowerUp(power); }; // ボタンが押されたときの処理を設定
 	++index;
 	
 	//パワーアップレベル3
@@ -129,6 +153,8 @@ void ShopManager::BuildShopItem()
 	a[index].price = 1000;
 	a[index].appearanceRate = 2.0f;// 2%の確率で出現
 	a[index].level = 3;
+	a[index].powerUp = 5;
+	a[index].onButtonPressed = [this, power = a[index].powerUp]() { this->ApplyPowerUp(power); }; // ボタンが押されたときの処理を設定
 	++index;
 
 	//ミートアップレベル1
@@ -138,6 +164,8 @@ void ShopManager::BuildShopItem()
 	a[index].price = 300;
 	a[index].appearanceRate = 10.0f;// 10%の確率で出現
 	a[index].level = 1;
+	a[index].contactUp = 1;
+	a[index].onButtonPressed = [this, contact = a[index].contactUp]() { this->ApplyContactUp(contact); }; // ボタンが押されたときの処理を設定
 	++index;
 
 	//ミートアップレベル2
@@ -147,6 +175,8 @@ void ShopManager::BuildShopItem()
 	a[index].price = 600;
 	a[index].appearanceRate = 5.0f;// 5%の確率で出現
 	a[index].level = 2;
+	a[index].contactUp = 3;
+	a[index].onButtonPressed = [this, contact = a[index].contactUp]() { this->ApplyContactUp(contact); }; // ボタンが押されたときの処理を設定
 	++index;
 
 	//ミートアップレベル3
@@ -156,6 +186,8 @@ void ShopManager::BuildShopItem()
 	a[index].price = 1000;
 	a[index].appearanceRate = 2.0f;// 2%の確率で出現
 	a[index].level = 3;
+	a[index].contactUp = 5;
+	a[index].onButtonPressed = [this, contact = a[index].contactUp]() { this->ApplyContactUp(contact); }; // ボタンが押されたときの処理を設定
 	++index;
 
 	//ミートアシスト
@@ -176,6 +208,7 @@ void ShopManager::BuildShopItem()
 	a[index].appearanceRate = 8.0f;// 8%の確率で出現
 	a[index].level = 1;
 	a[index].increaseBallCount = 1;
+	a[index].onButtonPressed = [this, count = a[index].increaseBallCount]() { this->IncreaseBallCount(count); }; // ボタンが押されたときの処理を設定
 	++index;
 
 	//風無効
@@ -254,6 +287,7 @@ void ShopManager::BuildShopItem()
 	a[index].appearanceRate = 7.0f;// 7%の確率で出現
 	a[index].level = 1;
 	a[index].specialAbilityActiveRateUp = 5.0f; // 特殊能力発動率を5%増加
+	a[index].isButtonVisible = [this]() { return AbilityIsOwned(); };// 特殊能力を所有している場合のみ表示
 	++index;
 
 	//ネット減少
@@ -293,6 +327,7 @@ void ShopManager::BuildShopItem()
 	a[index].price = 100;
 	a[index].appearanceRate = 100.0f;// 100%の確率で出現
 	a[index].level = 1;
+	a[index].onButtonPressed = [this]() { this->RerollShopItems(); }; // ボタンが押されたときの処理を設定
 	++index;
 }
 
@@ -394,7 +429,7 @@ void ShopManager::UpdateShopItem()
 		float itemX = shopItemPositions[i].x - shopItemSize.x / 2.0f;
 		float itemY = (shopItemPositions[i].y + currentOffsetY) - shopItemSize.y / 2.0f;
 		if(mousePos.x >= itemX && mousePos.x <= itemX + shopItemSize.x &&
-		   mousePos.y >= itemY && mousePos.y <= itemY + shopItemSize.y)
+		   mousePos.y >= itemY && mousePos.y <= itemY + shopItemSize.y && !item.isPurchased)
 		{
 			item.isHover = true;
 
@@ -403,7 +438,16 @@ void ShopManager::UpdateShopItem()
 				if(Money::Instance().GetCurrentMoney() >= item.price)
 				{
 					Money::Instance().DecreaseMoney(item.price);
-					currentShopItemIndices = ShopLayout();
+
+					if (item.id != ShopItemID::Reroll)
+					{
+						item.isPurchased = true;
+					}
+
+					if(item.onButtonPressed)
+					{
+						item.onButtonPressed();
+					}
 				}
 			}
 		}
@@ -605,15 +649,15 @@ void ShopManager::Render()
 		if (slotIndex >= static_cast<int>(currentShopItemIndices.size())) break;
 
 		int itemIndex = currentShopItemIndices[slotIndex];
+		const ShopData& item = shopItems[itemIndex];
 		
 		if (!shopItemSpriteObjects[itemIndex]) continue;
+
 		float drawX = shopItemPositions[slotIndex].x - shopItemSize.x / 2.0f;
 		float drawY = (shopItemPositions[slotIndex].y + currentOffsetY) - shopItemSize.y / 2.0f;
 
-		const ShopData& item = shopItems[itemIndex];
-
-		//ホバー時か購入できない状態の時に色を変える
-		bool canPurchase = Money::Instance().GetCurrentMoney() >= item.price;
+		//ホバー時か購入できない状態の時か購入済みに色を変える
+		bool canPurchase = Money::Instance().GetCurrentMoney() >= item.price && !item.isPurchased;
 
 		float colorRGB = item.isHover ? 0.7f : (canPurchase ? 1.0f : 0.7f);
 

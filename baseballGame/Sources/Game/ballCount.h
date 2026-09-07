@@ -47,6 +47,12 @@ public:
 	}
 	void ResetHitFlag() { hasCountedHit = false; }
 
+	//初期の球数を増やす関数
+	void IncreaseInitialBalls(int amount)
+	{
+		initialBalls += amount;
+	}
+
 	FontRenderer pitchInfoFont; // 球種名と球速表示用のフォントレンダラー
 private:
 	

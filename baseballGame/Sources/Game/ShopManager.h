@@ -8,10 +8,12 @@
 #include "json.hpp"
 #include "Player.h"
 #include <random>
+#include <functional>
 
 #define BATTER_COUNT 24
 #define SHOP_ITEM_COUNT 20
 #define SHOP_ITEM_DISPLAY_COUNT 7
+#define SHOP_ITEM_RANDOM 6
 
 using json = nlohmann::json;
 class ShopManager
@@ -156,9 +158,11 @@ public:
 
 		for (int i = 0; i < SHOP_ITEM_COUNT; ++i)
 		{
-			if (!shopItems[i].isPurchased && shopItems[i].id != ShopItemID::Reroll)
+			if (!shopItems[i].isPurchased && 
+				shopItems[i].id != ShopItemID::Reroll && 
+				(!shopItems[i].isButtonVisible || shopItems[i].isButtonVisible()))
 			{
-				allItems.push_back(i);
+				allItems.push_back(i);//購入済みでないアイテムのインデックスを追加
 			}
 		}
 		
@@ -183,7 +187,7 @@ public:
 
 	std::vector<int> ShopLayout()
 	{
-		std::vector<int> layout = GetRondomShopItem(6);
+		std::vector<int> layout = GetRondomShopItem(SHOP_ITEM_RANDOM);
 
 		//リロールボタンは7枠目に固定配置
 		int rerollIndex = -1;
@@ -191,18 +195,29 @@ public:
 		{
 			if(shopItems[i].id == ShopItemID::Reroll)
 			{
-				rerollIndex = i;
+				rerollIndex = i;//リロールボタンのインデックスを取得
 				break;
 			}
 		}
 
 		if (rerollIndex != -1)
 		{
-			layout.push_back(rerollIndex);
+			layout.push_back(rerollIndex);//リロールボタンを7枠目に追加
 		}
 
 		return layout;
 		
+	}
+
+	void RerollShopItems()
+	{
+		currentShopItemIndices = ShopLayout();
+
+		for(auto& item : shopItems)
+		{
+			item.isHover = false; // ホバー状態をリセット
+			item.isPurchased = false; // 購入状態をリセット
+		}
 	}
 
 private:
@@ -259,6 +274,8 @@ private:
 		int level;//商品のレベル
 		bool isUnlocked;//その商品のアンロック状態
 		bool isHover;//その商品のホバー状態
+		int powerUp = 0; // 威力アップの効果量
+		int contactUp = 0; // ミートアップの効果量
 		int pitcherPowerPenalty = 0.0f; // 威圧感能力の投手へのペナルティ
 		int pitcherBreakBallPenalty = 0.0f; // 威圧感能力の変化球へのペナルティ
 		float homerunMultiplierUp = 0.0f; // ホームラン倍率アップの効果量
@@ -267,6 +284,12 @@ private:
 		float specialAbilityActiveRateUp = 0.0f; // 特殊能力発動率アップの効果量
 		int netDecrease = 0; // ネット減少の効果量
 		int targetHomerun = 0; // ホームランの目標数
+		
+		std::function<bool()> isButtonVisible; //ボタンの出現条件
+		std::function<bool()> isButtonEnabled; //ボタンの有効条件
+
+		//ボタンを押したときの処理
+		std::function<void()> onButtonPressed;
 	};
 
 	ShopData shopItems[SHOP_ITEM_COUNT];
@@ -287,4 +310,10 @@ private:
 	DirectX::XMFLOAT2 shopItemSize = { 200.0f, 225.0f };
 
 	std::vector<int> currentShopItemIndices; // 現在表示されているショップアイテムのインデックス
+
+private:
+	bool AbilityIsOwned() const;//特殊能力が所有されているかどうかを判定する関数
+	void ApplyPowerUp(int power);
+	void ApplyContactUp(int contact);
+	void IncreaseBallCount(int count);
 };
