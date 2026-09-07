@@ -5,6 +5,7 @@
 #include "UiEasing.h"
 #include "Money.h"
 #include "RoundManager.h"
+#include "input.h"
 
 
 void ShopManager::Initialize(ID3D11Device* device)
@@ -336,6 +337,7 @@ void ShopManager::Update(float elapsedTime)
 		isRControlPressed = false;
 	}
 
+	UpdateShopItem();
 
 	if(!isAnimating)
 	{
@@ -376,6 +378,40 @@ void ShopManager::Update(float elapsedTime)
 	}
 
 	
+}
+
+void ShopManager::UpdateShopItem()
+{
+	Input& input = Input::Instance();
+
+	//マウスの位置を取得
+	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
+	bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
+
+	for(int i = 0; i < currentShopItemIndices.size(); ++i)
+	{
+		ShopData& item = shopItems[currentShopItemIndices[i]];
+		float itemX = shopItemPositions[i].x - shopItemSize.x / 2.0f;
+		float itemY = (shopItemPositions[i].y + currentOffsetY) - shopItemSize.y / 2.0f;
+		if(mousePos.x >= itemX && mousePos.x <= itemX + shopItemSize.x &&
+		   mousePos.y >= itemY && mousePos.y <= itemY + shopItemSize.y)
+		{
+			item.isHover = true;
+
+			if(clicked)
+			{
+				if(Money::Instance().GetCurrentMoney() >= item.price)
+				{
+					Money::Instance().DecreaseMoney(item.price);
+					currentShopItemIndices = ShopLayout();
+				}
+			}
+		}
+		else
+		{
+			item.isHover = false;
+		}
+	}
 }
 
 void ShopManager::Render()
@@ -573,11 +609,19 @@ void ShopManager::Render()
 		if (!shopItemSpriteObjects[itemIndex]) continue;
 		float drawX = shopItemPositions[slotIndex].x - shopItemSize.x / 2.0f;
 		float drawY = (shopItemPositions[slotIndex].y + currentOffsetY) - shopItemSize.y / 2.0f;
+
+		const ShopData& item = shopItems[itemIndex];
+
+		//ホバー時か購入できない状態の時に色を変える
+		bool canPurchase = Money::Instance().GetCurrentMoney() >= item.price;
+
+		float colorRGB = item.isHover ? 0.7f : (canPurchase ? 1.0f : 0.7f);
+
 		shopItemSpriteObjects[itemIndex]->render(context,
 			drawX,
 			drawY,
 			shopItemSize.x, shopItemSize.y,
-			1.0f, 1.0f, 1.0f, 1.0f,
+			colorRGB, colorRGB, colorRGB, 1.0f,
 			0.0f);
 	}
 

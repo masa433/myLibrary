@@ -52,6 +52,7 @@ public:
 	void LoadFromJson(const json& j);
 	void InitializeShopButtonSprites(ID3D11Device* device, ID3D11DeviceContext* context);
 	void BuildShopItem();
+	void UpdateShopItem();
 
 private:
 
@@ -124,7 +125,7 @@ public:
 		startOffsetY = currentOffsetY; // 現在位置を初期位置に設定
 		targetOffsetY = 0.0f; // 目標位置を画面中央に設定
 		
-		currentShopItemIndices = GetRondomShopItem(SHOP_ITEM_DISPLAY_COUNT);
+		currentShopItemIndices = ShopLayout(); // ショップアイテムのレイアウトを更新
 	}
 
 	void CloseShop()
@@ -155,7 +156,7 @@ public:
 
 		for (int i = 0; i < SHOP_ITEM_COUNT; ++i)
 		{
-			if (!shopItems[i].isPurchased) // 購入済みは除外
+			if (!shopItems[i].isPurchased && shopItems[i].id != ShopItemID::Reroll)
 			{
 				allItems.push_back(i);
 			}
@@ -171,7 +172,7 @@ public:
 			}
 
 			std::discrete_distribution<size_t> dist(weights.begin(), weights.end());
-			size_t chosen = dist(rng);
+			size_t chosen = dist(rng);//選ばれたアイテムのインデックス
 
 			result.push_back(allItems[chosen]);
 			allItems.erase(allItems.begin() + chosen); // 同じアイテムが重複しないように除外
@@ -180,6 +181,29 @@ public:
 		return result;
 	}
 
+	std::vector<int> ShopLayout()
+	{
+		std::vector<int> layout = GetRondomShopItem(6);
+
+		//リロールボタンは7枠目に固定配置
+		int rerollIndex = -1;
+		for(int i = 0; i < SHOP_ITEM_COUNT; ++i)
+		{
+			if(shopItems[i].id == ShopItemID::Reroll)
+			{
+				rerollIndex = i;
+				break;
+			}
+		}
+
+		if (rerollIndex != -1)
+		{
+			layout.push_back(rerollIndex);
+		}
+
+		return layout;
+		
+	}
 
 private:
 

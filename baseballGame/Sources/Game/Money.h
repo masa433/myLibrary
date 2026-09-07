@@ -27,7 +27,6 @@ public:
 	void DrawGUI();
 	int GetCurrentMoney() const { return currentMoney; }
 	void AddMoney(int amount) { targetMoney += amount; }
-	void SubtractMoney(int amount) { targetMoney -= amount; if (targetMoney < 0) targetMoney = 0; }
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
@@ -64,6 +63,18 @@ public:
 			consoleLog->push_back(u8"[Info]ボールゾーンボーナスが適用されました。");
 			consoleLog->push_back(u8"[Info]現在のボールゾーンボーナス倍率: " + std::to_string(currentBallZoneBonusMoney));
 		}
+	}
+
+	//現在所持中のお金を減らす関数
+	void DecreaseMoney(int amount)
+	{
+		currentMoney -= amount;
+		if(currentMoney < 0)
+		{
+			currentMoney = 0;
+		}
+
+		targetMoney = currentMoney; // 現在のお金を即座に更新
 	}
 
 private:
