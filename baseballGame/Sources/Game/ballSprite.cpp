@@ -1136,16 +1136,18 @@ void ballSprite::DrawGUI()
 		{
 			Pitcher::Power baseGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)]
 				.powerGrades[currentPitchIndex];
-			Pitcher::Power effectiveGrade = Pitcher::GetPowerRankDown(baseGrade, currentPowerRankDown);
+			int totalPowerRankDown = shopPowerRankDown + abilityPowerRankDown;
+			Pitcher::Power effectiveGrade = Pitcher::GetPowerRankDown(baseGrade, totalPowerRankDown);
 
 			Pitcher::BreakGrade baseBreakGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)]
 				.grades[currentPitchIndex];
-			Pitcher::BreakGrade effectiveBreakGrade = Pitcher::GetBreakGradeRankDown(baseBreakGrade, currentBreakRankDown);
+			int totalBreakRankDown = shopBreakRankDown + abilityBreakRankDown;
+			Pitcher::BreakGrade effectiveBreakGrade = Pitcher::GetBreakGradeRankDown(baseBreakGrade, totalBreakRankDown);
 
-			ImGui::Text(u8"ランクダウン量 : %d", currentPowerRankDown);
+			ImGui::Text(u8"ランクダウン量 : %d", totalPowerRankDown);
 			ImGui::Text(u8"基礎グレード   : %s", GetPowerGradeLabel(baseGrade));
 			ImGui::Text(u8"実効グレード   : %s", GetPowerGradeLabel(effectiveGrade));
-			ImGui::Text(u8"曲がりランクダウン量 : %d", currentBreakRankDown);
+			ImGui::Text(u8"曲がりランクダウン量 : %d", totalBreakRankDown);
 			ImGui::Text(u8"基礎曲がりグレード   : %s", GetBreakGradeLabel(baseBreakGrade));
 			ImGui::Text(u8"実効曲がりグレード   : %s", GetBreakGradeLabel(effectiveBreakGrade));
 

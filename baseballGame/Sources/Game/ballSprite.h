@@ -380,31 +380,45 @@ public:
 
 private:
 
-	int currentPowerRankDown = 0; // 現在の球威ランクダウンの段階（0～6）
-	int currentBreakRankDown = 0; // 現在の変化量ランクダウンの段階（0～6）
+	int shopPowerRankDown = 0; // 現在の球威ランクダウンの段階（0～6）
+	int shopBreakRankDown = 0; // 現在の変化量ランクダウンの段階（0～6）
+	int abilityPowerRankDown = 0; // 能力による球威ランクダウンの段階（0～6）
+	int abilityBreakRankDown = 0; // 能力による変化量ランクダウンの段階（0～6）
 
 public:
-	void ApplyPowerRankDown(int rankDown)
+	void ApplyShopPowerRankDown(int rankDown)
 	{
-		currentPowerRankDown = rankDown;
+		shopPowerRankDown = rankDown;
 	}
 
-	void ApplyBreakRankDown(int rankDown)
+	void ApplyShopBreakRankDown(int rankDown)
 	{
-		currentBreakRankDown = rankDown;
+		shopBreakRankDown = rankDown;
+	}
+
+	void ApplyAbilityPowerRankDown(int rankDown)
+	{
+		abilityPowerRankDown = rankDown;
+	}
+
+	void ApplyAbilityBreakRankDown(int rankDown)
+	{
+		abilityBreakRankDown = rankDown;
 	}
 
 	float GetCurrentPitchPowerScale() const
 	{
+		int totalPowerRankDown = shopPowerRankDown + abilityPowerRankDown;
 		Pitcher::Power baseGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)].powerGrades[currentPitchIndex];
-		Pitcher::Power effectiveGrade = Pitcher::GetPowerRankDown(baseGrade, currentPowerRankDown); // 参照時に補正
+		Pitcher::Power effectiveGrade = Pitcher::GetPowerRankDown(baseGrade, totalPowerRankDown); // 参照時に補正
 		return GetPowerGradeScale(effectiveGrade);
 	}
 
 	float GetCurrentPitchBreakScale() const
 	{
+		int totalBreakRankDown = shopBreakRankDown + abilityBreakRankDown;
 		Pitcher::BreakGrade baseGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)].grades[currentPitchIndex];
-		Pitcher::BreakGrade effectiveGrade = Pitcher::GetBreakGradeRankDown(baseGrade, currentBreakRankDown); // 参照時に補正
+		Pitcher::BreakGrade effectiveGrade = Pitcher::GetBreakGradeRankDown(baseGrade, totalBreakRankDown); // 参照時に補正
 		return GetBreakGradeScale(effectiveGrade);
 	}
 

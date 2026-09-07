@@ -426,8 +426,8 @@ void SpecialAbility::Update(float elapsedTime)
 	}
 
 	Player::Instance().ApplyRoundStatBonus(powerBonus + comboPowerBonus, contactBonus);
-	ballSprite::Instance().ApplyPowerRankDown(pitcherPowerPenalty);
-	ballSprite::Instance().ApplyBreakRankDown(pitcherBreakPenalty);
+	ballSprite::Instance().ApplyAbilityPowerRankDown(pitcherPowerPenalty);
+	ballSprite::Instance().ApplyAbilityBreakRankDown(pitcherBreakPenalty);
 
 	TriggerShowAbilities();
 

@@ -318,4 +318,9 @@ private:
 	void IncreaseBallCount(int count);
 	void IncreaseHomeRunMultiplier(float multiplier);
 	void IncreaseBreakingBallMultiplier(float multiplier);
+	void PitcherPowerRankDown(int penalty);
+	void PitcherBreakBallRankDown(int penalty);
+
+	int shopPowerRankDown = 0; //ショップでの威圧感能力の投手へのペナルティ
+	int shopBreakRankDown = 0; //ショップでの威圧感能力の変化球へのペナルティ
 };

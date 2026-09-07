@@ -38,6 +38,18 @@ void ShopManager::IncreaseBreakingBallMultiplier(float multiplier)
 	Money::Instance().IncreaseBreakingBallBonus(multiplier);
 }
 
+void ShopManager::PitcherPowerRankDown(int penalty)
+{
+	shopPowerRankDown += penalty;
+	ballSprite::Instance().ApplyShopPowerRankDown(shopPowerRankDown);
+}
+
+void ShopManager::PitcherBreakBallRankDown(int penalty)
+{
+	shopBreakRankDown += penalty;
+	ballSprite::Instance().ApplyShopBreakRankDown(shopBreakRankDown);
+}
+
 void ShopManager::Initialize(ID3D11Device* device)
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
@@ -238,6 +250,7 @@ void ShopManager::BuildShopItem()
 	a[index].appearanceRate = 5.0f;// 5%の確率で出現
 	a[index].level = 1;
 	a[index].pitcherPowerPenalty = 1; 
+	a[index].onButtonPressed = [this, penalty = a[index].pitcherPowerPenalty]() { this->PitcherPowerRankDown(penalty); }; // ボタンが押されたときの処理を設定
 	++index;
 
 	//変化量ワンランクダウン
@@ -248,6 +261,7 @@ void ShopManager::BuildShopItem()
 	a[index].appearanceRate = 5.0f;// 5%の確率で出現
 	a[index].level = 1;
 	a[index].pitcherBreakBallPenalty = 1;
+	a[index].onButtonPressed = [this, penalty = a[index].pitcherBreakBallPenalty]() { this->PitcherBreakBallRankDown(penalty); }; // ボタンが押されたときの処理を設定
 	++index;
 
 	//球種減少
