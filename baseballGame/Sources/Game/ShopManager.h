@@ -8,6 +8,7 @@
 #include "json.hpp"
 #include "Player.h"
 #include "Pitcher.h"
+#include "SpecialAbility.h"
 #include <random>
 #include <functional>
 
@@ -267,11 +268,11 @@ public:
 		SelectSpecialAbility,
 	};
 
+	ShopState currentShopState = ShopState::Normal;
+
 private:
 
-	
-
-	ShopState currentShopState = ShopState::Normal;
+	//球種削除用
 
 	std::vector<Pitcher::PitchType> pitchTypeChoices; // 利用可能な球種のリスト
 	int hoveredPitchTypeIndex = -1; // ホバー中の球種のインデックス
@@ -291,6 +292,24 @@ private:
 	// 球種ごとのアイコン画像パスを返す
 	static std::wstring GetPitchTypeIconPath(Pitcher::PitchType type);
 
+private:
+	//特殊能力削除用
+	std::vector<SpecialAbility::AbilityID> specialAbilityChoices; // 利用可能な特殊能力のリスト
+	int hoveredSpecialAbilityIndex = -1; // ホバー中の特殊能力のインデックス
+	static constexpr int MAX_SPECIAL_ABILITY_CHOICES = 17; // 最大特殊能力数
+	DirectX::XMFLOAT2 specialAbilityIconPositions[MAX_SPECIAL_ABILITY_CHOICES];
+	DirectX::XMFLOAT2 specialAbilityIconSize = { 350.0f, 100.0f };
+	std::unique_ptr<sprite> specialAbilitySprites[MAX_SPECIAL_ABILITY_CHOICES];
+	FontRenderer specialAbilityFont;
+	DirectX::XMFLOAT2 specialAbilityFontPosition = { 960.0f, 100.0f };
+	float specialAbilityFontScale = 1.0f;
+	float ActiveRateUpAmount = 5.0f;
+	void UpdateSelectSpecialAbilityState();
+	void RenderSelectSpecialAbilityState();
+	// 特殊能力ごとのアイコン画像パスを返す
+	static std::wstring GetSpecialAbilityIconPath(SpecialAbility::AbilityID id);
+
+private:
 
 	//ショップに必要なデータを保持する構造体
 	struct ShopData
@@ -353,11 +372,9 @@ private:
 	void PitcherPowerRankDown(int penalty);
 	void PitcherBreakBallRankDown(int penalty);
 	void EnableMeetAssist();//ミートアシストを有効化する関数
-	void DisableWindEffect();//風の影響を無効化する関数
-	//ピッチャーの持っている球種を選択するステート
-	void SelectPitchTypeState();
-	//バッターが持っている特殊能力を選択するステート
-	void SelectSpecialAbilityState();
+	void DisableWindEffect();//風の影響を無効化する関数	
+	void SelectPitchTypeState();//ピッチャーの持っている球種を選択するステート	
+	void SelectSpecialAbilityState();//バッターが持っている特殊能力を選択するステート
 
 	int shopPowerRankDown = 0; //ショップでの威圧感能力の投手へのペナルティ
 	int shopBreakRankDown = 0; //ショップでの威圧感能力の変化球へのペナルティ

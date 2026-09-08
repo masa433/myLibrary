@@ -88,6 +88,31 @@ std::wstring ShopManager::GetPitchTypeIconPath(Pitcher::PitchType type)
 	}
 }
 
+std::wstring ShopManager::GetSpecialAbilityIconPath(SpecialAbility::AbilityID id)
+{
+	switch (id)
+	{
+	case SpecialAbility::AbilityID::WideAngleBatting: return L".\\resources\\textures\\specialAbilityList\\wideAngleBatting.png";
+	case SpecialAbility::AbilityID::CenterReturn: return L".\\resources\\textures\\specialAbilityList\\centerReturn.png";
+	case SpecialAbility::AbilityID::PullHitter: return L".\\resources\\textures\\specialAbilityList\\pullHitter.png";
+	case SpecialAbility::AbilityID::OppositeHitter: return L".\\resources\\textures\\specialAbilityList\\oppositeHitter.png";
+	case SpecialAbility::AbilityID::RomanCannon: return L".\\resources\\textures\\specialAbilityList\\romanCannon.png";
+	case SpecialAbility::AbilityID::HighBallHitter: return L".\\resources\\textures\\specialAbilityList\\highBallHitter.png";
+	case SpecialAbility::AbilityID::LowBallHitter: return L".\\resources\\textures\\specialAbilityList\\lowBallHitter.png";
+	case SpecialAbility::AbilityID::LastStand: return L".\\resources\\textures\\specialAbilityList\\lastStand.png";
+	case SpecialAbility::AbilityID::FullSwing: return L".\\resources\\textures\\specialAbilityList\\fullSwing.png";
+	case SpecialAbility::AbilityID::LastBall: return L".\\resources\\textures\\specialAbilityList\\lastBall.png";
+	case SpecialAbility::AbilityID::FirstPitcher: return L".\\resources\\textures\\specialAbilityList\\firstPitcher.png";
+	case SpecialAbility::AbilityID::Combo: return L".\\resources\\textures\\specialAbilityList\\combo.png";
+	case SpecialAbility::AbilityID::MoneyMaker: return L".\\resources\\textures\\specialAbilityList\\moneyMaker.png";
+	case SpecialAbility::AbilityID::JackPot: return L".\\resources\\textures\\specialAbilityList\\jackPot.png";
+	case SpecialAbility::AbilityID::Intimidation: return L".\\resources\\textures\\specialAbilityList\\intimidation.png";
+	case SpecialAbility::AbilityID::VsFastBall: return L".\\resources\\textures\\specialAbilityList\\vsFastBall.png";	
+	case SpecialAbility::AbilityID::VsBreakingBall: return L".\\resources\\textures\\specialAbilityList\\vsBreakingBall.png";
+	default: return L".\\resources\\textures\\specialAbilityList\\wideAngleBatting.png";
+	}
+}
+
 void ShopManager::Initialize(ID3D11Device* device)
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
@@ -125,15 +150,22 @@ void ShopManager::Initialize(ID3D11Device* device)
 		batterSprites[i] = std::make_unique<sprite>(device, context, batterSpriteData[i]->texturePath.c_str());
 	}
 
-	for(int i=0; i < MAX_PITCH_TYPE_CHOICES; ++i)
+	for (int i = 0; i < MAX_PITCH_TYPE_CHOICES; ++i)
 	{
 		Pitcher::PitchType type = static_cast<Pitcher::PitchType>(i);
 		pitchTypeSprites[i] = std::make_unique<sprite>(device, context, GetPitchTypeIconPath(type).c_str());
 	}
 
+	for (int i = 0; i < MAX_SPECIAL_ABILITY_CHOICES; ++i)
+	{
+		SpecialAbility::AbilityID id = static_cast<SpecialAbility::AbilityID>(i);
+		specialAbilitySprites[i] = std::make_unique<sprite>(device, context, GetSpecialAbilityIconPath(id).c_str());
+	}
+
 	static std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-		u8"どの球種を減らす？");
+		u8"どの球種を減らす？"
+		u8"どの特殊能力の発動率を上げる？");
 
 	moneyFont.Initialize(device,
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
@@ -154,7 +186,14 @@ void ShopManager::Initialize(ID3D11Device* device)
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
 		100.0f,
 		screenWidth, screenHeight,
-		4096, 2096,
+		4096, 4096,
+		&trackingDataCodepoints);
+
+	specialAbilityFont.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		50.0f,
+		screenWidth, screenHeight,
+		4096, 4096,
 		&trackingDataCodepoints);
 
 	powerFontData.position = { 1275.0f, 590.0f }; // 画面内に配置
@@ -380,6 +419,8 @@ void ShopManager::BuildShopItem()
 	a[index].level = 1;
 	a[index].specialAbilityActiveRateUp = 5.0f; // 特殊能力発動率を5%増加
 	a[index].isButtonVisible = [this]() { return AbilityIsOwned(); };// 特殊能力を所有している場合のみ表示
+	a[index].onButtonPressed = [this]() { this->SelectSpecialAbilityState(); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() {return SpecialAbility::Instance().HasIncreasableAbility(); }; // 発動率を上げられる特殊能力がある場合のみ購入可能
 	++index;
 
 	//ネット減少
@@ -438,6 +479,12 @@ void ShopManager::Update(float elapsedTime)
 	if (currentShopState == ShopState::SelectPitchType)
 	{
 		UpdateSelectPitchTypeState();
+		return; // 選択中は通常のショップ更新をしない
+	}
+
+	if(currentShopState == ShopState::SelectSpecialAbility)
+	{
+		UpdateSelectSpecialAbilityState();
 		return; // 選択中は通常のショップ更新をしない
 	}
 
@@ -586,7 +633,7 @@ void ShopManager::SelectPitchTypeState()
 	float gridCenterX = baseX + ((colsUsedInTopRow - 1) * spacingX) / 2.0f;
 
 	// アイコンの一番上(1行目の上端)から少し余白を空けた位置をY座標にする
-	const float textMarginAboveIcons = 20.0f; // アイコンとテキストの間隔
+	const float textMarginAboveIcons = 10.0f; // アイコンとテキストの間隔
 	float gridTopY = baseY - pitchTypeIconSize.y / 2.0f; // 1行目アイコンの上端
 	float textY = gridTopY - textMarginAboveIcons; // その少し上
 
@@ -625,6 +672,107 @@ void ShopManager::UpdateSelectPitchTypeState()
 				Pitcher::Instance().DisablePitchType(pitchTypeChoices[i]);
 
 				pitchTypeChoices.clear();
+				currentShopState = ShopState::Normal; // 選択画面を終了して通常のショップに戻る
+				return;
+			}
+		}
+	}
+}
+
+void ShopManager::SelectSpecialAbilityState()
+{
+	specialAbilityChoices.clear();
+	for(auto id : SpecialAbility::Instance().GetOwnedAbilities())
+	{
+		if(SpecialAbility::Instance().GetActivationRate(id) < SpecialAbility::maxActivationRate)
+		{
+			specialAbilityChoices.push_back(id);
+		}
+	}
+	if (specialAbilityChoices.empty()) return;
+
+	hoveredSpecialAbilityIndex = -1;
+	currentShopState = ShopState::SelectSpecialAbility;
+
+	int slotIndex = -1;
+	for (int i = 0; i < static_cast<int>(currentShopItemIndices.size()); ++i)
+	{
+		//特殊能力発動率アップアイテムのインデックスを探す
+		if (shopItems[currentShopItemIndices[i]].id == ShopItemID::SpecialAbilityActiveRateUp)
+		{
+			slotIndex = i;
+			break;
+		}
+	}
+
+	// 見つからなかった場合の位置は画面中央にフォールバックする
+	DirectX::XMFLOAT2 buttonScreenPos = { 960.0f, 540.0f }; // 画面中央あたりにフォールバック
+	if (slotIndex != -1)
+	{
+		float itemX = shopItemPositions[slotIndex].x - shopItemSize.x / 2.0f;
+		float itemY = (shopItemPositions[slotIndex].y + currentOffsetY) - shopItemSize.y / 2.0f;
+		buttonScreenPos = { itemX + shopItemSize.x, itemY }; // ボタンの右上を基準点にする
+	}
+
+	// グリッド配置(1列)を計算
+	const int columns = 1;
+	const float gapX = 20.0f; // アイコン間の水平間隔
+	const float spacingX = specialAbilityIconSize.x + gapX;
+	const float spacingY = specialAbilityIconSize.y + gapX;
+
+	float baseX = buttonScreenPos.x + gapX + specialAbilityIconSize.x / 2.0f; // ボタンの右側に配置
+	float baseY = buttonScreenPos.y + specialAbilityIconSize.y / 2.0f; // ボタンの上側に配置
+	for (int i = 0; i < static_cast<int>(specialAbilityChoices.size()); ++i)
+	{
+		int col = i % columns;
+		int row = i / columns;
+		specialAbilityIconPositions[i] = { baseX + col * spacingX, baseY + row * spacingY };
+
+	}
+
+	//アイコングリッドの1列目のX座標を基準にして、中央揃えにするためのオフセットを計算
+	int itemCount = static_cast<int>(specialAbilityChoices.size());
+	int colsUsedInTopRow = (itemCount < columns) ? itemCount : columns; // 1行目に実際に並ぶ列数
+
+	// グリッド全体の水平方向の中心Xを求める(1行目の左端～右端の中間)
+	float gridCenterX = baseX + ((colsUsedInTopRow - 1) * spacingX) / 2.0f;
+
+	// アイコンの一番上(1行目の上端)から少し余白を空けた位置をY座標にする
+	const float textMarginAboveIcons = 10.0f; // アイコンとテキストの間隔
+	float gridTopY = baseY - specialAbilityIconSize.y / 2.0f; // 1行目アイコンの上端
+	float textY = gridTopY - textMarginAboveIcons; // その少し上
+
+	specialAbilityFontPosition = { gridCenterX, textY };
+
+	ID3D11Device* device = Graphics::Instance().GetDevice();
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+	for (int i = 0; i < static_cast<int>(specialAbilityChoices.size()); ++i)
+	{
+		SpecialAbility::AbilityID id = specialAbilityChoices[i];
+		specialAbilitySprites[i] = std::make_unique<sprite>(device, context, GetSpecialAbilityIconPath(id).c_str());
+	}
+}
+
+void ShopManager::UpdateSelectSpecialAbilityState()
+{
+	Input& input = Input::Instance();
+	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
+	bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
+	hoveredSpecialAbilityIndex = -1;
+	for (int i = 0; i < static_cast<int>(specialAbilityChoices.size()); ++i)
+	{
+		float iconX = specialAbilityIconPositions[i].x - specialAbilityIconSize.x / 2.0f;
+		float iconY = specialAbilityIconPositions[i].y - specialAbilityIconSize.y / 2.0f;
+		bool isHovered = (mousePos.x >= iconX && mousePos.x <= iconX + specialAbilityIconSize.x &&
+			mousePos.y >= iconY && mousePos.y <= iconY + specialAbilityIconSize.y);
+		if (isHovered)
+		{
+			hoveredSpecialAbilityIndex = i;
+			if (clicked)
+			{
+				SpecialAbility::AbilityID selectedID = specialAbilityChoices[i];
+				SpecialAbility::Instance().IncreaseActivationRate(selectedID, ActiveRateUpAmount); // 発動率を5%増加
+				specialAbilityChoices.clear();
 				currentShopState = ShopState::Normal; // 選択画面を終了して通常のショップに戻る
 				return;
 			}
@@ -849,6 +997,12 @@ void ShopManager::Render()
 		return; // 選択中は通常のショップアイテムを描画しない
 	}
 
+	if(currentShopState == ShopState::SelectSpecialAbility)
+	{
+		RenderSelectSpecialAbilityState();
+		return; // 選択中は通常のショップアイテムを描画しない
+	}
+
 	//シェーダーの設定を解除
 	context->VSSetShader(nullptr, nullptr, 0);
 	context->PSSetShader(nullptr, nullptr, 0);
@@ -888,6 +1042,34 @@ void ShopManager::RenderSelectPitchTypeState()
 	pitchTypeFont.DrawTextW(context, text,
 		adjustedFontX, adjustedFontY,
 		pitchTypeFontScale,
+		1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+void ShopManager::RenderSelectSpecialAbilityState()
+{
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+	RenderState* renderState = Graphics::Instance().GetRenderState();
+	for (int i = 0; i < static_cast<int>(specialAbilityChoices.size()); ++i)
+	{
+		float drawX = specialAbilityIconPositions[i].x - specialAbilityIconSize.x / 2.0f;
+		float drawY = specialAbilityIconPositions[i].y - specialAbilityIconSize.y / 2.0f;
+		bool isHovered = (hoveredSpecialAbilityIndex == i);
+		float colorRGB = isHovered ? 0.7f : 1.0f;
+		specialAbilitySprites[i]->render(context,
+			drawX,
+			drawY,
+			specialAbilityIconSize.x, specialAbilityIconSize.y,
+			colorRGB, colorRGB, colorRGB, 1.0f,
+			0.0f);
+	}
+	float textWidth, textHeight;
+	const char* text = u8"どの特殊能力の発動率を上げる？";
+	specialAbilityFont.MeasureText(text, specialAbilityFontScale, textWidth, textHeight);
+	float adjustedFontX = specialAbilityFontPosition.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
+	float adjustedFontY = specialAbilityFontPosition.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
+	specialAbilityFont.DrawTextW(context, text,
+		adjustedFontX, adjustedFontY,
+		specialAbilityFontScale,
 		1.0f, 1.0f, 1.0f, 1.0f);
 }
 

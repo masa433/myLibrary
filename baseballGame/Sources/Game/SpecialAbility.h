@@ -179,12 +179,56 @@ public:
 
 	void TriggerShowAbilities();
 
-	//特殊能力の発動率を個別で設定する関数
-	void SetActivationRate(AbilityID id, float rate)
+	//指定した能力の現在の発動率を取得する関数
+	float GetActivationRate(AbilityID id) const
 	{
-		if (static_cast<int>(id) >= 0 && static_cast<int>(id) < ABILITY_COUNT)
+		int index = static_cast<int>(id);
+		if (index < 0 || index >= ABILITY_COUNT) return 0.0f;
+		return abilities[index].activationRate;
+	}
+
+	//現在所持している特殊能力のIDを取得する関数
+	std::vector<AbilityID> GetOwnedAbilities() const
+	{
+		std::vector<AbilityID> ownedAbilities;
+		for (int i = 0; i < ABILITY_COUNT; ++i)
 		{
-			abilities[static_cast<int>(id)].activationRate = rate;
+			if (abilities[i].isOwned)
+			{
+				ownedAbilities.push_back(static_cast<AbilityID>(i));
+			}
+		}
+		return ownedAbilities;
+	}
+
+	static constexpr float maxActivationRate = 50.0f; // 最大発動率の定数
+
+	//発動率を増加させられる能力があるかどうかを判定する関数
+	bool HasIncreasableAbility() const
+	{
+		for (const auto& ability : abilities)
+		{
+			if (ability.isOwned && ability.activationRate < maxActivationRate)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	//発動率を増加させる関数
+	void IncreaseActivationRate(AbilityID id, float increment)
+	{
+		int index = static_cast<int>(id);
+		if (index < 0 || index >= ABILITY_COUNT) return;
+		auto& ability = abilities[index];
+		if (ability.isOwned)
+		{
+			ability.activationRate += increment;
+			if (ability.activationRate > maxActivationRate)
+			{
+				ability.activationRate = maxActivationRate; // 最大値を超えないようにする
+			}
 		}
 	}
 
