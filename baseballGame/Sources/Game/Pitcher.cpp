@@ -130,7 +130,7 @@ void Pitcher::Initialize()
 	rosinEffect = std::make_unique<Effect>(".\\resources\\effects\\smoke.efk");
 
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
-	aiStrikeRate = 0.75f; // AIのストライク率を初期化
+	aiStrikeRate = 1.0f; // AIのストライク率を初期化
 	pitchHistory.clear();// 投球履歴をクリア
 
 	InitializePitchSettings();

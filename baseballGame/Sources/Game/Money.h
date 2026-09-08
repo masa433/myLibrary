@@ -91,6 +91,13 @@ public:
 		
 	}
 
+	//ボール球見逃しボーナスをアップする関数
+	void IncreaseBallZoneBonus(int increment)
+	{
+		currentBallZoneBonusMoney += increment;
+		
+	}
+
 private:
 	
 

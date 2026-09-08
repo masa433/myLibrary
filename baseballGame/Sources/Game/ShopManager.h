@@ -11,9 +11,11 @@
 #include "SpecialAbility.h"
 #include <random>
 #include <functional>
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 #define BATTER_COUNT 24
-#define SHOP_ITEM_COUNT 20
+#define SHOP_ITEM_COUNT 22
 #define SHOP_ITEM_DISPLAY_COUNT 7
 #define SHOP_ITEM_RANDOM 6
 
@@ -40,6 +42,8 @@ public:
 		HalfPrice,
 		FreePrice,
 		Reroll,
+		BallZoneRateUp,
+		BallZoneBonus,
 	};
 
 	static ShopManager& Instance()
@@ -72,6 +76,13 @@ private:
 	std::unique_ptr<ShopSprite> shopBackSpriteData;
 	std::unique_ptr<sprite> shopBackSprite;
 
+	std::unique_ptr<sprite> soldOutSprite;
+	
+	DirectX::XMFLOAT2 soldOutSize = { 250.0f, 250.0f };
+
+	std::unique_ptr<sprite> coinSprite;
+	DirectX::XMFLOAT2 coinOffset = { 50.0f, 135.0f };
+	DirectX::XMFLOAT2 coinSize = { 40.0f, 40.0f };
 
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixel_shader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader;
@@ -99,6 +110,12 @@ private:
 
 	DirectX::XMFLOAT2 batterParamBackPosition = { 1450.0f, 550.0f };
 	DirectX::XMFLOAT2 batterParamBackSize = { 550.0f, 450.0f };
+
+	FontRenderer priceFont;
+
+	DirectX::XMFLOAT2 priceFontOffset = { 20.0f, 170.0f };
+	float priceFontScale = 0.8f;
+	DirectX::XMFLOAT4 priceFontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	struct BatterParamFontData
 	{
@@ -182,7 +199,16 @@ public:
 			size_t chosen = dist(rng);//選ばれたアイテムのインデックス
 
 			result.push_back(allItems[chosen]);
-			allItems.erase(allItems.begin() + chosen); // 同じアイテムが重複しないように除外
+
+			//ミートアシスト、風無効化、重力変化、半額、無料は1つしか出現しないようにする
+			if(shopItems[allItems[chosen]].id == ShopItemID::ContactAsist ||
+				shopItems[allItems[chosen]].id == ShopItemID::WindDisable ||
+				shopItems[allItems[chosen]].id == ShopItemID::GravityChange ||
+				shopItems[allItems[chosen]].id == ShopItemID::HalfPrice ||
+				shopItems[allItems[chosen]].id == ShopItemID::FreePrice)
+			{
+				allItems.erase(allItems.begin() + chosen);//選ばれたアイテムを削除して、次の選択で同じアイテムが出現しないようにする
+			}
 		}
 
 		return result;
@@ -216,11 +242,10 @@ public:
 	{
 		currentShopItemIndices = ShopLayout();
 
-		for(auto& item : shopItems)
-		{
-			item.isHover = false; // ホバー状態をリセット
-			item.isPurchased = false; // 購入状態をリセット
-		}
+		
+		std::fill(std::begin(slotPurchased), std::end(slotPurchased), false);
+		std::fill(std::begin(slotHover), std::end(slotHover), false);
+		
 	}
 
 private:
@@ -335,6 +360,8 @@ private:
 		float specialAbilityActiveRateUp = 0.0f; // 特殊能力発動率アップの効果量
 		int netDecrease = 0; // ネット減少の効果量
 		int targetHomerun = 0; // ホームランの目標数
+		float ballZoneRateUp = 0.0f; // ボールゾーンの出現率アップの効果量
+		int ballZoneBonus = 0; // ボールゾーンのボーナス倍率の効果量
 		
 		std::function<bool()> isButtonVisible; //ボタンの出現条件
 		std::function<bool()> isButtonEnabled; //ボタンの有効条件
@@ -373,9 +400,20 @@ private:
 	void PitcherBreakBallRankDown(int penalty);
 	void EnableMeetAssist();//ミートアシストを有効化する関数
 	void DisableWindEffect();//風の影響を無効化する関数	
+	void IncreaseBallZoneRate(float rate);
+	void IncreaseBallZoneBonus(float bonus);
 	void SelectPitchTypeState();//ピッチャーの持っている球種を選択するステート	
 	void SelectSpecialAbilityState();//バッターが持っている特殊能力を選択するステート
 
 	int shopPowerRankDown = 0; //ショップでの威圧感能力の投手へのペナルティ
 	int shopBreakRankDown = 0; //ショップでの威圧感能力の変化球へのペナルティ
+
+	bool slotPurchased[SHOP_ITEM_DISPLAY_COUNT] = {  }; // 各スロットの購入状態を保持する配列
+	bool slotHover[SHOP_ITEM_DISPLAY_COUNT] = {  }; // 各スロットのホバー状態を保持する配列
+
+private:
+
+	//オーディオ関連
+	AudioSource* purchaseSound = nullptr;
+	AudioSource* notEnoughMoneySound = nullptr;
 };

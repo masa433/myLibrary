@@ -61,6 +61,16 @@ void ShopManager::DisableWindEffect()
 	Pitcher::Instance().SetWindEffectEnabled(false);
 }
 
+void ShopManager::IncreaseBallZoneRate(float rate)
+{
+	Pitcher::Instance().DecreaseStrikeRate(rate);
+}
+
+void ShopManager::IncreaseBallZoneBonus(float bonus)
+{
+	Money::Instance().IncreaseBallZoneBonus(bonus);
+}
+
 std::wstring ShopManager::GetPitchTypeIconPath(Pitcher::PitchType type)
 {
 	switch (type)
@@ -137,6 +147,10 @@ void ShopManager::Initialize(ID3D11Device* device)
 	shopBackSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	shopBackSprite = std::make_unique<sprite>(device, context, shopBackSpriteData->texturePath.c_str());
 
+	soldOutSprite = std::make_unique<sprite>(device, context, L".\\resources\\textures\\soldOut.png");
+
+	coinSprite = std::make_unique<sprite>(device, context, L".\\resources\\textures\\coin.png");
+
 	currentOffsetY = startOffsetY;
 
 	for(int i = 0; i < BATTER_COUNT; ++i)
@@ -196,6 +210,13 @@ void ShopManager::Initialize(ID3D11Device* device)
 		4096, 4096,
 		&trackingDataCodepoints);
 
+	priceFont.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		50.0f,
+		screenWidth, screenHeight,
+		1024, 1024,
+		&trackingDataCodepoints);
+
 	powerFontData.position = { 1275.0f, 590.0f }; // 画面内に配置
 	powerFontData.scale = 1.5f;                    // スケールを1.0に設定
 	powerFontData.color = { 0.0f, 0.0f, 0.0f, 1.0f }; // 不透明な白色
@@ -211,6 +232,9 @@ void ShopManager::Initialize(ID3D11Device* device)
 	contactRankFontData.position = { 1550.0f, 730.0f };
 	contactRankFontData.scale = 1.5f;
 	contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	purchaseSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Purchase.wav");
+	notEnoughMoneySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CoinShortage.wav");
 
 	InitializeShopButtonSprites(device, context);
 
@@ -242,10 +266,11 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"パワーアップLv1";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\powerLevel1.png";
 	a[index].price = 300;
-	a[index].appearanceRate = 10.0f;// 10%の確率で出現
+	a[index].appearanceRate = 80.0f;// 80%の確率で出現
 	a[index].level = 1;
 	a[index].powerUp = 1;
 	a[index].onButtonPressed = [this, power = a[index].powerUp]() { this->ApplyPowerUp(power); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return Player::Instance().GetSelectedRealBatterPower() < 99; }; // パワーが99未満の場合のみボタンを有効化
 	++index;
 
 	//パワーアップレベル2
@@ -253,10 +278,11 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"パワーアップLv2";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\powerLevel2.png";
 	a[index].price = 600;
-	a[index].appearanceRate = 5.0f;// 5%の確率で出現
+	a[index].appearanceRate = 10.0f;// 10%の確率で出現
 	a[index].level = 2;
 	a[index].powerUp = 3;
 	a[index].onButtonPressed = [this, power = a[index].powerUp]() { this->ApplyPowerUp(power); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return Player::Instance().GetSelectedRealBatterPower() < 99; }; // パワーが99未満の場合のみボタンを有効化
 	++index;
 	
 	//パワーアップレベル3
@@ -268,6 +294,7 @@ void ShopManager::BuildShopItem()
 	a[index].level = 3;
 	a[index].powerUp = 5;
 	a[index].onButtonPressed = [this, power = a[index].powerUp]() { this->ApplyPowerUp(power); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return Player::Instance().GetSelectedRealBatterPower() < 99; }; // パワーが99未満の場合のみボタンを有効化
 	++index;
 
 	//ミートアップレベル1
@@ -275,10 +302,11 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"ミートアップLv1";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\meetLevel1.png";
 	a[index].price = 300;
-	a[index].appearanceRate = 10.0f;// 10%の確率で出現
+	a[index].appearanceRate = 80.0f;// 80%の確率で出現
 	a[index].level = 1;
 	a[index].contactUp = 1;
 	a[index].onButtonPressed = [this, contact = a[index].contactUp]() { this->ApplyContactUp(contact); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return Player::Instance().GetSelectedRealBatterContact() < 99; }; // コンタクトが99未満の場合のみボタンを有効化
 	++index;
 
 	//ミートアップレベル2
@@ -286,10 +314,11 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"ミートアップLv2";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\meetLevel2.png";
 	a[index].price = 600;
-	a[index].appearanceRate = 5.0f;// 5%の確率で出現
+	a[index].appearanceRate = 10.0f;// 10%の確率で出現
 	a[index].level = 2;
 	a[index].contactUp = 3;
 	a[index].onButtonPressed = [this, contact = a[index].contactUp]() { this->ApplyContactUp(contact); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return Player::Instance().GetSelectedRealBatterContact() < 99; }; // コンタクトが99未満の場合のみボタンを有効化
 	++index;
 
 	//ミートアップレベル3
@@ -301,6 +330,7 @@ void ShopManager::BuildShopItem()
 	a[index].level = 3;
 	a[index].contactUp = 5;
 	a[index].onButtonPressed = [this, contact = a[index].contactUp]() { this->ApplyContactUp(contact); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return Player::Instance().GetSelectedRealBatterContact() < 99; }; // コンタクトが99未満の場合のみボタンを有効化
 	++index;
 
 	//ミートアシスト
@@ -308,19 +338,18 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"ミートアシスト";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\meetAssist.png";
 	a[index].price = 1000;
-	a[index].appearanceRate = 100.0f;// 5%の確率で出現
+	a[index].appearanceRate = 0.5f;// 0.5%の確率で出現
 	a[index].level = 1;
 	a[index].onButtonPressed = [this]() { this->EnableMeetAssist(); }; // ボタンが押されたときの処理を設定
 	a[index].isButtonEnabled = [this]() { return !BatSprite::Instance().GetMeetAssistEnabled(); }; // ミートアシストが有効でない場合のみボタンを有効化
 	++index;
-
 
 	//球数増加
 	a[index].id = ShopItemID::BallIncrease;
 	a[index].name = u8"球数増加";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\ballIncrease.png";
 	a[index].price = 500;
-	a[index].appearanceRate = 8.0f;// 8%の確率で出現
+	a[index].appearanceRate = 50.0f;// 50%の確率で出現
 	a[index].level = 1;
 	a[index].increaseBallCount = 1;
 	a[index].onButtonPressed = [this, count = a[index].increaseBallCount]() { this->IncreaseBallCount(count); }; // ボタンが押されたときの処理を設定
@@ -332,7 +361,7 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"風無効";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\wind.png";
 	a[index].price = 500;
-	a[index].appearanceRate = 8.0f;// 8%の確率で出現
+	a[index].appearanceRate = 10.0f;// 10%の確率で出現
 	a[index].level = 1;
 	a[index].onButtonPressed = [this]() { this->DisableWindEffect(); }; // ボタンが押されたときの処理を設定
 	a[index].isButtonEnabled = [this]() { return Pitcher::Instance().IsWindEffectEnabled(); }; // 風効果が有効な場合のみボタンを有効化
@@ -343,7 +372,7 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"球威ワンランクダウン";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\pitcherPowerDown.png";
 	a[index].price = 1000;
-	a[index].appearanceRate = 5.0f;// 5%の確率で出現
+	a[index].appearanceRate = 10.0f;// 10%の確率で出現
 	a[index].level = 1;
 	a[index].pitcherPowerPenalty = 1; 
 	a[index].onButtonPressed = [this, penalty = a[index].pitcherPowerPenalty]() { this->PitcherPowerRankDown(penalty); }; // ボタンが押されたときの処理を設定
@@ -355,7 +384,7 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"変化量ワンランクダウン";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\pitcherBreakDown.png";
 	a[index].price = 1000;
-	a[index].appearanceRate = 5.0f;// 5%の確率で出現
+	a[index].appearanceRate = 10.0f;// 10%の確率で出現
 	a[index].level = 1;
 	a[index].pitcherBreakBallPenalty = 1;
 	a[index].onButtonPressed = [this, penalty = a[index].pitcherBreakBallPenalty]() { this->PitcherBreakBallRankDown(penalty); }; // ボタンが押されたときの処理を設定
@@ -367,12 +396,12 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"球種減少";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\pitchTypeDecrease.png";
 	a[index].price = 1500;
-	a[index].appearanceRate = 5.0f;// 5%の確率で出現
+	a[index].appearanceRate = 8.0f;// 8%の確率で出現
 	a[index].level = 1;
 	a[index].onButtonPressed = [this]() { this->SelectPitchTypeState(); }; // ボタンが押されたときの処理を設定
 	a[index].isButtonEnabled = [this]()
 		{
-			// 選べる球種が2つ以上残っている場合のみ購入可能(0個や1個になるのを防ぐ)
+			// 球種が2種類以上ある場合のみ購入可能
 			Pitcher::RealPitcher rp = Pitcher::Instance().GetSelectedRealPitcher();
 			return Pitcher::Instance().GetAvailablePitchTypes(rp).size() > 1;
 		};
@@ -383,7 +412,7 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"ホームラン倍率アップ";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\homerunMultiplyUp.png";
 	a[index].price = 800;
-	a[index].appearanceRate = 7.0f;// 7%の確率で出現
+	a[index].appearanceRate = 70.0f;// 70%の確率で出現
 	a[index].level = 1;
 	a[index].homerunMultiplierUp = 0.1f; // ホームラン倍率を10%増加
 	a[index].onButtonPressed = [this, multiplier = a[index].homerunMultiplierUp]() { this->IncreaseHomeRunMultiplier(multiplier); }; // ボタンが押されたときの処理を設定
@@ -394,7 +423,7 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"変化球倍率アップ";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\breakingBallMultiplyUp.png";
 	a[index].price = 800;
-	a[index].appearanceRate = 7.0f;// 7%の確率で出現
+	a[index].appearanceRate = 70.0f;// 70%の確率で出現
 	a[index].level = 1;
 	a[index].breakingBallMultiplierUp = 0.1f; // 変化球倍率を10%増加
 	a[index].onButtonPressed = [this, multiplier = a[index].breakingBallMultiplierUp]() { this->IncreaseBreakingBallMultiplier(multiplier); }; // ボタンが押されたときの処理を設定
@@ -405,7 +434,7 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"重力変化";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\gravityChange.png";
 	a[index].price = 1000;
-	a[index].appearanceRate = 7.0f;// 7%の確率で出現
+	a[index].appearanceRate = 2.0f;// 2%の確率で出現
 	a[index].level = 1;
 	a[index].gravityChange = 0.8f; // 重力を80%に変更
 	++index;
@@ -415,7 +444,7 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"特殊能力発動率アップ";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\specialAbilityActiveRateUp.png";
 	a[index].price = 1200;
-	a[index].appearanceRate = 7.0f;// 7%の確率で出現
+	a[index].appearanceRate = 40.0f;// 40%の確率で出現
 	a[index].level = 1;
 	a[index].specialAbilityActiveRateUp = 5.0f; // 特殊能力発動率を5%増加
 	a[index].isButtonVisible = [this]() { return AbilityIsOwned(); };// 特殊能力を所有している場合のみ表示
@@ -448,7 +477,7 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"無料";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\free.png";
 	a[index].price = 5000;
-	a[index].appearanceRate = 3.0f;// 3%の確率で出現
+	a[index].appearanceRate = 2.0f;// 2%の確率で出現
 	a[index].level = 1;
 	a[index].targetHomerun = 3;
 	++index;
@@ -462,6 +491,30 @@ void ShopManager::BuildShopItem()
 	a[index].level = 1;
 	a[index].onButtonPressed = [this]() { this->RerollShopItems(); }; // ボタンが押されたときの処理を設定
 	++index;
+
+	//ボール球率アップ
+	a[index].id = ShopItemID::BallZoneRateUp;
+	a[index].name = u8"ボール球率アップ";
+	a[index].texturePath = L".\\resources\\textures\\shopIcon\\ballZoneRateUp.png";
+	a[index].price = 300;
+	a[index].appearanceRate = 30.0f;// 30%の確率で出現
+	a[index].level = 1;
+	a[index].ballZoneRateUp = 0.05f; // ボール球率を5%増加
+	a[index].onButtonPressed = [this, rate = a[index].ballZoneRateUp]() { this->IncreaseBallZoneRate(rate); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return !Pitcher::Instance().IsStrikeRateMin(); }; // ボール球率が最大値未満の場合のみボタンを有効化
+	++index;
+
+	//ボール球ボーナス50アップ
+	a[index].id = ShopItemID::BallZoneBonus;
+	a[index].name = u8"ボール球ボーナス50アップ";
+	a[index].texturePath = L".\\resources\\textures\\shopIcon\\ballZoneBonusUp.png";
+	a[index].price = 500;
+	a[index].appearanceRate = 30.0f;// 30%の確率で出現
+	a[index].level = 1;
+	a[index].ballZoneBonus = 50; // ボール球ボーナスを50増加
+	a[index].onButtonPressed = [this, bonus = a[index].ballZoneBonus]() { this->IncreaseBallZoneBonus(bonus); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonVisible = [this]() { return Pitcher::Instance().GetCurrentStrikeRate() < 1.0f; }; // ボール球ボーナスはストライク率が1.0未満の場合のみ表示
+	++index;
 }
 
 void ShopManager::Uninitialize()
@@ -471,6 +524,8 @@ void ShopManager::Uninitialize()
 	pixel_shader.Reset();
 	vertex_shader.Reset();
 	input_layout.Reset();
+	delete purchaseSound;
+	delete notEnoughMoneySound;
 }
 
 void ShopManager::Update(float elapsedTime)
@@ -547,17 +602,19 @@ void ShopManager::UpdateShopItem()
 		if(mousePos.x >= itemX && mousePos.x <= itemX + shopItemSize.x &&
 		   mousePos.y >= itemY && mousePos.y <= itemY + shopItemSize.y && !item.isPurchased)
 		{
-			item.isHover = true;
+			slotHover[i] = true;
 
 			if(clicked)
 			{
-				if(Money::Instance().GetCurrentMoney() >= item.price)
+				if(Money::Instance().GetCurrentMoney() >= item.price && !slotPurchased[i])
 				{
 					Money::Instance().DecreaseMoney(item.price);
+					purchaseSound->PlayOneShot();
 
 					if (item.id != ShopItemID::Reroll)
 					{
-						item.isPurchased = true;
+						slotPurchased[i] = true;
+						
 					}
 
 					if(item.onButtonPressed)
@@ -565,11 +622,15 @@ void ShopManager::UpdateShopItem()
 						item.onButtonPressed();
 					}
 				}
+				else if (Money::Instance().GetCurrentMoney() < item.price || slotPurchased[i])// お金が足りない場合、またはすでに購入済みの場合
+				{
+					notEnoughMoneySound->PlayOneShot();
+				}
 			}
 		}
 		else
 		{
-			item.isHover = false;
+			slotHover[i] = false;
 		}
 	}
 }
@@ -835,6 +896,7 @@ void ShopManager::Render()
 
 	if (Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch && RoundManager::Instance().IsShopState())
 	{
+		//選択中のバッターのパラメータを描画
 		if (selectedBatterIndex >= 0 && selectedBatterIndex < BATTER_COUNT)
 		{
 			float drawX = batterParamBackPosition.x - batterParamBackSize.x / 2.0f;
@@ -966,6 +1028,7 @@ void ShopManager::Render()
 	context->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
+	//ショップアイテムの描画
 	for(int slotIndex = 0; slotIndex < SHOP_ITEM_DISPLAY_COUNT; ++slotIndex)
 	{
 		if (slotIndex >= static_cast<int>(currentShopItemIndices.size())) break;
@@ -979,9 +1042,9 @@ void ShopManager::Render()
 		float drawY = (shopItemPositions[slotIndex].y + currentOffsetY) - shopItemSize.y / 2.0f;
 
 		//ホバー時か購入できない状態の時か購入済みに色を変える
-		bool canPurchase = Money::Instance().GetCurrentMoney() >= item.price && !item.isPurchased;
+		bool canPurchase = Money::Instance().GetCurrentMoney() >= item.price && !slotPurchased[slotIndex];
 
-		float colorRGB = item.isHover ? 0.7f : (canPurchase ? 1.0f : 0.7f);
+		float colorRGB = slotHover[slotIndex] ? 0.7f : (canPurchase ? 1.0f : 0.7f);
 
 		shopItemSpriteObjects[itemIndex]->render(context,
 			drawX,
@@ -989,6 +1052,56 @@ void ShopManager::Render()
 			shopItemSize.x, shopItemSize.y,
 			colorRGB, colorRGB, colorRGB, 1.0f,
 			0.0f);
+
+		//アイテムの価格を描画
+
+		float priceWidth, priceHeight;
+		std::string priceText = std::to_string(item.price);
+
+		priceFont.MeasureText(priceText.c_str(), priceFontScale, priceWidth, priceHeight);
+
+		float priceX = shopItemPositions[slotIndex].x - priceWidth / 2.0f + priceFontOffset.x;
+		float priceY = (shopItemPositions[slotIndex].y + currentOffsetY) - priceHeight / 2.0f + priceFontOffset.y;
+
+		//購入できるときは白、購入できないときは赤にする
+		DirectX::XMFLOAT3 priceColorRGB = canPurchase ? DirectX::XMFLOAT3{1.0f, 1.0f, 1.0f} : DirectX::XMFLOAT3{1.0f, 0.0f, 0.0f}; // 赤にする場合は1.0f, 0.0f, 0.0fのように設定する
+
+		priceFont.DrawTextW(context, priceText.c_str(),
+			priceX, priceY,
+			priceFontScale,
+			priceColorRGB.x, priceColorRGB.y, priceColorRGB.z, 1.0f);
+
+
+		context->VSSetShader(vertex_shader.Get(), nullptr, 0);
+		context->PSSetShader(pixel_shader.Get(), nullptr, 0);
+		context->IASetInputLayout(input_layout.Get());
+
+		context->OMSetDepthStencilState(
+			renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+		float coinX = shopItemPositions[slotIndex].x - coinSize.x / 2.0f - coinOffset.x;
+		float coinY = (shopItemPositions[slotIndex].y + currentOffsetY) - coinSize.y / 2.0f + coinOffset.y;
+
+		coinSprite->render(context,
+			coinX,
+			coinY,
+			coinSize.x, coinSize.y,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			0.0f);
+
+		//購入済みの場合はsoldOutのテクスチャを描画
+		if(slotPurchased[slotIndex])
+		{
+			float soldOutX = shopItemPositions[slotIndex].x - soldOutSize.x / 2.0f;
+			float soldOutY = (shopItemPositions[slotIndex].y + currentOffsetY) - soldOutSize.y / 2.0f;
+			soldOutSprite->render(context,
+				soldOutX,
+				soldOutY,
+				soldOutSize.x, soldOutSize.y,
+				1.0f,1.0f,1.0f,1.0f,
+				0.0f);
+		}
+
 	}
 
 	if (currentShopState == ShopState::SelectPitchType)

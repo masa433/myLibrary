@@ -222,6 +222,7 @@ void Money::Initialize(ID3D11Device* device)
 
 	currentMoney = 0;
 	targetMoney = 0;
+	currentBallZoneBonusMoney = baseBallZoneBonusMoney;
 
 }
 

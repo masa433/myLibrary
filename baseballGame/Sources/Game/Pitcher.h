@@ -582,6 +582,30 @@ public:
 		return availablePitchTypes;
 	}
 
+	static constexpr float MIN_STRIKE_RATE = 0.7f; // 最小ストライク率
+
+	//ストライク率を下げる関数
+	void DecreaseStrikeRate(float amount)
+	{
+		aiStrikeRate -= amount;
+		if (aiStrikeRate < MIN_STRIKE_RATE)
+		{
+			aiStrikeRate = MIN_STRIKE_RATE;
+		}
+	}
+
+	//現在のストライク率を取得する関数
+	float GetCurrentStrikeRate() const
+	{
+		return aiStrikeRate;
+	}
+
+	//ストライク率が最小値に達しているかを確認する関数
+	bool IsStrikeRateMin() const
+	{
+		return aiStrikeRate <= MIN_STRIKE_RATE;
+	}
+
 private:
 	std::vector<PitchType> disabledPitchTypes; // ショップで減らされた球種のリスト
 
