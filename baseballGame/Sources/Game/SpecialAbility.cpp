@@ -162,6 +162,7 @@ void SpecialAbility::Initialize(ID3D11Device* device)
 
 
 	InitializeAbilities(device, context);
+	ResetActivationRate();
 }
 
 void SpecialAbility::InitializeAbilities(ID3D11Device* device, ID3D11DeviceContext* context)

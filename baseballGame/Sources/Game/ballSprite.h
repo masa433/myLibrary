@@ -422,6 +422,15 @@ public:
 		return GetBreakGradeScale(effectiveGrade);
 	}
 
+	//球威と変化量のランクダウンをリセットする
+	void ResetRankDowns()
+	{
+		shopPowerRankDown = 0;
+		shopBreakRankDown = 0;
+		abilityPowerRankDown = 0;
+		abilityBreakRankDown = 0;
+	}
+
 private:
 	AudioSource* catchSound = nullptr;
 	AudioSource* catchStrongSound = nullptr;

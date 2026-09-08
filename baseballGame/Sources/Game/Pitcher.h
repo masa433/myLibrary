@@ -582,6 +582,12 @@ public:
 		return availablePitchTypes;
 	}
 
+	//球種をリセットする
+	void ResetDisabledPitchTypes()
+	{
+		disabledPitchTypes.clear();
+	}
+
 	static constexpr float MIN_STRIKE_RATE = 0.7f; // 最小ストライク率
 
 	//ストライク率を下げる関数

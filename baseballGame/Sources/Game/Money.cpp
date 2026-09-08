@@ -223,6 +223,11 @@ void Money::Initialize(ID3D11Device* device)
 	currentMoney = 0;
 	targetMoney = 0;
 	currentBallZoneBonusMoney = baseBallZoneBonusMoney;
+	breakingBallBonus = 1.1f;
+	homerunBonus = 1.1f;
+	comboBonus = 1.0f;
+	moneyMakerBonus = 0.0f;
+	jackpotBonus = 0.0f;
 
 }
 

@@ -132,11 +132,13 @@ void Pitcher::Initialize()
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 	aiStrikeRate = 1.0f; // AIのストライク率を初期化
 	pitchHistory.clear();// 投球履歴をクリア
+	windEffectEnabled = true; // 風の影響を有効にする
 
 	InitializePitchSettings();
 	SelectPitchType();
 	SelectRealPitcher(selectedRealPitcher);
 	UpdatePitcherModel();
+	ResetDisabledPitchTypes();
 }
 
 //ピッチセッティングの初期化

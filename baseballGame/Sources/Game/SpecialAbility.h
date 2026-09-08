@@ -232,6 +232,18 @@ public:
 		}
 	}
 
+	//発動率をリセットする
+	void ResetActivationRate()
+	{
+		int index = static_cast<int>(AbilityID::Count);
+		if (index < 0 || index >= ABILITY_COUNT) return;
+		auto& ability = abilities[index];
+		if (ability.isOwned)
+		{
+			ability.activationRate = 0.0f; // 発動率をリセット
+		}
+	}
+
 private:
 
 	//テクスチャ関連

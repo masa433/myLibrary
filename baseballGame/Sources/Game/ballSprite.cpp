@@ -348,6 +348,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 	InitSpinFlip(device, context);
 
 	SyncRealPitcherBreaks();// 投手の変化量データをボールスプライトに同期
+	ResetRankDowns(); // ランクダウンの状態をリセット
 }
 
 void ballSprite::InitSpinFlip(ID3D11Device* device, ID3D11DeviceContext* context)

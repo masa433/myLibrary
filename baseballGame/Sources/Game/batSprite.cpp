@@ -50,7 +50,8 @@ void BatSprite::Initialize(ID3D11Device* device)
 	ShowCursor(FALSE);
 #endif // !_DEBUG
 
-	
+	isMeetAssistEnabled = false;
+	isAssisting = false;
 
 }
 

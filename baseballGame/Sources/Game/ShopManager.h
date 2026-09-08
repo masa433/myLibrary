@@ -145,7 +145,12 @@ public:
 		easingTimer = 0.0f;
 		startOffsetY = currentOffsetY; // 現在位置を初期位置に設定
 		targetOffsetY = 0.0f; // 目標位置を画面中央に設定
-		
+
+		for(int i = 0; i < SHOP_ITEM_DISPLAY_COUNT; ++i)
+		{
+			slotPurchased[i] = false; // 購入済みフラグをリセット
+			slotHover[i] = false; // ホバーフラグをリセット
+		}
 		currentShopItemIndices = ShopLayout(); // ショップアイテムのレイアウトを更新
 	}
 
@@ -177,7 +182,7 @@ public:
 
 		for (int i = 0; i < SHOP_ITEM_COUNT; ++i)
 		{
-			if (!shopItems[i].isPurchased && 
+			if (!slotPurchased[i] && 
 				shopItems[i].id != ShopItemID::Reroll && 
 				(!shopItems[i].isButtonVisible || shopItems[i].isButtonVisible()) &&
 				(!shopItems[i].isButtonEnabled || shopItems[i].isButtonEnabled()))//購入済みでないアイテムかつリロールボタン以外のアイテムで、出現条件を満たすアイテムのインデックスを取得
