@@ -1345,8 +1345,9 @@ physx::PxVec3 Pitcher::GetSpinAxisFromPitchType() const
 
 void Pitcher::ApplyPhysicsToBall(float elapsedTime)
 {
+	
 	physx::PxVec3 windVec(0.0f, 0.0f, 0.0f);
-	if (Wind::Instance().IsBallInWindArea())
+	if (Wind::Instance().IsBallInWindArea() && windEffectEnabled)
 	{
 		windVec = physx::PxVec3(Wind::Instance().GetWindVector().x, Wind::Instance().GetWindVector().y, Wind::Instance().GetWindVector().z);
 	}

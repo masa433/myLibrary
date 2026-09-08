@@ -522,4 +522,43 @@ public:
 		int newIndex = (std::max)(static_cast<int>(BreakGrade::F), index - rankDown);
 		return static_cast<BreakGrade>(newIndex);
 	}
+
+	//現在の球種の球威を取得する関数
+	Power GetCurrentPitchPower() const
+	{
+		if (realPitcherArsenal.empty()) return Power::F;
+		for (const auto& entry : realPitcherArsenal)
+		{
+			if (entry.pitchType == selectedPitchType)
+			{
+				return entry.power;
+			}
+		}
+		return Power::F; // 見つからなかった場合はFを返す
+	}
+
+	//現在の球種の変化球グレードを取得する関数
+	BreakGrade GetCurrentPitchBreakGrade() const
+	{
+		if (realPitcherArsenal.empty()) return BreakGrade::F;
+		for (const auto& entry : realPitcherArsenal)
+		{
+			if (entry.pitchType == selectedPitchType)
+			{
+				return entry.breakGrade;
+			}
+		}
+		return BreakGrade::F; // 見つからなかった場合はFを返す
+	}
+
+private:
+
+	//風の影響を受けるかどうか
+	bool windEffectEnabled = true;
+
+public:
+
+	bool IsWindEffectEnabled() const { return windEffectEnabled; }
+	void SetWindEffectEnabled(bool enabled) { windEffectEnabled = enabled; }
+
 };

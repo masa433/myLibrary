@@ -160,7 +160,8 @@ public:
 		{
 			if (!shopItems[i].isPurchased && 
 				shopItems[i].id != ShopItemID::Reroll && 
-				(!shopItems[i].isButtonVisible || shopItems[i].isButtonVisible()))
+				(!shopItems[i].isButtonVisible || shopItems[i].isButtonVisible()) &&
+				(!shopItems[i].isButtonEnabled || shopItems[i].isButtonEnabled()))
 			{
 				allItems.push_back(i);//購入済みでないアイテムのインデックスを追加
 			}
@@ -321,6 +322,7 @@ private:
 	void PitcherPowerRankDown(int penalty);
 	void PitcherBreakBallRankDown(int penalty);
 	void EnableMeetAssist();//ミートアシストを有効化する関数
+	void DisableWindEffect();//風の影響を無効化する関数
 
 	int shopPowerRankDown = 0; //ショップでの威圧感能力の投手へのペナルティ
 	int shopBreakRankDown = 0; //ショップでの威圧感能力の変化球へのペナルティ

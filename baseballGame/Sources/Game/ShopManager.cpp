@@ -56,6 +56,11 @@ void ShopManager::EnableMeetAssist()
 	BatSprite::Instance().SetMeetAssistEnabled(true);
 }
 
+void ShopManager::DisableWindEffect()
+{
+	Pitcher::Instance().SetWindEffectEnabled(false);
+}
+
 void ShopManager::Initialize(ID3D11Device* device)
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
@@ -226,6 +231,7 @@ void ShopManager::BuildShopItem()
 	a[index].appearanceRate = 100.0f;// 5%の確率で出現
 	a[index].level = 1;
 	a[index].onButtonPressed = [this]() { this->EnableMeetAssist(); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return !BatSprite::Instance().GetMeetAssistEnabled(); }; // ミートアシストが有効でない場合のみボタンを有効化
 	++index;
 
 
@@ -238,6 +244,7 @@ void ShopManager::BuildShopItem()
 	a[index].level = 1;
 	a[index].increaseBallCount = 1;
 	a[index].onButtonPressed = [this, count = a[index].increaseBallCount]() { this->IncreaseBallCount(count); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return ballCount::Instance().GetInitialBalls() < 15; }; // 球数が15未満の場合のみボタンを有効化
 	++index;
 
 	//風無効
@@ -247,6 +254,8 @@ void ShopManager::BuildShopItem()
 	a[index].price = 500;
 	a[index].appearanceRate = 8.0f;// 8%の確率で出現
 	a[index].level = 1;
+	a[index].onButtonPressed = [this]() { this->DisableWindEffect(); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return Pitcher::Instance().IsWindEffectEnabled(); }; // 風効果が有効な場合のみボタンを有効化
 	++index;
 
 	//球威ワンランクダウン
@@ -258,6 +267,7 @@ void ShopManager::BuildShopItem()
 	a[index].level = 1;
 	a[index].pitcherPowerPenalty = 1; 
 	a[index].onButtonPressed = [this, penalty = a[index].pitcherPowerPenalty]() { this->PitcherPowerRankDown(penalty); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return shopPowerRankDown < 3; }; // 球威ワンランクダウンは最大3回まで購入可能
 	++index;
 
 	//変化量ワンランクダウン
@@ -269,6 +279,7 @@ void ShopManager::BuildShopItem()
 	a[index].level = 1;
 	a[index].pitcherBreakBallPenalty = 1;
 	a[index].onButtonPressed = [this, penalty = a[index].pitcherBreakBallPenalty]() { this->PitcherBreakBallRankDown(penalty); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return shopBreakRankDown < 3; }; // 変化量ワンランクダウンは最大3回まで購入可能
 	++index;
 
 	//球種減少

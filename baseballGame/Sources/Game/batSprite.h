@@ -83,4 +83,5 @@ public:
 
 	//ミートアシストを有効化する関数
 	void SetMeetAssistEnabled(bool enabled) { isMeetAssistEnabled = enabled; }
+	bool GetMeetAssistEnabled() const { return isMeetAssistEnabled; }
 };
