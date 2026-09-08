@@ -551,7 +551,39 @@ public:
 		return BreakGrade::F; // 見つからなかった場合はFを返す
 	}
 
+	//球種を無効化する関数
+	void DisablePitchType(PitchType pitchType)
+	{
+		// disabledPitchTypes に pitchType を追加する
+		if(!IsPitchTypeDisabled(pitchType))
+		{
+			disabledPitchTypes.push_back(pitchType);
+		}
+	}
+
+	
+	bool IsPitchTypeDisabled(PitchType pitchType) const
+	{
+		// disabledPitchTypes に pitchType が含まれているかを確認
+		return std::find(disabledPitchTypes.begin(), disabledPitchTypes.end(), pitchType) != disabledPitchTypes.end();
+	}
+
+	//現在のピッチャーがまだ投げられる球種を取得する関数
+	std::vector<PitchType> GetAvailablePitchTypes(RealPitcher pitcher) const
+	{
+		std::vector<PitchType> availablePitchTypes;// 現在のピッチャーが投げられる球種を格納するベクター
+		for (const auto& entry : realPitcherArsenal)
+		{
+			if (!IsPitchTypeDisabled(entry.pitchType))// 無効化されていない球種のみを追加
+			{
+				availablePitchTypes.push_back(entry.pitchType);// 無効化されていない球種のみを追加
+			}
+		}
+		return availablePitchTypes;
+	}
+
 private:
+	std::vector<PitchType> disabledPitchTypes; // ショップで減らされた球種のリスト
 
 	//風の影響を受けるかどうか
 	bool windEffectEnabled = true;

@@ -7,6 +7,7 @@
 #include "sprite.h"
 #include "json.hpp"
 #include "Player.h"
+#include "Pitcher.h"
 #include <random>
 #include <functional>
 
@@ -161,7 +162,7 @@ public:
 			if (!shopItems[i].isPurchased && 
 				shopItems[i].id != ShopItemID::Reroll && 
 				(!shopItems[i].isButtonVisible || shopItems[i].isButtonVisible()) &&
-				(!shopItems[i].isButtonEnabled || shopItems[i].isButtonEnabled()))
+				(!shopItems[i].isButtonEnabled || shopItems[i].isButtonEnabled()))//購入済みでないアイテムかつリロールボタン以外のアイテムで、出現条件を満たすアイテムのインデックスを取得
 			{
 				allItems.push_back(i);//購入済みでないアイテムのインデックスを追加
 			}
@@ -257,9 +258,39 @@ private:
 		}
 	}
 
+public:
+
+	enum class ShopState
+	{
+		Normal,
+		SelectPitchType,
+		SelectSpecialAbility,
+	};
+
 private:
 
 	
+
+	ShopState currentShopState = ShopState::Normal;
+
+	std::vector<Pitcher::PitchType> pitchTypeChoices; // 利用可能な球種のリスト
+	int hoveredPitchTypeIndex = -1; // ホバー中の球種のインデックス
+	
+	static constexpr int MAX_PITCH_TYPE_CHOICES = 19;// 最大球種数
+	DirectX::XMFLOAT2 pitchTypeIconPositions[MAX_PITCH_TYPE_CHOICES];
+	DirectX::XMFLOAT2 pitchTypeIconSize = { 150.0f, 37.5f };
+	std::unique_ptr<sprite> pitchTypeSprites[MAX_PITCH_TYPE_CHOICES];
+
+	FontRenderer pitchTypeFont;
+	DirectX::XMFLOAT2 pitchTypeFontPosition = { 960.0f, 100.0f };
+	float pitchTypeFontScale = 0.5f;
+
+	void UpdateSelectPitchTypeState();
+	void RenderSelectPitchTypeState();
+
+	// 球種ごとのアイコン画像パスを返す
+	static std::wstring GetPitchTypeIconPath(Pitcher::PitchType type);
+
 
 	//ショップに必要なデータを保持する構造体
 	struct ShopData
@@ -323,6 +354,10 @@ private:
 	void PitcherBreakBallRankDown(int penalty);
 	void EnableMeetAssist();//ミートアシストを有効化する関数
 	void DisableWindEffect();//風の影響を無効化する関数
+	//ピッチャーの持っている球種を選択するステート
+	void SelectPitchTypeState();
+	//バッターが持っている特殊能力を選択するステート
+	void SelectSpecialAbilityState();
 
 	int shopPowerRankDown = 0; //ショップでの威圧感能力の投手へのペナルティ
 	int shopBreakRankDown = 0; //ショップでの威圧感能力の変化球へのペナルティ

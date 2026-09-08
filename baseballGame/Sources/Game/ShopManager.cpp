@@ -61,6 +61,33 @@ void ShopManager::DisableWindEffect()
 	Pitcher::Instance().SetWindEffectEnabled(false);
 }
 
+std::wstring ShopManager::GetPitchTypeIconPath(Pitcher::PitchType type)
+{
+	switch (type)
+	{
+	case Pitcher::PitchType::Fastball:        return L".\\resources\\textures\\pitchTypeButtonList\\straight.png";
+	case Pitcher::PitchType::Slider:          return L".\\resources\\textures\\pitchTypeButtonList\\slider.png";
+	case Pitcher::PitchType::Curveball:       return L".\\resources\\textures\\pitchTypeButtonList\\curve.png";
+	case Pitcher::PitchType::Changeup:        return L".\\resources\\textures\\pitchTypeButtonList\\changeUp.png";
+	case Pitcher::PitchType::Forkball:        return L".\\resources\\textures\\pitchTypeButtonList\\fork.png";
+	case Pitcher::PitchType::TwoSeam:         return L".\\resources\\textures\\pitchTypeButtonList\\twoSeam.png";
+	case Pitcher::PitchType::Cutter:          return L".\\resources\\textures\\pitchTypeButtonList\\cutter.png";
+	case Pitcher::PitchType::Sinker:          return L".\\resources\\textures\\pitchTypeButtonList\\sinker.png";
+	case Pitcher::PitchType::VerticalSlider:  return L".\\resources\\textures\\pitchTypeButtonList\\verticalSlider.png";
+	case Pitcher::PitchType::Splitter:        return L".\\resources\\textures\\pitchTypeButtonList\\splitter.png";
+	case Pitcher::PitchType::SlowCurve:       return L".\\resources\\textures\\pitchTypeButtonList\\slowCurve.png";
+	case Pitcher::PitchType::Shooter:         return L".\\resources\\textures\\pitchTypeButtonList\\shoot.png";
+	case Pitcher::PitchType::Knuckleball:     return L".\\resources\\textures\\pitchTypeButtonList\\knuckle.png";
+	case Pitcher::PitchType::SlowBall:        return L".\\resources\\textures\\pitchTypeButtonList\\slowBall.png";
+	case Pitcher::PitchType::Sweeper:         return L".\\resources\\textures\\pitchTypeButtonList\\sweeper.png";
+	case Pitcher::PitchType::Palm:            return L".\\resources\\textures\\pitchTypeButtonList\\palm.png";
+	case Pitcher::PitchType::NaturalShoot:    return L".\\resources\\textures\\pitchTypeButtonList\\naturalShoot.png";
+	case Pitcher::PitchType::CutFastball:     return L".\\resources\\textures\\pitchTypeButtonList\\cutFastBall.png";
+	case Pitcher::PitchType::BlazingFastball: return L".\\resources\\textures\\pitchTypeButtonList\\blazingFastball.png";
+	default:                                  return L".\\resources\\textures\\pitchTypeButtonList\\straight.png"; // 保険
+	}
+}
+
 void ShopManager::Initialize(ID3D11Device* device)
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
@@ -98,8 +125,15 @@ void ShopManager::Initialize(ID3D11Device* device)
 		batterSprites[i] = std::make_unique<sprite>(device, context, batterSpriteData[i]->texturePath.c_str());
 	}
 
+	for(int i=0; i < MAX_PITCH_TYPE_CHOICES; ++i)
+	{
+		Pitcher::PitchType type = static_cast<Pitcher::PitchType>(i);
+		pitchTypeSprites[i] = std::make_unique<sprite>(device, context, GetPitchTypeIconPath(type).c_str());
+	}
+
 	static std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
-		u8"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		u8"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		u8"どの球種を減らす？");
 
 	moneyFont.Initialize(device,
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
@@ -114,6 +148,13 @@ void ShopManager::Initialize(ID3D11Device* device)
 		100.0f,
 		screenWidth, screenHeight,
 		1024, 1024,
+		&trackingDataCodepoints);
+
+	pitchTypeFont.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		100.0f,
+		screenWidth, screenHeight,
+		4096, 2096,
 		&trackingDataCodepoints);
 
 	powerFontData.position = { 1275.0f, 590.0f }; // 画面内に配置
@@ -289,6 +330,13 @@ void ShopManager::BuildShopItem()
 	a[index].price = 1500;
 	a[index].appearanceRate = 5.0f;// 5%の確率で出現
 	a[index].level = 1;
+	a[index].onButtonPressed = [this]() { this->SelectPitchTypeState(); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]()
+		{
+			// 選べる球種が2つ以上残っている場合のみ購入可能(0個や1個になるのを防ぐ)
+			Pitcher::RealPitcher rp = Pitcher::Instance().GetSelectedRealPitcher();
+			return Pitcher::Instance().GetAvailablePitchTypes(rp).size() > 1;
+		};
 	++index;
 
 	//ホームラン倍率アップ
@@ -386,34 +434,11 @@ void ShopManager::Uninitialize()
 
 void ShopManager::Update(float elapsedTime)
 {
-	// 右シフトキーが「押された瞬間」だけパワーを1増やす
-	static bool isRShiftPressed = false;
-	if (GetAsyncKeyState(VK_RSHIFT) & 0x8000)
+	
+	if (currentShopState == ShopState::SelectPitchType)
 	{
-		if (!isRShiftPressed)
-		{
-			Player::Instance().IncreaseBaseBatterPower(1);
-			isRShiftPressed = true;
-		}
-	}
-	else
-	{
-		isRShiftPressed = false;
-	}
-
-	// 右コントロールキーが「押された瞬間」だけミートを1増やす
-	static bool isRControlPressed = false;
-	if (GetAsyncKeyState(VK_RCONTROL) & 0x8000)
-	{
-		if (!isRControlPressed)
-		{
-			Player::Instance().IncreaseBaseBatterContact(1);
-			isRControlPressed = true;
-		}
-	}
-	else
-	{
-		isRControlPressed = false;
+		UpdateSelectPitchTypeState();
+		return; // 選択中は通常のショップ更新をしない
 	}
 
 	UpdateShopItem();
@@ -498,6 +523,111 @@ void ShopManager::UpdateShopItem()
 		else
 		{
 			item.isHover = false;
+		}
+	}
+}
+
+void ShopManager::SelectPitchTypeState()
+{
+	Pitcher::RealPitcher rp = Pitcher::Instance().GetSelectedRealPitcher();
+	pitchTypeChoices = Pitcher::Instance().GetAvailablePitchTypes(rp);// 選択された投手の使用可能な球種を取得
+
+	// pitchTypeChoicesが空の場合は、何もせずに戻る
+	if (pitchTypeChoices.empty())
+	{
+		return;
+	}
+
+	hoveredPitchTypeIndex = -1; // 初期化
+	currentShopState = ShopState::SelectPitchType;
+
+	int slotIndex = -1;
+	for(int i = 0; i < static_cast<int>(currentShopItemIndices.size()); ++i)
+	{
+		//球種減少アイテムのインデックスを探す
+		if(shopItems[currentShopItemIndices[i]].id == ShopItemID::PitchTypeDecrease)
+		{
+			slotIndex = i;
+			break;
+		}
+	}	
+
+	// 見つからなかった場合の位置は画面中央にフォールバックする
+	DirectX::XMFLOAT2 buttonScreenPos = { 960.0f, 540.0f }; // 画面中央あたりにフォールバック
+	if (slotIndex != -1)
+	{
+		float itemX = shopItemPositions[slotIndex].x - shopItemSize.x / 2.0f;
+		float itemY = (shopItemPositions[slotIndex].y + currentOffsetY) - shopItemSize.y / 2.0f;
+		buttonScreenPos = { itemX + shopItemSize.x, itemY }; // ボタンの右上を基準点にする
+	}
+
+	// グリッド配置(3列)を計算
+	const int columns = 3;
+	const float gapX = 20.0f; // アイコン間の水平間隔
+	const float spacingX = pitchTypeIconSize.x + gapX;
+	const float spacingY = pitchTypeIconSize.y + gapX;
+
+	float baseX = buttonScreenPos.x + gapX + pitchTypeIconSize.x / 2.0f; // ボタンの右側に配置
+	float baseY = buttonScreenPos.y + pitchTypeIconSize.y / 2.0f; // ボタンの上側に配置
+
+	for (int i = 0; i < static_cast<int>(pitchTypeChoices.size()); ++i)
+	{
+		int col = i % columns;
+		int row = i / columns;
+		pitchTypeIconPositions[i] = { baseX + col * spacingX, baseY + row * spacingY };
+		
+	}
+
+	//アイコングリッドの1列目のX座標を基準にして、中央揃えにするためのオフセットを計算
+	int itemCount = static_cast<int>(pitchTypeChoices.size());
+	int colsUsedInTopRow = (itemCount < columns) ? itemCount : columns; // 1行目に実際に並ぶ列数
+
+	// グリッド全体の水平方向の中心Xを求める(1行目の左端～右端の中間)
+	float gridCenterX = baseX + ((colsUsedInTopRow - 1) * spacingX) / 2.0f;
+
+	// アイコンの一番上(1行目の上端)から少し余白を空けた位置をY座標にする
+	const float textMarginAboveIcons = 20.0f; // アイコンとテキストの間隔
+	float gridTopY = baseY - pitchTypeIconSize.y / 2.0f; // 1行目アイコンの上端
+	float textY = gridTopY - textMarginAboveIcons; // その少し上
+
+	pitchTypeFontPosition = { gridCenterX, textY };
+
+	ID3D11Device* device = Graphics::Instance().GetDevice();
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+	for (int i = 0; i < static_cast<int>(pitchTypeChoices.size()); ++i)
+	{
+		Pitcher::PitchType type = pitchTypeChoices[i];
+		pitchTypeSprites[i] = std::make_unique<sprite>(device, context, GetPitchTypeIconPath(type).c_str());
+	}
+}
+
+void ShopManager::UpdateSelectPitchTypeState()
+{
+	Input& input = Input::Instance();
+	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
+	bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
+
+	hoveredPitchTypeIndex = -1;
+
+	for(int i = 0; i < static_cast<int>(pitchTypeChoices.size()); ++i)
+	{
+		float iconX = pitchTypeIconPositions[i].x - pitchTypeIconSize.x / 2.0f;
+		float iconY = pitchTypeIconPositions[i].y - pitchTypeIconSize.y / 2.0f;
+		bool isHovered = (mousePos.x >= iconX && mousePos.x <= iconX + pitchTypeIconSize.x &&
+			mousePos.y >= iconY && mousePos.y <= iconY + pitchTypeIconSize.y);
+
+		if (isHovered)
+		{
+			hoveredPitchTypeIndex = i;
+			if (clicked)
+			{
+				// 選択された球種を無効化する
+				Pitcher::Instance().DisablePitchType(pitchTypeChoices[i]);
+
+				pitchTypeChoices.clear();
+				currentShopState = ShopState::Normal; // 選択画面を終了して通常のショップに戻る
+				return;
+			}
 		}
 	}
 }
@@ -713,6 +843,12 @@ void ShopManager::Render()
 			0.0f);
 	}
 
+	if (currentShopState == ShopState::SelectPitchType)
+	{
+		RenderSelectPitchTypeState();
+		return; // 選択中は通常のショップアイテムを描画しない
+	}
+
 	//シェーダーの設定を解除
 	context->VSSetShader(nullptr, nullptr, 0);
 	context->PSSetShader(nullptr, nullptr, 0);
@@ -720,6 +856,39 @@ void ShopManager::Render()
 
 	context->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+}
+
+
+void ShopManager::RenderSelectPitchTypeState()
+{
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+	RenderState* renderState = Graphics::Instance().GetRenderState();
+	for (int i = 0; i < static_cast<int>(pitchTypeChoices.size()); ++i)
+	{
+		float drawX = pitchTypeIconPositions[i].x - pitchTypeIconSize.x / 2.0f;
+		float drawY = pitchTypeIconPositions[i].y - pitchTypeIconSize.y / 2.0f;
+		bool isHovered = (hoveredPitchTypeIndex == i);
+		float colorRGB = isHovered ? 0.7f : 1.0f;
+		pitchTypeSprites[i]->render(context,
+			drawX,
+			drawY,
+			pitchTypeIconSize.x, pitchTypeIconSize.y,
+			colorRGB, colorRGB, colorRGB, 1.0f,
+			0.0f);	
+	}
+
+	float textWidth, textHeight;
+	const char* text = u8"どの球種を減らす？";
+
+	pitchTypeFont.MeasureText(text, pitchTypeFontScale, textWidth, textHeight);
+
+	float adjustedFontX = pitchTypeFontPosition.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
+	float adjustedFontY = pitchTypeFontPosition.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
+
+	pitchTypeFont.DrawTextW(context, text,
+		adjustedFontX, adjustedFontY,
+		pitchTypeFontScale,
+		1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void ShopManager::DrawGUI()

@@ -1402,6 +1402,7 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 		{
 			for (const RealArsenalEntry& entry : realPitcherArsenal)
 			{
+				if (IsPitchTypeDisabled(entry.pitchType)) continue;//無効化されている球種はスキップ
 				if (entry.pitchType == PitchType::Fastball)
 				{
 					return PitchType::Fastball;
@@ -1409,6 +1410,7 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 			}
 			for (const RealArsenalEntry& entry : realPitcherArsenal)
 			{
+				if (IsPitchTypeDisabled(entry.pitchType)) continue;//無効化されている球種はスキップ)
 				if (entry.pitchType == PitchType::NaturalShoot || entry.pitchType == PitchType::BlazingFastball || entry.pitchType == PitchType::CutFastball)
 				{
 					return entry.pitchType;
@@ -1419,6 +1421,7 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 		float totalRealWeight = 0.0f;
 		for (const RealArsenalEntry& entry : realPitcherArsenal)
 		{
+			if (IsPitchTypeDisabled(entry.pitchType)) continue;//無効化されている球種はスキップ
 			//実測の投球割合にシーケンス補正を掛けて合計を計算
 			totalRealWeight += entry.weightPercent * GetSequencingMultiplier(entry.pitchType);
 		}
@@ -1426,6 +1429,7 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 		float realRoll = GenerateRandomFloat(0.0f, totalRealWeight);
 		for (const RealArsenalEntry& entry : realPitcherArsenal)
 		{
+			if (IsPitchTypeDisabled(entry.pitchType)) continue;//無効化されている球種はスキップ
 			//実測の投球割合にシーケンス補正を掛けてランダムロールを減算
 			realRoll -= entry.weightPercent * GetSequencingMultiplier(entry.pitchType);
 			if (realRoll <= 0.0f)
@@ -1433,6 +1437,16 @@ Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 				return entry.pitchType;
 			}
 		}
+
+		//無効化されていない球種を返す
+		for (const RealArsenalEntry& entry : realPitcherArsenal)
+		{
+			if(!IsPitchTypeDisabled(entry.pitchType))
+			{
+				return entry.pitchType;
+			}
+		}
+
 		return realPitcherArsenal.front().pitchType;
 	}
 
