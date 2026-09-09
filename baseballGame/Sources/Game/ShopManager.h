@@ -182,7 +182,7 @@ public:
 
 		for (int i = 0; i < SHOP_ITEM_COUNT; ++i)
 		{
-			if (!slotPurchased[i] && 
+			if ((!shopItems[i].isPurchased) &&
 				shopItems[i].id != ShopItemID::Reroll && 
 				(!shopItems[i].isButtonVisible || shopItems[i].isButtonVisible()) &&
 				(!shopItems[i].isButtonEnabled || shopItems[i].isButtonEnabled()))//購入済みでないアイテムかつリロールボタン以外のアイテムで、出現条件を満たすアイテムのインデックスを取得
@@ -210,7 +210,9 @@ public:
 				shopItems[allItems[chosen]].id == ShopItemID::WindDisable ||
 				shopItems[allItems[chosen]].id == ShopItemID::GravityChange ||
 				shopItems[allItems[chosen]].id == ShopItemID::HalfPrice ||
-				shopItems[allItems[chosen]].id == ShopItemID::FreePrice)
+				shopItems[allItems[chosen]].id == ShopItemID::FreePrice||
+				shopItems[allItems[chosen]].id == ShopItemID::SpecialAbilityActiveRateUp||
+				shopItems[allItems[chosen]].id == ShopItemID::PitchTypeDecrease) 
 			{
 				allItems.erase(allItems.begin() + chosen);//選ばれたアイテムを削除して、次の選択で同じアイテムが出現しないようにする
 			}
@@ -253,6 +255,51 @@ public:
 		
 	}
 
+	//ショップアイテムを半額にする関数
+	void ApplyHalfPrice()
+	{
+		for (int i = 0; i < SHOP_ITEM_DISPLAY_COUNT; ++i)
+		{
+			int itemIndex = currentShopItemIndices[i];
+			if (shopItems[itemIndex].id != ShopItemID::Reroll) // リロールボタンは除外
+			{
+				shopItems[itemIndex].price /= 2; // 価格を半額にする
+				isHalfPriceApplied = true; // 半額適用フラグを設定
+			}
+		}
+	}
+
+	//ショップアイテムを無料にする関数
+	void ApplyFreePrice()
+	{
+		for (int i = 0; i < SHOP_ITEM_DISPLAY_COUNT; ++i)
+		{
+			int itemIndex = currentShopItemIndices[i];
+			if (shopItems[itemIndex].id != ShopItemID::Reroll) // リロールボタンは除外
+			{
+				shopItems[itemIndex].price = 0; // 価格を無料にする
+				isFreePriceApplied = true; // 無料適用フラグを設定
+			}
+		}
+	}
+
+	//無料中もしくは半額中にどれか一つでも購入したら、すべての商品の無料状態を解除する関数
+	void RemoveFreeOrHalfPrice()
+	{
+		for (int i = 0; i < SHOP_ITEM_DISPLAY_COUNT; ++i)
+		{
+			int itemIndex = currentShopItemIndices[i];
+			if (shopItems[itemIndex].id != ShopItemID::Reroll) // リロールボタンは除外
+			{
+				if (shopItems[itemIndex].price == 0 || shopItems[itemIndex].price == shopItems[itemIndex].originalPrice / 2) // 無料状態または半額状態のアイテムがある場合
+				{
+					shopItems[itemIndex].price = shopItems[itemIndex].originalPrice; // 元の価格に戻す
+					isHalfPriceApplied = false; // 半額適用フラグをリセット
+					isFreePriceApplied = false; // 無料適用フラグをリセット
+				}
+			}
+		}
+	}
 private:
 
 	std::mt19937 rng{ std::random_device{}() }; // 乱数生成器
@@ -349,6 +396,7 @@ private:
 		std::wstring descriptionPath;//ショップの説明画像のパス
 		std::string name;//商品名
 		int price;//商品の価格
+		int originalPrice;//商品の元の価格
 		int increaseBallCount;//ボールの増加量
 		float appearanceRate;//その商品の出現確率
 		bool isPurchased;//購入済みかどうか
@@ -407,6 +455,7 @@ private:
 	void DisableWindEffect();//風の影響を無効化する関数	
 	void IncreaseBallZoneRate(float rate);
 	void IncreaseBallZoneBonus(float bonus);
+	void ChangeGravity(float gravity);
 	void SelectPitchTypeState();//ピッチャーの持っている球種を選択するステート	
 	void SelectSpecialAbilityState();//バッターが持っている特殊能力を選択するステート
 
@@ -415,6 +464,9 @@ private:
 
 	bool slotPurchased[SHOP_ITEM_DISPLAY_COUNT] = {  }; // 各スロットの購入状態を保持する配列
 	bool slotHover[SHOP_ITEM_DISPLAY_COUNT] = {  }; // 各スロットのホバー状態を保持する配列
+
+	bool isHalfPriceApplied = false; // 半額状態が適用されているかどうかのフラグ
+	bool isFreePriceApplied = false; // 無料状態が適用されているかどうかのフラグ
 
 private:
 

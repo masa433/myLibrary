@@ -57,6 +57,16 @@ public:
 		return 0; // デフォルト値
 	}
 
+	//次のラウンドの目標数を増やす関数
+	void IncreaseTargetHomeRuns(int amount)
+	{
+		int index = currentRound;
+		if(index >= 0 && index < targetHomeRuns.size())
+		{
+			targetHomeRuns[index] += amount;
+		}
+	}
+
 private:
 	int currentRound = 1;
 	int totalRounds = 7;

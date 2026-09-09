@@ -274,7 +274,7 @@ void Money::Update(float elapsedTime)
 		}
 
 		// 変化球ボーナスを適用
-		if(Pitcher::Instance().IsBreakingBallBonus() && isHomeRun)
+		if(Pitcher::Instance().IsBreakingBallBonus())
 		{
 			
 			// 変化球ボーナスの倍率を設定
@@ -645,7 +645,7 @@ void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
 		{
 			bonusItem.isActive = true;
 		}
-		else if (bonusItem.name == "BreakingBall" && isHomeRun && isBreaking)
+		else if (bonusItem.name == "BreakingBall" && isBreaking)
 		{
 			bonusItem.isActive = true;
 		}

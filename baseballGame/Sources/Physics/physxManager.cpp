@@ -61,7 +61,7 @@ void Physics::Initialize()
 	// シーン生成
 	{
 		physx::PxSceneDesc pxSceneDesc(pxPhysics->getTolerancesScale());
-		pxSceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
+		pxSceneDesc.gravity = physx::PxVec3(gravity.x, gravity.y, gravity.z);
 		pxSceneDesc.cpuDispatcher = pxDispatcher;
 		pxSceneDesc.filterShader = SimulationFilterShader;
 		pxSceneDesc.simulationEventCallback = this;

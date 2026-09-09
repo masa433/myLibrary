@@ -54,6 +54,20 @@ public:
 	//マテリアル取得
 	physx::PxMaterial* GetMaterial() { return pxMaterial; }
 
+	// 重力を変更する関数
+	void SetGravity(const DirectX::XMFLOAT3& gravity)
+	{
+		this->gravity = gravity;
+		// シーンが既に作成されていれば即時反映
+		if (pxScene)
+		{
+			pxScene->setGravity(physx::PxVec3(gravity.x, gravity.y, gravity.z));
+		}
+	}
+
+	//重力を取得する関数
+	DirectX::XMFLOAT3 GetGravity() const { return gravity; }
+
 protected:
 	
 
@@ -156,4 +170,6 @@ private:
 	AudioSource* foulWhistleSound;//ファウルの笛の音
 	AudioSource* boundSound;//バウンド音のインスタンス
 	AudioSource* poleHitSound;//ポールに当たった時の音のインスタンス
+
+	DirectX::XMFLOAT3 gravity = { 0.0f, -9.8f, 0.0f }; //重力加速度の初期値
 };
