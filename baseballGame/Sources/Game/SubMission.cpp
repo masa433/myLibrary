@@ -238,38 +238,38 @@ void SubMission::BuildMissionList()
 
 	//ラウンド2と3のレベル1ミッションを追加
 	MissionPool& level1Pool = missionPool[1];
-	add(level1Pool, u8"変化球を1球ホームランにしよう！", 100, 1, 1, { [this]() { return ClearBreakingBall(true); } });
-	add(level1Pool, u8"引っ張り方向に130m以上のホームランを1本打とう！", 100, 1, 1, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(130.0f); } });
-	add(level1Pool, u8"流し方向に130m以上のホームランを1本打とう！", 100, 1, 1, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(130.0f); } });
-	add(level1Pool, u8"130m以上のホームランを2本打とう！", 100, 1, 2, { [this]() { return ClearDistance(130.0f); } });
-	add(level1Pool, u8"140m以上のホームランを1本打とう！", 100, 1, 1, { [this]() { return ClearDistance(140.0f); } });
-	add(level1Pool, u8"2球連続でホームランを打とう！", 200, 1, 2, { [this]() { return ClearCombo(1); } });
+	add(level1Pool, u8"変化球を1球ホームランにしよう！", 200, 1, 1, { [this]() { return ClearBreakingBall(true); } });
+	add(level1Pool, u8"引っ張り方向に130m以上のホームランを1本打とう！", 300, 1, 1, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(130.0f); } });
+	add(level1Pool, u8"流し方向に130m以上のホームランを1本打とう！", 300, 1, 1, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(130.0f); } });
+	add(level1Pool, u8"130m以上のホームランを2本打とう！", 300, 1, 2, { [this]() { return ClearDistance(130.0f); } });
+	add(level1Pool, u8"140m以上のホームランを1本打とう！", 300, 1, 1, { [this]() { return ClearDistance(140.0f); } });
+	add(level1Pool, u8"2球連続でホームランを打とう！", 400, 1, 2, { [this]() { return ClearCombo(1); } });
 
 	//ラウンド4と5のレベル2ミッションを追加
 	MissionPool& level2Pool = missionPool[2];
 	add(level2Pool, u8"変化球を2球ホームランにしよう！", 200, 2, 2, { [this]() { return ClearBreakingBall(true); } });
-	add(level2Pool, u8"引っ張り方向に130m以上のホームランを2本打とう！", 200, 2, 2, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(130.0f); } });
-	add(level2Pool, u8"引っ張り方向に140m以上のホームランを1本打とう！", 200, 2, 1, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(140.0f); } });
-	add(level2Pool, u8"流し方向に130m以上のホームランを2本打とう！", 200, 2, 2, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(130.0f); } });
-	add(level2Pool, u8"流し方向に140m以上のホームランを1本打とう！", 200, 2, 1, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(140.0f); } });
-	add(level2Pool, u8"センター方向にホームランを1本打とう!", 200, 2, 1, { [this]() { return ClearDirection(Direction::Center); } });
-	add(level2Pool, u8"3球連続でホームランを打とう！", 300, 2, 3, { [this]() { return ClearCombo(1); } });
-	add(level2Pool, u8"130m以上のホームランを3本打とう！", 300, 2, 3, { [this]() { return ClearDistance(130.0f); } });
-	add(level2Pool, u8"140m以上のホームランを2本打とう！", 300, 2, 2, { [this]() { return ClearDistance(140.0f); } });
+	add(level2Pool, u8"引っ張り方向に130m以上のホームランを2本打とう！", 300, 2, 2, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(130.0f); } });
+	add(level2Pool, u8"引っ張り方向に140m以上のホームランを1本打とう！", 400, 2, 1, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(140.0f); } });
+	add(level2Pool, u8"流し方向に130m以上のホームランを2本打とう！", 300, 2, 2, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(130.0f); } });
+	add(level2Pool, u8"流し方向に140m以上のホームランを1本打とう！", 400, 2, 1, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(140.0f); } });
+	add(level2Pool, u8"センター方向にホームランを1本打とう!", 400, 2, 1, { [this]() { return ClearDirection(Direction::Center); } });
+	add(level2Pool, u8"3球連続でホームランを打とう！", 700, 2, 3, { [this]() { return ClearCombo(1); } });
+	add(level2Pool, u8"130m以上のホームランを3本打とう！", 500, 2, 3, { [this]() { return ClearDistance(130.0f); } });
+	add(level2Pool, u8"140m以上のホームランを2本打とう！", 600, 2, 2, { [this]() { return ClearDistance(140.0f); } });
 	//ラウンド6と7のレベル3ミッションを追加
 	MissionPool& level3Pool = missionPool[3];
-	add(level3Pool, u8"変化球を3球ホームランにしよう！", 300, 3, 3, { [this]() { return ClearBreakingBall(true); } });
-	add(level3Pool, u8"引っ張り方向に130m以上のホームランを3本打とう！", 300, 3, 3, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(130.0f); } });
-	add(level3Pool, u8"引っ張り方向に140m以上のホームランを2本打とう！", 300, 3, 2, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(140.0f); } });
-	add(level3Pool, u8"引っ張り方向に140m以上のホームランを3本打とう！", 400, 3, 3, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(140.0f); } });
-	add(level3Pool, u8"流し方向に130m以上のホームランを3本打とう！", 300, 3, 3, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(130.0f); } });
-	add(level3Pool, u8"流し方向に140m以上のホームランを2本打とう！", 300, 3, 2, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(140.0f); } });
-	add(level3Pool, u8"流し方向に140m以上のホームランを3本打とう！", 400, 3, 3, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(140.0f); } });
-	add(level3Pool, u8"センター方向にホームランを3本打とう！", 400, 3, 3, { [this]() { return ClearDirection(Direction::Center); } });
-	add(level3Pool, u8"センター方向にホームランを2本打とう！", 300, 3, 2, { [this]() { return ClearDirection(Direction::Center); } });
-	add(level3Pool, u8"140m以上のホームランを3本打とう！", 400, 3, 3, { [this]() { return ClearDistance(140.0f); } });
-	add(level3Pool, u8"4球連続でホームランを打とう！", 400, 3, 4, { [this]() { return ClearCombo(4); } });
-	add(level3Pool, u8"150m以上のホームランを1本打とう！", 500, 3, 1, { [this]() { return ClearDistance(150.0f); } });
+	add(level3Pool, u8"変化球を3球ホームランにしよう！", 500, 3, 3, { [this]() { return ClearBreakingBall(true); } });
+	add(level3Pool, u8"引っ張り方向に130m以上のホームランを3本打とう！", 500, 3, 3, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(130.0f); } });
+	add(level3Pool, u8"引っ張り方向に140m以上のホームランを2本打とう！", 600, 3, 2, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(140.0f); } });
+	add(level3Pool, u8"引っ張り方向に140m以上のホームランを3本打とう！", 700, 3, 3, { [this]() { return ClearDirection(Direction::Pull) && ClearDistance(140.0f); } });
+	add(level3Pool, u8"流し方向に130m以上のホームランを3本打とう！", 500, 3, 3, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(130.0f); } });
+	add(level3Pool, u8"流し方向に140m以上のホームランを2本打とう！", 600, 3, 2, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(140.0f); } });
+	add(level3Pool, u8"流し方向に140m以上のホームランを3本打とう！", 700, 3, 3, { [this]() { return ClearDirection(Direction::Opposite) && ClearDistance(140.0f); } });
+	add(level3Pool, u8"センター方向にホームランを3本打とう！", 800, 3, 3, { [this]() { return ClearDirection(Direction::Center); } });
+	add(level3Pool, u8"センター方向にホームランを2本打とう！", 600, 3, 2, { [this]() { return ClearDirection(Direction::Center); } });
+	add(level3Pool, u8"140m以上のホームランを3本打とう！", 700, 3, 3, { [this]() { return ClearDistance(140.0f); } });
+	add(level3Pool, u8"4球連続でホームランを打とう！", 1000, 3, 4, { [this]() { return ClearCombo(4); } });
+	add(level3Pool, u8"150m以上のホームランを1本打とう！", 1000, 3, 1, { [this]() { return ClearDistance(150.0f); } });
 }
 
 void SubMission::SelectMissionForRound(int round)
