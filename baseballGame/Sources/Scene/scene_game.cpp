@@ -387,7 +387,7 @@ void scene_game::update(float elapsed_time)
 
     if (broadcastCamera.IsTrackingBall())
     {
-        enableShadows = false;
+        
         /*const auto& vel = Ball::Instance().GetVelocity();
         float speed = sqrtf(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
         if (speed < 0.1f)
@@ -517,7 +517,7 @@ void scene_game::render(float elapsedTime)
         //dc->Begin(pipeline_stats_query.Get());
 
         // shadowRenderer にカメラ位置を渡す
-    shadowRenderer.SetCameraPosition(cameraPosition);
+    //shadowRenderer.SetCameraPosition(cameraPosition);
 
 	
     // 3本の描画呼び出し（関数名だけ変わる）

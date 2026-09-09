@@ -27,13 +27,13 @@ void Result::Initialize(ID3D11Device* device)
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 	std::vector<int> resultCodepoints = FontRenderer::Utf8ToCodepoints(
-		u8"ホームラン0123456789本"
+		u8"総ホームラン数0123456789本"
 		u8"最高飛距離m");
 	resultFont.Initialize(device,
 		L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf",
-		28.0f,
+		100.0f,
 		screenWidth, screenHeight,
-		512, 512,
+		4096.0f, 4096.0f,
 		&resultCodepoints);
 
 	buttonManager.Initialize();
@@ -151,7 +151,7 @@ void Result::Render()
 	if (resultFont.IsValid())
 	{
 		
-		std::string homeRunText = u8"ホームラン: " + std::to_string(HomeRunCount::Instance().GetTotalHomeRunCount()) + u8"本";
+		std::string homeRunText = u8"総ホームラン数: " + std::to_string(HomeRunCount::Instance().GetTotalHomeRunCount()) + u8"本";
 		std::string distanceText = u8"最高飛距離: " + std::to_string(static_cast<int>(BallDistance::Instance().GetMaxDistance())) + u8"m";
 
 		resultFont.DrawTextW(dc, homeRunText.c_str(),

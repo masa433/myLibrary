@@ -90,6 +90,7 @@ cbuffer CASCADE_SHADOWMAP_CONSTANT_BUFFER : register(b8)
     float cascade_shadow_attenuation;
     bool display_cascade_area;
     float2 cascade_shadow_dummy;
+    float4 cascade_split_depths;
 };
 
 cbuffer SPOT_SHADOWMAP_CONSTANT_BUFFER : register(b7)

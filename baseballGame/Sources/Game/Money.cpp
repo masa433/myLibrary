@@ -355,7 +355,7 @@ void Money::Update(float elapsedTime)
 		}
 
 		// 最終的な距離に倍率を適用して加算
-		finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier)) + flatBonus - penaltyAmount;
+		finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier)) + flatBonus;
 		AddMoney(finalDistance);
 		
 	}

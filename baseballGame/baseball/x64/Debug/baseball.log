@@ -1,4 +1,100 @@
-﻿  Money.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Money.cpp(496,23): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Money.cpp(501,18): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+﻿C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\cascade_shadowmap_ps.hlsl(150,35-59): warning X3550: sampler array index must be a literal expression, forcing loop to unroll
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\cascade_shadowmap_ps.hlsl(182,38-62): warning X3556: integer divides may be much slower, try using uints if possible.
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\cascade_shadowmap_ps.hlsl(183,23-47): warning X3556: integer modulus may be much slower, try using uints if possible.
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\cascade_shadowmap_ps.hlsl(184,23-47): warning X3556: integer modulus may be much slower, try using uints if possible.
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\cascade_shadowmap_ps.hlsl(185,23-47): warning X3556: integer modulus may be much slower, try using uints if possible.
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\cascade_shadowmap_ps.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\cascade_shadowmap_ps.cso
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(259,47-51): warning X3556: integer divides may be much slower, try using uints if possible.
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(260,40-44): warning X3556: integer modulus may be much slower, try using uints if possible.
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(260,52-56): warning X3556: integer modulus may be much slower, try using uints if possible.
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\gltf_model_ps.hlsl(260,64-68): warning X3556: integer modulus may be much slower, try using uints if possible.
+  
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_ps.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_ps.cso
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
+  
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_vs.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_vs.cso
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
+  
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_vs_instanced.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_vs_instanced.cso
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Shaders\shading_function.hlsli(75,11-50): warning X3206: implicit truncation of vector type
+  
+  compilation code save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\shadowmap_caster_vs.cod
+  compilation object save succeeded; see C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\shadowmap_caster_vs.cso
+  camera.cpp
+  Pitcher.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+  Result.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Result.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Result.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Result.cpp(36,12): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Result.cpp(36,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+  ShadowRenderer.cpp
+  batterSelectScene.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\batterSelectScene.cpp(28,24): warning C4267: '=': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+  scene_game.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(332,147): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(332,107): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(544,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+  scene_title.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(109,144): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(109,104): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  framework.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
+  
+  main.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/System/main.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/System/main.cpp' をコンパイルしています)
+  
+  ButtonManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/UI/ButtonManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/UI/ButtonManager.cpp' をコンパイルしています)
+  
+  コードを生成中...
+  ライブラリを検索しています。
+      C:\Program Files (x86)\Windows Kits\10\lib\10.0.26100.0\um\x64\d3d11.lib を検索中:
+  ライブラリの検索が終了しました。
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

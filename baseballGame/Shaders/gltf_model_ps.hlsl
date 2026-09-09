@@ -52,72 +52,84 @@ SamplerState shadow_sampler_state : register(s10);
 Texture2D cascade_shadow_map[ShadowBufferSize] : register(t20);
 SamplerState cascade_shadow_sampler_state : register(s5);
 
-// Poisson disk サンプルオフセット（9点）
-static const float2 PoissonDisk[9] =
-{
-    float2(0.000, 0.000),
-    float2(1.000, 0.000),
-    float2(-1.000, 0.000),
-    float2(0.000, 1.000),
-    float2(0.000, -1.000),
-    float2(0.707, 0.707),
-    float2(-0.707, 0.707),
-    float2(0.707, -0.707),
-    float2(-0.707, -0.707),
-};
-
 float GetShadowFactorPCF(Texture2D shadowTex, SamplerState samp,
-                         float2 uv, float depth, float bias, int nSamples)
+                         float2 uv, float depth, float bias, int nSamples,
+                         float radiusInTexels)
 {
     float sum = 0.0f;
-    float2 texelOffset = shadow_map_texel_size * soft_shadow_radius;
-    for (int i = 0; i < nSamples; ++i)
+    const int kernelWidth = nSamples <= 4 ? 2 : nSamples <= 9 ? 3 : nSamples <= 16 ? 4 : 5;
+    const float halfKernel = (float)(kernelWidth - 1) * 0.5f;
+    const float2 texelSize = shadow_map_texel_size * radiusInTexels;
+
+    [loop]
+    for (int y = 0; y < kernelWidth; ++y)
     {
-        float2 offset = PoissonDisk[i] * texelOffset;
-        float sd = shadowTex.Sample(samp, uv + offset).r;
-        sum += (depth - sd > bias) ? 0.0f : 1.0f;
+        [loop]
+        for (int x = 0; x < kernelWidth; ++x)
+        {
+            const float2 offset = (float2((float)x, (float)y) - halfKernel) * texelSize;
+            const float sampleDepth = shadowTex.SampleLevel(samp, uv + offset, 0).r;
+            sum += depth - sampleDepth > bias ? 0.0f : 1.0f;
+        }
     }
-    return sum / (float) nSamples;
-    // 0=完全に影, 1=完全に光
+    return sum / (float)(kernelWidth * kernelWidth);
+}
+
+float GetCascadeShadowFactorPCF(int cascadeIndex, float2 uv, float depth,
+                                float bias, int nSamples, float radiusInTexels)
+{
+    // SM5 requires literal texture-array indices.
+    switch (cascadeIndex)
+    {
+    case 0:
+        return GetShadowFactorPCF(cascade_shadow_map[0], shadow_sampler_state,
+            uv, depth, bias, nSamples, radiusInTexels);
+    case 1:
+        return GetShadowFactorPCF(cascade_shadow_map[1], shadow_sampler_state,
+            uv, depth, bias, nSamples, radiusInTexels);
+    case 2:
+        return GetShadowFactorPCF(cascade_shadow_map[2], shadow_sampler_state,
+            uv, depth, bias, nSamples, radiusInTexels);
+    default:
+        return GetShadowFactorPCF(cascade_shadow_map[3], shadow_sampler_state,
+            uv, depth, bias, nSamples, radiusInTexels);
+    }
 }
 
 //--------------------------------------------
 //  シャドウ係数取得ヘルパー（通常 / カスケード共通）
 //--------------------------------------------
-float GetShadowFactor(float3 w_pos, float3 shadow_texcoord)
+float GetShadowFactor(float3 w_pos, float3 shadow_texcoord, float3 normal)
 {
     float factor = 1.0f;
+    const float3 lightToSurface = normalize(directional_light_direction.xyz);
+    const float noL = saturate(dot(normal, -lightToSurface));
+    const float slopeBiasScale = 1.0f + 2.0f * (1.0f - noL);
 
     if (use_cascade)
     {
-        //[loop]
-        for (int i = 0; i < ShadowBufferSize; ++i)
-        {
-            float4 wvp = mul(float4(w_pos, 1.0f), cascade_light_view_projection[i]);
-            wvp /= wvp.w;
-            wvp.y = -wvp.y;
-            wvp.xy = wvp.xy * 0.5f + 0.5f;
+        const float3 cameraForward = normalize(cross(camera_right.xyz, camera_up.xyz));
+        const float viewDepth = dot(w_pos - camera_position.xyz, cameraForward);
+        const int cascadeIndex = viewDepth <= cascade_split_depths.x ? 0 :
+            viewDepth <= cascade_split_depths.y ? 1 :
+            viewDepth <= cascade_split_depths.z ? 2 : 3;
 
-            if (wvp.z >= 0 && wvp.z <= 1 &&
-                wvp.x >= 0 && wvp.x <= 1 &&
-                wvp.y >= 0 && wvp.y <= 1)
-            {
-                if (soft_shadow_enabled)
-                {
-                    float lit = GetShadowFactorPCF(cascade_shadow_map[i],
-                    shadow_sampler_state, wvp.xy, wvp.z,
-                    cascade_shadow_bias[i], soft_shadow_samples);
-                    //lit: 0=完全に影, 1=完全に光
-                    factor = lerp(cascade_shadow_attenuation, 1.0f, lit);
-                }
-                else
-                {
-                    float depth = cascade_shadow_map[i].Sample(shadow_sampler_state, wvp.xy).r;
-                    if (wvp.z - depth > cascade_shadow_bias[i])
-                        factor = cascade_shadow_attenuation;
-                }
-                break;
-            }
+        const int i = cascadeIndex;
+        float4 wvp = mul(float4(w_pos, 1.0f), cascade_light_view_projection[i]);
+        wvp /= wvp.w;
+        wvp.y = -wvp.y;
+        wvp.xy = wvp.xy * 0.5f + 0.5f;
+
+        if (wvp.z >= 0 && wvp.z <= 1 &&
+            wvp.x >= 0 && wvp.x <= 1 &&
+            wvp.y >= 0 && wvp.y <= 1)
+        {
+            const float bias = cascade_shadow_bias[i] * slopeBiasScale;
+            const int samples = soft_shadow_enabled ? soft_shadow_samples : 4;
+            const float radius = soft_shadow_enabled ? soft_shadow_radius : 0.5f;
+            const float lit = GetCascadeShadowFactorPCF(i, wvp.xy, wvp.z,
+                bias, samples, radius);
+            factor = lerp(cascade_shadow_attenuation, 1.0f, lit);
         }
     }
     else
@@ -125,16 +137,16 @@ float GetShadowFactor(float3 w_pos, float3 shadow_texcoord)
         if (soft_shadow_enabled)
         {
             float lit = GetShadowFactorPCF(shadow_map, shadow_sampler_state,
-                shadow_texcoord.xy, shadow_texcoord.z, shadow_bias, soft_shadow_samples);
-            //lit: 0=完全に影, 1=完全に光
+                shadow_texcoord.xy, shadow_texcoord.z, shadow_bias * slopeBiasScale,
+                soft_shadow_samples, soft_shadow_radius);
             factor = lerp(shadow_attenuation, 1.0f, lit);
         }
         else
         {
-        
-            float depth = shadow_map.Sample(shadow_sampler_state, shadow_texcoord.xy).r;
-            if (shadow_texcoord.z - depth > shadow_bias)
-                factor = shadow_attenuation;
+            float lit = GetShadowFactorPCF(shadow_map, shadow_sampler_state,
+                shadow_texcoord.xy, shadow_texcoord.z, shadow_bias * slopeBiasScale,
+                4, 0.5f);
+            factor = lerp(shadow_attenuation, 1.0f, lit);
         }
     }
 
@@ -189,7 +201,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
     ambient += CalcHemiSphereLight(N, float3(0, 1, 0), sky_color.rgb, ground_color.rgb, hemisphere_weight);
 
     // シャドウ係数
-    float shadow_factor = GetShadowFactor(pin.w_position.xyz, pin.shadow_texcoord);
+    float shadow_factor = GetShadowFactor(pin.w_position.xyz, pin.shadow_texcoord, N);
     
     float4 color = (float4) 0;
     color.a = basecolor.a;

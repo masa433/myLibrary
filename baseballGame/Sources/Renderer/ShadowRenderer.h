@@ -49,6 +49,7 @@ public:
         float				shadow_attenuation{ 0.5f };	//	影色
         bool				display_cascade_area;
         DirectX::XMFLOAT2	shadow_dummy;
+        DirectX::XMFLOAT4	cascade_split_depths{ 10.0f, 30.0f, 80.0f, 200.0f };
     };
 
     //スポットシャドウマップ用定数バッファ

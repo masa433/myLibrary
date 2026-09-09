@@ -580,46 +580,45 @@ void ShopManager::Update(float elapsedTime)
 	
 	if (currentShopState == ShopState::SelectPitchType)
 	{
-		UpdateSelectPitchTypeState();
+		if(IsShopOpen()) UpdateSelectPitchTypeState();
 		return; // 選択中は通常のショップ更新をしない
 	}
 
 	if(currentShopState == ShopState::SelectSpecialAbility)
 	{
-		UpdateSelectSpecialAbilityState();
+		if(IsShopOpen()) UpdateSelectSpecialAbilityState();
 		return; // 選択中は通常のショップ更新をしない
 	}
 
-	Input& input = Input::Instance();
-	DirectX::XMFLOAT2 mousePos = { (float)input.GetMouse().GetPositionX(), (float)input.GetMouse().GetPositionY() };
-	
-	
-
-	isNextRoundHovered = IsMouseOverNextRoundButton(mousePos.x, mousePos.y);
-
-	bool isButtonPressed= isNextRoundHovered && input.GetMouse().GetButton() & Mouse::BTN_LEFT;
-
-	if (isNextRoundHovered && !isAnimating)
+	if (IsShopOpen()) // 完全に開き切っている時だけボタン入力を受け付ける
 	{
-		if (isButtonPressed)
+		Input& input = Input::Instance();
+		DirectX::XMFLOAT2 mousePos = { (float)input.GetMouse().GetPositionX(), (float)input.GetMouse().GetPositionY() };
+
+		isNextRoundHovered = IsMouseOverNextRoundButton(mousePos.x, mousePos.y);
+		bool isButtonPressed = isNextRoundHovered && input.GetMouse().GetButton() & Mouse::BTN_LEFT;
+
+		if (isNextRoundHovered)
 		{
-			isNextRoundPressed = true;
-			nextRoundButtonScale = 0.9f; // クリック時は少し小さく
+			isNextRoundPressed = isButtonPressed;
+			nextRoundButtonScale = isButtonPressed ? 0.9f : 1.1f;
 		}
 		else
 		{
+			isNextRoundHovered = false;
 			isNextRoundPressed = false;
-			nextRoundButtonScale = 1.1f; // ホバー時は少し大きく
+			nextRoundButtonScale = 1.0f;
 		}
+
+		UpdateShopItem();
 	}
 	else
 	{
+		// 開いていない間は状態をリセットしておく
 		isNextRoundHovered = false;
 		isNextRoundPressed = false;
-		nextRoundButtonScale = 1.0f; // 通常サイズ
+		nextRoundButtonScale = 1.0f;
 	}
-
-	UpdateShopItem();
 
 	if(!isAnimating)
 	{

@@ -438,16 +438,16 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
     DirectX::XMVECTOR CameraFront = DirectX::XMLoadFloat3(&camera.GetFront());
     DirectX::XMVECTOR CameraPosition = DirectX::XMLoadFloat3(&camera.GetEye());
 
-    //ライト方向をクランプ
-	
+    DirectX::XMVECTOR lightDirection = DirectX::XMVector3Normalize(
+        DirectX::XMLoadFloat4(&directional_light_direction));
+    DirectX::XMVECTOR lightUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    if (fabsf(DirectX::XMVectorGetX(DirectX::XMVector3Dot(lightDirection, lightUp))) > 0.99f)
+        lightUp = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
-    //ライトからの位置から見たビュー・プロジェクション行列
-    DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat4(&directional_light_direction);
-    LightPosition = DirectX::XMVectorScale(LightPosition, -50.0f);
-    // ライトのターゲットを固定位置（ワールド中心）に設定して、影がカメラと一緒に動かないようにする
-    DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(LightPosition,
-        DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
-        DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+    DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(
+        DirectX::XMVectorScale(lightDirection, -1000.0f),
+        DirectX::XMVectorZero(),
+        lightUp);
 
 
     // カスケード分割距離テーブル
@@ -459,12 +459,16 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
         200.0f,  // 遠景
     };
 
-    static constexpr float fov_y = DirectX::XMConvertToRadians(45);
+    cascade_shadow_constant.cascade_split_depths = {
+        SplitAreaTable[1], SplitAreaTable[2], SplitAreaTable[3], SplitAreaTable[4]
+    };
+
+    const float fov_y = camera.GetFov();
     float aspect_ratio = static_cast<float>(Graphics::Instance().GetScreenWidth()) / Graphics::Instance().GetScreenHeight();
 
     // SRVのバインドを事前に解除
     ID3D11ShaderResourceView* nullSRVs[ShadowBufferSize] = {};
-    dc->PSSetShaderResources(21, ShadowBufferSize, nullSRVs);  // slot番号は実際に使っているものに合わせる
+    dc->PSSetShaderResources(20, ShadowBufferSize, nullSRVs);
 
     for (int index = 0; index < ShadowBufferSize; ++index)
     {
@@ -559,43 +563,36 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
         lsMinZ = max(0.1f, lsMinZ - 50.0f); // 影キャスターが範囲外にいても拾えるよう手前に延長
         lsMaxZ += 50.0f;
 
-        DirectX::XMMATRIX P = DirectX::XMMatrixOrthographicLH(10000.0f, 10000.0f, lsMinZ, lsMaxZ);
-        DirectX::XMMATRIX LVP = V * P;
+        DirectX::XMVECTOR frustumCenter = DirectX::XMVectorZero();
+        for (auto& v : vertex)
+            frustumCenter = DirectX::XMVectorAdd(frustumCenter, v);
+        frustumCenter = DirectX::XMVectorScale(frustumCenter, 1.0f / 8.0f);
 
-        DirectX::XMFLOAT2 vertex_min(FLT_MAX, FLT_MAX), vertex_max(-FLT_MAX, -FLT_MAX);
-
-        for (auto& it : vertex)
+        float radius = 0.0f;
+        for (auto& v : vertex)
         {
-            DirectX::XMFLOAT3	p;
-            DirectX::XMStoreFloat3(&p, DirectX::XMVector3TransformCoord(it, LVP));
-
-            vertex_min.x = min(p.x, vertex_min.x);
-            vertex_min.y = min(p.y, vertex_min.y);
-            vertex_max.x = max(p.x, vertex_max.x);
-            vertex_max.y = max(p.y, vertex_max.y);
-
+            const float distance = DirectX::XMVectorGetX(
+                DirectX::XMVector3Length(DirectX::XMVectorSubtract(v, frustumCenter)));
+            radius = max(radius, distance);
         }
+        radius = ceilf(radius * 16.0f) / 16.0f;
 
-        //クロップ行列を求める
-        DirectX::XMMATRIX ClopMatrix = DirectX::XMMatrixIdentity();
-        {
-            float	xScale = 2.0f / (vertex_max.x - vertex_min.x);
-            float	yScale = 2.0f / (vertex_max.y - vertex_min.y);
-            float	xOffset = -0.5f * (vertex_max.x + vertex_min.x) * xScale;
-            float	yOffset = -0.5f * (vertex_max.y + vertex_min.y) * yScale;
-            DirectX::XMFLOAT4X4	clopMatrix;
-            DirectX::XMStoreFloat4x4(&clopMatrix, ClopMatrix);
-            clopMatrix._11 = xScale;
-            clopMatrix._22 = yScale;
-            clopMatrix._41 = xOffset;
-            clopMatrix._42 = yOffset;
-            ClopMatrix = DirectX::XMLoadFloat4x4(&clopMatrix);
+        DirectX::XMFLOAT3 centerViewSpace;
+        DirectX::XMStoreFloat3(&centerViewSpace,
+            DirectX::XMVector3TransformCoord(frustumCenter, V));
 
-        }
+        const float texelSize = (radius * 2.0f) / static_cast<float>(ShadowmapSize);
+        centerViewSpace.x = std::floor(centerViewSpace.x / texelSize + 0.5f) * texelSize;
+        centerViewSpace.y = std::floor(centerViewSpace.y / texelSize + 0.5f) * texelSize;
 
-        //ライトビュープロジェクション行列にクロップ行列を乗算
+        const float halfExtent = radius + texelSize;
+        DirectX::XMMATRIX P = DirectX::XMMatrixOrthographicOffCenterLH(
+            centerViewSpace.x - halfExtent, centerViewSpace.x + halfExtent,
+            centerViewSpace.y - halfExtent, centerViewSpace.y + halfExtent,
+            lsMinZ, lsMaxZ);
+
         DirectX::XMFLOAT4X4 light_view_projection;
-        DirectX::XMStoreFloat4x4(&light_view_projection, LVP * ClopMatrix);
+        DirectX::XMStoreFloat4x4(&light_view_projection, V * P);
 
         //カスケード用定数バッファに納入
 

@@ -617,7 +617,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 						float launchAngle = std::atan2(ballVelocity.y,
 							sqrtf(ballVelocity.x * ballVelocity.x + ballVelocity.z * ballVelocity.z));
 
-						float initialHeight = ballHitPos.y;
+						float initialHeight = ballPosition.y - ballHitPos.y;
 						float v_y = exitVelocity * sinf(launchAngle);
 						float a = 0.5f * 9.81f;
 						float b = -v_y;
