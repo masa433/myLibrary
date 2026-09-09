@@ -2,6 +2,9 @@
 #include "Graphics.h"
 #include "imgui.h"
 #include "sceneTransition.h"
+#include "Money.h"
+#include "Combo.h"
+#include "RoundManager.h"
 
 void Result::Initialize(ID3D11Device* device)
 {
@@ -28,9 +31,12 @@ void Result::Initialize(ID3D11Device* device)
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 	std::vector<int> resultCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"総ホームラン数0123456789本"
-		u8"最高飛距離m");
+		u8"最高飛距離m"
+	u8"所持金G"
+	u8"最大コンボ数"
+	u8"到達ラウンド数");
 	resultFont.Initialize(device,
-		L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf",
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
 		100.0f,
 		screenWidth, screenHeight,
 		4096.0f, 4096.0f,
@@ -150,16 +156,66 @@ void Result::Render()
 	// フォントの描画
 	if (resultFont.IsValid())
 	{
-		
-		std::string homeRunText = u8"総ホームラン数: " + std::to_string(HomeRunCount::Instance().GetTotalHomeRunCount()) + u8"本";
-		std::string distanceText = u8"最高飛距離: " + std::to_string(static_cast<int>(BallDistance::Instance().GetMaxDistance())) + u8"m";
 
-		resultFont.DrawTextW(dc, homeRunText.c_str(),
-			homeRunFontPosition.x + 20.0f, homeRunFontPosition.y + 20.0f, homeRunFontSize,
-			homeRunFontColor.x, homeRunFontColor.y, homeRunFontColor.z, homeRunFontColor.w);
-		resultFont.DrawTextW(dc, distanceText.c_str(),
-			distanceFontPosition.x + 20.0f, distanceFontPosition.y + 20.0f, distanceFontSize,
-			distanceFontColor.x, distanceFontColor.y, distanceFontColor.z, distanceFontColor.w);
+		float spacingY = 100.0f; // 各テキストの垂直間隔
+
+		struct TextInfo
+		{
+			std::string label;
+			std::string value;
+			DirectX::XMFLOAT2 position;
+			float fontSize;
+			DirectX::XMFLOAT4 color;
+		};
+
+		TextInfo textInfos[] = {
+			
+			{ u8"総ホームラン数: ", std::to_string(HomeRunCount::Instance().GetTotalHomeRunCount()) + u8"本", homeRunFontPosition, homeRunFontSize, homeRunFontColor },
+			{ u8"最高飛距離: ", std::to_string(static_cast<int>(BallDistance::Instance().GetMaxDistance())) + u8"m", distanceFontPosition, distanceFontSize, distanceFontColor },
+			{ u8"最大コンボ数: ", std::to_string(Combo::Instance().GetMaxCombo()), comboFontPosition, comboFontSize, comboFontColor },
+			{ u8"到達ラウンド数: ", std::to_string(RoundManager::Instance().GetCurrentRound()), roundFontPosition, roundFontSize, roundFontColor }
+		};
+
+		std::string moneyText = u8"所持金: " + std::to_string(Money::Instance().GetCurrentMoney()) + u8"G";
+
+		float moneyTextWidth, moneyTextHeight;
+		resultFont.MeasureText(moneyText.c_str(), moneyFontSize, moneyTextWidth, moneyTextHeight);
+		float drawX = moneyFontPosition.x - moneyTextWidth / 2.0f;
+		float drawY = moneyFontPosition.y - moneyTextHeight / 2.0f;
+
+		resultFont.DrawTextW(dc, moneyText.c_str(),
+			drawX, drawY,
+			moneyFontSize,
+			moneyFontColor.x, moneyFontColor.y, moneyFontColor.z, moneyFontColor.w);
+
+
+		for(const auto& textInfo : textInfos)
+		{
+			float textWidth, textHeight;
+
+			// テキストの幅と高さを計算して中央揃えの位置を決定
+			resultFont.MeasureText(textInfo.label.c_str(), textInfo.fontSize, textWidth, textHeight);
+			float labelX = textInfo.position.x - textWidth / 2.0f;
+			float labelY = textInfo.position.y - textHeight / 2.0f;
+
+			// テキストを描画
+			resultFont.DrawTextW(dc,textInfo.label.c_str(),
+				labelX, labelY, 
+				textInfo.fontSize, 
+				textInfo.color.x, textInfo.color.y, textInfo.color.z, textInfo.color.w);
+
+			resultFont.MeasureText(textInfo.value.c_str(), textInfo.fontSize, textWidth, textHeight);
+			float valueX = textInfo.position.x - textWidth / 2.0f; // ラベルの右側に配置
+			float valueY = labelY + spacingY; // ラベルの下に配置
+
+			resultFont.DrawTextW(dc,textInfo.value.c_str(),
+				valueX, valueY, 
+				textInfo.fontSize, 
+				textInfo.color.x, textInfo.color.y, textInfo.color.z, textInfo.color.w);
+		}
+		
+
+		
 	}
 
 	buttonManager.Render(1.0f, ButtonManager::ButtonType::Title);
@@ -186,6 +242,11 @@ void Result::DrawGUI()
 {
 	if(ImGui::CollapsingHeader("Result Settings"))
 	{
+		ImGui::DragFloat2("Money Font Position", &moneyFontPosition.x, 0.1f, 0.0f, 1920.0f);
+		ImGui::DragFloat("Money Font Size", &moneyFontSize, 0.1f, 10.0f, 100.0f);
+		ImGui::ColorEdit4("Money Font Color", &moneyFontColor.x);
+
+		ImGui::Separator();
 		ImGui::DragFloat2("Home Run Font Position", &homeRunFontPosition.x, 0.1f, 0.0f, 1920.0f);
 		ImGui::DragFloat("Home Run Font Size", &homeRunFontSize, 0.1f, 10.0f, 100.0f);
 		ImGui::ColorEdit4("Home Run Font Color", &homeRunFontColor.x);
@@ -195,6 +256,15 @@ void Result::DrawGUI()
 		ImGui::DragFloat("Distance Font Size", &distanceFontSize, 0.1f, 10.0f, 100.0f);
 		ImGui::ColorEdit4("Distance Font Color", &distanceFontColor.x);
 
+		ImGui::Separator();
+		ImGui::DragFloat2("Combo Font Position", &comboFontPosition.x, 0.1f, 0.0f, 1920.0f);
+		ImGui::DragFloat("Combo Font Size", &comboFontSize, 0.1f, 10.0f, 100.0f);
+		ImGui::ColorEdit4("Combo Font Color", &comboFontColor.x);
+
+		ImGui::Separator();
+		ImGui::DragFloat2("Round Font Position", &roundFontPosition.x, 0.1f, 0.0f, 1920.0f);
+		ImGui::DragFloat("Round Font Size", &roundFontSize, 0.1f, 10.0f, 100.0f);
+		ImGui::ColorEdit4("Round Font Color", &roundFontColor.x);
 
 		ImGui::Separator();
 		ImGui::DragFloat2("Result Sprite Position", &spritePosition.x, 0.01f, 0.0f, 1.0f);
@@ -207,6 +277,9 @@ void Result::DrawGUI()
 
 void Result::SaveToJson(nlohmann::json& j)
 {
+	j["MoneyFontPosition"] = { moneyFontPosition.x, moneyFontPosition.y };
+	j["MoneyFontSize"] = moneyFontSize;
+	j["MoneyFontColor"] = { moneyFontColor.x, moneyFontColor.y, moneyFontColor.z, moneyFontColor.w };
 	j["HomeRunFontPosition"] = { homeRunFontPosition.x, homeRunFontPosition.y };
 	j["HomeRunFontSize"] = homeRunFontSize;
 	j["HomeRunFontColor"] = { homeRunFontColor.x, homeRunFontColor.y, homeRunFontColor.z, homeRunFontColor.w };
@@ -216,11 +289,34 @@ void Result::SaveToJson(nlohmann::json& j)
 	j["ResultSpritePosition"] = { spritePosition.x, spritePosition.y };
 	j["ResultSpriteSize"] = { spriteSize.x, spriteSize.y };
 	j["ResultSpriteColor"] = { spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w };
+	j["ComboFontPosition"] = { comboFontPosition.x, comboFontPosition.y };
+	j["ComboFontSize"] = comboFontSize;
+	j["ComboFontColor"] = { comboFontColor.x, comboFontColor.y, comboFontColor.z, comboFontColor.w };
+	j["RoundFontPosition"] = { roundFontPosition.x, roundFontPosition.y };
+	j["RoundFontSize"] = roundFontSize;
+	j["RoundFontColor"] = { roundFontColor.x, roundFontColor.y, roundFontColor.z, roundFontColor.w };
+
 	buttonManager.SaveToJson(j);
 }
 
 void Result::LoadFromJson(const nlohmann::json& j)
 {
+	if(j.contains("MoneyFontPosition"))
+	{
+		moneyFontPosition.x = j["MoneyFontPosition"][0].get<float>();
+		moneyFontPosition.y = j["MoneyFontPosition"][1].get<float>();
+	}
+	if (j.contains("MoneyFontSize"))
+	{
+		moneyFontSize = j["MoneyFontSize"].get<float>();
+	}
+	if(j.contains("MoneyFontColor"))
+	{
+		moneyFontColor.x = j["MoneyFontColor"][0].get<float>();
+		moneyFontColor.y = j["MoneyFontColor"][1].get<float>();
+		moneyFontColor.z = j["MoneyFontColor"][2].get<float>();
+		moneyFontColor.w = j["MoneyFontColor"][3].get<float>();
+	}
 	if (j.contains("HomeRunFontPosition"))
 	{
 		homeRunFontPosition.x = j["HomeRunFontPosition"][0].get<float>();
@@ -252,6 +348,38 @@ void Result::LoadFromJson(const nlohmann::json& j)
 		distanceFontColor.y = j["DistanceFontColor"][1].get<float>();
 		distanceFontColor.z = j["DistanceFontColor"][2].get<float>();
 		distanceFontColor.w = j["DistanceFontColor"][3].get<float>();
+	}
+	if(j.contains("ComboFontPosition"))
+	{
+		comboFontPosition.x = j["ComboFontPosition"][0].get<float>();
+		comboFontPosition.y = j["ComboFontPosition"][1].get<float>();
+	}
+	if (j.contains("ComboFontSize"))
+	{
+		comboFontSize = j["ComboFontSize"].get<float>();
+	}
+	if (j.contains("ComboFontColor"))
+	{
+		comboFontColor.x = j["ComboFontColor"][0].get<float>();
+		comboFontColor.y = j["ComboFontColor"][1].get<float>();
+		comboFontColor.z = j["ComboFontColor"][2].get<float>();
+		comboFontColor.w = j["ComboFontColor"][3].get<float>();
+	}
+	if (j.contains("RoundFontPosition"))
+	{
+		roundFontPosition.x = j["RoundFontPosition"][0].get<float>();
+		roundFontPosition.y = j["RoundFontPosition"][1].get<float>();
+	}
+	if(j.contains("RoundFontSize"))
+	{
+		roundFontSize = j["RoundFontSize"].get<float>();
+	}
+	if(j.contains("RoundFontColor"))
+	{
+		roundFontColor.x = j["RoundFontColor"][0].get<float>();
+		roundFontColor.y = j["RoundFontColor"][1].get<float>();
+		roundFontColor.z = j["RoundFontColor"][2].get<float>();
+		roundFontColor.w = j["RoundFontColor"][3].get<float>();
 	}
 	if (j.contains("ResultSpritePosition"))
 	{

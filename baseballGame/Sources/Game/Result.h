@@ -63,14 +63,30 @@ private:
 
 	FontRenderer resultFont;
 
+	//総ホームラン数の表示
 	DirectX::XMFLOAT2 homeRunFontPosition = { 700.0f, 400.0f };
-	float homeRunFontSize = 3.0f;
+	float homeRunFontSize = 1.0f;
 	DirectX::XMFLOAT4 homeRunFontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+	//最高飛距離表示
 	DirectX::XMFLOAT2 distanceFontPosition = { 700.0f, 600.0f };
-	float distanceFontSize = 3.0f;
+	float distanceFontSize = 1.0f;
 	DirectX::XMFLOAT4 distanceFontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+	//最終的な所持金表示
+	DirectX::XMFLOAT2 moneyFontPosition = { 700.0f, 800.0f };
+	float moneyFontSize = 1.0f;
+	DirectX::XMFLOAT4 moneyFontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	//最大コンボ数表示
+	DirectX::XMFLOAT2 comboFontPosition = { 700.0f, 1000.0f };
+	float comboFontSize = 1.0f;
+	DirectX::XMFLOAT4 comboFontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	//到達ラウンド数表示
+	DirectX::XMFLOAT2 roundFontPosition = { 700.0f, 1200.0f };
+	float roundFontSize = 1.0f;
+	DirectX::XMFLOAT4 roundFontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	ButtonManager buttonManager;
 	bool isResultToTitle = false;

@@ -110,6 +110,12 @@ void RoundManager::Initialize(ID3D11Device* device)
 	SpecialAbility::Instance().RollRoundActivation(); // ラウンドごとの能力発動判定を行う
 	TriggerSpeedModeActive(currentRound);
 	currentState = RoundState::Playing; // 初期状態をPlayingに設定
+
+	//スピードモードのテクスチャをslowSpeedに初期化
+	for(auto& speedMode : speedModes)
+	{
+		speedMode.isActive = (speedMode.name == "slowSpeed");
+	}
 }
 
 void RoundManager::Uninitialize()
