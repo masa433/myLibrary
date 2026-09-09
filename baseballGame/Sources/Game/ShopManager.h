@@ -84,6 +84,12 @@ private:
 	DirectX::XMFLOAT2 coinOffset = { 50.0f, 135.0f };
 	DirectX::XMFLOAT2 coinSize = { 40.0f, 40.0f };
 
+	std::unique_ptr<ShopSprite> nextRoundButtonData;
+	std::unique_ptr<sprite> nextRoundButtonSprite;
+
+	DirectX::XMFLOAT2 nextRoundButtonSize = { 200.0f, 50.0f };
+	DirectX::XMFLOAT2 nextRoundButtonPosition = { 960.0f, 900.0f };
+
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixel_shader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout;
@@ -300,6 +306,24 @@ public:
 			}
 		}
 	}
+
+	//マウス座標が次へボタンの範囲内にあるかどうかを判定する関数
+	bool IsMouseOverNextRoundButton(float mouseX, float mouseY)
+	{
+		float buttonLeft = nextRoundButtonPosition.x - nextRoundButtonSize.x / 2.0f;
+		float buttonRight = nextRoundButtonPosition.x + nextRoundButtonSize.x / 2.0f;
+		float buttonTop = (nextRoundButtonPosition.y + currentOffsetY) - nextRoundButtonSize.y / 2.0f;
+		float buttonBottom = (nextRoundButtonPosition.y + currentOffsetY) + nextRoundButtonSize.y / 2.0f;
+		return (mouseX >= buttonLeft && mouseX <= buttonRight &&
+				mouseY >= buttonTop && mouseY <= buttonBottom);
+	}
+
+	//次へボタンが押されたかどうかを判定する関数
+	bool IsNextRoundButtonPressed(float mouseX, float mouseY, bool isMouseClicked)
+	{
+		return IsMouseOverNextRoundButton(mouseX, mouseY) && isMouseClicked;
+	}
+
 private:
 
 	std::mt19937 rng{ std::random_device{}() }; // 乱数生成器
@@ -473,4 +497,9 @@ private:
 	//オーディオ関連
 	AudioSource* purchaseSound = nullptr;
 	AudioSource* notEnoughMoneySound = nullptr;
+
+private:
+	bool isNextRoundHovered = false; // 次へボタンホバー状態
+	bool isNextRoundPressed = false; // 次へボタン押下状態
+	float nextRoundButtonScale = 1.0f; // 描画用のスケール倍率
 };

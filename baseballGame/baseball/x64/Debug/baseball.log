@@ -1,16 +1,4 @@
-﻿  ShopManager.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(408,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Game/ShopManager.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(409,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Game/ShopManager.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(72,42): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(554,100): warning C4244: '引数': 'const int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(633,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(633,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(767,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(767,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(872,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(872,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+﻿  Money.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Money.cpp(496,23): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Money.cpp(501,18): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

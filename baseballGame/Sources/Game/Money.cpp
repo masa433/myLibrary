@@ -355,7 +355,7 @@ void Money::Update(float elapsedTime)
 		}
 
 		// 最終的な距離に倍率を適用して加算
-		finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier));
+		finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier)) + flatBonus - penaltyAmount;
 		AddMoney(finalDistance);
 		
 	}
@@ -512,7 +512,7 @@ void Money::Render()
 				}
 				else if (item.name == "Total")
 				{
-					bonusText = std::to_string(finalDistance + flatBonus) + " G";
+					bonusText = std::to_string(finalDistance) + " G";
 				}
 				float fontSize = 1.5f; // フォントサイズを適切に設定
 				float textWidth = 0.0f;

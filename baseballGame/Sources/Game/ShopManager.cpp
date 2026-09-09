@@ -182,6 +182,14 @@ void ShopManager::Initialize(ID3D11Device* device)
 		specialAbilitySprites[i] = std::make_unique<sprite>(device, context, GetSpecialAbilityIconPath(id).c_str());
 	}
 
+	nextRoundButtonData = std::make_unique<ShopSprite>();
+	nextRoundButtonData->texturePath = L".\\resources\\textures\\nextButton.png";
+	nextRoundButtonData->position = nextRoundButtonPosition;
+	nextRoundButtonData->size = nextRoundButtonSize;
+	nextRoundButtonData->rotation = 0.0f;
+	nextRoundButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	nextRoundButtonSprite = std::make_unique<sprite>(device, context, nextRoundButtonData->texturePath.c_str());
+
 	static std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		u8"どの球種を減らす？"
@@ -582,6 +590,35 @@ void ShopManager::Update(float elapsedTime)
 		return; // 選択中は通常のショップ更新をしない
 	}
 
+	Input& input = Input::Instance();
+	DirectX::XMFLOAT2 mousePos = { (float)input.GetMouse().GetPositionX(), (float)input.GetMouse().GetPositionY() };
+	
+	
+
+	isNextRoundHovered = IsMouseOverNextRoundButton(mousePos.x, mousePos.y);
+
+	bool isButtonPressed= isNextRoundHovered && input.GetMouse().GetButton() & Mouse::BTN_LEFT;
+
+	if (isNextRoundHovered && !isAnimating)
+	{
+		if (isButtonPressed)
+		{
+			isNextRoundPressed = true;
+			nextRoundButtonScale = 0.9f; // クリック時は少し小さく
+		}
+		else
+		{
+			isNextRoundPressed = false;
+			nextRoundButtonScale = 1.1f; // ホバー時は少し大きく
+		}
+	}
+	else
+	{
+		isNextRoundHovered = false;
+		isNextRoundPressed = false;
+		nextRoundButtonScale = 1.0f; // 通常サイズ
+	}
+
 	UpdateShopItem();
 
 	if(!isAnimating)
@@ -952,7 +989,7 @@ void ShopManager::Render()
 		if (selectedBatterIndex >= 0 && selectedBatterIndex < BATTER_COUNT)
 		{
 			float drawX = batterParamBackPosition.x - batterParamBackSize.x / 2.0f;
-			float drawY = (baseBatterParamPos.y + currentOffsetY) - batterParamBackSize.y / 2.0f;
+			float drawY = (batterParamBackPosition.y + currentOffsetY) - batterParamBackSize.y / 2.0f;
 
 			//選択されているバッターのアイコンを描画
 			batterSprites[selectedBatterIndex]->render(context,
@@ -1079,6 +1116,28 @@ void ShopManager::Render()
 
 	context->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+	
+	//ボタンの描画
+	if(nextRoundButtonData && nextRoundButtonSprite)
+	{
+		DirectX::XMFLOAT2 drawSize = 
+		{
+			nextRoundButtonSize.x * nextRoundButtonScale,
+			nextRoundButtonSize.y * nextRoundButtonScale
+		};
+
+		
+
+		float drawX = nextRoundButtonPosition.x - drawSize.x / 2.0f;
+		float drawY = (nextRoundButtonPosition.y + currentOffsetY) - drawSize.y / 2.0f;
+		nextRoundButtonSprite->render(context,
+			drawX,
+			drawY,
+			drawSize.x, drawSize.y,
+			nextRoundButtonData->color.x, nextRoundButtonData->color.y, nextRoundButtonData->color.z, nextRoundButtonData->color.w,
+			nextRoundButtonData->rotation);
+	}
 
 	//ショップアイテムの描画
 	for(int slotIndex = 0; slotIndex < SHOP_ITEM_DISPLAY_COUNT; ++slotIndex)
@@ -1266,6 +1325,12 @@ void ShopManager::DrawGUI()
 		ImGui::DragFloat2("contactRankFontPosition", &contactRankFontData.position.x, 1.0f, 0.0f);
 		ImGui::DragFloat("contactRankFontScale", &contactRankFontData.scale, 0.01f, 0.1f, 10.0f);
 	}
+
+	if(ImGui::CollapsingHeader("nextButton"))
+	{
+		ImGui::DragFloat2("nextButtonPosition", &nextRoundButtonPosition.x, 1.0f, 0.0f);
+		ImGui::DragFloat2("nextButtonSize", &nextRoundButtonSize.x, 1.0f, 0.0f);
+	}
 }
 
 void ShopManager::SaveToJson(json& j)
@@ -1278,6 +1343,8 @@ void ShopManager::SaveToJson(json& j)
 	j["contactFontData"] = { contactFontData.position.x, contactFontData.position.y, contactFontData.scale, contactFontData.color.x, contactFontData.color.y, contactFontData.color.z, contactFontData.color.w };
 	j["powerRankFontData"] = { powerRankFontData.position.x, powerRankFontData.position.y, powerRankFontData.scale, powerRankFontData.color.x, powerRankFontData.color.y, powerRankFontData.color.z, powerRankFontData.color.w };
 	j["contactRankFontData"] = { contactRankFontData.position.x, contactRankFontData.position.y, contactRankFontData.scale, contactRankFontData.color.x, contactRankFontData.color.y, contactRankFontData.color.z, contactRankFontData.color.w };
+	j["nextButtonPosition"] = { nextRoundButtonPosition.x, nextRoundButtonPosition.y };
+	j["nextButtonSize"] = { nextRoundButtonSize.x, nextRoundButtonSize.y };
 }
 
 void ShopManager::LoadFromJson(const json& j)
@@ -1340,6 +1407,16 @@ void ShopManager::LoadFromJson(const json& j)
 		contactRankFontData.color.y = j["contactRankFontData"][4].get<float>();
 		contactRankFontData.color.z = j["contactRankFontData"][5].get<float>();
 		contactRankFontData.color.w = j["contactRankFontData"][6].get<float>();
+	}
+	if (j.contains("nextButtonPosition") && j["nextButtonPosition"].is_array() && j["nextButtonPosition"].size() == 2)
+	{
+		nextRoundButtonPosition.x = j["nextButtonPosition"][0].get<float>();
+		nextRoundButtonPosition.y = j["nextButtonPosition"][1].get<float>();
+	}
+	if (j.contains("nextButtonSize") && j["nextButtonSize"].is_array() && j["nextButtonSize"].size() == 2)
+	{
+		nextRoundButtonSize.x = j["nextButtonSize"][0].get<float>();
+		nextRoundButtonSize.y = j["nextButtonSize"][1].get<float>();
 	}
 
 }

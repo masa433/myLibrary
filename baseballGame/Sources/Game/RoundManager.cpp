@@ -244,7 +244,12 @@ void RoundManager::UpdateShopState()
 	}
 
 	// 仮でエンターキーを押したらショップを閉じるアニメーションを開始
-	if (GetKeyState(VK_RETURN) & 0x8000)
+	//マウスの位置を取得
+	Input& input = Input::Instance();
+	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
+	bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
+
+	if (ShopManager::Instance().IsNextRoundButtonPressed(mousePos.x,mousePos.y, clicked))
 	{
 		ShopManager::Instance().CloseShop();
 		isShopClosingStarted = true; // クローズ開始フラグ
