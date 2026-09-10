@@ -129,6 +129,8 @@ void Pitcher::Initialize()
 
 	rosinEffect = std::make_unique<Effect>(".\\resources\\effects\\smoke.efk");
 
+	foulSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Foul.wav");
+
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 	aiStrikeRate = 1.0f; // AIのストライク率を初期化
 	pitchHistory.clear();// 投球履歴をクリア
@@ -194,6 +196,8 @@ void Pitcher::Uninitialize()
 	// GPUリソース解放
 	rightPitcher.reset();
 	leftPitcher.reset();
+
+	delete foulSound;
 }
 
 // 更新
@@ -205,6 +209,8 @@ void Pitcher::Update(float elapsedTime)
 	{
 		return; // タイマーが0以下の場合、更新をスキップ
 	}
+
+	foulSound->Update();
 
 	//// **バックスペースキーで強制的に投球開始**
 	//if (GetAsyncKeyState(VK_LSHIFT) & 0x8000)
@@ -393,6 +399,10 @@ void Pitcher::Update(float elapsedTime)
 	if(ballPosition.z < -3.0f && Ball::Instance().GetHasCollidedWithBat())
 	{
 		Ball::Instance().SetIsFoulConfirmed(true);
+		if(foulSound)
+		{
+			foulSound->PlayOneShot();
+		}
 	}
 
 	// ボールが地面に落ちたらリセット
@@ -443,6 +453,11 @@ void Pitcher::Update(float elapsedTime)
 					{
 						Ball::Instance().SetFoulLogged(true);
 						Ball::Instance().SetIsFoulConfirmed(true);
+
+						if(foulSound)
+						{
+							foulSound->PlayOneShot();
+						}
 
 						char debugMessage[256];
 						snprintf(debugMessage, sizeof(debugMessage),
@@ -504,6 +519,7 @@ void Pitcher::ResetPitchFlags()
 	TrackingData::Instance().Reset(); // トラッキングデータをリセット
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 	Combo::Instance().ResetHitFlag(); // コンボのヒットフラグをリセット
+	Physics::Instance().SetIsFoulSoundPlayed(false); // ファウル音の再生フラグをリセット
 	FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
 }
 

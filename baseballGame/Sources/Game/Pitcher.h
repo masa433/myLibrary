@@ -15,6 +15,8 @@
 #include "json.hpp"
 #include <unordered_map>
 #include "Effect.h"
+#include "../Sources/Audio/Audio.h"
+#include "../Sources/Audio/AudioSource.h"
 
 using json = nlohmann::json;
 
@@ -622,5 +624,7 @@ public:
 
 	bool IsWindEffectEnabled() const { return windEffectEnabled; }
 	void SetWindEffectEnabled(bool enabled) { windEffectEnabled = enabled; }
+
+	AudioSource* foulSound = nullptr; // ファウル音のAudioSourceへのポインタ
 
 };

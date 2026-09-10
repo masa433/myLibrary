@@ -158,6 +158,9 @@ public:
 	bool lastDistanceWasTotal = false; //前回の距離が総距離だったかどうかを判定する変数
 	bool GetLastDistanceWasTotal() const { return lastDistanceWasTotal; }
 
+	bool GetIsFoulSoundPlayed() const { return isFoulSoundPlayed; }
+	void SetIsFoulSoundPlayed(bool value) { isFoulSoundPlayed = value; }
+
 private:
 	std::unique_ptr<Effect> hitEffect;//打球エフェクトのインスタンス
 	std::unique_ptr<Effect> hitSmallEffect;//打球小エフェクトのインスタンス
@@ -168,8 +171,11 @@ private:
 	AudioSource* homeRunSound;//ホームラン音のインスタンス
 	AudioSource* hitClogSound;//打球が詰まった時の音
 	AudioSource* foulWhistleSound;//ファウルの笛の音
+	AudioSource* foulSound;//ファウル音のインスタンス
 	AudioSource* boundSound;//バウンド音のインスタンス
 	AudioSource* poleHitSound;//ポールに当たった時の音のインスタンス
+
+	bool isFoulSoundPlayed = false; //ファウル音が再生されたかどうかのフラグ
 
 	DirectX::XMFLOAT3 gravity = { 0.0f, -9.8f, 0.0f }; //重力加速度の初期値
 };

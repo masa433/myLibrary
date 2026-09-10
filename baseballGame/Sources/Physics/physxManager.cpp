@@ -107,6 +107,7 @@ void Physics::Initialize()
 	hitClogSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Clog.wav");
 	longHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/LongHit.wav");
 	foulWhistleSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/FoulWhistle.wav");
+	foulSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Foul.wav");
 	boundSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/BallBound.wav");
 	poleHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Pole.wav");
 }
@@ -146,6 +147,8 @@ void Physics::Finalize()
 	boundSound = nullptr;
 	delete poleHitSound;
 	poleHitSound = nullptr;
+	delete foulSound;
+	foulSound = nullptr;
 
 	consoleLog = nullptr;
 }
@@ -168,6 +171,7 @@ void Physics::Update(float elapsedTime)
 
 	foulWhistleSound->Update();
 	boundSound->Update();
+	foulSound->Update();
 }
 
 // 描画
@@ -854,6 +858,11 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					if (!isFair)
 					{
 						Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
+						if(foulSound && Ball::Instance().GetHasCollidedWithBat() && !isFoulSoundPlayed)
+						{
+							foulSound->PlayOneShot();
+							isFoulSoundPlayed = true;
+						}
 					}
 
 					if (consoleLog)
@@ -950,6 +959,12 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					if (!isFairAtStand)
 					{
 						Ball::Instance().SetIsFoulConfirmed(true); // ファウル確定フラグを設定
+
+						if(foulSound && Ball::Instance().GetHasCollidedWithBat() && !isFoulSoundPlayed)
+						{
+							foulSound->PlayOneShot();
+							isFoulSoundPlayed = true;
+						}
 
 						char debugMessage[256];
 						snprintf(debugMessage, sizeof(debugMessage),
@@ -1158,6 +1173,11 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				Combo::Instance().ResetCombo(); // ファウルゾーン通過したらコンボをリセット
 				if(foulWhistleSound)
 					foulWhistleSound->PlayOneShot();
+				if (foulSound && Ball::Instance().GetHasCollidedWithBat() && !isFoulSoundPlayed)
+				{
+					foulSound->PlayOneShot();
+					isFoulSoundPlayed = true;
+				}
 			}
 		}
 
