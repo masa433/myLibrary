@@ -525,15 +525,20 @@ void scene_game::render(float elapsedTime)
     {
         if (shadowRenderer.use_cascade_shadow_map)
             shadowRenderer.RenderCascadeShadowMap(elapsedTime);
-        else
-            shadowRenderer.RenderShadowMap(elapsedTime);
-
-        shadowRenderer.spot_shadow_frame_count++;
-        if (shadowRenderer.spot_shadow_frame_count >= shadowRenderer.spot_shadow_update_interval)
+       /* else if (!shadowRenderer.use_cascade_shadow_map)
         {
-            shadowRenderer.RenderSpotShadowMap(elapsedTime);
-            shadowRenderer.spot_shadow_frame_count = 0;
+			shadowRenderer.RenderShadowMap(elapsedTime);    
+        }
+            */
+        else
+        {
+            shadowRenderer.spot_shadow_frame_count++;
+            if (shadowRenderer.spot_shadow_frame_count >= shadowRenderer.spot_shadow_update_interval)
+            {
+                shadowRenderer.RenderSpotShadowMap(elapsedTime);
+                shadowRenderer.spot_shadow_frame_count = 0;
 
+            }
         }
     }
 

@@ -201,7 +201,7 @@ void Ball::Update(float elapsedTime)
 
 
 
-void Ball::Render(const RenderContext& rc, ModelRenderer* renderer, bool isThrown)
+void Ball::Render(const RenderContext& rc, ModelRenderer* renderer, bool isThrown, bool renderTrail)
 {
 
 	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
@@ -214,7 +214,7 @@ void Ball::Render(const RenderContext& rc, ModelRenderer* renderer, bool isThrow
 	model->render(rc.deviceContext, worldTransform, {});
 
 	// トレイルの描画
-	if (ballTrail.size() > 1)
+	if (renderTrail && ballTrail.size() > 1)
 	{
 
 

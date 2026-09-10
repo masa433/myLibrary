@@ -34,7 +34,7 @@ public:
 	void Initialize();
 	void Uninitialize();
 	void Update(float elapsedTime);
-	void Render(const RenderContext& rc, ModelRenderer* renderer, bool isThrown);
+	void Render(const RenderContext& rc, ModelRenderer* renderer, bool isThrown, bool renderTrail = true);
 	void DrawGUI();
 
 	void AttachToHand(const std::vector<gltf_model::node>& animatedNodes, const DirectX::XMFLOAT4X4& ownerTransform, const char* handName);

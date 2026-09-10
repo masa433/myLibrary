@@ -391,7 +391,7 @@ void Pitcher::Update(float elapsedTime)
 	DirectX::XMFLOAT3 ballPosition = Ball::Instance().GetWorldPosition();
 	if(ballPosition.z < -1.0f && Ball::Instance().GetHasCollidedWithBat())
 	{
-		TrackingData::Instance().SetTrackingDataVisible(false);
+		Ball::Instance().SetIsFoulConfirmed(true);
 	}
 
 	// ボールが地面に落ちたらリセット
@@ -408,12 +408,6 @@ void Pitcher::Update(float elapsedTime)
 	FoulSprite::Instance().Update(elapsedTime);
 
 	if(Ball::Instance().GetIsFoulConfirmed() && TrackingData::Instance().IsTrackingDataVisible() && !foulSpriteTriggered)
-	{
-		FoulSprite::Instance().SetShowFoulSprite(true);
-		foulSpriteTriggered = true;
-	}
-	//ボールが後ろに飛んで行ったらファウル判定
-	else if (Ball::Instance().GetHasCollidedWithBat() && Ball::Instance().GetIsFoulConfirmed() && !TrackingData::Instance().IsTrackingDataVisible() && !foulSpriteTriggered && FairFaulJudgeDelayTime >= 1.0f)
 	{
 		FoulSprite::Instance().SetShowFoulSprite(true);
 		foulSpriteTriggered = true;
@@ -513,14 +507,14 @@ void Pitcher::ResetPitchFlags()
 }
 
 // 描画
-void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer) 
+void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isShadowPass) 
 {
 	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
 	currentPitcher->render_batched(rc.deviceContext, transform, animated_nodes);
-	Ball::Instance().Render(rc, renderer, isBallThrown);
+	Ball::Instance().Render(rc, renderer, isBallThrown, !isShadowPass);
 
 	Wind::Instance().Render(rc);
 

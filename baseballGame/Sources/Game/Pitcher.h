@@ -33,7 +33,7 @@ public:
 	void Initialize();
 	void Uninitialize();
 	void Update(float elapsedTime);
-	void Render(const RenderContext& rc, ModelRenderer* renderer);
+	void Render(const RenderContext& rc, ModelRenderer* renderer, bool isShadowPass = false);
 	void DrawGUI();
 
 	void AttachBallToHand(float elapsedTime);
