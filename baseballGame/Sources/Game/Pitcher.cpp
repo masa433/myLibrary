@@ -543,7 +543,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
-	/*if (!Ball::Instance().GetHasCollidedWithBat())
+	if (currentState == State::SelectingPitch)
 	{
 
 		if (infoBackData && infoBackSprite)
@@ -574,7 +574,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 		}
 
 		
-	}*/
+	}
 
 	//選択されているピッチャーの番号のアイコンを描画
 	if (currentState == State::SelectingPitch)

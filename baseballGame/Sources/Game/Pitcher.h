@@ -476,7 +476,7 @@ private:
 
 	DirectX::XMFLOAT2 infoBackPosition = { 0.0f, 0.0f };
 	DirectX::XMFLOAT2 infoBackSize = { 0.0f, 0.0f };
-	DirectX::XMFLOAT4 infoBackColor = { 1.0f, 1.0f, 1.0f, 0.7f };
+	DirectX::XMFLOAT4 infoBackColor = { 0.0f, 0.0f, 0.0f, 0.7f };
 
 	std::unique_ptr<InfoData> infoBackData;
 	std::unique_ptr<sprite> infoBackSprite;
