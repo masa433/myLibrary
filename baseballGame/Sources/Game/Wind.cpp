@@ -7,6 +7,7 @@
 #include <shader.h>
 #include "FontRenderer.h"
 #include "TrackingData.h"
+#include "ShopManager.h"
 #include <ctime>
 
 void Wind::Initialize()
@@ -153,6 +154,8 @@ void Wind::Render(const RenderContext& rc)
 	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+
+	if (ShopManager::Instance().IsShopOpen()) return;
 
 	// 風の流線を描画
 	//for (const auto& line : windLines)

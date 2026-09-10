@@ -7,6 +7,8 @@
 #include "sprite.h"
 #include "json.hpp"
 #include "SpecialAbility.h"
+#include "../Sources/Audio/AudioSource.h"
+#include "../Sources/Audio/Audio.h"
 
 using json = nlohmann::json;
 
@@ -147,4 +149,9 @@ private:
 	void TriggerSpeedModeActive(int currentRound);
 
 	bool isShopClosingStarted = false; // ショップが閉じるアニメーションを開始したかどうかのフラグ
+
+
+	AudioSource* selectAbilitySound = nullptr;
+	AudioSource* selectAbilityHoverSound = nullptr;
+	AudioSource* closeShopSound = nullptr;
 };

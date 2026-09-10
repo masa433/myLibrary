@@ -60,6 +60,7 @@ void Result::Uninitialize()
 	resultSprite.reset();
 	resultSpriteData.reset();
 	hexTransitionEffect.Reset();
+	buttonManager.Uninitialize();
 }
 
 void Result::Update(float elapsedTime)

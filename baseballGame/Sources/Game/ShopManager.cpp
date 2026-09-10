@@ -249,6 +249,9 @@ void ShopManager::Initialize(ID3D11Device* device)
 
 	purchaseSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Purchase.wav");
 	notEnoughMoneySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CoinShortage.wav");
+	hoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
+	selectPitchTypeSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav");
+	selectSpecialAbilitySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ActiveRateUp.wav");
 
 	InitializeShopButtonSprites(device, context);
 	CloseShop(); // ショップを閉じる状態で初期化
@@ -573,6 +576,9 @@ void ShopManager::Uninitialize()
 	input_layout.Reset();
 	delete purchaseSound;
 	delete notEnoughMoneySound;
+	delete hoverSound;
+	delete selectPitchTypeSound;
+	delete selectSpecialAbilitySound;
 }
 
 void ShopManager::Update(float elapsedTime)
@@ -595,6 +601,7 @@ void ShopManager::Update(float elapsedTime)
 		Input& input = Input::Instance();
 		DirectX::XMFLOAT2 mousePos = { (float)input.GetMouse().GetPositionX(), (float)input.GetMouse().GetPositionY() };
 
+		bool wasNextRoundHovered = isNextRoundHovered; // 直前状態を保持
 		isNextRoundHovered = IsMouseOverNextRoundButton(mousePos.x, mousePos.y);
 		bool isButtonPressed = isNextRoundHovered && input.GetMouse().GetButton() & Mouse::BTN_LEFT;
 
@@ -602,6 +609,10 @@ void ShopManager::Update(float elapsedTime)
 		{
 			isNextRoundPressed = isButtonPressed;
 			nextRoundButtonScale = isButtonPressed ? 0.9f : 1.1f;
+			if(!wasNextRoundHovered && !isNextRoundPressed && hoverSound)
+			{
+				hoverSound->PlayOneShot();
+			}
 		}
 		else
 		{
@@ -677,6 +688,11 @@ void ShopManager::UpdateShopItem()
 		if(mousePos.x >= itemX && mousePos.x <= itemX + shopItemSize.x &&
 		   mousePos.y >= itemY && mousePos.y <= itemY + shopItemSize.y && !slotPurchased[i])
 		{
+			if (!slotHover[i] && hoverSound)
+			{
+				hoverSound->PlayOneShot();
+			}
+
 			slotHover[i] = true;
 
 			if(clicked)
@@ -803,6 +819,7 @@ void ShopManager::UpdateSelectPitchTypeState()
 	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
 	bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
 
+	int prevHovered = hoveredPitchTypeIndex; // 前回のインデックスを保存
 	hoveredPitchTypeIndex = -1;
 
 	for(int i = 0; i < static_cast<int>(pitchTypeChoices.size()); ++i)
@@ -815,8 +832,21 @@ void ShopManager::UpdateSelectPitchTypeState()
 		if (isHovered)
 		{
 			hoveredPitchTypeIndex = i;
+
+			// 前回と異なる要素の上にカーソルが乗った瞬間だけ再生
+			if (prevHovered != i && hoverSound)
+			{
+				hoverSound->PlayOneShot();
+			}
+
+			hoveredPitchTypeIndex = i;
 			if (clicked)
 			{
+
+				if(selectPitchTypeSound)
+				{
+					selectPitchTypeSound->PlayOneShot();
+				}
 				// 選択された球種を無効化する
 				Pitcher::Instance().DisablePitchType(pitchTypeChoices[i]);
 
@@ -907,7 +937,10 @@ void ShopManager::UpdateSelectSpecialAbilityState()
 	Input& input = Input::Instance();
 	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
 	bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
+
+	int prevHovered = hoveredSpecialAbilityIndex; // 前回のインデックスを保存
 	hoveredSpecialAbilityIndex = -1;
+
 	for (int i = 0; i < static_cast<int>(specialAbilityChoices.size()); ++i)
 	{
 		float iconX = specialAbilityIconPositions[i].x - specialAbilityIconSize.x / 2.0f;
@@ -917,8 +950,19 @@ void ShopManager::UpdateSelectSpecialAbilityState()
 		if (isHovered)
 		{
 			hoveredSpecialAbilityIndex = i;
+
+			if(prevHovered != i && hoverSound)
+			{
+				hoverSound->PlayOneShot();
+			}
+
+			hoveredSpecialAbilityIndex = i;
 			if (clicked)
 			{
+				if(selectSpecialAbilitySound)
+				{
+					selectSpecialAbilitySound->PlayOneShot();
+				}
 				SpecialAbility::AbilityID selectedID = specialAbilityChoices[i];
 				SpecialAbility::Instance().IncreaseActivationRate(selectedID, ActiveRateUpAmount); // 発動率を5%増加
 				specialAbilityChoices.clear();

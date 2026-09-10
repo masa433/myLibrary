@@ -9,6 +9,7 @@
 #include <string>
 #include "SpecialAbility.h"
 #include "SubMission.h"
+#include <ShopManager.h>
 
 // 小数点以下の不要な 0 を削除する関数(小数第1位は消さない)
 std::string FormatFloat(float value)
@@ -229,6 +230,8 @@ void Money::Initialize(ID3D11Device* device)
 	moneyMakerBonus = 0.0f;
 	jackpotBonus = 0.0f;
 
+
+	getMoneySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\GetMoney.wav");
 }
 
 void Money::Uninitialize()
@@ -358,6 +361,11 @@ void Money::Update(float elapsedTime)
 		finalDistance = static_cast<int>(std::round(baseDistance * totalMultiplier)) + flatBonus;
 		AddMoney(finalDistance);
 		
+		if (getMoneySound)
+		{
+			getMoneySound->PlayOneShot();
+		}
+
 	}
 
 	if(isBonusAnimating)
@@ -429,7 +437,28 @@ void Money::Update(float elapsedTime)
 
 	if (currentMoney < targetMoney)
 	{
-		currentMoney++;
+		// 1フレームごとに10ずつ増加させる
+		int increment = 10;
+
+		int difference = targetMoney - currentMoney;
+
+		// 差分が増加量より小さい場合は、差分を増加量にする
+		if (difference < increment)
+		{
+			increment = difference;
+		}
+
+		//1000以上の差分がある場合は、増加量を100にする
+		if (difference >= 1000)
+		{
+			increment = 100;
+		}
+
+		currentMoney += increment;
+		if (currentMoney > targetMoney)
+		{
+			currentMoney = targetMoney;
+		}
 	}
 
 	// 現在の状態を保存
@@ -446,6 +475,8 @@ void Money::Render()
 	dc->IASetInputLayout(spriteInputLayout.Get());
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
+
+	if (ShopManager::Instance().IsShopOpen() || ShopManager::Instance().IsClosing()) return;
 
 	if (moneySprite && moneyData)
 	{

@@ -497,6 +497,9 @@ private:
 	//オーディオ関連
 	AudioSource* purchaseSound = nullptr;
 	AudioSource* notEnoughMoneySound = nullptr;
+	AudioSource* hoverSound = nullptr;
+	AudioSource* selectPitchTypeSound = nullptr;
+	AudioSource* selectSpecialAbilitySound = nullptr;
 
 private:
 	bool isNextRoundHovered = false; // 次へボタンホバー状態

@@ -658,6 +658,7 @@ void batterSelectScene::uninitialize()
 	VSSprite.reset();
 	pitcherParamBackGroundSprite.reset();
 	backGroundSprite.reset();
+	buttonManager.Uninitialize();
 
 }
 

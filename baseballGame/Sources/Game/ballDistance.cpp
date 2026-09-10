@@ -54,6 +54,7 @@ void BallDistance::Initialize(ID3D11Device* device)
 
 	ResetMaxDistance();
 
+
 }
 
 void BallDistance::Uninitialize()
@@ -61,6 +62,7 @@ void BallDistance::Uninitialize()
 	ballDistanceFont.Uninitialize();
 	distanceBackSprite.reset();
 	distanceBackData.reset();
+
 }
 
 void BallDistance::Update(float elapsedTime)
@@ -133,6 +135,7 @@ void BallDistance::Update(float elapsedTime)
 		{
 			fontColor = { 1.0f,0.85f,0.0f,1.0f };// ホームランゾーンを超えたら、金色にする
 		}
+
 	}
 	
 }

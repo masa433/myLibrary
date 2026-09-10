@@ -9,6 +9,8 @@
 #include "Player.h"
 #include "FontRenderer.h"
 #include "json.hpp"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 #define BATTER_IMAGE_COUNT 6
 #define BATTER_COUNT 24
@@ -20,9 +22,10 @@ class ScrollView
 public:
 	ScrollView(ID3D11Device* device, float topX, float topY, float width, float height);
 	//ScrollView(ID3D11Device* device, const char* filePath, float topX, float topY, float width, float height);
-	~ScrollView() {}
+	~ScrollView();
 	void Render(float alpha = 1.0f);
 	void Update(float elapsedTime);
+	//void Uninitialize();
 	void DrawGUI();
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
@@ -214,4 +217,13 @@ public:
 		default: return "";
 		}
 	}
+
+private:
+	AudioSource* clickNameButton = nullptr;
+	AudioSource* hoverArrow = nullptr;
+
+	bool prevMouseOverTopArrow = false;
+
+	//ÉzÉoÅ[âπÇ™ñ¬Ç¡ÇΩÇ©Ç«Ç§Ç©
+	bool hoverSoundPlayed = false;
 };

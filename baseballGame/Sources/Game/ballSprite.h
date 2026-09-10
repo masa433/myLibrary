@@ -435,4 +435,11 @@ private:
 	AudioSource* catchSound = nullptr;
 	AudioSource* catchStrongSound = nullptr;
 	bool isCatchSoundPlayed = false;
+
+private:
+
+	float strikeZoneAlpha = 0.0f; // ストライクゾーンの透明度（0.0～1.0）
+	float strikeZoneFadeTime = 1.2f; // ストライクゾーンのフェード速度
+	float currentFadeTime = 0.0f; // 現在のフェード時間
+
 };

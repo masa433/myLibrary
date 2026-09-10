@@ -306,7 +306,7 @@ public:
 		highSpeed,//早い
 		realSpeed,//リアルスピード
 	};
-	BallSpeedMode ballSpeedMode = BallSpeedMode::realSpeed;
+	BallSpeedMode ballSpeedMode = BallSpeedMode::slowSpeed;
 
 	BallSpeedMode GetBallSpeedMode() const { return ballSpeedMode; }
 	void SetBallSpeedMode(BallSpeedMode mode) { ballSpeedMode = mode;}

@@ -63,6 +63,29 @@ void ButtonManager::Initialize()
 		screenWidth, screenHeight,
 		1024, 1024,
 		&codepoints);
+
+	buttonHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
+	buttonClickSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Hit.wav");
+	buttonBackSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Clog.wav");
+	startButtonSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\StartButtonClick.wav");
+}
+
+void ButtonManager::Uninitialize()
+{
+	if (fontRenderer)
+	{
+		fontRenderer->Uninitialize();
+		fontRenderer.reset();
+	}
+	if (buttonSpriteData)
+	{
+		buttonSpriteData->clear();
+		buttonSpriteData.reset();
+	}
+
+	delete buttonHoverSound;
+	delete buttonClickSound;
+	delete buttonBackSound;
 }
 
 void ButtonManager::Update(float elapsedTime)
@@ -78,7 +101,7 @@ void ButtonManager::Update(float elapsedTime)
 	bool isMouseDown = input.GetMouse().GetButton();
 	bool mouseDownEdge = isMouseDown && !prevMouseDown;
 	bool mouseUpEdge = !isMouseDown && prevMouseDown;
-
+	
 	//ボタンのクリック判定
 	//マウスの位置がボタンの範囲内かどうかの判定
 	if(buttonSpriteData && !buttonSpriteData->empty())
@@ -88,20 +111,26 @@ void ButtonManager::Update(float elapsedTime)
 			button.size = button.originalSize;
 			
 			//グレーになったボタンは反応しないようにする
-			if(button.color.x <= 0.5f && button.color.y <= 0.5f && button.color.z <= 0.5f)
+			if ((button.color.x <= 0.5f && button.color.y <= 0.5f && button.color.z <= 0.5f) || button.currentAlpha <= 0.001f)
 			{
+				button.isHover = false;
 				continue;
 			}
 
-			//アルファ値が0に近い値なら反応しない
-			if(button.currentAlpha <=0.001f)
-			{
-				continue;
-			}
 
 			bool isHovered = IsMouseOverButton({ static_cast<float>(input.GetMouse().GetPositionX()), static_cast<float>(input.GetMouse().GetPositionY()) },
 				button.position, button.originalSize);
 
+			if (isHovered && !button.isHover)
+			{
+				if (buttonHoverSound)
+				{
+					buttonHoverSound->PlayOneShot();
+				}
+			}
+
+			button.isHover = isHovered;//ボタンがホバーされているかどうかの状態を更新
+			
 			const float scaleFactor = 1.15f; // 拡大率（例: 1.15倍）
 			DirectX::XMFLOAT2 targetSize = { button.originalSize.x * scaleFactor, button.originalSize.y * scaleFactor };
 
@@ -111,6 +140,11 @@ void ButtonManager::Update(float elapsedTime)
 			bool isPressed = isHovered && input.GetMouse().GetButton();//押しっぱなし判定
 
 			button.size = isPressed ? button.originalSize : (isHovered ? targetSize : button.originalSize);
+
+			if(buttonHoverSound && prevMouseOverButton)
+			{
+				buttonHoverSound->PlayOneShot();
+			}
 		}
 
 		if (mouseDownEdge)
@@ -166,6 +200,11 @@ void ButtonManager::Update(float elapsedTime)
 					{
 					case ButtonType::Start:
 						isStartRequested = true;
+						if (startButtonSound)
+						{
+							startButtonSound->PlayOneShot();
+						}
+						
 						break;
 					case ButtonType::Settings:
 						OutputDebugStringA("Settings button clicked!\n");
@@ -178,34 +217,66 @@ void ButtonManager::Update(float elapsedTime)
 						break;
 					case ButtonType::Return:
 						isReturnRequested = true;
+						if(buttonBackSound)
+						{
+							buttonBackSound->PlayOneShot();
+						}
 						OutputDebugStringA("Return button clicked!\n");
 						break;
 					case ButtonType::OK:
 						isOKRequested = true;
+						if(buttonClickSound)
+						{
+							buttonClickSound->PlayOneShot();
+						}
 						OutputDebugStringA("OK button clicked!\n");
 						break;
 					case ButtonType::Close:
 						isCloseRequested = true;
+						if(buttonBackSound)
+						{
+							buttonBackSound->PlayOneShot();
+						}
 						OutputDebugStringA("Close button clicked!\n");
 						break;
 					case ButtonType::Reroll:
 						isRerollRequested = true;
+						if (buttonClickSound)
+						{
+							buttonClickSound->PlayOneShot();
+						}
 						OutputDebugStringA("Reroll button clicked!\n");
 						break;
 					case ButtonType::Title:
 						isTitleRequested = true;
+						if(buttonClickSound)
+						{
+							buttonClickSound->PlayOneShot();
+						}
 						OutputDebugStringA("Title button clicked!\n");
 						break;
 					case ButtonType::BatterSelect:
+						if(buttonClickSound)
+						{
+							buttonClickSound->PlayOneShot();
+						}
 						isBatterSelectRequested = true;
 						OutputDebugStringA("BatterSelect button clicked!\n");
 						break;
 					case ButtonType::Retry:
 						isRetryRequested = true;
+						if(buttonClickSound)
+						{
+							buttonClickSound->PlayOneShot();
+						}
 						OutputDebugStringA("Retry button clicked!\n");
 						break;
 					case ButtonType::ShowPitchParam:
 						isShowPitchParamRequested = true;
+						if(buttonBackSound)
+						{
+							buttonBackSound->PlayOneShot();
+						}
 						OutputDebugStringA("ShowPitchParam button clicked!\n");
 						break;
 

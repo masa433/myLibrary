@@ -65,7 +65,7 @@ void LoadingTips::Initialize(ID3D11Device* device)
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
 		200.0f, screenWidth, screenHeight, 4096, 4096, &codepoints);
 
-	tipFontPosition = { 500.0f, 580.0f };
+	tipFontPosition = { 450.0f, 580.0f };
 	tipFontScale = 1.3f;
 
 	loadingFont.Initialize(device,
@@ -76,6 +76,9 @@ void LoadingTips::Initialize(ID3D11Device* device)
 	loadingFontScale = 0.4f;
 
 	SelectRandomTip();
+
+	loadingArrowSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
+	clickArrowSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav");
 }
 
 void LoadingTips::Uninitialize()
@@ -85,6 +88,8 @@ void LoadingTips::Uninitialize()
 		tipSprite[i].reset();
 		tipSpriteData[i].reset();
 	}
+
+	delete loadingArrowSound;
 }
 
 void LoadingTips::Update(float elapsedTime)
@@ -107,30 +112,64 @@ void LoadingTips::Update(float elapsedTime)
 	//矢印のホバー判定と押下判定
 	{
 		bool rightHovered =
-			input.GetMouse().GetPositionX() >= rightArrowData->position.x - originalArrowSize.x / 2.0f &&
-			input.GetMouse().GetPositionX() <= rightArrowData->position.x + originalArrowSize.x / 2.0f &&
-			input.GetMouse().GetPositionY() >= rightArrowData->position.y - originalArrowSize.y / 2.0f &&
-			input.GetMouse().GetPositionY() <= rightArrowData->position.y + originalArrowSize.y / 2.0f;
+			input.GetMouse().GetPositionX() >= rightArrowData->position.x - originalArrowSize.y / 2.0f &&
+			input.GetMouse().GetPositionX() <= rightArrowData->position.x + originalArrowSize.y / 2.0f &&
+			input.GetMouse().GetPositionY() >= rightArrowData->position.y - originalArrowSize.x / 2.0f &&
+			input.GetMouse().GetPositionY() <= rightArrowData->position.y + originalArrowSize.x / 2.0f;
 
 		bool leftHovered =
-			input.GetMouse().GetPositionX() >= leftArrowData->position.x - originalArrowSize.x / 2.0f &&
-			input.GetMouse().GetPositionX() <= leftArrowData->position.x + originalArrowSize.x / 2.0f &&
-			input.GetMouse().GetPositionY() >= leftArrowData->position.y - originalArrowSize.y / 2.0f &&
-			input.GetMouse().GetPositionY() <= leftArrowData->position.y + originalArrowSize.y / 2.0f;
-		bool rightPressed = rightHovered && input.GetMouse().GetButton(); // 押しっぱなし判定
-		bool leftPressed = leftHovered && input.GetMouse().GetButton();
+			input.GetMouse().GetPositionX() >= leftArrowData->position.x - originalArrowSize.y / 2.0f &&
+			input.GetMouse().GetPositionX() <= leftArrowData->position.x + originalArrowSize.y / 2.0f &&
+			input.GetMouse().GetPositionY() >= leftArrowData->position.y - originalArrowSize.x / 2.0f &&
+			input.GetMouse().GetPositionY() <= leftArrowData->position.y + originalArrowSize.x / 2.0f;
+		bool rightPressed = rightHovered && (input.GetMouse().GetButton() & input.GetMouse().BTN_LEFT); // 押しっぱなし判定
+		bool leftPressed = leftHovered && (input.GetMouse().GetButton() & input.GetMouse().BTN_LEFT);
 
 
 		rightArrowData->size = rightPressed ? originalArrowSize : (rightHovered ? targetArrowSize : originalArrowSize);
 		leftArrowData->size = leftPressed ? originalArrowSize : (leftHovered ? targetArrowSize : originalArrowSize);
 
-		if (rightHovered && input.GetMouse().GetButtonDown())
+		if (rightHovered && !rightPressed && !isArrowHovered)
+		{
+			
+			if(loadingArrowSound)
+			{
+				loadingArrowSound->PlayOneShot();
+				isArrowHovered = true;
+			}
+
+		}
+		else if (leftHovered && !leftPressed && !isArrowHovered)
+		{
+			
+			if(loadingArrowSound)
+			{
+				loadingArrowSound->PlayOneShot();
+				isArrowHovered = true;
+			}
+		}
+
+		//矢印をクリックしたら、次のチップを表示する
+		if(rightHovered && (input.GetMouse().GetButtonDown() & input.GetMouse().BTN_LEFT))
 		{
 			ShowNextTip();
+			if(clickArrowSound)
+			{
+				clickArrowSound->PlayOneShot();
+			}
 		}
-		else if (leftHovered && input.GetMouse().GetButtonDown())
+		else if(leftHovered && (input.GetMouse().GetButtonDown() & input.GetMouse().BTN_LEFT))
 		{
 			ShowPreviousTip();
+			if(clickArrowSound)
+			{
+				clickArrowSound->PlayOneShot();
+			}
+		}
+
+		if(!rightHovered && !leftHovered)
+		{
+			isArrowHovered = false;
 		}
 	}
 

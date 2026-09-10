@@ -649,6 +649,7 @@ void ballSprite::Update(float elapsedTime)
 		if (pitchingState)
 		{
 			showSpriteTimer += elapsedTime;
+			currentFadeTime += elapsedTime;
 
 			if (showSpriteTimer >= showSpriteDelay)
 			{
@@ -657,10 +658,22 @@ void ballSprite::Update(float elapsedTime)
 					display = BallDisplayMode::Target;
 				}
 			}
+
+			//投球開始直後から徐々にストライクゾーンをフェードアウトさせる
+			if (currentFadeTime < strikeZoneFadeTime)
+			{
+				float fadeRatio = currentFadeTime / strikeZoneFadeTime;
+				strikeZoneSpriteData->color.w = 1.0f - fadeRatio; // 透明度を減少させる
+			}
+			else if (wp.z > -1.5f)
+			{
+				strikeZoneSpriteData->color.w = 0.0f; // 完全に透明にする
+			}
 		}	
 		else
 		{
 			// 投球モーション中でなければタイマーリセット＆非表示
+			currentFadeTime = 0.0f;
 			showSpriteTimer = 0.0f;
 			display = BallDisplayMode::None;
 		}
@@ -758,8 +771,9 @@ void ballSprite::Update(float elapsedTime)
 		ApplyTagetSpritePosition(currentScreenPos);
 	}
 
-	if(wp.z < -1.5f && wp.z > -2.0f)
+	if(wp.z < -1.5f && wp.z > -2.0f && !Ball::Instance().GetHasCollidedWithBat())
 	{
+		
 		if (!isCatchSoundPlayed)
 		{
 			if (Pitcher::Instance().IsFastball())
@@ -843,12 +857,18 @@ void ballSprite::Update(float elapsedTime)
 	//	}
 	//}
 
+	if (wp.z <= -1.5f)
+	{
+		strikeZoneSpriteData->color.w = 1.0f; // ストライクゾーンを非表示
+	}
+
 	// 3Dボールとバットが当たった段階で、2Dボールの動きを当たった位置で止める
 	if (Ball::Instance().GetHasCollidedWithBat())
 	{
 		stopBallOnHit = true;
 		TrackingData::Instance().Update(elapsedTime);
 		display = BallDisplayMode::Ball;
+		strikeZoneSpriteData->color.w = 1.0f; // ストライクゾーンを再表示
 	}
 
 	//3Dボールのポジションzが0.0fの時またはボールとバットが当たった時に、BallBoardを表示する

@@ -400,12 +400,12 @@ void scene_game::update(float elapsed_time)
                 enableShadows = true;
             }
         }*/
-        if (ImGui::IsKeyPressed(ImGuiKey_LeftShift))
+        /*if (ImGui::IsKeyPressed(ImGuiKey_LeftShift))
         {
             broadcastCamera.StopAllTracking();
             trackingTime = 0.0f;
             enableShadows = true;
-        }
+        }*/
     }
 
     ballSprite::Instance().Update(elapsed_time);

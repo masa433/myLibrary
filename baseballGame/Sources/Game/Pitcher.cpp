@@ -133,6 +133,7 @@ void Pitcher::Initialize()
 	aiStrikeRate = 1.0f; // AIのストライク率を初期化
 	pitchHistory.clear();// 投球履歴をクリア
 	windEffectEnabled = true; // 風の影響を有効にする
+	ballSpeedMode = BallSpeedMode::slowSpeed; // ボール速度モードを初期化
 
 	InitializePitchSettings();
 	SelectPitchType();
@@ -205,30 +206,30 @@ void Pitcher::Update(float elapsedTime)
 		return; // タイマーが0以下の場合、更新をスキップ
 	}
 
-	// **バックスペースキーで強制的に投球開始**
-	if (GetAsyncKeyState(VK_LSHIFT) & 0x8000)
-	{
-		if (currentState == State::SelectingPitch)
-		{
-			currentState = State::Throwing;
-			stateTime = 0.0f;
-			SelectPitchTypeByAI(); // 球種選択
-			ResetPitchFlags(); // pitchFlagsをリセット
-			Player::Instance().SetShowSwingTimingSprite(false);
-			Ball::Instance().SetHasCollidedWithBat(false);
-			OutputDebugStringA("Forced Throw: Backspace pressed\n");
+	//// **バックスペースキーで強制的に投球開始**
+	//if (GetAsyncKeyState(VK_LSHIFT) & 0x8000)
+	//{
+	//	if (currentState == State::SelectingPitch)
+	//	{
+	//		currentState = State::Throwing;
+	//		stateTime = 0.0f;
+	//		SelectPitchTypeByAI(); // 球種選択
+	//		ResetPitchFlags(); // pitchFlagsをリセット
+	//		Player::Instance().SetShowSwingTimingSprite(false);
+	//		Ball::Instance().SetHasCollidedWithBat(false);
+	//		OutputDebugStringA("Forced Throw: Backspace pressed\n");
 
-			if(consoleLog)
-			{
-				char debugMessage[256];
-				snprintf(debugMessage, sizeof(debugMessage), "[Info] Forced Throw: Backspace pressed\n");
-				consoleLog->push_back(debugMessage);
-			}
-			isBallThrown = false;
-			ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
-			ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
-		}
-	}
+	//		if(consoleLog)
+	//		{
+	//			char debugMessage[256];
+	//			snprintf(debugMessage, sizeof(debugMessage), "[Info] Forced Throw: Backspace pressed\n");
+	//			consoleLog->push_back(debugMessage);
+	//		}
+	//		isBallThrown = false;
+	//		ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
+	//		ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
+	//	}
+	//}
 
 	// 状態に応じた処理
 	switch (currentState)
@@ -387,9 +388,9 @@ void Pitcher::Update(float elapsedTime)
 		}
 	}
 
-	//バットに当たった後ボールのポジションが-1.0f以下だったら、トラッキングデータを表示しない
+	//バットに当たった後ボールのポジションが-3.0f以下だったら、トラッキングデータを表示しない
 	DirectX::XMFLOAT3 ballPosition = Ball::Instance().GetWorldPosition();
-	if(ballPosition.z < -1.0f && Ball::Instance().GetHasCollidedWithBat())
+	if(ballPosition.z < -3.0f && Ball::Instance().GetHasCollidedWithBat())
 	{
 		Ball::Instance().SetIsFoulConfirmed(true);
 	}
@@ -1261,10 +1262,10 @@ void Pitcher::ThrowBallBezier()
 	switch (ballSpeedMode)
 	{
 	case BallSpeedMode::slowSpeed:
-		speedMs *= 0.8f;
+		speedMs *= 0.7f;
 		break;
 	case BallSpeedMode::highSpeed:
-		speedMs *= 0.9f;
+		speedMs *= 0.85f;
 		break;
 	case BallSpeedMode::realSpeed:
 	default:

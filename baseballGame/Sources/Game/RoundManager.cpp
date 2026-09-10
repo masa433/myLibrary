@@ -63,7 +63,7 @@ void RoundManager::Initialize(ID3D11Device* device)
 	abilityBackSpriteData->color = { 1.0f, 1.0f, 1.0f, 0.5f };
 	abilityBackSprite = std::make_unique<sprite>(device, context, abilityBackSpriteData->texturePath.c_str());
 
-	
+	speedModes.clear();
 
 	//スピードモードのテクスチャ初期化
 	SpeedMode slowSpeedMode;
@@ -99,6 +99,7 @@ void RoundManager::Initialize(ID3D11Device* device)
 	realSpeedMode.speedModeSprite = std::make_unique<sprite>(device, context, realSpeedMode.speedModeSpriteData->texturePath.c_str());
 	speedModes.push_back(std::move(realSpeedMode));
 
+	
 	isGameClear = false;
 	isGameOver = false;
 
@@ -111,11 +112,10 @@ void RoundManager::Initialize(ID3D11Device* device)
 	TriggerSpeedModeActive(currentRound);
 	currentState = RoundState::Playing; // 初期状態をPlayingに設定
 
-	//スピードモードのテクスチャをslowSpeedに初期化
-	for(auto& speedMode : speedModes)
-	{
-		speedMode.isActive = (speedMode.name == "slowSpeed");
-	}
+	
+	selectAbilitySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\GetAbility.wav");
+	selectAbilityHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
+	closeShopSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CloseShop.wav");
 }
 
 void RoundManager::Uninitialize()
@@ -123,6 +123,10 @@ void RoundManager::Uninitialize()
 	roundFont.Uninitialize();
 	abilityBonusFont.Uninitialize();
 	ShopManager::Instance().Uninitialize();
+	delete selectAbilitySound;
+	delete selectAbilityHoverSound;
+	delete closeShopSound;
+	speedModes.clear();
 }
 
 void RoundManager::TriggerSpeedModeActive(int currentRound)
@@ -257,6 +261,11 @@ void RoundManager::UpdateShopState()
 
 	if (ShopManager::Instance().IsNextRoundButtonPressed(mousePos.x,mousePos.y, clicked))
 	{
+		if(closeShopSound)
+		{
+			closeShopSound->PlayOneShot();
+		}
+
 		ShopManager::Instance().CloseShop();
 		isShopClosingStarted = true; // クローズ開始フラグ
 	}
@@ -271,6 +280,7 @@ void RoundManager::UpdateSelectAbilityState()
 	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
 	bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
 
+	int previousHoveredIndex = hoveredAbilityIndex; // 前回のホバー中のインデックスを保存
 	hoveredAbilityIndex = -1; // ホバー中の特殊能力のインデックスをリセット
 
 	for(int i = 0; i < abilitiesChoice.size(); ++i)
@@ -287,8 +297,20 @@ void RoundManager::UpdateSelectAbilityState()
 		if (isHovered)
 		{
 			hoveredAbilityIndex = i; // ホバー中のインデックスを更新
+
+			if(selectAbilityHoverSound && previousHoveredIndex != i)
+			{
+				selectAbilityHoverSound->PlayOneShot();
+				
+			}
+
 			if (clicked)
 			{
+				if(selectAbilitySound)
+				{
+					selectAbilitySound->PlayOneShot();
+				}
+
 				// 選択された能力を有効化
 				SpecialAbility::Instance().SetOwned(abilityID, true);
 				abilitiesChoice.clear(); // 選択肢をクリア
@@ -296,6 +318,7 @@ void RoundManager::UpdateSelectAbilityState()
 				return;
 			}
 		}
+		
 	}
 
 	

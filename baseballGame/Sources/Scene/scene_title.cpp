@@ -418,6 +418,7 @@ void scene_title::uninitialize()
 	spriteVS.Reset();
 	spritePS.Reset();
 	spriteInputLayout.Reset();
+	buttonManager.Uninitialize();
 }
 
 void scene_title::DrawGUI()

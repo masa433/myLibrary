@@ -9,6 +9,9 @@
 #include "FontRenderer.h"
 #include "sprite.h"
 #include "sceneManager.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
+
 
 using json = nlohmann::json;
 
@@ -39,6 +42,7 @@ public:
 	ButtonManager() {};
 	~ButtonManager() {};
 	void Initialize();
+	void Uninitialize();
 	void Update(float elapsedTime);
 	void Render(float alpha = 1.0f, ButtonType buttonType = ButtonType::None);
 	void DrawGUI();
@@ -95,11 +99,13 @@ private:
 		ButtonType buttonType = ButtonType::None;
 		float currentAlpha = 0.0f;
 		bool isPressing = false;
+		bool isHover = false;
 		//押されているボタンの記録用
 		
 	};
 	bool prevMouseDown = false;      // 前フレームでマウスが押されていたか
 	ButtonSprite* pressedButton = nullptr; // 現在押し始めているボタン
+	bool prevMouseOverButton = false; // 前フレームでマウスがボタン上にあったか
 
 	std::unique_ptr<std::vector<ButtonSprite>> buttonSpriteData;
 	std::unique_ptr<FontRenderer> fontRenderer;
@@ -127,4 +133,10 @@ private:
 	bool isRetryRequested = false;
 	bool isBatterSelectRequested = false;
 	bool isShowPitchParamRequested = false;
+
+	AudioSource* buttonHoverSound = nullptr;
+	AudioSource* buttonClickSound = nullptr;
+	AudioSource* buttonBackSound = nullptr;
+	AudioSource* startButtonSound = nullptr;
+
 };

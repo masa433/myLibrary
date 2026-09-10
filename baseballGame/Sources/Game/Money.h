@@ -9,6 +9,9 @@
 #include "UiEasing.h"
 #include "Combo.h"
 #include "json.hpp"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
+
 
 using json = nlohmann::json;
 
@@ -199,4 +202,6 @@ private:
 
 	int flatBonus = 0;
 	int penaltyAmount = 0; // ペナルティ金額
+
+	AudioSource* getMoneySound = nullptr;
 };

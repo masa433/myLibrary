@@ -8,6 +8,8 @@
 #include "sprite.h"
 #include "shader.h"
 #include "FontRenderer.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 #define TIP_COUNT 16
 
@@ -81,4 +83,9 @@ public:
 	int currentDotCount = 3; // 現在のドットの数
 
 	float angle = 0.0f; // ローディングボールの回転角度
+
+	bool isArrowHovered = false; // 矢印がホバーされているかどうか
+
+	AudioSource* loadingArrowSound = nullptr; // 矢印の音声
+	AudioSource* clickArrowSound = nullptr; // 矢印クリックの音声
 };

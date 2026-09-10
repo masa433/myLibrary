@@ -184,8 +184,15 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	contactRankFontData.scale = 1.0f;
 	contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+	clickNameButton = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav");
+	hoverArrow = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
 }
 
+ScrollView::~ScrollView()
+{
+	delete clickNameButton;
+	delete hoverArrow;
+}
 
 void ScrollView::Render(float alpha)
 {
@@ -501,11 +508,30 @@ void ScrollView::Update(float elapsedTime)
 	bool bottomPressed = bottomHovered && input.GetMouse().GetButton();
 
 	if (showTopArrow)
+	{
 		topArrowData.size = topPressed ? originalArrowSize : (topHovered ? targetArrowSize : originalArrowSize);
+		if (topHovered && !topPressed && hoverArrow && !hoverSoundPlayed)
+		{
+			hoverArrow->PlayOneShot();
+			hoverSoundPlayed = true;
+		}
+	}
 
 	if (showBottomArrow)
+	{
 		bottomArrowData.size = bottomPressed ? originalArrowSize : (bottomHovered ? targetArrowSize : originalArrowSize);
+		if (bottomHovered && !bottomPressed && hoverArrow && !hoverSoundPlayed)
+		{
+			hoverArrow->PlayOneShot();
+			hoverSoundPlayed = true;
+		}
+	}
 
+	// マウスが矢印ボタンの上にない場合、hoverSoundPlayedをリセット
+	if (!topHovered && !bottomHovered)
+	{
+		hoverSoundPlayed = false;
+	}
 
 	//矢印を押したときのスクロール処理
 	//このときはボタンは押せないようにする
@@ -520,6 +546,12 @@ void ScrollView::Update(float elapsedTime)
 		{
 			scrollOffsetY -= 110.0f; // 上方向にスクロール
 			arrowClicked = true;
+
+			//効果音再生
+			if (hoverArrow)
+			{
+				hoverArrow->PlayOneShot();
+			}
 		}
 	}
 
@@ -533,6 +565,10 @@ void ScrollView::Update(float elapsedTime)
 		{
 			scrollOffsetY += 110.0f; // 下方向にスクロール
 			arrowClicked = true;
+			if(hoverArrow)
+			{
+				hoverArrow->PlayOneShot();
+			}
 		}
 	}
 
@@ -587,6 +623,11 @@ void ScrollView::Update(float elapsedTime)
 				playerButtonDataList[i].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色に変更
 				selectedIndex = (int)i; // 選択されたボタンのインデックスを更新
 				MatchSelectedButtonAndBatter(); // 選択されたボタンとバッターを一致させる
+
+				if (clickNameButton)
+				{
+					clickNameButton->PlayOneShot();
+				}
 			}
 
 			//一番最初のボタンをデフォルトで選択状態にする
