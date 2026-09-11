@@ -92,7 +92,7 @@ void SubMission::Initialize(ID3D11Device* device)
 		200.0f, screenWidth, screenHeight, 4096, 4096, &codepoints);
 
 	progressFont.Initialize(device,
-		L".\\resources\\fonts\\Futur12.ttf",
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
 		150.0f, screenWidth, screenHeight, 4096, 4096, &codepoints);
 
 	BuildMissionList();

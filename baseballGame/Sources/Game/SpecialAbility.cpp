@@ -152,11 +152,11 @@ void SpecialAbility::Initialize(ID3D11Device* device)
 		1024, 1024,
 		&trackingDataCodepoints);
 
-	powerRankFontData.position = { 240.0f, 915.0f };
+	powerRankFontData.position = { 200.0f, 965.0f };
 	powerRankFontData.scale = 1.0f;
 	powerRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-	contactRankFontData.position = { 380.0f, 915.0f };
+	contactRankFontData.position = { 340.0f, 965.0f };
 	contactRankFontData.scale = 1.0f;
 	contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -797,7 +797,7 @@ float SpecialAbility::RollJackPotMultiplier()
 
 void SpecialAbility::TriggerShowAbilities()
 {
-	float startX = 50.0f;
+	float startX = 10.0f;
 	float spacingX = 180.0f;
 
 	for (int i = 0; i < ABILITY_COUNT; ++i)
@@ -808,7 +808,7 @@ void SpecialAbility::TriggerShowAbilities()
 				(ability.ballCondition && ability.ballCondition()) || 
 				(ability.ballPenaltyCondition && ability.ballPenaltyCondition())))
 		{
-			abilitySprites[i]->iconPosition = { startX, 950.0f };
+			abilitySprites[i]->iconPosition = { startX, 1000.0f };
 			abilitySprites[i]->iconSize = { 180.0f, 30.0f };
 			startX += spacingX;
 		}

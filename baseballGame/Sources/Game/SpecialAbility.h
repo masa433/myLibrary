@@ -259,7 +259,7 @@ private:
 	std::unique_ptr<Sprite> batterSpriteData[BATTER_COUNT];
 	std::unique_ptr<sprite> batterSprites[BATTER_COUNT];
 
-	DirectX::XMFLOAT2 batterIconPosition = { 50.0f, 850.0f };
+	DirectX::XMFLOAT2 batterIconPosition = { 10.0f, 900.0f };
 	DirectX::XMFLOAT2 batterIconSize = { 400.0f, 75.0f };
 
 	Player::RealBatter selectedBatter = Player::RealBatter::None; // 選択されたバッターの種類

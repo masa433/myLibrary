@@ -379,10 +379,7 @@ private:
             }
         }
 
-        // 早すぎ or 遅すぎ
-        snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Too Early/Late)\n", timeToZone_);
-        OutputDebugStringA(buffer);
-        return 0.8f;
+		return 1.0f; // デフォルト倍率
     }
 
     // ---- 内部状態 ----

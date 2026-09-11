@@ -399,9 +399,10 @@ void Pitcher::Update(float elapsedTime)
 	if(ballPosition.z < -3.0f && Ball::Instance().GetHasCollidedWithBat())
 	{
 		Ball::Instance().SetIsFoulConfirmed(true);
-		if(foulSound)
+		if(foulSound && !isPlayedFoulSound)
 		{
 			foulSound->PlayOneShot();
+			isPlayedFoulSound = true;
 		}
 	}
 
@@ -454,9 +455,10 @@ void Pitcher::Update(float elapsedTime)
 						Ball::Instance().SetFoulLogged(true);
 						Ball::Instance().SetIsFoulConfirmed(true);
 
-						if(foulSound)
+						if(foulSound && !isPlayedFoulSound)
 						{
 							foulSound->PlayOneShot();
+							isPlayedFoulSound = true;
 						}
 
 						char debugMessage[256];
@@ -521,6 +523,7 @@ void Pitcher::ResetPitchFlags()
 	Combo::Instance().ResetHitFlag(); // コンボのヒットフラグをリセット
 	Physics::Instance().SetIsFoulSoundPlayed(false); // ファウル音の再生フラグをリセット
 	FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
+	isPlayedFoulSound = false; // ファウル音の再生フラグをリセット
 }
 
 // 描画

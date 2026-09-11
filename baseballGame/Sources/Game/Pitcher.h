@@ -627,4 +627,5 @@ public:
 
 	AudioSource* foulSound = nullptr; // ファウル音のAudioSourceへのポインタ
 
+	bool isPlayedFoulSound = false; // ファウル音が再生されたかどうかのフラグ
 };

@@ -139,7 +139,7 @@ private:
 		std::string name;
 		bool isActive = false;
 
-		DirectX::XMFLOAT2 position = { 1700.0f,950.0f };
+		DirectX::XMFLOAT2 position = { 1700.0f,1000.0f };
 		DirectX::XMFLOAT2 size = { 400.0f,120.0f };
 		DirectX::XMFLOAT4 color = { 1.0f,1.0f,1.0f,1.0f };
 	};

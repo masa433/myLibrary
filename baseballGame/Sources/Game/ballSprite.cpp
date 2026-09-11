@@ -1393,7 +1393,7 @@ void ballSprite::LoadFromJson(const json& j)
 		strikeZoneSpriteData->color.x = sz["color"][0].get<float>();
 		strikeZoneSpriteData->color.y = sz["color"][1].get<float>();
 		strikeZoneSpriteData->color.z = sz["color"][2].get<float>();
-		strikeZoneSpriteData->color.w = sz["color"][3].get<float>();
+		//strikeZoneSpriteData->color.w = sz["color"][3].get<float>();
 	}
 	if (j.contains("ballDebugSprite"))
 	{
