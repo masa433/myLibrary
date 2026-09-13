@@ -52,12 +52,19 @@ void Combo::Update(float elapsedTime)
 void Combo::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	ScreenScaler& scaler = Graphics::Instance().GetScreenScaler();
+
+	DirectX::XMFLOAT2 scaledNumberFontPos = scaler.Scale(numberFontPosition);
+	const float scaledNumberFontSize = numberFontSize * scaler.GetUniformScale();
+
 	// ÉRÉìÉ{êîÇï`âÊ
 	std::string comboText = std::to_string(currentCombo);
-	numberFont.DrawTextW(dc, comboText.c_str(), numberFontPosition.x, numberFontPosition.y, numberFontSize,
+	numberFont.DrawTextW(dc, comboText.c_str(), scaledNumberFontPos.x, scaledNumberFontPos.y, scaledNumberFontSize,
 		numberFontColor.x, numberFontColor.y, numberFontColor.z, numberFontColor.w);
 	// "Combo!" ÉâÉxÉãÇï`âÊ
-	labelFont.DrawTextW(dc, "Combo!", labelFontPosition.x, labelFontPosition.y, labelFontSize,
+	DirectX::XMFLOAT2 scaledLabelFontPos = scaler.Scale(labelFontPosition);
+	const float scaledLabelFontSize = labelFontSize * scaler.GetUniformScale();
+	labelFont.DrawTextW(dc, "Combo!", scaledLabelFontPos.x, scaledLabelFontPos.y, scaledLabelFontSize,
 		labelFontColor.x, labelFontColor.y, labelFontColor.z, labelFontColor.w);
 }
 

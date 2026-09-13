@@ -8,7 +8,7 @@
 #include "Light.h"
 #include "ModelRenderer.h"
 #include <mutex>
-
+#include "ScreenScaler.h"
 
 class Graphics
 {
@@ -35,6 +35,8 @@ public:
 
 	//画面表示
 	void Present(UINT syncInterval);
+
+	void OnScreenResolutionChanged(float newWidth, float newHeight);
 
 	//ウィンドウハンドル取得
 	HWND GetHwnd() const { return hWnd; }
@@ -79,6 +81,10 @@ public:
 
 	//ミューテックス取得
 	std::mutex& GetMutex() { return mutex; }
+
+	ScreenScaler& GetScreenScaler() { return screenScaler; }
+	const ScreenScaler& GetScreenScaler() const { return screenScaler; }
+
 private:
 	HWND											hWnd = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11Device>			device;
@@ -98,4 +104,6 @@ private:
 	std::unique_ptr<ModelRenderer>					modelRenderer;
 
 	std::mutex mutex; // スレッドセーフのためのミューテックス
+
+	ScreenScaler									screenScaler; // 画面スケーリング用のオブジェクト
 };

@@ -14,6 +14,9 @@ void Graphics::Initialize(HWND hWnd)
 	this->screenWidth = static_cast<float>(screenWidth);
 	this->screenHeight = static_cast<float>(screenHeight);
 
+	// 画面スケーリングの初期化
+	screenScaler.UpdateScale(GetScreenWidth(), GetScreenHeight());
+
 	HRESULT hr = S_OK;
 
 	// デバイス＆スワップチェーンの生成
@@ -155,6 +158,8 @@ void Graphics::Initialize(HWND hWnd)
 	shapeRenderer = std::make_unique<ShapeRenderer>(device.Get());
 	primitiveRenderer = std::make_unique<PrimitiveRenderer>(device.Get());
 	modelRenderer = std::make_unique<ModelRenderer>(device.Get());
+
+	
 }
 
 // クリア
@@ -176,4 +181,17 @@ void Graphics::SetRenderTarget()
 void Graphics::Present(UINT syncInterval)
 {
 	swapchain->Present(syncInterval, 0);
+}
+
+// 解像度変更時にスケーラーを更新
+void Graphics::OnScreenResolutionChanged(float newWidth, float newHeight)
+{
+	screenWidth = newWidth;
+	screenHeight = newHeight;
+	screenScaler.UpdateScale(newWidth, newHeight);
+
+	// ビューポートの更新
+	viewport.Width = newWidth;
+	viewport.Height = newHeight;
+	immediateContext->RSSetViewports(1, &viewport);
 }

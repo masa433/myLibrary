@@ -534,6 +534,7 @@
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Sources\UI\ButtonManager.h" />
+    <ClInclude Include="Sources\UI\ScreenScaler.h" />
     <ClInclude Include="Sources\UI\ScrollView.h" />
     <ClInclude Include="Sources\UI\UiEasing.h">
       <DeploymentContent>false</DeploymentContent>

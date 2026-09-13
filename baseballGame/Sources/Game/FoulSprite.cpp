@@ -20,7 +20,7 @@ void FoulSprite::Initialize(ID3D11Device* device)
 
 	foulSprite = std::make_unique<Sprite>();
 	foulSprite->texturePath = L".\\resources\\textures\\Foul.png";
-	foulSprite->position = { Graphics::Instance().GetScreenWidth() * 0.5f, Graphics::Instance().GetScreenHeight() * 0.5f }; // 中央に表示
+	foulSprite->position = { foulSpritePosition.x, foulSpritePosition.y }; // 中央に表示
 	foulSprite->size = { 300.0f, 100.0f };
 	foulSprite->rotation = 0.0f;
 	foulSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -73,6 +73,7 @@ void FoulSprite::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -83,11 +84,14 @@ void FoulSprite::Render()
 
 	if (showFoulSprite && foulSpriteRenderer)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(foulSpritePosition);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(foulSprite->size);
+
 		foulSpriteRenderer->render(Graphics::Instance().GetDeviceContext(),
-			foulSprite->position.x - foulSprite->size.x * 0.5f,
-			foulSprite->position.y - foulSprite->size.y * 0.5f,
-			foulSprite->size.x,
-			foulSprite->size.y,
+			scaledPosition.x,
+			scaledPosition.y,
+			scaledSize.x,
+			scaledSize.y,
 			foulSprite->color.x,
 			foulSprite->color.y,
 			foulSprite->color.z,
@@ -111,7 +115,7 @@ void FoulSprite::DrawGUI()
 	{
 		ImGui::Checkbox(u8"フール表示", &showFoulSprite);
 		ImGui::SliderFloat(u8"最大表示時間", &maxShowTime, 0.1f, 5.0f);
-		ImGui::DragFloat2(u8"位置", &foulSprite->position.x, 1.0f, 0.0f, static_cast<float>(Graphics::Instance().GetScreenWidth()));
+		ImGui::DragFloat2(u8"位置", &foulSpritePosition.x, 1.0f, 0.0f, static_cast<float>(Graphics::Instance().GetScreenWidth()));
 		ImGui::DragFloat2(u8"サイズ", &foulSprite->size.x, 1.0f, 0.0f, static_cast<float>(Graphics::Instance().GetScreenWidth()));
 		ImGui::ColorEdit4(u8"色", &foulSprite->color.x);
 		ImGui::DragFloat(u8"フェードイン時間", &fadeInTime, 0.1f, 0.0f, 5.0f);

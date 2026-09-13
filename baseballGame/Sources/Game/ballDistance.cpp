@@ -146,6 +146,8 @@ void BallDistance::Render()
 	
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
 	// Wind と同じようにシェーダーをセット
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -156,18 +158,24 @@ void BallDistance::Render()
 
 	// ボールがバットに当たったら、距離を表示する(ボールの位置でリアルタイムに更新する)
 	
+	DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(distanceBackPosition);
+	DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(distanceBackSize);
+
 	if (!hasDistanceText) return;
 
 	if(distanceBackData && distanceBackSprite)
 	{
 		distanceBackSprite->render(dc,
-			distanceBackPosition.x - distanceBackSize.x / 2.0f,
-			distanceBackPosition.y - distanceBackSize.y / 2.0f,
-			distanceBackSize.x, distanceBackSize.y,
+			scaledPos.x,
+			scaledPos.y,
+			scaledSize.x, scaledSize.y,
 			distanceBackColor.x, distanceBackColor.y,
 			distanceBackColor.z, distanceBackColor.w,
 			distanceBackData->rotation);
 	}
+
+	DirectX::XMFLOAT2 scaledFontPos = screenScaler.Scale(fontPosition);
+	const float scaledFontSize = fontSize * screenScaler.GetUniformScale();
 
 
 	//中央ぞろえにするヘルパー関数
@@ -179,15 +187,18 @@ void BallDistance::Render()
 		return { x - textWidth / 2.0f, y - textHeight / 2.0f };
 	};
 
-	DirectX::XMFLOAT2 fontPos = centerTextPosition(distanceText, fontSize, fontPosition.x, fontPosition.y);
+	DirectX::XMFLOAT2 fontPos = centerTextPosition(distanceText, scaledFontSize, scaledFontPos.x, scaledFontPos.y);
 
-	ballDistanceFont.DrawTextW(dc, distanceText, fontPos.x, fontPos.y, fontSize,
+	ballDistanceFont.DrawTextW(dc, distanceText, fontPos.x, fontPos.y, scaledFontSize,
 		fontColor.x, fontColor.y, fontColor.z, fontColor.w);
 
 	
 
 	
-	directionFont.DrawTextW(dc, directionLabel, directionFontPosition.x, directionFontPosition.y, directionFontSize,
+	DirectX::XMFLOAT2 scaledDirectionFontPos = screenScaler.Scale(directionFontPosition);
+	const float scaledDirectionFontSize = directionFontSize * screenScaler.GetUniformScale();
+
+	directionFont.DrawTextW(dc, directionLabel, scaledDirectionFontPos.x, scaledDirectionFontPos.y, scaledDirectionFontSize,
 		directionFontColor.x, directionFontColor.y, directionFontColor.z, directionFontColor.w);
 
 	// 後始末（Wind と同じ）

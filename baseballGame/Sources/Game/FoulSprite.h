@@ -51,6 +51,8 @@ private:
 	std::unique_ptr<Sprite> foulSprite;
 	std::unique_ptr<sprite> foulSpriteRenderer;
 
+	DirectX::XMFLOAT2 foulSpritePosition = { 820, 450 }; // フールスプライトの位置	
+
 	bool showFoulSprite = false;
 
 	float showDuration = 0.0f; // フール表示時間（秒）

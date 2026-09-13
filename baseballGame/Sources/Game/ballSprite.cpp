@@ -207,6 +207,7 @@ static DirectX::XMFLOAT2 ZoneScreenToWorld(
 
 DirectX::XMFLOAT2 ballSprite::GetAITarget3D() const
 {
+	
 	// 投手の左右に合わせて変換する
 	bool isRight = Pitcher::Instance().IsRightPitcher();
 	return ZoneScreenToWorld(
@@ -942,6 +943,8 @@ void ballSprite::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
 	TrackingData::Instance().Render();
 
 	bool isHomeRun = Physics::Instance().GetIsHomeRun();
@@ -956,12 +959,16 @@ void ballSprite::Render()
 	//確信ホームランの時はストライクゾーンとボールの描画をスキップする
 	if (!isHomeRun)
 	{
+
+		DirectX::XMFLOAT2 scaledStrikeZonePos = screenScaler.Scale(strikeZoneSpriteData->position);
+		DirectX::XMFLOAT2 scaledStrikeZoneSize = screenScaler.ScaleSize(strikeZoneSpriteData->size);
+
 		//ストライクゾーンとボールの描画
 		if (strikeZoneSprite && strikeZoneSpriteData)
 		{
 			strikeZoneSprite->render(dc,
-				strikeZoneSpriteData->position.x, strikeZoneSpriteData->position.y,
-				strikeZoneSpriteData->size.x, strikeZoneSpriteData->size.y,
+				scaledStrikeZonePos.x, scaledStrikeZonePos.y,
+				scaledStrikeZoneSize.x, scaledStrikeZoneSize.y,
 				strikeZoneSpriteData->color.x, strikeZoneSpriteData->color.y,
 				strikeZoneSpriteData->color.z, strikeZoneSpriteData->color.w,
 				strikeZoneSpriteData->rotation);
@@ -969,17 +976,20 @@ void ballSprite::Render()
 
 		if(display == BallDisplayMode::Ball)
 		{
+			DirectX::XMFLOAT2 scaledBallDebugPos = screenScaler.Scale(ballDebugSpriteData->position);
+			DirectX::XMFLOAT2 scaledBallDebugSize = screenScaler.ScaleSize(ballDebugSpriteData->size);
+
 			if (currentSpinFlip)
 			{
 				RenderSpinFlip(dc, *currentSpinFlip, currentSpinReverse,
-					ballDebugSpriteData->position, ballDebugSpriteData->size, ballDebugSpriteData->color);
+					scaledBallDebugPos, scaledBallDebugSize, ballDebugSpriteData->color);
 			}
 
 			else if (ballDebugSprite && ballDebugSpriteData)
 			{
 				ballDebugSprite->render(dc,
-					ballDebugSpriteData->position.x, ballDebugSpriteData->position.y,
-					ballDebugSpriteData->size.x, ballDebugSpriteData->size.y,
+					scaledBallDebugPos.x, scaledBallDebugPos.y,
+					scaledBallDebugSize.x, scaledBallDebugSize.y,
 					ballDebugSpriteData->color.x, ballDebugSpriteData->color.y,
 					ballDebugSpriteData->color.z, ballDebugSpriteData->color.w,
 					ballDebugSpriteData->rotation);
@@ -989,9 +999,11 @@ void ballSprite::Render()
 		{
 			if(ballTargetSprite && ballTargetSpriteData && hasAITarget)
 			{
+				DirectX::XMFLOAT2 scaledBallTargetPos = screenScaler.Scale(ballTargetSpriteData->position);
+				DirectX::XMFLOAT2 scaledBallTargetSize = screenScaler.ScaleSize(ballTargetSpriteData->size);
 				ballTargetSprite->render(dc,
-					ballTargetSpriteData->position.x, ballTargetSpriteData->position.y,
-					ballTargetSpriteData->size.x, ballTargetSpriteData->size.y,
+					scaledBallTargetPos.x, scaledBallTargetPos.y,
+					scaledBallTargetSize.x, scaledBallTargetSize.y,
 					ballTargetSpriteData->color.x, ballTargetSpriteData->color.y,
 					ballTargetSpriteData->color.z, ballTargetSpriteData->color.w,
 					ballTargetSpriteData->rotation);
@@ -1002,15 +1014,19 @@ void ballSprite::Render()
 
 	if(ballBoardSprite && ballBoardSpriteData && showBallBoard)
 	{
+		DirectX::XMFLOAT2 scaledBallBoardPos = screenScaler.Scale(ballBoardSpriteData->position);
+		DirectX::XMFLOAT2 scaledBallBoardSize = screenScaler.ScaleSize(ballBoardSpriteData->size);
 		ballBoardSprite->render(dc,
-			ballBoardSpriteData->position.x, ballBoardSpriteData->position.y,
-			ballBoardSpriteData->size.x, ballBoardSpriteData->size.y,
+			scaledBallBoardPos.x, scaledBallBoardPos.y,
+			scaledBallBoardSize.x, scaledBallBoardSize.y,
 			ballBoardSpriteData->color.x, ballBoardSpriteData->color.y,
 			ballBoardSpriteData->color.z, ballBoardSpriteData->color.w,
 			ballBoardSpriteData->rotation);
 
 		if (pitchInfoFont.IsValid())
 		{
+			DirectX::XMFLOAT2 scaledBallBoardPos = screenScaler.Scale(ballBoardSpriteData->position);
+
 			Pitcher& pitcher = Pitcher::Instance();
 			const char* pitchTypeName = pitcher.GetPitchTypeName(pitcher.GetSelectedPitchType());
 			const float ballSpeedKmh = pitcher.GetBallSpeedKmh();
@@ -1019,20 +1035,22 @@ void ballSprite::Render()
 			snprintf(speedText, sizeof(speedText), "%.0fkm/h", ballSpeedKmh);
 
 			const int pitchIndex = Pitcher::PitchTypeToBreakIndex(pitcher.GetSelectedPitchType());
-			const DirectX::XMFLOAT2& nameOffset = pitchNameOffsets[pitchIndex];
-			const DirectX::XMFLOAT2& speedOffset = pitchSpeedOffsets[pitchIndex];
+			const DirectX::XMFLOAT2& nameOffset = screenScaler.Scale(pitchNameOffsets[pitchIndex]);
+			const DirectX::XMFLOAT2& speedOffset = screenScaler.Scale(pitchSpeedOffsets[pitchIndex]);
 
-			const float boardTop = ballBoardSpriteData->position.y;
-			const float boardBottom = ballBoardSpriteData->position.y + ballBoardSpriteData->size.y;
+			const float scaledFontSize = pitchInfoFontScale * screenScaler.GetUniformScale();
+
+			const float boardTop = scaledBallBoardPos.y;
+			const float boardBottom = scaledBallBoardPos.y + scaledBallBoardSize.y;
 			const float boardCenterY = boardTop + (boardBottom - boardTop) * 0.5f;
 
 			float speedTextWidth = 0.0f, speedTextHeight = 0.0f;
-			pitchInfoFont.MeasureText(speedText, 1.0f, speedTextWidth, speedTextHeight);
+			pitchInfoFont.MeasureText(speedText, scaledFontSize, speedTextWidth, speedTextHeight);
 
 			// 左側: 球種（白固定）
-			const float pitchTextX = ballBoardSpriteData->position.x + nameOffset.x;
+			const float pitchTextX = scaledBallBoardPos.x + nameOffset.x;
 			const float pitchTextY = boardCenterY + nameOffset.y;
-			pitchInfoFont.DrawTextW(dc, pitchTypeName, pitchTextX, pitchTextY, pitchInfoFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+			pitchInfoFont.DrawTextW(dc, pitchTypeName, pitchTextX, pitchTextY, scaledFontSize, 1.0f, 1.0f, 1.0f, 1.0f);
 
 			// 右側: 球速（150km/h超で黄色、160km/h超でオレンジ色）
 			//小数点以下を四捨五入して整数表示するため、球速の閾値も四捨五入して判定する
@@ -1040,9 +1058,9 @@ void ballSprite::Render()
 
 			const DirectX::XMFLOAT4& speedColor = (roundedSpeed >= std::roundf(pitchSpeedHighFastThresholdKmh)) ? pitchSpeedHighFastColor :
 				(roundedSpeed >= std::roundf(pitchSpeedFastThresholdKmh)) ? pitchSpeedFastColor : pitchSpeedNormalColor;
-			const float speedTextX = ballBoardSpriteData->position.x + ballBoardSpriteData->size.x - speedOffset.x - speedTextWidth;
+			const float speedTextX = scaledBallBoardPos.x + scaledBallBoardSize.x - speedOffset.x - speedTextWidth;
 			const float speedTextY = boardCenterY + speedOffset.y;
-			pitchInfoFont.DrawTextW(dc, speedText, speedTextX, speedTextY, pitchInfoFontScale, speedColor.x, speedColor.y, speedColor.z, speedColor.w);
+			pitchInfoFont.DrawTextW(dc, speedText, speedTextX, speedTextY, scaledFontSize, speedColor.x, speedColor.y, speedColor.z, speedColor.w);
 		}
 	}
 

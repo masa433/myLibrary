@@ -248,6 +248,7 @@ void Player::Update(float elapsedTime)
     // HitJudge2Dの更新（スイング判定）
     {
         ballSprite& bs = ballSprite::Instance();
+        ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
         DirectX::XMFLOAT2 ballSprPos = bs.GetBallSpritePosition();
         DirectX::XMFLOAT2 ballSprSize = bs.GetBallSpriteSize();
         DirectX::XMFLOAT2 ballCenter =
@@ -261,8 +262,8 @@ void Player::Update(float elapsedTime)
         POINT pt;
         GetCursorPos(&pt);
         ScreenToClient(GetForegroundWindow(), &pt);
-        float mouseX = static_cast<float>(pt.x);
-        float mouseY = static_cast<float>(pt.y);
+        float mouseX = static_cast<float>(pt.x) / screenScaler.GetScaleX();// スクリーン座標をスケーリングしてクライアント座標に変換
+        float mouseY = static_cast<float>(pt.y) / screenScaler.GetScaleY();
         DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
         bs.GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
         mouseX = std::max(zoneTopLeft.x, std::min(zoneBottomRight.x, mouseX));
@@ -555,6 +556,7 @@ void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
 
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
     RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
     dc->VSSetShader(spriteVS.Get(), nullptr, 0);
     dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -568,11 +570,14 @@ void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
         int timingIndex = static_cast<int>(currentSwingTiming);
         if (timingIndex >= 0 && timingIndex < static_cast<int>(SwingTiming::Count))
         {
+            DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(swingTimingPosition);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(swingTimingSize);
+
             swingTimingSprite[timingIndex]->render(
                 dc,
-                swingTimingPosition.x,
-                swingTimingPosition.y,
-				swingTimingSize.x, swingTimingSize.y,
+                scaledPosition.x,
+                scaledPosition.y,
+				scaledSize.x, scaledSize.y,
 				swingTimingColor.x, swingTimingColor.y, swingTimingColor.z, swingTimingColor.w,
                 swingTimingInfo->rotation
             );

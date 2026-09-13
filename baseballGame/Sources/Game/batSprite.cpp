@@ -70,33 +70,8 @@ void BatSprite::Uninitialize()
 
 void BatSprite::Update(float elapsedTime)
 {
-	// 左コントロールキーでカーソル制限をトグル
-	//static bool prevCtrl = false;
-	//bool ctrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
-	//if (ctrl && !prevCtrl)
-	//{
-	//	cursorClipped = !cursorClipped;
-	//	if (!cursorClipped)
-	//		ClipCursor(nullptr); // 解除
-	//}
-	//prevCtrl = ctrl;
-	//
-	//if (cursorClipped)
-	//{
-	//	// ストライクゾーンのスクリーン境界を取得
-	//	DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
-	//	ballSprite::Instance().GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
-
-	//	// クライアント座標 → スクリーン座標に変換
-	//	HWND hwnd = GetForegroundWindow();
-	//	POINT tl = { (LONG)zoneTopLeft.x,     (LONG)zoneTopLeft.y };
-	//	POINT br = { (LONG)zoneBottomRight.x,  (LONG)zoneBottomRight.y };
-	//	ClientToScreen(hwnd, &tl);
-	//	ClientToScreen(hwnd, &br);
-
-	//	RECT clipRect = { tl.x, tl.y, br.x, br.y };
-	//	ClipCursor(&clipRect);
-	//}
+	
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	//バットに当たったらテクスチャの動きを止める
 	if(Ball::Instance().GetHasCollidedWithBat())
@@ -153,9 +128,11 @@ void BatSprite::Update(float elapsedTime)
 
 			float actualFinalY = bs.GetStartScreenPos().y + (ballFinalPos.y - bs.GetStartScreenPos().y) * yMoveScale;
 
+			DirectX::XMFLOAT2 scaledTarget = screenScaler.Scale({ ballFinalPos.x, actualFinalY + offsetY });
+
 			POINT targetPt = {
-				static_cast<LONG>(ballFinalPos.x),
-				static_cast<LONG>(actualFinalY + offsetY)
+				static_cast<LONG>(scaledTarget.x),
+				static_cast<LONG>(scaledTarget.y)
 			};
 
 			// スクリーン座標に変換
@@ -184,6 +161,8 @@ void BatSprite::Update(float elapsedTime)
 
 	if (!shouldRenderBat) return;
 
+	
+
 	// Win32 APIで直接クライアント座標を取得
 	POINT pt;
 	GetCursorPos(&pt);
@@ -191,8 +170,8 @@ void BatSprite::Update(float elapsedTime)
 	ScreenToClient(GetForegroundWindow(), &pt);
 
 
-	float mouseX = static_cast<float>(pt.x);
-	float mouseY = static_cast<float>(pt.y);
+	float mouseX = static_cast<float>(pt.x) / screenScaler.GetScaleX();// スクリーン座標をスケーリングしてクライアント座標に変換
+	float mouseY = static_cast<float>(pt.y) / screenScaler.GetScaleY();
 
 	DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
 	ballSprite::Instance().GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
@@ -222,6 +201,7 @@ void BatSprite::Update(float elapsedTime)
 	if (batSprite && batSpriteData)
 	{
 
+	
 		//左バッターの時は反転させる
 
 		if (player.IsRightBatter())
@@ -247,10 +227,6 @@ void BatSprite::Update(float elapsedTime)
 		float rotatedPivotX = localPivotX * cosf(rad) - localPivotY * sinf(rad);
 		float rotatedPivotY = localPivotX * sinf(rad) + localPivotY * cosf(rad);
 
-
-		float centerX = mouseX - rotatedPivotX;
-		float centerY = mouseY - rotatedPivotY;
-
 		// 画像左上基準の場合の直接計算式：
 		batDrawX = mouseX - (batSpriteData->size.x * 0.5f + rotatedPivotX);
 		batDrawY = mouseY - (batSpriteData->size.y * 0.5f + rotatedPivotY);
@@ -258,6 +234,7 @@ void BatSprite::Update(float elapsedTime)
 
 	if(batCursorSpriteData)
 	{
+		
 		cursorDrawX = mouseX - (batCursorSpriteData->size.x * 0.5f);
 		cursorDrawY = mouseY - (batCursorSpriteData->size.y * 0.5f);
 	}
@@ -267,6 +244,10 @@ void BatSprite::Update(float elapsedTime)
 void BatSprite::UpdateCursorSizeByContact(int contact)
 {
 	if (batCursorSpriteData == nullptr) return;
+
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+	DirectX::XMFLOAT2 scaledOriginalCursorSize = screenScaler.ScaleSize(originalCursorSize);
+	
 
 	// contact の値を 0～99の範囲に制限
 	float t = (std::max)(0.0f, (std::min)(99.0f, static_cast<float>(contact))) / 99.0f;
@@ -278,12 +259,12 @@ void BatSprite::UpdateCursorSizeByContact(int contact)
 	{
 		batCursorSpriteData->size =
 		{
-			originalCursorSize.x * scale,
-			originalCursorSize.y * scale,
+			scaledOriginalCursorSize.x * scale,
+			scaledOriginalCursorSize.y * scale,
 		};
 	}
 
-	HitJudge2D::Instance().cursorRadius = batCursorSpriteData->size.x * 0.5f;
+	HitJudge2D::Instance().cursorRadius = screenScaler.ScaleWidth(batCursorSpriteData->size.x) * 0.5f;
 }
 
 void BatSprite::Render()
@@ -292,6 +273,8 @@ void BatSprite::Render()
 
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -311,11 +294,12 @@ void BatSprite::Render()
 	if (batSprite && batSpriteData)
 	{
 
-		
+		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(DirectX::XMFLOAT2(batDrawX, batDrawY));
+		DirectX::XMFLOAT2 scaledBatSize = screenScaler.ScaleSize(batSpriteData->size);
 
 		batSprite->render(dc,
-			batDrawX, batDrawY,
-			batSpriteData->size.x, batSpriteData->size.y,
+			scaledPos.x, scaledPos.y,
+			scaledBatSize.x, scaledBatSize.y,
 			batSpriteData->color.x, batSpriteData->color.y,
 			batSpriteData->color.z, batSpriteData->color.w,
 			batSpriteData->rotation);
@@ -324,9 +308,13 @@ void BatSprite::Render()
 	if(batCursorSprite && batCursorSpriteData)
 	{
 		
+		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(DirectX::XMFLOAT2(cursorDrawX, cursorDrawY));
+		DirectX::XMFLOAT2 scaledCursorSize = screenScaler.ScaleSize(batCursorSpriteData->size);
+
+
 		batCursorSprite->render(dc,
-			cursorDrawX, cursorDrawY,
-			batCursorSpriteData->size.x, batCursorSpriteData->size.y,
+			scaledPos.x, scaledPos.y,
+			scaledCursorSize.x, scaledCursorSize.y,
 			batCursorSpriteData->color.x, batCursorSpriteData->color.y,
 			batCursorSpriteData->color.z, batCursorSpriteData->color.w,
 			batCursorSpriteData->rotation);

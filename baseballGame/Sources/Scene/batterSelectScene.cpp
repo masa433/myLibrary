@@ -95,7 +95,7 @@ void batterSelectScene::initialize()
 	//ピッチャーのパラメータ背景のスプライトデータを初期化
 	pitcherParamBackGroundData = std::make_unique<BatterSelectSpriteData>();
 	pitcherParamBackGroundData->texturePath = L".\\resources\\textures\\scrollViewBack.png";
-	pitcherParamBackGroundData->position = { static_cast<float>(screenWidth) / 2.0f, static_cast<float>(screenHeight) / 2.0f };
+	pitcherParamBackGroundData->position = { paramBackGroundPosition.x, paramBackGroundPosition.y };
 	pitcherParamBackGroundData->size = { 1800.0f , 1000.0f };
 	pitcherParamBackGroundData->rotation = 0.0f;
 	pitcherParamBackGroundData->color = { 1.0f, 1.0f, 1.0f, 0.8f };
@@ -404,6 +404,7 @@ void batterSelectScene::render(float elapsedTime)
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
@@ -413,9 +414,11 @@ void batterSelectScene::render(float elapsedTime)
 
 	if (backGroundData && backGroundSprite)
 	{
+		DirectX::XMFLOAT2 scaledBackPos = screenScaler.Scale(backGroundData->position);
+		DirectX::XMFLOAT2 scaledBackSize = screenScaler.Scale(backGroundData->size);
 
-		backGroundSprite->render(dc, backGroundData->position.x, backGroundData->position.y,
-			backGroundData->size.x, backGroundData->size.y,
+		backGroundSprite->render(dc, scaledBackPos.x, scaledBackPos.y,
+			scaledBackSize.x, scaledBackSize.y,
 			backGroundData->color.x, backGroundData->color.y, backGroundData->color.z, backGroundData->color.w,
 			backGroundData->rotation);
 	}
@@ -455,8 +458,8 @@ void batterSelectScene::render(float elapsedTime)
 
 			// バーストエフェクトの中心位置をスクリーン座標に変換
 			auto* tcb = reinterpret_cast<BurstTransformBuffer*>(mapped.pData);
-			tcb->center = effect.position;
-			tcb->size = effect.size;
+			tcb->center = screenScaler.Scale(effect.position);
+			tcb->size = screenScaler.Scale(effect.size);
 			tcb->screenSize = { static_cast<float>(Graphics::Instance().GetScreenWidth()), static_cast<float>(Graphics::Instance().GetScreenHeight()) };
 			dc->Unmap(burstTransformBuffer.Get(), 0);
 
@@ -486,8 +489,10 @@ void batterSelectScene::render(float elapsedTime)
 
 	if(VSSpriteData && VSSprite)
 	{
-		VSSprite->render(dc, VSPosition.x, VSPosition.y,
-			VSSize.x, VSSize.y,
+		DirectX::XMFLOAT2 scaledVSPos = screenScaler.Scale(VSPosition);
+		DirectX::XMFLOAT2 scaledVSSize = screenScaler.Scale(VSSize);
+		VSSprite->render(dc, scaledVSPos.x, scaledVSPos.y,
+			scaledVSSize.x, scaledVSSize.y,
 			VSColor.x, VSColor.y, VSColor.z, VSColor.w * batterImageAlpha,
 			VSSpriteData->rotation);
 	}
@@ -500,8 +505,10 @@ void batterSelectScene::render(float elapsedTime)
 	//ピッチャーの利き手が右投げならimage3か4、左投げならimage1か2を描画する
 	if (randomPitcherImageIndex >= 0)
 	{
-		pitcherImageSprites[randomPitcherImageIndex]->render(dc, pitcherImageSpriteDataArray[randomPitcherImageIndex]->position.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->position.y,
-			pitcherImageSpriteDataArray[randomPitcherImageIndex]->size.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->size.y,
+		DirectX::XMFLOAT2 scaledPitcherPos = screenScaler.Scale(pitcherImageSpriteDataArray[randomPitcherImageIndex]->position);
+		DirectX::XMFLOAT2 scaledPitcherSize = screenScaler.Scale(pitcherImageSpriteDataArray[randomPitcherImageIndex]->size);
+		pitcherImageSprites[randomPitcherImageIndex]->render(dc, scaledPitcherPos.x, scaledPitcherPos.y,
+			scaledPitcherSize.x, scaledPitcherSize.y,
 			pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.y, 
 			pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.z, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.w * batterImageAlpha,
 			pitcherImageSpriteDataArray[randomPitcherImageIndex]->rotation);
@@ -511,8 +518,10 @@ void batterSelectScene::render(float elapsedTime)
 	//選択されたピッチャーの名前タグを描画
 	if(selectedPitcherIndex < PITCHER_COUNT && pitcherNameSprite[selectedPitcherIndex] && pitcherNameSpriteData[selectedPitcherIndex])
 	{
-		pitcherNameSprite[selectedPitcherIndex]->render(dc, pitcherNamePosition.x, pitcherNamePosition.y,
-			pitcherNameSize.x, pitcherNameSize.y,
+		DirectX::XMFLOAT2 scaledPitcherNamePos = screenScaler.Scale(pitcherNamePosition);
+		DirectX::XMFLOAT2 scaledPitcherNameSize = screenScaler.Scale(pitcherNameSize);
+		pitcherNameSprite[selectedPitcherIndex]->render(dc, scaledPitcherNamePos.x, scaledPitcherNamePos.y,
+			scaledPitcherNameSize.x, scaledPitcherNameSize.y,
 			pitcherNameColor.x, pitcherNameColor.y, pitcherNameColor.z, pitcherNameColor.w * batterImageAlpha,
 			pitcherNameSpriteData[selectedPitcherIndex]->rotation);
 	}
@@ -524,16 +533,19 @@ void batterSelectScene::render(float elapsedTime)
 
 	if (fontRenderer.IsValid())
 	{
+		DirectX::XMFLOAT2 scaledFontPos = screenScaler.Scale(fontPosition);
+		const float scaledFontSize = fontSize * screenScaler.GetUniformScale(); // フォントサイズもスケーリング
+
 		float textWidth, textHeight;
 
-		fontRenderer.MeasureText(u8"詳細確認", fontSize, textWidth, textHeight);
+		fontRenderer.MeasureText(u8"詳細確認", scaledFontSize, textWidth, textHeight);
 
-		float drawX = fontPosition.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
-		float drawY = fontPosition.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
+		float drawX = scaledFontPos.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
+		float drawY = scaledFontPos.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
 
 		fontRenderer.DrawTextW(dc,
 			u8"詳細確認",
-			drawX, drawY, fontSize,
+			drawX, drawY, scaledFontSize,
 			fontColor.x, fontColor.y, fontColor.z, fontColor.w * returnAlpha);
 	}
 
@@ -550,9 +562,11 @@ void batterSelectScene::render(float elapsedTime)
 		//背景描画
 		if (pitcherParamBackGroundData && pitcherParamBackGroundSprite)
 		{
-			pitcherParamBackGroundSprite->render(dc, pitcherParamBackGroundData->position.x - pitcherParamBackGroundData->size.x / 2.0f,
-				pitcherParamBackGroundData->position.y - pitcherParamBackGroundData->size.y / 2.0f,
-				pitcherParamBackGroundData->size.x, pitcherParamBackGroundData->size.y,
+			DirectX::XMFLOAT2 scaledPitcherParamBackGroundPos = screenScaler.Scale(paramBackGroundPosition);
+			DirectX::XMFLOAT2 scaledPitcherParamBackGroundSize = screenScaler.Scale(pitcherParamBackGroundData->size);
+			pitcherParamBackGroundSprite->render(dc, scaledPitcherParamBackGroundPos.x,
+				scaledPitcherParamBackGroundPos.y,
+				scaledPitcherParamBackGroundSize.x, scaledPitcherParamBackGroundSize.y,
 				pitcherParamBackGroundData->color.x, pitcherParamBackGroundData->color.y,
 				pitcherParamBackGroundData->color.z, pitcherParamBackGroundData->color.w * paramImageAlpha,
 				pitcherParamBackGroundData->rotation);
@@ -578,8 +592,8 @@ void batterSelectScene::render(float elapsedTime)
 
 			// バーストエフェクトの中心位置をスクリーン座標に変換
 			auto* tcb = reinterpret_cast<BurstTransformBuffer*>(mapped.pData);
-			tcb->center = modalBurstPosition;
-			tcb->size = modalBurstSize;
+			tcb->center = screenScaler.Scale(modalBurstPosition);
+			tcb->size = screenScaler.Scale(modalBurstSize);
 			tcb->screenSize = { static_cast<float>(Graphics::Instance().GetScreenWidth()), static_cast<float>(Graphics::Instance().GetScreenHeight()) };
 			dc->Unmap(burstTransformBuffer.Get(), 0);
 
@@ -605,8 +619,10 @@ void batterSelectScene::render(float elapsedTime)
 		////選択されたピッチャーのスプライトを描画
 		if (selectedPitcherIndex < PITCHER_COUNT && pitcherSprites[selectedPitcherIndex] && pitcherSpriteDataArray[selectedPitcherIndex])
 		{
-			pitcherSprites[selectedPitcherIndex]->render(dc, pitcherSpriteDataArray[selectedPitcherIndex]->position.x, pitcherSpriteDataArray[selectedPitcherIndex]->position.y,
-				pitcherSpriteDataArray[selectedPitcherIndex]->size.x, pitcherSpriteDataArray[selectedPitcherIndex]->size.y,
+			DirectX::XMFLOAT2 scaledPitcherPos = screenScaler.Scale(pitcherSpriteDataArray[selectedPitcherIndex]->position);
+			DirectX::XMFLOAT2 scaledPitcherSize = screenScaler.Scale(pitcherSpriteDataArray[selectedPitcherIndex]->size);
+			pitcherSprites[selectedPitcherIndex]->render(dc, scaledPitcherPos.x, scaledPitcherPos.y,
+				scaledPitcherSize.x, scaledPitcherSize.y,
 				pitcherSpriteDataArray[selectedPitcherIndex]->color.x, pitcherSpriteDataArray[selectedPitcherIndex]->color.y,
 				pitcherSpriteDataArray[selectedPitcherIndex]->color.z, pitcherSpriteDataArray[selectedPitcherIndex]->color.w * paramImageAlpha,
 				pitcherSpriteDataArray[selectedPitcherIndex]->rotation);
@@ -614,8 +630,10 @@ void batterSelectScene::render(float elapsedTime)
 
 		if (randomPitcherImageIndex >= 0)
 		{
-			pitcherImageSprites[randomPitcherImageIndex]->render(dc, modalPitcherPos.x, modalPitcherPos.y,
-				modalPitcherSize.x, modalPitcherSize.y,
+			DirectX::XMFLOAT2 scaledModalPitcherPos = screenScaler.Scale(modalPitcherPos);
+			DirectX::XMFLOAT2 scaledModalPitcherSize = screenScaler.Scale(modalPitcherSize);
+			pitcherImageSprites[randomPitcherImageIndex]->render(dc, scaledModalPitcherPos.x, scaledModalPitcherPos.y,
+				scaledModalPitcherSize.x, scaledModalPitcherSize.y,
 				pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.y,
 				pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.z, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.w * batterImageAlpha,
 				pitcherImageSpriteDataArray[randomPitcherImageIndex]->rotation);

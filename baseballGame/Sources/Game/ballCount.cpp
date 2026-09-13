@@ -65,6 +65,8 @@ void ballCount::Render()
 
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
 	
 	const auto pitcherState = Pitcher::Instance().GetCurrentState();
 
@@ -81,12 +83,15 @@ void ballCount::Render()
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
 	
+	DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(ballCountPosition);
+	DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(ballCountSize);
+
 	// É{Å[ÉãÉJÉEÉìÉgÇÃîwåiÇï`âÊ
 	if (ballCountSprite)
 	{
 		ballCountSprite->render(dc,
-			ballCountPosition.x, ballCountPosition.y,
-			ballCountSize.x, ballCountSize.y,
+			scaledPos.x, scaledPos.y,
+			scaledSize.x, scaledSize.y,
 			ballCountData->color.x, ballCountData->color.y, ballCountData->color.z, ballCountData->color.w,
 			ballCountData->rotation);
 	}
@@ -99,12 +104,17 @@ void ballCount::Render()
 			return { x - textWidth / 2.0f, y - textHeight / 2.0f };
 		};
 
-	std::string remainingBallsText = std::to_string(remainingBalls);
-	DirectX::XMFLOAT2 fontPos = centerTextPosition(remainingBallsText, pitchInfoScale, pitchInfoPosition.x, pitchInfoPosition.y);
+	DirectX::XMFLOAT2 scaledFontPos = screenScaler.Scale(pitchInfoPosition);
 
+	const float scaledFontSize = pitchInfoScale * screenScaler.GetScaleY();
+
+	std::string remainingBallsText = std::to_string(remainingBalls);
+	DirectX::XMFLOAT2 fontPos = centerTextPosition(remainingBallsText, scaledFontSize, scaledFontPos.x, scaledFontPos.y);
+
+	
 	// écÇËÇÃãÖêîÇï`âÊ
 	pitchInfoFont.DrawTextW(dc, remainingBallsText.c_str(),
-		fontPos.x, fontPos.y, pitchInfoScale,
+		fontPos.x, fontPos.y, scaledFontSize,
 		pitchInfoColor.x, pitchInfoColor.y, pitchInfoColor.z, pitchInfoColor.w);
 	
 

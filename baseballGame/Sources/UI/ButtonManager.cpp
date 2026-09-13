@@ -91,7 +91,7 @@ void ButtonManager::Uninitialize()
 void ButtonManager::Update(float elapsedTime)
 {
 	
-	
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 
 	//ボタンの更新処理
@@ -117,10 +117,11 @@ void ButtonManager::Update(float elapsedTime)
 				continue;
 			}
 
+			DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(button.position);
+			DirectX::XMFLOAT2 scaledOriginalSize = screenScaler.ScaleSize(button.originalSize);
 
 			bool isHovered = IsMouseOverButton({ static_cast<float>(input.GetMouse().GetPositionX()), static_cast<float>(input.GetMouse().GetPositionY()) },
-				button.position, button.originalSize);
-
+				scaledPos, scaledOriginalSize);
 			if (isHovered && !button.isHover)
 			{
 				if (buttonHoverSound)
@@ -155,9 +156,12 @@ void ButtonManager::Update(float elapsedTime)
 
 				if (button.color.x <= 0.5f && button.color.y <= 0.5f && button.color.z <= 0.5f) continue;
 
+				DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(button.position);
+				DirectX::XMFLOAT2 scaledOriginalSize = screenScaler.ScaleSize(button.originalSize);
+
 				bool isHovered = IsMouseOverButton(
 					{ static_cast<float>(input.GetMouse().GetPositionX()), static_cast<float>(input.GetMouse().GetPositionY()) },
-					button.position, button.originalSize);
+					scaledPos, scaledOriginalSize);
 
 				if (isHovered)
 				{
@@ -179,9 +183,13 @@ void ButtonManager::Update(float elapsedTime)
 			
 			if (pressedButton != nullptr)
 			{
+				
+				DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(pressedButton->position);
+				DirectX::XMFLOAT2 scaledOriginalSize = screenScaler.ScaleSize(pressedButton->originalSize);
+
 				bool stillHovered = IsMouseOverButton(
 					{ static_cast<float>(input.GetMouse().GetPositionX()), static_cast<float>(input.GetMouse().GetPositionY()) },
-					pressedButton->position, pressedButton->originalSize);
+					scaledPos, scaledOriginalSize);
 
 
 				if(pressedButton->currentAlpha <= 0.001f)
@@ -314,6 +322,8 @@ void ButtonManager::Render(float alpha, ButtonType buttonType)
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 	
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
 	for (auto& button : *buttonSpriteData)
 	{
 
@@ -347,13 +357,18 @@ void ButtonManager::Render(float alpha, ButtonType buttonType)
 			{
 				//positionを中心にずらす
 
-				float offsetX = button.position.x - (button.size.x - button.originalSize.x) * 0.5f;
-				float offsetY = button.position.y - (button.size.y - button.originalSize.y) * 0.5f;
+				DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(button.position);
+				DirectX::XMFLOAT2 scaledOriginalSize = screenScaler.ScaleSize(button.originalSize);
+				DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(button.size);
+
+
+				float offsetX = scaledPos.x - (scaledSize.x - scaledOriginalSize.x) * 0.5f;
+				float offsetY = scaledPos.y - (scaledSize.y - scaledOriginalSize.y) * 0.5f;
 
 
 				button.spriteObj->render(context,
-					offsetX,offsetY,
-					button.size.x, button.size.y,
+					offsetX, offsetY,
+					scaledSize.x, scaledSize.y,
 					button.color.x, button.color.y, button.color.z, button.color.w * alpha,
 					button.rotation);
 			}
@@ -372,10 +387,11 @@ void ButtonManager::Render(float alpha, ButtonType buttonType)
 					return { x - textWidth / 2.0f, y - textHeight / 2.0f };
 				};
 
+			DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(fontPosition);
 
 			// フォントの描画
 			DirectX::XMFLOAT2 fontPos = centerTextPosition(button.labelBuffer, fontSize,
-				fontPosition.x, fontPosition.y
+				scaledPos.x, scaledPos.y
 			);
 
 			fontRenderer->DrawText(context, button.labelBuffer,

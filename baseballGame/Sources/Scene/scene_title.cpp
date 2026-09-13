@@ -343,12 +343,17 @@ void scene_title::render(float elapsed_time)
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	
+	ScreenScaler& scaler = Graphics::Instance().GetScreenScaler();
+
+	// 基準座標をスケーリング
+	DirectX::XMFLOAT2 scaledPos = scaler.Scale(logoPosition);
+	DirectX::XMFLOAT2 scaledSize = scaler.ScaleSize(logoSize);
 
 	if (logoSpriteData && logoSprite)
 	{
 		logoSprite->render(dc,
-			logoPosition.x, logoPosition.y,
-			logoSize.x, logoSize.y,
+			scaledPos.x, scaledPos.y,
+			scaledSize.x, scaledSize.y,
 			logoColor.x, logoColor.y, logoColor.z, logoColor.w,
 			logoSpriteData->rotation);
 	}

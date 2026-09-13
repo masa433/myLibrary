@@ -469,6 +469,7 @@ void Money::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -480,9 +481,12 @@ void Money::Render()
 
 	if (moneySprite && moneyData)
 	{
+		DirectX::XMFLOAT2 scaledMoneyPosition = screenScaler.Scale(moneyPosition);
+		DirectX::XMFLOAT2 scaledMoneySize = screenScaler.ScaleSize(moneySize);
+
 		moneySprite->render(dc,
-			moneyPosition.x, moneyPosition.y,
-			moneySize.x, moneySize.y,
+			scaledMoneyPosition.x, scaledMoneyPosition.y,
+			scaledMoneySize.x, scaledMoneySize.y,
 			moneyColor.x, moneyColor.y, moneyColor.z, moneyColor.w,
 			moneyData->rotation);
 	}
@@ -493,9 +497,12 @@ void Money::Render()
 		{
 			if (item.isActive && item.sprite)
 			{
+				DirectX::XMFLOAT2 scaledCurrentPos = screenScaler.Scale(item.currentPos);
+				DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(item.info.size);
+
 				item.sprite->render(dc,
-					item.currentPos.x, item.currentPos.y,
-					item.info.size.x, item.info.size.y,
+					scaledCurrentPos.x, scaledCurrentPos.y,
+					scaledSize.x, scaledSize.y,
 					item.info.color.x, item.info.color.y, item.info.color.z, item.info.color.w,
 					0.0f);
 			}
@@ -548,12 +555,17 @@ void Money::Render()
 				float fontSize = 1.5f; // フォントサイズを適切に設定
 				float textWidth = 0.0f;
 				float textHeight = 100.0f;
-				item.fontRenderer->MeasureText(bonusText.c_str(), fontSize, textWidth, textHeight);
-				float textX = item.currentPos.x + (item.info.size.x - textWidth) / 2.0f; // 中央揃え
-				float textY = item.currentPos.y + (item.info.size.y - textHeight) / 2.0f; // 中央揃え
+				DirectX::XMFLOAT2 scaledCurrentPos = screenScaler.Scale(item.currentPos);
+				DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(item.info.size);
+				const float scaledFontSize = fontSize * screenScaler.GetUniformScale(); // スケーリングを考慮したフォントサイズ
+				DirectX::XMFLOAT2 scaledTextOffset = screenScaler.ScaleSize({ textXOffset, textYOffset });
+
+				item.fontRenderer->MeasureText(bonusText.c_str(), scaledFontSize, textWidth, textHeight);
+				float textX = scaledCurrentPos.x + (scaledSize.x - textWidth) / 2.0f; // 中央揃え
+				float textY = scaledCurrentPos.y + (scaledSize.y - textHeight) / 2.0f; // 中央揃え
 				item.fontRenderer->DrawText(dc, bonusText.c_str(),
-					textX + textXOffset, textY + textYOffset,
-					fontSize,
+					textX + scaledTextOffset.x, textY + scaledTextOffset.y,
+					scaledFontSize,
 					1.0f, 1.0f, 1.0f, 1.0f); // 白色で描画
 			}
 		}
@@ -572,12 +584,15 @@ void Money::Render()
 				return { x - textWidth / 2.0f, y - textHeight / 2.0f };
 			};
 
-		DirectX::XMFLOAT2 fontPos = centerTextPosition(moneyText, moneyTextScale, moneyTextPosition.x, moneyTextPosition.y);
+		DirectX::XMFLOAT2 scaledMoneyTextPosition = screenScaler.Scale(moneyTextPosition);
+		const float scaledMoneyTextScale = moneyTextScale * screenScaler.GetUniformScale(); // スケーリングを考慮したフォントサイズ
+
+		DirectX::XMFLOAT2 fontPos = centerTextPosition(moneyText, scaledMoneyTextScale, scaledMoneyTextPosition.x, scaledMoneyTextPosition.y);
 
 		
 		moneyFont.DrawTextW(dc, moneyText.c_str(),
 			fontPos.x, fontPos.y,
-			moneyTextScale,
+			scaledMoneyTextScale,
 			moneyTextColor.x, moneyTextColor.y, moneyTextColor.z, moneyTextColor.w);
 	}
 

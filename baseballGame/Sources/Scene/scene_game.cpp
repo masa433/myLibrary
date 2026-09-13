@@ -878,14 +878,15 @@ void scene_game::DrawGUI()
         const ImGuiWindowFlags FLOAT_FLAGS =
             ImGuiWindowFlags_NoCollapse |
             ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoResize;
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoSavedSettings;
 
 
         // ════════════════════════════════════════════════════
         //  左パネル ── Player / Pitcher
         // ════════════════════════════════════════════════════
-        ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(LEFT_W, H * 0.8f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(LEFT_W, H * 1.0f), ImGuiCond_Always);
         ImGui::SetNextWindowBgAlpha(PANEL_ALPHA);
         ImGui::Begin("## Left", nullptr, FLOAT_FLAGS);
 
@@ -962,8 +963,8 @@ void scene_game::DrawGUI()
         // ════════════════════════════════════════════════════
         //  右パネル ── Debug
         // ════════════════════════════════════════════════════
-        ImGui::SetNextWindowPos(ImVec2(W - RIGHT_W, 0.0f), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(RIGHT_W, H * 0.8f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(W - RIGHT_W, 0.0f), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(RIGHT_W, H * 1.0f), ImGuiCond_Always);
         ImGui::SetNextWindowBgAlpha(PANEL_ALPHA);
         ImGui::Begin("Debug", nullptr, FLOAT_FLAGS);
         // ── Camera ──
@@ -1210,8 +1211,8 @@ void scene_game::DrawGUI()
         // ════════════════════════════════════════════════════
         //  下パネル ── Console
         // ════════════════════════════════════════════════════
-        ImGui::SetNextWindowPos(ImVec2(LEFT_W, H - BOTTOM_H), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(W - LEFT_W - RIGHT_W, BOTTOM_H), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(LEFT_W, H - BOTTOM_H), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(W - LEFT_W - RIGHT_W, BOTTOM_H), ImGuiCond_Always);
         ImGui::SetNextWindowBgAlpha(PANEL_ALPHA);
         ImGui::Begin("Console", nullptr, FLOAT_FLAGS);
         {

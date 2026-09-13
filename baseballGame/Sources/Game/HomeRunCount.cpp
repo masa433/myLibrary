@@ -134,6 +134,7 @@ void HomeRunCount::Render()
 	{
 		ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 		RenderState* renderState = Graphics::Instance().GetRenderState();
+		ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 		dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 		dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -143,9 +144,12 @@ void HomeRunCount::Render()
 			renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
 		// ホームラン数の描画
+		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(homeRunCountSpriteData->position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(homeRunCountSpriteData->size);
+
 		homeRunCountSprite->render(Graphics::Instance().GetDeviceContext(),
-			homeRunCountSpriteData->position.x, homeRunCountSpriteData->position.y,
-			homeRunCountSpriteData->size.x, homeRunCountSpriteData->size.y,
+			scaledPos.x, scaledPos.y,
+			scaledSize.x, scaledSize.y,
 			homeRunCountSpriteData->color.x, homeRunCountSpriteData->color.y,
 			homeRunCountSpriteData->color.z, homeRunCountSpriteData->color.w,
 			homeRunCountSpriteData->rotation);
@@ -179,6 +183,17 @@ void HomeRunCount::Render()
 		float countWidth = 0.0f, countHeight = 0.0f;
 		float slashWidth = 0.0f, slashHeight = 0.0f;
 		float targetWidth = 0.0f, targetHeight = 0.0f;
+
+		//文字列のスケーリングを行うラムダ式
+		auto TextScaling = [&](const DirectX::XMFLOAT2& position, float size) -> std::pair<DirectX::XMFLOAT2, float>
+		{
+			return {
+				screenScaler.Scale(position),                 
+				size * screenScaler.GetUniformScale()     
+			};
+		};
+
+
 		homeRunCountFont.MeasureText(countBuffer, numberDisplayScale, countWidth, countHeight);
 		homeRunCountFont.MeasureText(slashBuffer, slashDisplayScale, slashWidth, slashHeight);
 		homeRunCountFont.MeasureText(targetBuffer, targetDisplayScale, targetWidth, targetHeight);
@@ -188,41 +203,52 @@ void HomeRunCount::Render()
 
 		if (currentRound == 1)
 		{
+			auto [scaledLabelPos, scaledLabelScale] = TextScaling({ labelPositionX, labelPositionY }, labelScale);
+
 			homeRunCountFont.DrawTextW(dc,
 				roundBuffer,
-				labelPositionX,
-				labelPositionY,
-				labelScale,
+				scaledLabelPos.x,
+				scaledLabelPos.y,
+				scaledLabelScale,
 				1.0f, 1.0f, 1.0f, 1.0f); // 白色
 		}
 		else
 		{
+			auto [scaledNumberPos, scaledNumberScale] = TextScaling({ startX, numberPositionY }, numberScale);
+
 			homeRunCountFont.DrawTextW(dc,
 				countBuffer,
-				startX,
-				numberPositionY,
-				numberDisplayScale,
+				scaledNumberPos.x,
+				scaledNumberPos.y,
+				scaledNumberScale,
 				countColor.x, countColor.y, countColor.z, countColor.w); // 金色にして目立たせる例
+
+			auto [scaledSlashPos, scaledSlashScale] = TextScaling({ startX + countWidth, numberPositionY }, slashDisplayScale);
 
 			homeRunCountFont.DrawTextW(dc,
 				slashBuffer,
-				startX + countWidth,
-				numberPositionY,
-				slashDisplayScale,
+				scaledSlashPos.x,
+				scaledSlashPos.y,
+				scaledSlashScale,
 				slashColor.x, slashColor.y, slashColor.z, slashColor.w); // 金色にして目立たせる例
+			
+			auto [scaledTargetPos, scaledTargetScale] = TextScaling({ startX + countWidth + slashWidth, numberPositionY }, targetDisplayScale);
 
 			homeRunCountFont.DrawTextW(dc,
 				targetBuffer,
-				startX + countWidth + slashWidth,
-				numberPositionY,
-				targetDisplayScale,
+				scaledTargetPos.x,
+				scaledTargetPos.y,
+				scaledTargetScale,
 				targetColor.x, targetColor.y, targetColor.z, targetColor.w); // 金色にして目立たせる例
+
+			auto [scaledMissionPos, scaledMissionScale] =
+				TextScaling(missionLabelPosition, missionLabelScale);
 
 			missionFont.DrawTextW(dc,
 				roundBuffer,
-				missionLabelPosition.x,
-				missionLabelPosition.y,
-				missionLabelScale,
+				scaledMissionPos.x,
+				scaledMissionPos.y,
+				scaledMissionScale,
 				1.0f, 1.0f, 1.0f, 1.0f); // 白色
 
 		}

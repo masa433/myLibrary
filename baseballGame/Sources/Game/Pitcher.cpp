@@ -532,6 +532,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	currentPitcher->render_batched(rc.deviceContext, transform, animated_nodes);
 	Ball::Instance().Render(rc, renderer, isBallThrown, !isShadowPass);
@@ -551,27 +552,36 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 
 		if (infoBackData && infoBackSprite)
 		{
+			DirectX::XMFLOAT2 scaledInfoBackPos = screenScaler.Scale(infoBackPosition);
+			DirectX::XMFLOAT2 scaledInfoBackSize = screenScaler.Scale(infoBackSize);
+
 			infoBackSprite->render(dc,
-				infoBackPosition.x, infoBackPosition.y,
-				infoBackSize.x, infoBackSize.y,
+				scaledInfoBackPos.x, scaledInfoBackPos.y,
+				scaledInfoBackSize.x, scaledInfoBackSize.y,
 				infoBackColor.x, infoBackColor.y, infoBackColor.z, infoBackColor.w,
 				infoBackData->rotation);
 		}
 
 		if (cursorData && cursorSprite)
 		{
+			DirectX::XMFLOAT2 scaledCursorPos = screenScaler.Scale(cursorPosition);
+			DirectX::XMFLOAT2 scaledCursorSize = screenScaler.Scale(cursorSize);
+
 			cursorSprite->render(dc,
-				cursorPosition.x, cursorPosition.y,
-				cursorSize.x, cursorSize.y,
+				scaledCursorPos.x, scaledCursorPos.y,
+				scaledCursorSize.x, scaledCursorSize.y,
 				cursorColor.x, cursorColor.y, cursorColor.z, cursorColor.w,
 				cursorData->rotation);
 		}
 
 		if (swingData && swingSprite)
 		{
+			DirectX::XMFLOAT2 scaledSwingPos = screenScaler.Scale(swingPosition);
+			DirectX::XMFLOAT2 scaledSwingSize = screenScaler.Scale(swingSize);
+
 			swingSprite->render(dc,
-				swingPosition.x, swingPosition.y,
-				swingSize.x, swingSize.y,
+				scaledSwingPos.x, scaledSwingPos.y,
+				scaledSwingSize.x, scaledSwingSize.y,
 				swingColor.x, swingColor.y, swingColor.z, swingColor.w,
 				swingData->rotation);
 		}
@@ -590,9 +600,19 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 
 			if (spriteIndex >= 0 && spriteIndex < PITCHER_COUNT && ballTypeData[spriteIndex] && ballTypeSprite[spriteIndex])
 			{
+
+				DirectX::XMFLOAT2 scaledBallTypePosition = screenScaler.Scale(ballTypePosition);
+				DirectX::XMFLOAT2 scaledBallTypeSize = screenScaler.Scale(ballTypeSize);
+
+				DirectX::XMFLOAT2 scaledCenteredPosition = {
+					scaledBallTypePosition.x - (scaledBallTypeSize.x / 2.0f),
+					scaledBallTypePosition.y - (scaledBallTypeSize.y / 2.0f)
+				};
+
+
 				ballTypeSprite[spriteIndex]->render(dc,
-					ballTypePosition.x - (ballTypeSize.x / 2.0f), ballTypePosition.y - (ballTypeSize.y / 2.0f),
-					ballTypeSize.x, ballTypeSize.y,
+					scaledCenteredPosition.x, scaledCenteredPosition.y,
+					scaledBallTypeSize.x, scaledBallTypeSize.y,
 					ballTypeColor.x, ballTypeColor.y, ballTypeColor.z, ballTypeColor.w,
 					ballTypeData[spriteIndex]->rotation);
 			}

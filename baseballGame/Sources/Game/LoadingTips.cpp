@@ -95,6 +95,7 @@ void LoadingTips::Uninitialize()
 void LoadingTips::Update(float elapsedTime)
 {
 	Input& input = Input::Instance();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	//ドットアニメーション
 	dotAnimationTime += elapsedTime;
@@ -108,24 +109,32 @@ void LoadingTips::Update(float elapsedTime)
 	constexpr float speed = 180.0f;
 	angle += speed * elapsedTime; // Adjust the speed as needed
 
+	DirectX::XMFLOAT2 scaledRightPos = screenScaler.Scale(rightArrowData->position);
+	DirectX::XMFLOAT2 scaledRightSize = screenScaler.ScaleSize(rightArrowData->size);
+	DirectX::XMFLOAT2 scaledLeftPos = screenScaler.Scale(leftArrowData->position);
+	DirectX::XMFLOAT2 scaledLeftSize = screenScaler.ScaleSize(leftArrowData->size);
+
+
+	
 
 	//矢印のホバー判定と押下判定
 	{
 		bool rightHovered =
-			input.GetMouse().GetPositionX() >= rightArrowData->position.x - originalArrowSize.y / 2.0f &&
-			input.GetMouse().GetPositionX() <= rightArrowData->position.x + originalArrowSize.y / 2.0f &&
-			input.GetMouse().GetPositionY() >= rightArrowData->position.y - originalArrowSize.x / 2.0f &&
-			input.GetMouse().GetPositionY() <= rightArrowData->position.y + originalArrowSize.x / 2.0f;
+			input.GetMouse().GetPositionX() >= scaledRightPos.x - scaledRightSize.y / 2.0f &&
+			input.GetMouse().GetPositionX() <= scaledRightPos.x + scaledRightSize.y / 2.0f &&
+			input.GetMouse().GetPositionY() >= scaledRightPos.y - scaledRightSize.x / 2.0f &&
+			input.GetMouse().GetPositionY() <= scaledRightPos.y + scaledRightSize.x / 2.0f;
 
 		bool leftHovered =
-			input.GetMouse().GetPositionX() >= leftArrowData->position.x - originalArrowSize.y / 2.0f &&
-			input.GetMouse().GetPositionX() <= leftArrowData->position.x + originalArrowSize.y / 2.0f &&
-			input.GetMouse().GetPositionY() >= leftArrowData->position.y - originalArrowSize.x / 2.0f &&
-			input.GetMouse().GetPositionY() <= leftArrowData->position.y + originalArrowSize.x / 2.0f;
+			input.GetMouse().GetPositionX() >= scaledLeftPos.x - scaledLeftSize.y / 2.0f &&
+			input.GetMouse().GetPositionX() <= scaledLeftPos.x + scaledLeftSize.y / 2.0f &&
+			input.GetMouse().GetPositionY() >= scaledLeftPos.y - scaledLeftSize.x / 2.0f &&
+			input.GetMouse().GetPositionY() <= scaledLeftPos.y + scaledLeftSize.x / 2.0f;
 		bool rightPressed = rightHovered && (input.GetMouse().GetButton() & input.GetMouse().BTN_LEFT); // 押しっぱなし判定
 		bool leftPressed = leftHovered && (input.GetMouse().GetButton() & input.GetMouse().BTN_LEFT);
 
 
+	
 		rightArrowData->size = rightPressed ? originalArrowSize : (rightHovered ? targetArrowSize : originalArrowSize);
 		leftArrowData->size = leftPressed ? originalArrowSize : (leftHovered ? targetArrowSize : originalArrowSize);
 
@@ -179,6 +188,8 @@ void LoadingTips::Render(float alpha)
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
 	// Set shaders
 	context->VSSetShader(spriteVS.Get(), nullptr, 0);
 	context->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -192,11 +203,19 @@ void LoadingTips::Render(float alpha)
 	// Render the selected tip
 	if (tipSprite[selectedTipIndex])
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(tipSpriteData[selectedTipIndex]->position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(tipSpriteData[selectedTipIndex]->size);
+
+		DirectX::XMFLOAT2 centerPosition = {
+			scaledPosition.x - scaledSize.x * 0.5f,
+			scaledPosition.y - scaledSize.y * 0.5f
+		};
+
 		tipSprite[selectedTipIndex]->render(context,
-			tipSpriteData[selectedTipIndex]->position.x - tipSpriteData[selectedTipIndex]->size.x / 2,
-			tipSpriteData[selectedTipIndex]->position.y - tipSpriteData[selectedTipIndex]->size.y / 2,
-			tipSpriteData[selectedTipIndex]->size.x,
-			tipSpriteData[selectedTipIndex]->size.y,
+			centerPosition.x,
+			centerPosition.y,
+			scaledSize.x,
+			scaledSize.y,
 			tipSpriteData[selectedTipIndex]->color.x,
 			tipSpriteData[selectedTipIndex]->color.y,
 			tipSpriteData[selectedTipIndex]->color.z,
@@ -206,11 +225,19 @@ void LoadingTips::Render(float alpha)
 
 	if (loadingBallSprite)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(loadingBallSpriteData->position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(loadingBallSpriteData->size);
+
+		DirectX::XMFLOAT2 centerPosition = {
+			scaledPosition.x - scaledSize.x * 0.5f,
+			scaledPosition.y - scaledSize.y * 0.5f
+		};
+
 		loadingBallSprite->render(context,
-			loadingBallSpriteData->position.x - loadingBallSpriteData->size.x / 2,
-			loadingBallSpriteData->position.y - loadingBallSpriteData->size.y / 2,
-			loadingBallSpriteData->size.x,
-			loadingBallSpriteData->size.y,
+			centerPosition.x,
+			centerPosition.y,
+			scaledSize.x,
+			scaledSize.y,
 			loadingBallSpriteData->color.x,
 			loadingBallSpriteData->color.y,
 			loadingBallSpriteData->color.z,
@@ -221,11 +248,19 @@ void LoadingTips::Render(float alpha)
 	//矢印の描画
 	if (leftArrowSprite)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(leftArrowData->position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(leftArrowData->size);
+
+		DirectX::XMFLOAT2 centerPosition = {
+			scaledPosition.x - scaledSize.x * 0.5f,
+			scaledPosition.y - scaledSize.y * 0.5f
+		};
+
 		leftArrowSprite->render(context,
-			leftArrowData->position.x - leftArrowData->size.x / 2,
-			leftArrowData->position.y - leftArrowData->size.y / 2,
-			leftArrowData->size.x,
-			leftArrowData->size.y,
+			centerPosition.x,
+			centerPosition.y,
+			scaledSize.x,
+			scaledSize.y,
 			leftArrowData->color.x,
 			leftArrowData->color.y,
 			leftArrowData->color.z,
@@ -235,11 +270,19 @@ void LoadingTips::Render(float alpha)
 
 	if (rightArrowSprite)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(rightArrowData->position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(rightArrowData->size);
+
+		DirectX::XMFLOAT2 centerPosition = {
+			scaledPosition.x - scaledSize.x * 0.5f,
+			scaledPosition.y - scaledSize.y * 0.5f
+		};
+
 		rightArrowSprite->render(context,
-			rightArrowData->position.x - rightArrowData->size.x / 2,
-			rightArrowData->position.y - rightArrowData->size.y / 2,
-			rightArrowData->size.x,
-			rightArrowData->size.y,
+			centerPosition.x,
+			centerPosition.y,
+			scaledSize.x,
+			scaledSize.y,
 			rightArrowData->color.x,
 			rightArrowData->color.y,
 			rightArrowData->color.z,
@@ -250,16 +293,19 @@ void LoadingTips::Render(float alpha)
 	float tipFontWidth, tipFontHeight;
 	const char* TipsText = u8"TIPS";
 
-	tipFont.MeasureText(TipsText, tipFontScale, tipFontWidth, tipFontHeight);
+	DirectX::XMFLOAT2 scaledTipFontPosition = screenScaler.Scale(tipFontPosition);
+	const float scaledTipFontScale = tipFontScale * screenScaler.GetUniformScale();
 
-	float drawX = tipFontPosition.x - tipFontWidth / 2.0f;
-	//float drawY = tipFontPosition.y - tipFontHeight / 2.0f;
+	tipFont.MeasureText(TipsText, scaledTipFontScale, tipFontWidth, tipFontHeight);
+
+	float drawX = scaledTipFontPosition.x - tipFontWidth / 2.0f;
+	//float drawY = scaledTipFontPosition.y - tipFontHeight / 2.0f;
 
 	tipFont.DrawTextW(context,
 		TipsText,
 		drawX,
-		tipFontPosition.y,
-		tipFontScale, 
+		scaledTipFontPosition.y,
+		scaledTipFontScale, 
 		tipFontColor.x, tipFontColor.y, tipFontColor.z, tipFontColor.w * alpha);
 
 	const char* loadingText[] = {
@@ -269,11 +315,14 @@ void LoadingTips::Render(float alpha)
 		u8"Now Loading . . ."
 	};
 
+	DirectX::XMFLOAT2 scaledLoadingFontPosition = screenScaler.Scale(loadingFontPosition);
+	const float scaledLoadingFontScale = loadingFontScale * screenScaler.GetUniformScale();
+
 	loadingFont.DrawTextW(context,
 		loadingText[currentDotCount],
-		loadingFontPosition.x,
-		loadingFontPosition.y,
-		loadingFontScale,
+		scaledLoadingFontPosition.x,
+		scaledLoadingFontPosition.y,
+		scaledLoadingFontScale,
 		loadingFontColor.x, loadingFontColor.y, loadingFontColor.z, loadingFontColor.w * alpha);
 
 	context->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);

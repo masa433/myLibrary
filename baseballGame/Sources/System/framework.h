@@ -26,6 +26,7 @@
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern ImWchar glyphRangesJapanese[];
 #endif
+#include <windowsx.h>
 
 
 CONST LPCWSTR APPLICATION_NAME{ L"BASEBALL" };
@@ -138,6 +139,12 @@ public:
 		case WM_EXITSIZEMOVE:
 			tictoc.start();
 			break;
+		case WM_SIZE:
+		{
+			UINT width = GET_X_LPARAM(lparam);
+			UINT height = GET_Y_LPARAM(lparam);
+			Graphics::Instance().OnScreenResolutionChanged(static_cast<float>(width), static_cast<float>(height));
+		}
 		default:
 			return DefWindowProc(hwnd, msg, wparam, lparam);
 		}

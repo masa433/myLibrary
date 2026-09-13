@@ -90,6 +90,8 @@ private:
 	std::unique_ptr<BatterSelectSpriteData> pitcherParamBackGroundData; // 選択されたピッチャーのパラメータ画像データを保持するポインタ
 	std::unique_ptr<sprite> pitcherParamBackGroundSprite; // 選択されたピッチャーのパラメータ画像スプライトを保持するスマートポインタ
 
+	DirectX::XMFLOAT2 paramBackGroundPosition = { 75.0f, 30.0f };
+
 	std::unique_ptr<BatterSelectSpriteData> VSSpriteData; // 選択されたピッチャーのパラメータ画像データを保持するポインタ
 	std::unique_ptr<sprite> VSSprite; // 選択されたピッチャーのパラメータ画像スプライトを保持するスマートポインタ
 

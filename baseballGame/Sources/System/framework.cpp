@@ -59,7 +59,7 @@ framework::framework(HWND hwnd) : hwnd(hwnd)
 
 
 
-	sceneManager::Instance().ChangeScene(new scene_title());
+	sceneManager::Instance().ChangeScene(new batterSelectScene());
 
 
 }
