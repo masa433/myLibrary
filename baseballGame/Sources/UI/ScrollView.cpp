@@ -114,7 +114,7 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 
 	batterListData = std::make_unique<BatterListData>();
 	batterListData->texturePath = L".\\resources\\textures\\batterList.png";
-	batterListData->position = { Graphics::Instance().GetScreenWidth() / 2.0f, Graphics::Instance().GetScreenHeight() / 2.0f };
+	batterListData->position = { batterListPos.x, batterListPos.y };
 	batterListData->size = { 1700.0f, 900.0f };
 	batterListData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	batterListData->rotation = 0.0f;
@@ -198,6 +198,7 @@ void ScrollView::Render(float alpha)
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
@@ -208,10 +209,15 @@ void ScrollView::Render(float alpha)
 
 	if(batterListData && batterListSprite)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(batterListPos);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(batterListData->size);
+
+		DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
+
 		batterListSprite->render(dc,
-			batterListData->position.x - batterListData->size.x / 2.0f,
-			batterListData->position.y - batterListData->size.y / 2.0f,
-			batterListData->size.x, batterListData->size.y,
+			scaledCenterPosition.x,
+			scaledCenterPosition.y,
+			scaledSize.x, scaledSize.y,
 			batterListData->color.x, batterListData->color.y, batterListData->color.z, batterListData->color.w * alpha,
 			batterListData->rotation);
 	}
@@ -220,11 +226,14 @@ void ScrollView::Render(float alpha)
 	if (!scrollBackgroundSprite.empty() && scrollBackgroundSprite[0])
 	{
 		ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(scrollBackgroundSpriteData[0].position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(scrollBackgroundSpriteData[0].size);
+		DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
 		scrollBackgroundSprite[0]->render(context,
-			scrollBackgroundSpriteData[0].position.x - scrollBackgroundSpriteData[0].size.x / 2.0f,
-			scrollBackgroundSpriteData[0].position.y - scrollBackgroundSpriteData[0].size.y / 2.0f,
-			scrollBackgroundSpriteData[0].size.x,
-			scrollBackgroundSpriteData[0].size.y,
+			scaledCenterPosition.x,
+			scaledCenterPosition.y,
+			scaledSize.x,
+			scaledSize.y,
 			scrollBackgroundSpriteData[0].color.x, scrollBackgroundSpriteData[0].color.y,
 			scrollBackgroundSpriteData[0].color.z, scrollBackgroundSpriteData[0].color.w * alpha,
 			scrollBackgroundSpriteData[0].rotation);
@@ -235,9 +244,12 @@ void ScrollView::Render(float alpha)
 
 		for (size_t i = 0; i < playerButtonDataList.size(); ++i)
 		{
+		
+			float drawY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY;
+
 			//ボタンが上端と下端のフタの間にある場合のみ描画する
-			if(playerButtonDataList[i].position.y - scrollOffsetY + playerButtonDataList[i].size.y / 2.0f < topCapData.position.y + topCapData.size.y / 2.0f ||
-			   playerButtonDataList[i].position.y - scrollOffsetY - playerButtonDataList[i].size.y / 2.0f > bottomCapData.position.y - bottomCapData.size.y / 2.0f)
+			if (drawY + playerButtonDataList[i].size.y / 2.0f < topCapData.position.y + topCapData.size.y / 2.0f ||
+				drawY - playerButtonDataList[i].size.y / 2.0f > bottomCapData.position.y - bottomCapData.size.y / 2.0f)
 			{
 				continue; // 描画しない
 			}
@@ -247,13 +259,17 @@ void ScrollView::Render(float alpha)
 			{
 				ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
-				float drawY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY;
+				
+
+				DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale({ playerButtonDataList[i].position.x, drawY });
+				DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(playerButtonDataList[i].size);
+				DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
 
 				playerButtonSprites[i]->render(context,
-					playerButtonDataList[i].position.x - playerButtonDataList[i].size.x / 2.0f,
-					drawY - playerButtonDataList[i].size.y / 2.0f,
-					playerButtonDataList[i].size.x,
-					playerButtonDataList[i].size.y,
+					scaledCenterPosition.x,
+					scaledCenterPosition.y,
+					scaledSize.x,
+					scaledSize.y,
 					playerButtonDataList[i].color.x, playerButtonDataList[i].color.y,
 					playerButtonDataList[i].color.z, playerButtonDataList[i].color.w * alpha,
 					playerButtonDataList[i].rotation);
@@ -266,10 +282,14 @@ void ScrollView::Render(float alpha)
 	{
 		if (batterParamSprites[selectedIndex])
 		{
+			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(batterParamDataList[selectedIndex].position);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(batterParamDataList[selectedIndex].size);
+			DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
+
 			batterParamSprites[selectedIndex]->render(dc,
-				batterParamDataList[selectedIndex].position.x - batterParamDataList[selectedIndex].size.x / 2.0f,
-				batterParamDataList[selectedIndex].position.y - batterParamDataList[selectedIndex].size.y / 2.0f,
-				batterParamDataList[selectedIndex].size.x, batterParamDataList[selectedIndex].size.y,
+				scaledCenterPosition.x,
+				scaledCenterPosition.y,
+				scaledSize.x, scaledSize.y,
 				batterParamDataList[selectedIndex].color.x, batterParamDataList[selectedIndex].color.y,
 				batterParamDataList[selectedIndex].color.z, batterParamDataList[selectedIndex].color.w * alpha,
 				batterParamDataList[selectedIndex].rotation);
@@ -280,19 +300,25 @@ void ScrollView::Render(float alpha)
 
 	if (topCapSprite)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(topCapData.position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(topCapData.size);
+		DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
 		topCapSprite->render(dc,
-			topCapData.position.x - topCapData.size.x / 2.0f,
-			topCapData.position.y - topCapData.size.y / 2.0f,
-			topCapData.size.x, topCapData.size.y,
+			scaledCenterPosition.x,
+			scaledCenterPosition.y,
+			scaledSize.x, scaledSize.y,
 			topCapData.color.x, topCapData.color.y, topCapData.color.z, topCapData.color.w * alpha,
 			topCapData.rotation);
 	}
 	if (bottomCapSprite)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(bottomCapData.position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(bottomCapData.size);
+		DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
 		bottomCapSprite->render(dc,
-			bottomCapData.position.x - bottomCapData.size.x / 2.0f,
-			bottomCapData.position.y - bottomCapData.size.y / 2.0f,
-			bottomCapData.size.x, bottomCapData.size.y,
+			scaledCenterPosition.x,
+			scaledCenterPosition.y,
+			scaledSize.x, scaledSize.y,
 			bottomCapData.color.x, bottomCapData.color.y, bottomCapData.color.z, bottomCapData.color.w * alpha,
 			bottomCapData.rotation);
 	}
@@ -301,10 +327,13 @@ void ScrollView::Render(float alpha)
 	{
 		if (topArrowSprite && showTopArrow)
 		{
+			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(topArrowData.position);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(topArrowData.size);
+			DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
 			topArrowSprite->render(dc,
-				topArrowData.position.x - topArrowData.size.x / 2.0f,
-				topArrowData.position.y - topArrowData.size.y / 2.0f,
-				topArrowData.size.x, topArrowData.size.y,
+				scaledCenterPosition.x,
+				scaledCenterPosition.y,
+				scaledSize.x, scaledSize.y,
 				topArrowData.color.x, topArrowData.color.y, topArrowData.color.z, topArrowData.color.w * alpha,
 				topArrowData.rotation);
 		}
@@ -314,10 +343,13 @@ void ScrollView::Render(float alpha)
 	{
 		if (bottomArrowSprite && showBottomArrow)
 		{
+			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(bottomArrowData.position);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(bottomArrowData.size);
+			DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
 			bottomArrowSprite->render(dc,
-				bottomArrowData.position.x - bottomArrowData.size.x / 2.0f,
-				bottomArrowData.position.y - bottomArrowData.size.y / 2.0f,
-				bottomArrowData.size.x, bottomArrowData.size.y,
+				scaledCenterPosition.x,
+				scaledCenterPosition.y,
+				scaledSize.x, scaledSize.y,
 				bottomArrowData.color.x, bottomArrowData.color.y, bottomArrowData.color.z, bottomArrowData.color.w * alpha,
 				bottomArrowData.rotation);
 		}
@@ -396,21 +428,34 @@ void ScrollView::Render(float alpha)
 					break;
 			}
 
+			auto scaledText = [&](const DirectX::XMFLOAT2& scaledPos, float scaledSize) -> std::pair<DirectX::XMFLOAT2, float>
+				{
+					return {
+						screenScaler.Scale(scaledPos),
+						scaledSize * screenScaler.GetUniformScale()
+					};
+				};
+
+			auto [scaledPowerPos, scaledPowerSize] = scaledText(powerFontData.position, powerFontData.scale);
+			auto [scaledContactPos, scaledContactSize] = scaledText(contactFontData.position, contactFontData.scale);
+			auto [scaledPowerRankPos, scaledPowerRankSize] = scaledText(powerRankFontData.position, powerRankFontData.scale);
+			auto [scaledContactRankPos, scaledContactRankSize] = scaledText(contactRankFontData.position, contactRankFontData.scale);
+
 			//パワーとミートの値を描画
 			fontRenderer.DrawTextW(dc, std::to_string(power).c_str(), 
-				powerFontData.position.x, powerFontData.position.y, powerFontData.scale,
+				scaledPowerPos.x, scaledPowerPos.y, scaledPowerSize,
 				powerFontData.color.x, powerFontData.color.y, powerFontData.color.z, powerFontData.color.w * alpha);
 
 			fontRenderer.DrawTextW(dc, GetBatterPowerRankString(powerRank),
-				powerRankFontData.position.x, powerRankFontData.position.y, powerRankFontData.scale,
+				scaledPowerRankPos.x, scaledPowerRankPos.y, scaledPowerRankSize,
 				powerRankFontData.color.x, powerRankFontData.color.y, powerRankFontData.color.z, powerRankFontData.color.w* alpha);
 
 			fontRenderer.DrawTextW(dc, std::to_string(contact).c_str(),
-				contactFontData.position.x, contactFontData.position.y, contactFontData.scale, 
+				scaledContactPos.x, scaledContactPos.y, scaledContactSize, 
 				contactFontData.color.x, contactFontData.color.y, contactFontData.color.z, contactFontData.color.w * alpha);
 
 			fontRenderer.DrawTextW(dc, GetBatterContactRankString(contactRank),
-				contactRankFontData.position.x, contactRankFontData.position.y, contactRankFontData.scale,
+				scaledContactRankPos.x, scaledContactRankPos.y, scaledContactRankSize,
 				contactRankFontData.color.x, contactRankFontData.color.y, contactRankFontData.color.z, contactRankFontData.color.w* alpha);
 			
 		}
@@ -428,14 +473,19 @@ void ScrollView::Render(float alpha)
 
 void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 {
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
 	if (randomBatterImageIndex >= 0 && randomBatterImageIndex < BATTER_IMAGE_COUNT)
 	{
 		if (imageData[randomBatterImageIndex])
 		{
+			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(imageDataArray[randomBatterImageIndex]->position);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(imageDataArray[randomBatterImageIndex]->size);
+
 			imageData[randomBatterImageIndex]->render(dc,
-				imageDataArray[randomBatterImageIndex]->position.x,
-				imageDataArray[randomBatterImageIndex]->position.y,
-				imageDataArray[randomBatterImageIndex]->size.x, imageDataArray[randomBatterImageIndex]->size.y,
+				scaledPosition.x,
+				scaledPosition.y,
+				scaledSize.x, scaledSize.y,
 				imageDataArray[randomBatterImageIndex]->color.x, imageDataArray[randomBatterImageIndex]->color.y, 
 				imageDataArray[randomBatterImageIndex]->color.z, imageDataArray[randomBatterImageIndex]->color.w * alpha,
 				imageDataArray[randomBatterImageIndex]->rotation);
@@ -446,9 +496,12 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 	{
 		if (batterNameTagSprite[selectedIndex])
 		{
+			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(batterNameTagPosition);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(batterNameTagSize);
+
 			batterNameTagSprite[selectedIndex]->render(dc,
-				batterNameTagPosition.x, batterNameTagPosition.y,
-				batterNameTagSize.x, batterNameTagSize.y,
+				scaledPosition.x, scaledPosition.y,
+				scaledSize.x, scaledSize.y,
 				batterNameTagColor.x, batterNameTagColor.y,
 				batterNameTagColor.z, batterNameTagColor.w * alpha,
 				batterNameTagData[selectedIndex]->rotation);
@@ -459,13 +512,18 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 void ScrollView::Update(float elapsedTime)
 {
 
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+	DirectX::XMFLOAT2 scaledScrollBackgroundPos = screenScaler.Scale(scrollBackgroundSpriteData[0].position);
+	DirectX::XMFLOAT2 scaledScrollBackgroundSize = screenScaler.ScaleSize(scrollBackgroundSpriteData[0].size);
+	
+
 	// スクロールビューの更新処理
 	//マウスカーソルの位置がスクロールビューの背景の範囲内にあるかどうか
 	Input& input = Input::Instance();
-	if (input.GetMouse().GetPositionX() >= scrollBackgroundSpriteData[0].position.x - scrollBackgroundSpriteData[0].size.x / 2.0f &&
-		input.GetMouse().GetPositionX() <= scrollBackgroundSpriteData[0].position.x + scrollBackgroundSpriteData[0].size.x / 2.0f &&
-		input.GetMouse().GetPositionY() >= scrollBackgroundSpriteData[0].position.y - scrollBackgroundSpriteData[0].size.y / 2.0f &&
-		input.GetMouse().GetPositionY() <= scrollBackgroundSpriteData[0].position.y + scrollBackgroundSpriteData[0].size.y / 2.0f)
+	if (input.GetMouse().GetPositionX() >= scaledScrollBackgroundPos.x - scaledScrollBackgroundSize.x / 2.0f &&
+		input.GetMouse().GetPositionX() <= scaledScrollBackgroundPos.x + scaledScrollBackgroundSize.x / 2.0f &&
+		input.GetMouse().GetPositionY() >= scaledScrollBackgroundPos.y - scaledScrollBackgroundSize.y / 2.0f &&
+		input.GetMouse().GetPositionY() <= scaledScrollBackgroundPos.y + scaledScrollBackgroundSize.y / 2.0f)
 	{
 		int wheel = ImGui::GetIO().MouseWheel;
 		if (wheel != 0)
@@ -491,21 +549,30 @@ void ScrollView::Update(float elapsedTime)
 	showTopArrow = (scrollOffsetY > 0.0f);
 	showBottomArrow = (scrollOffsetY < maxScroll);
 
+	DirectX::XMFLOAT2 scaledTopCapPos = screenScaler.Scale(topCapData.position);
+	DirectX::XMFLOAT2 scaledTopCapSize = screenScaler.ScaleSize(topCapData.size);
+	DirectX::XMFLOAT2 scaledBottomCapPos = screenScaler.Scale(bottomCapData.position);
+	DirectX::XMFLOAT2 scaledBottomCapSize = screenScaler.ScaleSize(bottomCapData.size);
+
+	DirectX::XMFLOAT2 scaledTopArrowPos = screenScaler.Scale(topArrowData.position);
+	DirectX::XMFLOAT2 scaledTopArrowSize = screenScaler.ScaleSize(originalArrowSize);
+	DirectX::XMFLOAT2 scaledBottomArrowPos = screenScaler.Scale(bottomArrowData.position);
+	DirectX::XMFLOAT2 scaledBottomArrowSize = screenScaler.ScaleSize(originalArrowSize);
+
 	bool topHovered =
-		input.GetMouse().GetPositionX() >= topArrowData.position.x - originalArrowSize.x / 2.0f &&
-		input.GetMouse().GetPositionX() <= topArrowData.position.x + originalArrowSize.x / 2.0f &&
-		input.GetMouse().GetPositionY() >= topArrowData.position.y - originalArrowSize.y / 2.0f &&
-		input.GetMouse().GetPositionY() <= topArrowData.position.y + originalArrowSize.y / 2.0f;
+		input.GetMouse().GetPositionX() >= scaledTopArrowPos.x - scaledTopArrowSize.x / 2.0f &&
+		input.GetMouse().GetPositionX() <= scaledTopArrowPos.x + scaledTopArrowSize.x / 2.0f &&
+		input.GetMouse().GetPositionY() >= scaledTopArrowPos.y - scaledTopArrowSize.y / 2.0f &&
+		input.GetMouse().GetPositionY() <= scaledTopArrowPos.y + scaledTopArrowSize.y / 2.0f;
 
 	bool bottomHovered =
-		input.GetMouse().GetPositionX() >= bottomArrowData.position.x - originalArrowSize.x / 2.0f &&
-		input.GetMouse().GetPositionX() <= bottomArrowData.position.x + originalArrowSize.x / 2.0f &&
-		input.GetMouse().GetPositionY() >= bottomArrowData.position.y - originalArrowSize.y / 2.0f &&
-		input.GetMouse().GetPositionY() <= bottomArrowData.position.y + originalArrowSize.y / 2.0f;
+		input.GetMouse().GetPositionX() >= scaledBottomArrowPos.x - scaledBottomArrowSize.x / 2.0f &&
+		input.GetMouse().GetPositionX() <= scaledBottomArrowPos.x + scaledBottomArrowSize.x / 2.0f &&
+		input.GetMouse().GetPositionY() >= scaledBottomArrowPos.y - scaledBottomArrowSize.y / 2.0f &&
+		input.GetMouse().GetPositionY() <= scaledBottomArrowPos.y + scaledBottomArrowSize.y / 2.0f;
 
-
-	bool topPressed = topHovered && input.GetMouse().GetButton(); // 押しっぱなし判定
-	bool bottomPressed = bottomHovered && input.GetMouse().GetButton();
+	bool topPressed = topHovered && (input.GetMouse().GetButton() & input.GetMouse().BTN_LEFT); // 押しっぱなし判定
+	bool bottomPressed = bottomHovered && (input.GetMouse().GetButton() & input.GetMouse().BTN_LEFT);
 
 	if (showTopArrow)
 	{
@@ -536,12 +603,12 @@ void ScrollView::Update(float elapsedTime)
 	//矢印を押したときのスクロール処理
 	//このときはボタンは押せないようにする
 	bool arrowClicked = false;
-	if(input.GetMouse().GetButtonDown() && showTopArrow)
+	if(input.GetMouse().GetButtonDown() & input.GetMouse().BTN_LEFT && showTopArrow)
 	{
-		bool isHovered = input.GetMouse().GetPositionX() >= topArrowData.position.x - topArrowData.size.x / 2.0f &&
-			input.GetMouse().GetPositionX() <= topArrowData.position.x + topArrowData.size.x / 2.0f &&
-			input.GetMouse().GetPositionY() >= topArrowData.position.y - topArrowData.size.y / 2.0f &&
-			input.GetMouse().GetPositionY() <= topArrowData.position.y + topArrowData.size.y / 2.0f;
+		bool isHovered = input.GetMouse().GetPositionX() >= scaledTopArrowPos.x - scaledTopArrowSize.x / 2.0f &&
+			input.GetMouse().GetPositionX() <= scaledTopArrowPos.x + scaledTopArrowSize.x / 2.0f &&
+			input.GetMouse().GetPositionY() >= scaledTopArrowPos.y - scaledTopArrowSize.y / 2.0f &&
+			input.GetMouse().GetPositionY() <= scaledTopArrowPos.y + scaledTopArrowSize.y / 2.0f;
 		if(isHovered)
 		{
 			scrollOffsetY -= 110.0f; // 上方向にスクロール
@@ -555,12 +622,12 @@ void ScrollView::Update(float elapsedTime)
 		}
 	}
 
-	if(input.GetMouse().GetButtonDown() && showBottomArrow)
+	if(input.GetMouse().GetButtonDown() & input.GetMouse().BTN_LEFT && showBottomArrow)
 	{
-		bool isHovered = input.GetMouse().GetPositionX() >= bottomArrowData.position.x - bottomArrowData.size.x / 2.0f &&
-			input.GetMouse().GetPositionX() <= bottomArrowData.position.x + bottomArrowData.size.x / 2.0f &&
-			input.GetMouse().GetPositionY() >= bottomArrowData.position.y - bottomArrowData.size.y / 2.0f &&
-			input.GetMouse().GetPositionY() <= bottomArrowData.position.y + bottomArrowData.size.y / 2.0f;
+		bool isHovered = input.GetMouse().GetPositionX() >= scaledBottomArrowPos.x - scaledBottomArrowSize.x / 2.0f &&
+			input.GetMouse().GetPositionX() <= scaledBottomArrowPos.x + scaledBottomArrowSize.x / 2.0f &&
+			input.GetMouse().GetPositionY() >= scaledBottomArrowPos.y - scaledBottomArrowSize.y / 2.0f &&
+			input.GetMouse().GetPositionY() <= scaledBottomArrowPos.y + scaledBottomArrowSize.y / 2.0f;
 		if(isHovered)
 		{
 			scrollOffsetY += 110.0f; // 下方向にスクロール
@@ -575,14 +642,14 @@ void ScrollView::Update(float elapsedTime)
 	//capの範囲にあるボタンは押せないようにする
 	bool isInCapArea = false;
 
-	if(input.GetMouse().GetPositionX() >= topCapData.position.x - topCapData.size.x / 2.0f &&
-		input.GetMouse().GetPositionX() <= topCapData.position.x + topCapData.size.x / 2.0f &&
-		input.GetMouse().GetPositionY() >= topCapData.position.y - topCapData.size.y / 2.0f &&
-		input.GetMouse().GetPositionY() <= topCapData.position.y + topCapData.size.y / 2.0f ||
-		input.GetMouse().GetPositionX() >= bottomCapData.position.x - bottomCapData.size.x / 2.0f &&
-		input.GetMouse().GetPositionX() <= bottomCapData.position.x + bottomCapData.size.x / 2.0f &&
-		input.GetMouse().GetPositionY() >= bottomCapData.position.y - bottomCapData.size.y / 2.0f &&
-		input.GetMouse().GetPositionY() <= bottomCapData.position.y + bottomCapData.size.y / 2.0f)
+	if(input.GetMouse().GetPositionX() >= scaledTopCapPos.x - scaledTopCapSize.x / 2.0f &&
+		input.GetMouse().GetPositionX() <= scaledTopCapPos.x + scaledTopCapSize.x / 2.0f &&
+		input.GetMouse().GetPositionY() >= scaledTopCapPos.y - scaledTopCapSize.y / 2.0f &&
+		input.GetMouse().GetPositionY() <= scaledTopCapPos.y + scaledTopCapSize.y / 2.0f ||
+		input.GetMouse().GetPositionX() >= scaledBottomCapPos.x - scaledBottomCapSize.x / 2.0f &&
+		input.GetMouse().GetPositionX() <= scaledBottomCapPos.x + scaledBottomCapSize.x / 2.0f &&
+		input.GetMouse().GetPositionY() >= scaledBottomCapPos.y - scaledBottomCapSize.y / 2.0f &&
+		input.GetMouse().GetPositionY() <= scaledBottomCapPos.y + scaledBottomCapSize.y / 2.0f)
 	{
 		isInCapArea = true;
 	}
@@ -592,15 +659,19 @@ void ScrollView::Update(float elapsedTime)
 	if (!arrowClicked && !isInCapArea)
 	{
 		//ボタンを押すことができる範囲の設定
-		float visibleMinY = topCapData.position.y + topCapData.size.y / 2.0f;
-		float visibleMaxY = bottomCapData.position.y - bottomCapData.size.y / 2.0f;
+		float visibleMinY = scaledTopCapPos.y + scaledTopCapSize.y / 2.0f;
+		float visibleMaxY = scaledBottomCapPos.y - scaledBottomCapSize.y / 2.0f;
 
 		//ボタンの押下処理
 		//ボタンを押したら、テクスチャを黄色くする
 		for (size_t i = 0; i < playerButtonDataList.size(); ++i)
 		{
-			float buttonTopY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY - playerButtonDataList[i].size.y / 2.0f;
-			float buttonBottomY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY + playerButtonDataList[i].size.y / 2.0f;
+			float rawTopY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY;
+			DirectX::XMFLOAT2 scaledButtonPos = screenScaler.Scale({ playerButtonDataList[i].position.x, rawTopY });
+			DirectX::XMFLOAT2 scaledButtonSize = screenScaler.ScaleSize(playerButtonDataList[i].size);
+
+			float buttonTopY = rawTopY - scaledButtonSize.y / 2.0f;
+			float buttonBottomY = rawTopY + scaledButtonSize.y / 2.0f;
 
 			bool isVisible = (buttonBottomY >= visibleMinY) && (buttonTopY <= visibleMaxY);
 
@@ -610,15 +681,15 @@ void ScrollView::Update(float elapsedTime)
 			}
 			
 
-			bool hovered = input.GetMouse().GetPositionX() >= playerButtonDataList[i].position.x - playerButtonDataList[i].size.x / 2.0f &&
-				input.GetMouse().GetPositionX() <= playerButtonDataList[i].position.x + playerButtonDataList[i].size.x / 2.0f &&
+			bool hovered = input.GetMouse().GetPositionX() >= scaledButtonPos.x - scaledButtonSize.x / 2.0f &&
+				input.GetMouse().GetPositionX() <= scaledButtonPos.x + scaledButtonSize.x / 2.0f &&
 				input.GetMouse().GetPositionY() >= buttonTopY &&
 				input.GetMouse().GetPositionY() <= buttonBottomY;
 
 			
 
 			//　ボタンが押されたときの処理(長押しはロックする)
-			if (hovered && input.GetMouse().GetButtonDown())
+			if (hovered && (input.GetMouse().GetButtonDown() & input.GetMouse().BTN_LEFT))
 			{
 				playerButtonDataList[i].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 黄色に変更
 				selectedIndex = (int)i; // 選択されたボタンのインデックスを更新
@@ -657,6 +728,13 @@ void ScrollView::DrawGUI()
 #ifdef _DEBUG
 	if (ImGui::CollapsingHeader("ScrollView Settings"))
 	{
+		if (ImGui::CollapsingHeader("batterList"))
+		{
+			ImGui::DragFloat2("Position", &batterListPos.x, 1.0f);
+			ImGui::DragFloat2("Size", &batterListData->size.x, 1.0f);
+			ImGui::ColorEdit4("Color", &batterListData->color.x);
+		}
+
 		// 1. スクロール背景（黒の背景）の操作
 		if (!scrollBackgroundSpriteData.empty())
 		{

@@ -135,6 +135,7 @@ void Result::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -148,9 +149,12 @@ void Result::Render()
 	// スプライトの描画
 	if (resultSprite)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(spritePosition);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(spriteSize);
+
 		resultSprite->render(dc,
-			spritePosition.x, spritePosition.y,
-			spriteSize.x, spriteSize.y,
+			scaledPosition.x, scaledPosition.y,
+			scaledSize.x, scaledSize.y,
 			spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w,
 			resultSpriteData->rotation);
 	}
@@ -169,6 +173,16 @@ void Result::Render()
 			DirectX::XMFLOAT4 color;
 		};
 
+		auto scaledText = [&](const DirectX::XMFLOAT2& scaledPos, float scaledSize) -> std::pair<DirectX::XMFLOAT2, float>
+		{
+			return {
+				screenScaler.Scale(scaledPos),
+				scaledSize * screenScaler.GetUniformScale()
+			};
+		};
+
+		
+
 		TextInfo textInfos[] = {
 			
 			{ u8"総ホームラン数: ", std::to_string(HomeRunCount::Instance().GetTotalHomeRunCount()) + u8"本", homeRunFontPosition, homeRunFontSize, homeRunFontColor },
@@ -177,16 +191,18 @@ void Result::Render()
 			{ u8"到達ラウンド数: ", std::to_string(RoundManager::Instance().GetCurrentRound()), roundFontPosition, roundFontSize, roundFontColor }
 		};
 
+		auto [scaledMoneyFontPosition, scaledMoneyFontSize] = scaledText(moneyFontPosition, moneyFontSize);
+
 		std::string moneyText = u8"所持金: " + std::to_string(Money::Instance().GetCurrentMoney()) + u8"G";
 
 		float moneyTextWidth, moneyTextHeight;
-		resultFont.MeasureText(moneyText.c_str(), moneyFontSize, moneyTextWidth, moneyTextHeight);
-		float drawX = moneyFontPosition.x - moneyTextWidth / 2.0f;
-		float drawY = moneyFontPosition.y - moneyTextHeight / 2.0f;
+		resultFont.MeasureText(moneyText.c_str(), scaledMoneyFontSize, moneyTextWidth, moneyTextHeight);
+		float drawX = scaledMoneyFontPosition.x - moneyTextWidth / 2.0f;
+		float drawY = scaledMoneyFontPosition.y - moneyTextHeight / 2.0f;
 
 		resultFont.DrawTextW(dc, moneyText.c_str(),
 			drawX, drawY,
-			moneyFontSize,
+			scaledMoneyFontSize,
 			moneyFontColor.x, moneyFontColor.y, moneyFontColor.z, moneyFontColor.w);
 
 
@@ -194,24 +210,26 @@ void Result::Render()
 		{
 			float textWidth, textHeight;
 
+			auto [scaledPosition, scaledFontSize] = scaledText(textInfo.position, textInfo.fontSize);
+
 			// テキストの幅と高さを計算して中央揃えの位置を決定
-			resultFont.MeasureText(textInfo.label.c_str(), textInfo.fontSize, textWidth, textHeight);
-			float labelX = textInfo.position.x - textWidth / 2.0f;
-			float labelY = textInfo.position.y - textHeight / 2.0f;
+			resultFont.MeasureText(textInfo.label.c_str(), scaledFontSize, textWidth, textHeight);
+			float labelX = scaledPosition.x - textWidth / 2.0f;
+			float labelY = scaledPosition.y - textHeight / 2.0f;
 
 			// テキストを描画
 			resultFont.DrawTextW(dc,textInfo.label.c_str(),
 				labelX, labelY, 
-				textInfo.fontSize, 
+				scaledFontSize, 
 				textInfo.color.x, textInfo.color.y, textInfo.color.z, textInfo.color.w);
 
-			resultFont.MeasureText(textInfo.value.c_str(), textInfo.fontSize, textWidth, textHeight);
-			float valueX = textInfo.position.x - textWidth / 2.0f; // ラベルの右側に配置
+			resultFont.MeasureText(textInfo.value.c_str(), scaledFontSize, textWidth, textHeight);
+			float valueX = scaledPosition.x - textWidth / 2.0f; // ラベルの右側に配置
 			float valueY = labelY + spacingY; // ラベルの下に配置
 
 			resultFont.DrawTextW(dc,textInfo.value.c_str(),
 				valueX, valueY, 
-				textInfo.fontSize, 
+				scaledFontSize, 
 				textInfo.color.x, textInfo.color.y, textInfo.color.z, textInfo.color.w);
 		}
 		

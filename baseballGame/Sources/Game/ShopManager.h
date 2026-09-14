@@ -9,6 +9,7 @@
 #include "Player.h"
 #include "Pitcher.h"
 #include "SpecialAbility.h"
+#include "Graphics.h"
 #include <random>
 #include <functional>
 #include "..\Sources\Audio\AudioSource.h"
@@ -310,10 +311,16 @@ public:
 	//マウス座標が次へボタンの範囲内にあるかどうかを判定する関数
 	bool IsMouseOverNextRoundButton(float mouseX, float mouseY)
 	{
-		float buttonLeft = nextRoundButtonPosition.x - nextRoundButtonSize.x / 2.0f;
-		float buttonRight = nextRoundButtonPosition.x + nextRoundButtonSize.x / 2.0f;
-		float buttonTop = (nextRoundButtonPosition.y + currentOffsetY) - nextRoundButtonSize.y / 2.0f;
-		float buttonBottom = (nextRoundButtonPosition.y + currentOffsetY) + nextRoundButtonSize.y / 2.0f;
+		ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
+
+		DirectX::XMFLOAT2 scaledButtonPosition = screenScaler.Scale(nextRoundButtonPosition);
+		DirectX::XMFLOAT2 scaledButtonSize = screenScaler.ScaleSize(nextRoundButtonSize);
+
+		float buttonLeft = scaledButtonPosition.x - scaledButtonSize.x / 2.0f;
+		float buttonRight = scaledButtonPosition.x + scaledButtonSize.x / 2.0f;
+		float buttonTop = (scaledButtonPosition.y + currentOffsetY) - scaledButtonSize.y / 2.0f;
+		float buttonBottom = (scaledButtonPosition.y + currentOffsetY) + scaledButtonSize.y / 2.0f;
 		return (mouseX >= buttonLeft && mouseX <= buttonRight &&
 				mouseY >= buttonTop && mouseY <= buttonBottom);
 	}

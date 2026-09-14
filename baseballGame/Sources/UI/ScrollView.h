@@ -79,6 +79,8 @@ private:
 	std::unique_ptr<BatterListData> batterListData;
 	std::unique_ptr<sprite> batterListSprite;
 
+	DirectX::XMFLOAT2 batterListPos = { 960.0f, 540.0f }; // バッターリストのサイズ
+
 	//スクロールビューのプレイヤーボタンデータ
 	struct PlayerButtonData
 	{

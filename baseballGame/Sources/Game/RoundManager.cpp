@@ -274,6 +274,7 @@ void RoundManager::UpdateShopState()
 void RoundManager::UpdateSelectAbilityState()
 {
 	Input& input = Input::Instance();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 
 	//マウスの位置を取得
@@ -285,12 +286,17 @@ void RoundManager::UpdateSelectAbilityState()
 
 	for(int i = 0; i < abilitiesChoice.size(); ++i)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(abilityIconPositions[i]);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(abilityIconSize);
+
+		DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
+
 		const auto& abilityID = abilitiesChoice[i];
 		// アイコンの矩形を計算
-		float iconX = abilityIconPositions[i].x - abilityIconSize.x / 2.0f;
-		float iconY = abilityIconPositions[i].y - abilityIconSize.y / 2.0f;
-		float iconWidth = abilityIconSize.x;
-		float iconHeight = abilityIconSize.y;
+		float iconX = scaledCenterPosition.x;
+		float iconY = scaledCenterPosition.y;
+		float iconWidth = scaledSize.x;
+		float iconHeight = scaledSize.y;
 		bool isHovered = (mousePos.x >= iconX && mousePos.x <= iconX + iconWidth &&
 			mousePos.y >= iconY && mousePos.y <= iconY + iconHeight);
 
@@ -340,6 +346,7 @@ void RoundManager::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
@@ -354,9 +361,12 @@ void RoundManager::Render()
 	{
 		if (abilityBackSprite && abilityBackSpriteData)
 		{
+			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(abilityBackSpriteData->position);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(abilityBackSpriteData->size);
+
 			abilityBackSprite->render(dc,
-				abilityBackSpriteData->position.x, abilityBackSpriteData->position.y,
-				abilityBackSpriteData->size.x, abilityBackSpriteData->size.y,
+				scaledPosition.x, scaledPosition.y,
+				scaledSize.x, scaledSize.y,
 				abilityBackSpriteData->color.x, abilityBackSpriteData->color.y, abilityBackSpriteData->color.z, abilityBackSpriteData->color.w,
 				abilityBackSpriteData->rotation);
 		}
@@ -366,21 +376,26 @@ void RoundManager::Render()
 		for (int i = 0; i < abilitiesChoice.size(); ++i)
 		{
 			bool isHightlighted = (i == hoveredAbilityIndex);// ホバー中のアイコンかどうかを判定
-			SpecialAbility::Instance().RenderAbilityIcons(abilitiesChoice[i], abilityIconPositions[i], abilityIconSize, isHightlighted);
+			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(abilityIconPositions[i]);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(abilityIconSize);
+			SpecialAbility::Instance().RenderAbilityIcons(abilitiesChoice[i], scaledPosition, scaledSize, isHightlighted);
 		}
 
 		//中央ぞろえでテキストを描画
 		float textWidth, textHeight;
 		std::string bonusText = u8"特殊能力を1つ選ぼう！";
 
-		abilityBonusFont.MeasureText(bonusText.c_str(), abilityBonusFontScale, textWidth, textHeight);
+		DirectX::XMFLOAT2 scaledFontPosition = screenScaler.Scale(abilityBonusFontPosition);
+		const float scaledFontScale = abilityBonusFontScale * screenScaler.GetUniformScale();
+
+		abilityBonusFont.MeasureText(bonusText.c_str(), scaledFontScale, textWidth, textHeight);
 
 		// 中央ぞろえの位置を計算
-		abilityBonusFontPosition.x = (Graphics::Instance().GetScreenWidth() - textWidth) / 2.0f;
+		scaledFontPosition.x = (Graphics::Instance().GetScreenWidth() - textWidth) / 2.0f;
 		
 		abilityBonusFont.DrawTextW(Graphics::Instance().GetDeviceContext(), bonusText.c_str(),
-			abilityBonusFontPosition.x, abilityBonusFontPosition.y,
-			abilityBonusFontScale,
+			scaledFontPosition.x, scaledFontPosition.y,
+			scaledFontScale,
 			abilityBonusFontColor.x, abilityBonusFontColor.y, abilityBonusFontColor.z, abilityBonusFontColor.w);
 
 		dc->OMSetDepthStencilState(
@@ -403,10 +418,15 @@ void RoundManager::Render()
 	{
 		if (speedMode.speedModeSprite && speedMode.speedModeSpriteData && speedMode.isActive)
 		{
+			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(speedMode.position);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(speedMode.size);
+
+			DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
+
 			speedMode.speedModeSprite->render(dc,
-				speedMode.position.x - speedMode.size.x / 2.0f,
-				speedMode.position.y - speedMode.size.y / 2.0f,
-				speedMode.size.x, speedMode.size.y,
+				scaledCenterPosition.x,
+				scaledCenterPosition.y,
+				scaledSize.x, scaledSize.y,
 				speedMode.color.x, speedMode.color.y, speedMode.color.z, speedMode.color.w,
 				speedMode.speedModeSpriteData->rotation);
 		}
@@ -414,10 +434,14 @@ void RoundManager::Render()
 
 	if(roundSpriteData && roundSprite)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(spritePosition);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(spriteSize);
+		DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
+
 		roundSprite->render(dc,
-			spritePosition.x - spriteSize.x / 2.0f,
-			spritePosition.y - spriteSize.y / 2.0f,
-			spriteSize.x, spriteSize.y,
+			scaledCenterPosition.x,
+			scaledCenterPosition.y,
+			scaledSize.x, scaledSize.y,
 			spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w,
 			roundSpriteData->rotation);
 	}
@@ -425,9 +449,11 @@ void RoundManager::Render()
 
 	// ラウンド表示の描画
 	std::string roundText = std::to_string(currentRound) + " / " + std::to_string(totalRounds);
+	DirectX::XMFLOAT2 scaledRoundTextPosition = screenScaler.Scale(roundTextPosition);
+	const float scaledRoundTextScale = roundTextScale * screenScaler.GetUniformScale();
 	roundFont.DrawTextW(Graphics::Instance().GetDeviceContext(), roundText.c_str(),
-		roundTextPosition.x, roundTextPosition.y,
-		roundTextScale,
+		scaledRoundTextPosition.x, scaledRoundTextPosition.y,
+		scaledRoundTextScale,
 		roundTextColor.x, roundTextColor.y, roundTextColor.z, roundTextColor.w);
 
 	

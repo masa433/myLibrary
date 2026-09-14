@@ -103,6 +103,8 @@ void scene_loading::render(float elapsed_time)
 	// ロード画面の描画処理
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
 	float clear_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
 	dc->ClearRenderTargetView(backBufferRTV, clear_color);
@@ -121,10 +123,13 @@ void scene_loading::render(float elapsed_time)
 
 	if(loadingBackSprite && loadingBackSpriteData)
 	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(spritePosition);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(spriteSize);
+
 		loadingBackSprite->render(dc,
-			spritePosition.x,
-			spritePosition.y,
-			spriteSize.x, spriteSize.y,
+			scaledPosition.x,
+			scaledPosition.y,
+			scaledSize.x, scaledSize.y,
 			spriteColor.x, spriteColor.y, spriteColor.z, alpha,
 			loadingBackSpriteData->rotation);
 	}

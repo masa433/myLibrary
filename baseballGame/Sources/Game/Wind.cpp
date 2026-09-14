@@ -154,6 +154,7 @@ void Wind::Render(const RenderContext& rc)
 	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	if (ShopManager::Instance().IsShopOpen()) return;
 
@@ -188,8 +189,11 @@ void Wind::Render(const RenderContext& rc)
 	// 風の強さを示すボードスプライトの描画
 	if (windBoardSprite && windBoardSpriteRenderer)
 	{
-		windBoardSpriteRenderer->render(rc.deviceContext, windBoardSprite->position.x, windBoardSprite->position.y,
-			windBoardSprite->size.x, windBoardSprite->size.y,
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(windBoardSprite->position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(windBoardSprite->size);
+
+		windBoardSpriteRenderer->render(rc.deviceContext, scaledPosition.x, scaledPosition.y,
+			scaledSize.x, scaledSize.y,
 			windBoardSprite->color.x, windBoardSprite->color.y, windBoardSprite->color.z, windBoardSprite->color.w,
 			0.0f);
 	}
@@ -197,8 +201,11 @@ void Wind::Render(const RenderContext& rc)
 	
 	if (windGroundSprite && windGroundSpriteRenderer)
 	{
-		windGroundSpriteRenderer->render(rc.deviceContext, windGroundSprite->position.x, windGroundSprite->position.y,
-			windGroundSprite->size.x, windGroundSprite->size.y,
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(windGroundSprite->position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(windGroundSprite->size);
+
+		windGroundSpriteRenderer->render(rc.deviceContext, scaledPosition.x, scaledPosition.y,
+			scaledSize.x, scaledSize.y,
 			windGroundSprite->color.x, windGroundSprite->color.y, windGroundSprite->color.z, windGroundSprite->color.w,
 			0.0f);
 	}
@@ -207,8 +214,10 @@ void Wind::Render(const RenderContext& rc)
 	if (windDirectionSprite && windDirectionSpriteRenderer)
 	{
 		windDirectionSprite->rotation = atan2f(windDirection.x, windDirection.z); // 風向きに合わせて回転
-		windDirectionSpriteRenderer->render(rc.deviceContext, windDirectionSprite->position.x, windDirectionSprite->position.y,
-			windDirectionSprite->size.x, windDirectionSprite->size.y,
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(windDirectionSprite->position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(windDirectionSprite->size);
+		windDirectionSpriteRenderer->render(rc.deviceContext, scaledPosition.x, scaledPosition.y,
+			scaledSize.x, scaledSize.y,
 			windDirectionSprite->color.x, windDirectionSprite->color.y, windDirectionSprite->color.z, windDirectionSprite->color.w,
 			DirectX::XMConvertToDegrees(windDirectionSprite->rotation));
 
@@ -218,6 +227,9 @@ void Wind::Render(const RenderContext& rc)
 	// 風の強さテキストをFontRenderer(TTF直読み)で描画
 	if (windStrengthFont.IsValid())
 	{
+		DirectX::XMFLOAT2 scaledFontPosition = screenScaler.Scale(fontPosition);
+		const float scaledFontScale = fontScale * screenScaler.GetUniformScale();
+
 		physx::PxVec3 windVec(windDirection.x * windStrength, windDirection.y * windStrength, windDirection.z * windStrength);
 		float currentWindSpeed = windVec.magnitude();
 
@@ -228,8 +240,8 @@ void Wind::Render(const RenderContext& rc)
 		// scale=1.0でInitialize時のpixelHeight(32px)相当の大きさになる。
 		// 大きさを変えたい場合はscaleを調整する(例: 1.5fで1.5倍)。
 		windStrengthFont.DrawTextW(dc, speedText,
-			fontPosition.x, fontPosition.y,
-			fontScale,
+			scaledFontPosition.x, scaledFontPosition.y,
+			scaledFontScale,
 			1.0f, 1.0f, 1.0f, 1.0f);
 	}
 

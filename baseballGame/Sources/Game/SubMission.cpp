@@ -149,6 +149,7 @@ void SubMission::Render()
 	if (!currentMission) return;
 
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	ScreenScaler& scaler = Graphics::Instance().GetScreenScaler();
 
 	DirectX::XMFLOAT4 color = currentMission->cleared
 		? DirectX::XMFLOAT4(1.0f, 0.84f, 0.0f, 1.0f)
@@ -186,6 +187,9 @@ void SubMission::Render()
 		charCount++;
 	}
 
+	DirectX::XMFLOAT2 scaledListPosition = scaler.Scale(listPosition);
+	const float scaledFontSize = dynamicFontSize * scaler.GetUniformScale();
+
 	//基準の文字数を超えたらスケールを徐々に小さくする
 	dynamicFontSize = fontSize;
 	const size_t baseCharCount = 16; // 基準の文字数
@@ -199,17 +203,20 @@ void SubMission::Render()
 	//Textを中央ぞろえで描画する
 	float drawWidth = 0.0f, drawHeight = 0.0f;
 
-	missionFont.MeasureText(line.c_str(), dynamicFontSize, drawWidth, drawHeight);// 描画するテキストの幅と高さを取得
+	missionFont.MeasureText(line.c_str(), scaledFontSize, drawWidth, drawHeight);// 描画するテキストの幅と高さを取得
 
-	float drawX = listPosition.x - drawWidth / 2.0f; // 中央ぞろえのためにX座標を調整
+	float drawX = scaledListPosition.x - drawWidth / 2.0f; // 中央ぞろえのためにX座標を調整
 
-	missionFont.DrawTextW(dc, line.c_str(), drawX, listPosition.y, dynamicFontSize,
+	missionFont.DrawTextW(dc, line.c_str(), drawX, scaledListPosition.y, scaledFontSize,
 		color.x, color.y, color.z, color.w);
 
+	DirectX::XMFLOAT2 scaledProgressPosition = scaler.Scale(progressPosition);
+	const float scaledProgressFontSize = progressFontSize * scaler.GetUniformScale();
+
 	float progressWidth = 0.0f, progressHeight = 0.0f;
-	progressFont.MeasureText(progress.c_str(), progressFontSize, progressWidth, progressHeight);
-	float progressX = progressPosition.x - progressWidth / 2.0f; // 中央ぞろえのためにX座標を調整
-	progressFont.DrawTextW(dc, progress.c_str(), progressX, progressPosition.y, progressFontSize,
+	progressFont.MeasureText(progress.c_str(), scaledProgressFontSize, progressWidth, progressHeight);
+	float progressX = scaledProgressPosition.x - progressWidth / 2.0f; // 中央ぞろえのためにX座標を調整
+	progressFont.DrawTextW(dc, progress.c_str(), progressX, scaledProgressPosition.y, scaledProgressFontSize,
 		color.x, color.y, color.z, color.w);
 }
 

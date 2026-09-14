@@ -1,5 +1,4 @@
 #include "ShopManager.h"
-#include "Graphics.h"
 #include "imgui.h"
 #include "shader.h"
 #include "UiEasing.h"
@@ -675,6 +674,7 @@ void ShopManager::Update(float elapsedTime)
 void ShopManager::UpdateShopItem()
 {
 	Input& input = Input::Instance();
+	ScreenScaler& scaler = Graphics::Instance().GetScreenScaler();
 
 	//マウスの位置を取得
 	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
@@ -683,10 +683,12 @@ void ShopManager::UpdateShopItem()
 	for(int i = 0; i < currentShopItemIndices.size(); ++i)
 	{
 		ShopData& item = shopItems[currentShopItemIndices[i]];
-		float itemX = shopItemPositions[i].x - shopItemSize.x / 2.0f;
-		float itemY = (shopItemPositions[i].y + currentOffsetY) - shopItemSize.y / 2.0f;
-		if(mousePos.x >= itemX && mousePos.x <= itemX + shopItemSize.x &&
-		   mousePos.y >= itemY && mousePos.y <= itemY + shopItemSize.y && !slotPurchased[i])
+		DirectX::XMFLOAT2 scaledItemPos = scaler.Scale(shopItemPositions[i]);
+		DirectX::XMFLOAT2 scaledItemSize = scaler.ScaleSize(shopItemSize);
+		float itemX = scaledItemPos.x - scaledItemSize.x / 2.0f;
+		float itemY = (scaledItemPos.y + currentOffsetY) - scaledItemSize.y / 2.0f;
+		if(mousePos.x >= itemX && mousePos.x <= itemX + scaledItemSize.x &&
+		   mousePos.y >= itemY && mousePos.y <= itemY + scaledItemSize.y && !slotPurchased[i])
 		{
 			if (!slotHover[i] && hoverSound)
 			{
@@ -741,6 +743,8 @@ void ShopManager::UpdateShopItem()
 
 void ShopManager::SelectPitchTypeState()
 {
+	ScreenScaler& scaler = Graphics::Instance().GetScreenScaler();
+
 	Pitcher::RealPitcher rp = Pitcher::Instance().GetSelectedRealPitcher();
 	pitchTypeChoices = Pitcher::Instance().GetAvailablePitchTypes(rp);// 選択された投手の使用可能な球種を取得
 
@@ -768,9 +772,11 @@ void ShopManager::SelectPitchTypeState()
 	DirectX::XMFLOAT2 buttonScreenPos = { 960.0f, 540.0f }; // 画面中央あたりにフォールバック
 	if (slotIndex != -1)
 	{
-		float itemX = shopItemPositions[slotIndex].x - shopItemSize.x / 2.0f;
-		float itemY = (shopItemPositions[slotIndex].y + currentOffsetY) - shopItemSize.y / 2.0f;
-		buttonScreenPos = { itemX + shopItemSize.x, itemY }; // ボタンの右上を基準点にする
+		DirectX::XMFLOAT2 scaledItemPos = scaler.Scale(shopItemPositions[slotIndex]);
+		DirectX::XMFLOAT2 scaledItemSize = scaler.ScaleSize(shopItemSize);
+		float itemX = scaledItemPos.x - scaledItemSize.x / 2.0f;
+		float itemY = (scaledItemPos.y + currentOffsetY) - scaledItemSize.y / 2.0f;
+		buttonScreenPos = { itemX + scaledItemSize.x, itemY }; // ボタンの右上を基準点にする
 	}
 
 	// グリッド配置(3列)を計算
@@ -816,6 +822,8 @@ void ShopManager::SelectPitchTypeState()
 void ShopManager::UpdateSelectPitchTypeState()
 {
 	Input& input = Input::Instance();
+	ScreenScaler& scaler = Graphics::Instance().GetScreenScaler();
+
 	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
 	bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
 
@@ -824,10 +832,12 @@ void ShopManager::UpdateSelectPitchTypeState()
 
 	for(int i = 0; i < static_cast<int>(pitchTypeChoices.size()); ++i)
 	{
-		float iconX = pitchTypeIconPositions[i].x - pitchTypeIconSize.x / 2.0f;
-		float iconY = pitchTypeIconPositions[i].y - pitchTypeIconSize.y / 2.0f;
-		bool isHovered = (mousePos.x >= iconX && mousePos.x <= iconX + pitchTypeIconSize.x &&
-			mousePos.y >= iconY && mousePos.y <= iconY + pitchTypeIconSize.y);
+		DirectX::XMFLOAT2 scaledIconPos = scaler.Scale(pitchTypeIconPositions[i]);
+		DirectX::XMFLOAT2 scaledIconSize = scaler.ScaleSize(pitchTypeIconSize);
+		float iconX = scaledIconPos.x - scaledIconSize.x / 2.0f;
+		float iconY = scaledIconPos.y - scaledIconSize.y / 2.0f;
+		bool isHovered = (mousePos.x >= iconX && mousePos.x <= iconX + scaledIconSize.x &&
+			mousePos.y >= iconY && mousePos.y <= iconY + scaledIconSize.y);
 
 		if (isHovered)
 		{
@@ -860,6 +870,7 @@ void ShopManager::UpdateSelectPitchTypeState()
 
 void ShopManager::SelectSpecialAbilityState()
 {
+	ScreenScaler& scaler = Graphics::Instance().GetScreenScaler();
 	specialAbilityChoices.clear();
 	for(auto id : SpecialAbility::Instance().GetOwnedAbilities())
 	{
@@ -888,9 +899,11 @@ void ShopManager::SelectSpecialAbilityState()
 	DirectX::XMFLOAT2 buttonScreenPos = { 960.0f, 540.0f }; // 画面中央あたりにフォールバック
 	if (slotIndex != -1)
 	{
-		float itemX = shopItemPositions[slotIndex].x - shopItemSize.x / 2.0f;
-		float itemY = (shopItemPositions[slotIndex].y + currentOffsetY) - shopItemSize.y / 2.0f;
-		buttonScreenPos = { itemX + shopItemSize.x, itemY }; // ボタンの右上を基準点にする
+		DirectX::XMFLOAT2 scaledItemPos = scaler.Scale(shopItemPositions[slotIndex]);
+		DirectX::XMFLOAT2 scaledItemSize = scaler.ScaleSize(shopItemSize);
+		float itemX = scaledItemPos.x - scaledItemSize.x / 2.0f;
+		float itemY = (scaledItemPos.y + currentOffsetY) - scaledItemSize.y / 2.0f;
+		buttonScreenPos = { itemX + scaledItemSize.x, itemY }; // ボタンの右上を基準点にする
 	}
 
 	// グリッド配置(1列)を計算
@@ -935,6 +948,7 @@ void ShopManager::SelectSpecialAbilityState()
 void ShopManager::UpdateSelectSpecialAbilityState()
 {
 	Input& input = Input::Instance();
+	ScreenScaler& scaler = Graphics::Instance().GetScreenScaler();
 	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
 	bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
 
@@ -943,10 +957,12 @@ void ShopManager::UpdateSelectSpecialAbilityState()
 
 	for (int i = 0; i < static_cast<int>(specialAbilityChoices.size()); ++i)
 	{
-		float iconX = specialAbilityIconPositions[i].x - specialAbilityIconSize.x / 2.0f;
-		float iconY = specialAbilityIconPositions[i].y - specialAbilityIconSize.y / 2.0f;
-		bool isHovered = (mousePos.x >= iconX && mousePos.x <= iconX + specialAbilityIconSize.x &&
-			mousePos.y >= iconY && mousePos.y <= iconY + specialAbilityIconSize.y);
+		DirectX::XMFLOAT2 scaledIconPos = scaler.Scale(specialAbilityIconPositions[i]);
+		DirectX::XMFLOAT2 scaledIconSize = scaler.ScaleSize(specialAbilityIconSize);
+		float iconX = scaledIconPos.x - scaledIconSize.x / 2.0f;
+		float iconY = scaledIconPos.y - scaledIconSize.y / 2.0f;
+		bool isHovered = (mousePos.x >= iconX && mousePos.x <= iconX + scaledIconSize.x &&
+			mousePos.y >= iconY && mousePos.y <= iconY + scaledIconSize.y);
 		if (isHovered)
 		{
 			hoveredSpecialAbilityIndex = i;
@@ -977,6 +993,7 @@ void ShopManager::Render()
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	context->VSSetShader(vertex_shader.Get(), nullptr, 0);
 	context->PSSetShader(pixel_shader.Get(), nullptr, 0);
@@ -988,14 +1005,23 @@ void ShopManager::Render()
 
 	if (shopBackSprite)
 	{
-		float drawX = baseShopBackPos.x - shopBackSpriteData->size.x / 2.0f;
-		float drawY = (baseShopBackPos.y + currentOffsetY) - shopBackSpriteData->size.y / 2.0f;
+		DirectX::XMFLOAT2 scaledBaseShopBackPos = screenScaler.Scale(baseShopBackPos);
+		DirectX::XMFLOAT2 scaledShopBackSize = screenScaler.Scale(shopBackSpriteData->size);
+
+		DirectX::XMFLOAT2 scaledCenteredPos =
+		{
+			scaledBaseShopBackPos.x - scaledShopBackSize.x / 2.0f,
+			(scaledBaseShopBackPos.y + currentOffsetY) - scaledShopBackSize.y / 2.0f
+		};
+
+		float drawX = scaledCenteredPos.x;
+		float drawY = scaledCenteredPos.y;
 
 		shopBackSprite->render(context,
 			drawX,
 			drawY,
-			shopBackSpriteData->size.x,
-			shopBackSpriteData->size.y,
+			scaledShopBackSize.x,
+			scaledShopBackSize.y,
 			shopBackSpriteData->color.x,
 			shopBackSpriteData->color.y,
 			shopBackSpriteData->color.z,
@@ -1005,14 +1031,17 @@ void ShopManager::Render()
 
 	float moneyWidth, moneyHeight;
 
-	moneyFont.MeasureText(std::to_string(Money::Instance().GetCurrentMoney()).c_str(), moneyFontScale, moneyWidth, moneyHeight);
+	DirectX::XMFLOAT2 scaledBaseMoneyFontPos = screenScaler.Scale(baseMoneyFontPos);
+	const float scaledMoneyFontScale = moneyFontScale * screenScaler.GetUniformScale();
 
-	float adjustedX = baseMoneyFontPos.x - moneyWidth / 2.0f; // 中央揃えのためにX座標を調整
-	float adjustedY = (baseMoneyFontPos.y + currentOffsetY) - moneyHeight / 2.0f; // 中央揃えのためにY座標を調整
+	moneyFont.MeasureText(std::to_string(Money::Instance().GetCurrentMoney()).c_str(), scaledMoneyFontScale, moneyWidth, moneyHeight);
+
+	float adjustedX = scaledBaseMoneyFontPos.x - moneyWidth / 2.0f; // 中央揃えのためにX座標を調整
+	float adjustedY = (scaledBaseMoneyFontPos.y + currentOffsetY) - moneyHeight / 2.0f; // 中央揃えのためにY座標を調整
 
 	moneyFont.DrawTextW(context, std::to_string(Money::Instance().GetCurrentMoney()).c_str(),
 		adjustedX, adjustedY,
-		moneyFontScale,
+		scaledMoneyFontScale,
 		moneyFontColor.x, moneyFontColor.y, moneyFontColor.z, moneyFontColor.w);
 
 	context->VSSetShader(vertex_shader.Get(), nullptr, 0);
@@ -1031,14 +1060,23 @@ void ShopManager::Render()
 		//選択中のバッターのパラメータを描画
 		if (selectedBatterIndex >= 0 && selectedBatterIndex < BATTER_COUNT)
 		{
-			float drawX = batterParamBackPosition.x - batterParamBackSize.x / 2.0f;
-			float drawY = (batterParamBackPosition.y + currentOffsetY) - batterParamBackSize.y / 2.0f;
+			DirectX::XMFLOAT2 scaledBatterParamBackPosition = screenScaler.Scale(batterParamBackPosition);
+			DirectX::XMFLOAT2 scaledBatterParamBackSize = screenScaler.Scale(batterParamBackSize);
+
+			DirectX::XMFLOAT2 scaledCenteredPos =
+			{
+				scaledBatterParamBackPosition.x - scaledBatterParamBackSize.x / 2.0f,
+				(scaledBatterParamBackPosition.y + currentOffsetY) - scaledBatterParamBackSize.y / 2.0f
+			};
+
+			float drawX = scaledCenteredPos.x;
+			float drawY = scaledCenteredPos.y;
 
 			//選択されているバッターのアイコンを描画
 			batterSprites[selectedBatterIndex]->render(context,
 				drawX,
 				drawY,
-				batterParamBackSize.x, batterParamBackSize.y,
+				scaledBatterParamBackSize.x, scaledBatterParamBackSize.y,
 				batterSpriteData[selectedBatterIndex]->color.x, batterSpriteData[selectedBatterIndex]->color.y, batterSpriteData[selectedBatterIndex]->color.z, batterSpriteData[selectedBatterIndex]->color.w,
 				batterSpriteData[selectedBatterIndex]->rotation);
 		}
@@ -1116,33 +1154,48 @@ void ShopManager::Render()
 
 				//パワーとミートの値を描画
 
+				auto scaledText = [&](const DirectX::XMFLOAT2& scaledPos, float scaledSize) -> std::pair<DirectX::XMFLOAT2, float>
+					{
+						return {
+							screenScaler.Scale(scaledPos),
+							scaledSize * screenScaler.GetUniformScale()
+						};
+					};
+
+				auto [scaledPowerPos, scaledPowerSize] = scaledText(powerFontData.position, powerFontData.scale);
+				auto [scaledContactPos, scaledContactSize] = scaledText(contactFontData.position, contactFontData.scale);
+				auto [scaledPowerRankPos, scaledPowerRankSize] = scaledText(powerRankFontData.position, powerRankFontData.scale);
+				auto [scaledContactRankPos, scaledContactRankSize] = scaledText(contactRankFontData.position, contactRankFontData.scale);
+				
 				// ラムダ関数を使って、パワーとミートのY座標を計算
-				auto GetPositionForPowerAndContact = [this](float& outPowerY, float& outContactY,float& outPowerRankY,float& outContactRankY)
+				auto GetPositionForPowerAndContact = [&](float& outPowerY, float& outContactY,float& outPowerRankY,float& outContactRankY)
 				{
 					
-					outPowerY = powerFontData.position.y + currentOffsetY;
-					outContactY = contactFontData.position.y + currentOffsetY;
-					outPowerRankY = powerRankFontData.position.y + currentOffsetY;
-					outContactRankY = contactRankFontData.position.y + currentOffsetY;
+					outPowerY = scaledPowerPos.y + currentOffsetY;
+					outContactY = scaledContactPos.y + currentOffsetY;
+					outPowerRankY = scaledPowerRankPos.y + currentOffsetY;
+					outContactRankY = scaledContactRankPos.y + currentOffsetY;
 				};
 
 				float drawPowerY, drawContactY, drawPowerRankY, drawContactRankY;
 				GetPositionForPowerAndContact(drawPowerY, drawContactY, drawPowerRankY, drawContactRankY);
 				
+				
 
 				fontRenderer.DrawTextW(context, std::to_string(power).c_str(),
-					powerFontData.position.x, drawPowerY, powerFontData.scale,
+					scaledPowerPos.x, drawPowerY, scaledPowerSize,
 					powerFontData.color.x, powerFontData.color.y, powerFontData.color.z, powerFontData.color.w );
 
 				fontRenderer.DrawTextW(context, GetBatterPowerRankString(powerRank),
-					powerRankFontData.position.x, drawPowerRankY, powerRankFontData.scale,
+					scaledPowerRankPos.x, drawPowerRankY, scaledPowerRankSize,
 					powerRankFontData.color.x, powerRankFontData.color.y, powerRankFontData.color.z, powerRankFontData.color.w );
 
 				fontRenderer.DrawTextW(context, std::to_string(contact).c_str(),
-					contactFontData.position.x, drawContactY, contactFontData.scale,
+					scaledContactPos.x, drawContactY, scaledContactSize,
 					contactFontData.color.x, contactFontData.color.y, contactFontData.color.z, contactFontData.color.w );
+
 				fontRenderer.DrawTextW(context, GetBatterContactRankString(contactRank),
-					contactRankFontData.position.x, drawContactRankY, contactRankFontData.scale,
+					scaledContactRankPos.x, drawContactRankY, scaledContactRankSize,
 					contactRankFontData.color.x, contactRankFontData.color.y, contactRankFontData.color.z, contactRankFontData.color.w );
 
 			}
@@ -1164,16 +1217,20 @@ void ShopManager::Render()
 	//ボタンの描画
 	if(nextRoundButtonData && nextRoundButtonSprite)
 	{
+
+		DirectX::XMFLOAT2 scaledNextRoundButtonPos = screenScaler.Scale(nextRoundButtonPosition);
+		DirectX::XMFLOAT2 scaledNextRoundButtonSize = screenScaler.ScaleSize(nextRoundButtonSize);
+
 		DirectX::XMFLOAT2 drawSize = 
 		{
-			nextRoundButtonSize.x * nextRoundButtonScale,
-			nextRoundButtonSize.y * nextRoundButtonScale
+			scaledNextRoundButtonSize.x * nextRoundButtonScale,
+			scaledNextRoundButtonSize.y * nextRoundButtonScale
 		};
 
 		
 
-		float drawX = nextRoundButtonPosition.x - drawSize.x / 2.0f;
-		float drawY = (nextRoundButtonPosition.y + currentOffsetY) - drawSize.y / 2.0f;
+		float drawX = scaledNextRoundButtonPos.x - drawSize.x / 2.0f;
+		float drawY = (scaledNextRoundButtonPos.y + currentOffsetY) - drawSize.y / 2.0f;
 		nextRoundButtonSprite->render(context,
 			drawX,
 			drawY,
@@ -1185,6 +1242,8 @@ void ShopManager::Render()
 	//ショップアイテムの描画
 	for(int slotIndex = 0; slotIndex < SHOP_ITEM_DISPLAY_COUNT; ++slotIndex)
 	{
+
+
 		if (slotIndex >= static_cast<int>(currentShopItemIndices.size())) break;
 
 		int itemIndex = currentShopItemIndices[slotIndex];
@@ -1192,8 +1251,10 @@ void ShopManager::Render()
 		
 		if (!shopItemSpriteObjects[itemIndex]) continue;
 
-		float drawX = shopItemPositions[slotIndex].x - shopItemSize.x / 2.0f;
-		float drawY = (shopItemPositions[slotIndex].y + currentOffsetY) - shopItemSize.y / 2.0f;
+		DirectX::XMFLOAT2 scaledItemPos = screenScaler.Scale(shopItemPositions[slotIndex]);
+		DirectX::XMFLOAT2 scaledItemSize = screenScaler.ScaleSize(shopItemSize);
+		float drawX = scaledItemPos.x - scaledItemSize.x / 2.0f;
+		float drawY = (scaledItemPos.y + currentOffsetY) - scaledItemSize.y / 2.0f;
 
 		//ホバー時か購入できない状態の時か購入済みに色を変える
 		bool canPurchase = Money::Instance().GetCurrentMoney() >= item.price && !slotPurchased[slotIndex];
@@ -1212,10 +1273,18 @@ void ShopManager::Render()
 		float priceWidth, priceHeight;
 		std::string priceText = std::to_string(item.price);
 
-		priceFont.MeasureText(priceText.c_str(), priceFontScale, priceWidth, priceHeight);
+		const float scaledPriceFontScale = priceFontScale * screenScaler.GetUniformScale();
 
-		float priceX = shopItemPositions[slotIndex].x - priceWidth / 2.0f + priceFontOffset.x;
-		float priceY = (shopItemPositions[slotIndex].y + currentOffsetY) - priceHeight / 2.0f + priceFontOffset.y;
+		priceFont.MeasureText(priceText.c_str(), scaledPriceFontScale, priceWidth, priceHeight);
+
+		DirectX::XMFLOAT2 scaledCenteredPos =
+		{
+			scaledItemPos.x - priceWidth / 2.0f + priceFontOffset.x,
+			(scaledItemPos.y + currentOffsetY) - priceHeight / 2.0f + priceFontOffset.y
+		};
+
+		float priceX = scaledCenteredPos.x;
+		float priceY = scaledCenteredPos.y;
 
 		//購入できるときは白、購入できないときは赤にする
 		DirectX::XMFLOAT3 priceColorRGB = canPurchase ? DirectX::XMFLOAT3{1.0f, 1.0f, 1.0f} : DirectX::XMFLOAT3{1.0f, 0.0f, 0.0f}; // 赤にする場合は1.0f, 0.0f, 0.0fのように設定する
@@ -1226,7 +1295,7 @@ void ShopManager::Render()
 
 			priceFont.DrawTextW(context, priceText.c_str(),
 				priceX, priceY,
-				priceFontScale,
+				scaledPriceFontScale,
 				priceColorRGB.x, priceColorRGB.y, priceColorRGB.z, 1.0f);
 		}
 
@@ -1237,15 +1306,23 @@ void ShopManager::Render()
 		context->OMSetDepthStencilState(
 			renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-		float coinX = shopItemPositions[slotIndex].x - coinSize.x / 2.0f - coinOffset.x;
-		float coinY = (shopItemPositions[slotIndex].y + currentOffsetY) - coinSize.y / 2.0f + coinOffset.y;
+		DirectX::XMFLOAT2 scaledCoinSize = screenScaler.ScaleSize(coinSize);
+
+		DirectX::XMFLOAT2 scaledCoinCenteredPos =
+		{
+			scaledItemPos.x - scaledCoinSize.x / 2.0f - coinOffset.x,
+			(scaledItemPos.y + currentOffsetY) - scaledCoinSize.y / 2.0f + coinOffset.y
+		};
+
+		float coinX = scaledCoinCenteredPos.x;
+		float coinY = scaledCoinCenteredPos.y;
 
 		if (currentShopState == ShopState::Normal)
 		{
 			coinSprite->render(context,
 				coinX,
 				coinY,
-				coinSize.x, coinSize.y,
+				scaledCoinSize.x, scaledCoinSize.y,
 				1.0f, 1.0f, 1.0f, 1.0f,
 				0.0f);
 		}
@@ -1253,12 +1330,20 @@ void ShopManager::Render()
 		//購入済みの場合はsoldOutのテクスチャを描画
 		if(slotPurchased[slotIndex])
 		{
-			float soldOutX = shopItemPositions[slotIndex].x - soldOutSize.x / 2.0f;
-			float soldOutY = (shopItemPositions[slotIndex].y + currentOffsetY) - soldOutSize.y / 2.0f;
+			DirectX::XMFLOAT2 scaledSoldOutSize = screenScaler.ScaleSize(soldOutSize);
+
+			DirectX::XMFLOAT2 scaledCenteredPos =
+			{
+				scaledItemPos.x - scaledSoldOutSize.x / 2.0f,
+				(scaledItemPos.y + currentOffsetY) - scaledSoldOutSize.y / 2.0f
+			};
+
+			float soldOutX = scaledCenteredPos.x;
+			float soldOutY = scaledCenteredPos.y;
 			soldOutSprite->render(context,
 				soldOutX,
 				soldOutY,
-				soldOutSize.x, soldOutSize.y,
+				scaledSoldOutSize.x, scaledSoldOutSize.y,
 				1.0f,1.0f,1.0f,1.0f,
 				0.0f);
 		}
@@ -1291,16 +1376,27 @@ void ShopManager::RenderSelectPitchTypeState()
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 	for (int i = 0; i < static_cast<int>(pitchTypeChoices.size()); ++i)
 	{
-		float drawX = pitchTypeIconPositions[i].x - pitchTypeIconSize.x / 2.0f;
-		float drawY = pitchTypeIconPositions[i].y - pitchTypeIconSize.y / 2.0f;
+
+		DirectX::XMFLOAT2 scaledIconPos = screenScaler.Scale(pitchTypeIconPositions[i]);
+		DirectX::XMFLOAT2 scaledIconSize = screenScaler.ScaleSize(pitchTypeIconSize);
+
+		DirectX::XMFLOAT2 scaledCenteredPos =
+		{
+			scaledIconPos.x - scaledIconSize.x / 2.0f,
+			scaledIconPos.y - scaledIconSize.y / 2.0f
+		};
+
+		float drawX = scaledCenteredPos.x;
+		float drawY = scaledCenteredPos.y;
 		bool isHovered = (hoveredPitchTypeIndex == i);
 		float colorRGB = isHovered ? 0.7f : 1.0f;
 		pitchTypeSprites[i]->render(context,
 			drawX,
 			drawY,
-			pitchTypeIconSize.x, pitchTypeIconSize.y,
+			scaledIconSize.x, scaledIconSize.y,
 			colorRGB, colorRGB, colorRGB, 1.0f,
 			0.0f);	
 	}
@@ -1308,14 +1404,17 @@ void ShopManager::RenderSelectPitchTypeState()
 	float textWidth, textHeight;
 	const char* text = u8"どの球種を減らす？";
 
-	pitchTypeFont.MeasureText(text, pitchTypeFontScale, textWidth, textHeight);
+	DirectX::XMFLOAT2 scaledFontPos = screenScaler.Scale(pitchTypeFontPosition);
+	const float scaledFontScale = pitchTypeFontScale * screenScaler.GetUniformScale();
 
-	float adjustedFontX = pitchTypeFontPosition.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
-	float adjustedFontY = pitchTypeFontPosition.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
+	pitchTypeFont.MeasureText(text, scaledFontScale, textWidth, textHeight);
+
+	float adjustedFontX = scaledFontPos.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
+	float adjustedFontY = scaledFontPos.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
 
 	pitchTypeFont.DrawTextW(context, text,
 		adjustedFontX, adjustedFontY,
-		pitchTypeFontScale,
+		scaledFontScale,
 		1.0f, 1.0f, 1.0f, 1.0f);
 }
 
@@ -1323,27 +1422,39 @@ void ShopManager::RenderSelectSpecialAbilityState()
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 	for (int i = 0; i < static_cast<int>(specialAbilityChoices.size()); ++i)
 	{
-		float drawX = specialAbilityIconPositions[i].x - specialAbilityIconSize.x / 2.0f;
-		float drawY = specialAbilityIconPositions[i].y - specialAbilityIconSize.y / 2.0f;
+		DirectX::XMFLOAT2 scaledIconPos = screenScaler.Scale(specialAbilityIconPositions[i]);
+		DirectX::XMFLOAT2 scaledIconSize = screenScaler.ScaleSize(specialAbilityIconSize);
+
+		DirectX::XMFLOAT2 scaledCenteredPos =
+		{
+			scaledIconPos.x - scaledIconSize.x / 2.0f,
+			scaledIconPos.y - scaledIconSize.y / 2.0f
+		};
+
+		float drawX = scaledCenteredPos.x;
+		float drawY = scaledCenteredPos.y;
 		bool isHovered = (hoveredSpecialAbilityIndex == i);
 		float colorRGB = isHovered ? 0.7f : 1.0f;
 		specialAbilitySprites[i]->render(context,
 			drawX,
 			drawY,
-			specialAbilityIconSize.x, specialAbilityIconSize.y,
+			scaledIconSize.x, scaledIconSize.y,
 			colorRGB, colorRGB, colorRGB, 1.0f,
 			0.0f);
 	}
 	float textWidth, textHeight;
 	const char* text = u8"どの特殊能力の発動率を上げる？";
-	specialAbilityFont.MeasureText(text, specialAbilityFontScale, textWidth, textHeight);
-	float adjustedFontX = specialAbilityFontPosition.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
-	float adjustedFontY = specialAbilityFontPosition.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
+	DirectX::XMFLOAT2 scaledFontPos = screenScaler.Scale(specialAbilityFontPosition);
+	const float scaledFontScale = specialAbilityFontScale * screenScaler.GetUniformScale();
+	specialAbilityFont.MeasureText(text, scaledFontScale, textWidth, textHeight);
+	float adjustedFontX = scaledFontPos.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
+	float adjustedFontY = scaledFontPos.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
 	specialAbilityFont.DrawTextW(context, text,
 		adjustedFontX, adjustedFontY,
-		specialAbilityFontScale,
+		scaledFontScale,
 		1.0f, 1.0f, 1.0f, 1.0f);
 }
 

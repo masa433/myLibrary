@@ -102,6 +102,7 @@ void TrackingData::Render()
 	if (!showTrackingData || showTrackingDelay < displayStartTime) return;
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -110,13 +111,18 @@ void TrackingData::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
+	DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(trackingDataSpriteData->position);
+	DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(trackingDataSpriteData->size);
+
+
 	if (trackingDataSprite && trackingDataSpriteData)
 	{
+		
 		trackingDataSprite->render(dc,
-			trackingDataSpriteData->position.x,
-			trackingDataSpriteData->position.y,
-			trackingDataSpriteData->size.x,
-			trackingDataSpriteData->size.y,
+			scaledPosition.x,
+			scaledPosition.y,
+			scaledSize.x,
+			scaledSize.y,
 			trackingDataSpriteData->color.x,
 			trackingDataSpriteData->color.y,
 			trackingDataSpriteData->color.z,
@@ -124,14 +130,15 @@ void TrackingData::Render()
 			trackingDataSpriteData->rotation);
 	}
 
-	const float baseX = trackingDataSpriteData->position.x + 10.0f;
-	float lineY = trackingDataSpriteData->position.y + 10.0f;
-	const float lineHeight = trackingDataValueFontScale * 50.0f;
-	const float valuePadding = 8.0f;
-	const float TrackingDataLabelOffsetY = 20.0f; // "Tracking Data"ラベルのYオフセット
+	const float scaledLabelFontScale = trackingDataFontScale * screenScaler.GetUniformScale();
+	const float scaledValueFontScale = trackingDataValueFontScale * screenScaler.GetUniformScale();
 
-	const float valueColumnCenterX = trackingDataSpriteData->position.x + trackingDataSpriteData->size.x * 0.7f;
-
+	
+	const float baseX = scaledPosition.x;
+	float lineY = scaledPosition.y;
+	const float lineHeight = scaledValueFontScale ;
+	
+	const float valueColumnCenterX = scaledPosition.x + scaledSize.x * 0.7f;
 	auto FormatRoundedValue = [](float value) -> float
 		{
 			float rounded = std::round(value);
@@ -168,51 +175,34 @@ void TrackingData::Render()
 
 	char directionValue[32]; snprintf(directionValue, sizeof(directionValue), u8"%.f度", FormatRoundedValue(Physics::Instance().GetBallDirection()));
 
-	
 
-	
-	//画像の左上付近にTrackingDataのラベルを表示する
-	//char trackingDataLabel[32]; snprintf(trackingDataLabel, sizeof(trackingDataLabel), "Tracking Data");
-
-	
-	/*char directionLabel[16]; snprintf(directionLabel, sizeof(directionLabel), u8"方向　");
-	char directionValue[32]; snprintf(directionValue, sizeof(directionValue), u8"%.f度", FormatRoundedValue(Physics::Instance().GetBallDirection()));*/
 
 	// ラベル＋数値をペアで描画するヘルパー（オフセット付き）
 	auto DrawLabelAndValue = [&](const char* label, const char* value, float y,
 		const DirectX::XMFLOAT2& labelOffset, const DirectX::XMFLOAT2& valueOffset)
 		{
-			//打球速度が150キロ以上かつ打球角度が25度から35度の範囲内の場合、両者を金色で表示
-			if(Physics::Instance().GetIsHomeRun())
-			{
-				trackingDataFont.DrawTextW(dc, label,
-					baseX + labelOffset.x, y + labelOffset.y,
-					trackingDataFontScale, 1.0f, 1.0f, 1.0f, 1.0f); // 白色
-				// 数値は幅を測って中央ぞろえ
-				float valueWidth = 0.0f, valueHeight = 0.0f;
-				trackingDataFont.MeasureText(value, trackingDataValueFontScale, valueWidth, valueHeight);
-				float valueX = valueColumnCenterX - valueWidth * 0.5f;
-				trackingDataFont.DrawTextW(dc, value,
-					valueX + valueOffset.x, y + valueOffset.y,
-					trackingDataValueFontScale, 1.0f, 0.843f, 0.0f, 1.0f); // 金色
-			}
-			else
-			{
-				// ラベルはこれまで通り左揃え
-				trackingDataFont.DrawTextW(dc, label,
-					baseX + labelOffset.x, y + labelOffset.y,
-					trackingDataFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
-				// 数値は幅を測って中央ぞろえ
-				float valueWidth = 0.0f, valueHeight = 0.0f;
-				trackingDataFont.MeasureText(value, trackingDataValueFontScale, valueWidth, valueHeight);
-				float valueX = valueColumnCenterX - valueWidth * 0.5f;
-				trackingDataFont.DrawTextW(dc, value,
-					valueX + valueOffset.x, y + valueOffset.y,
-					trackingDataValueFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
-			}			
+			
+			DirectX::XMFLOAT2 scaledLabelOffset = screenScaler.Scale(labelOffset);
+			DirectX::XMFLOAT2 scaledValueOffset = screenScaler.Scale(valueOffset);
+
+			DirectX::XMFLOAT4 valueColor = Physics::Instance().GetIsHomeRun()
+				? DirectX::XMFLOAT4{ 1.0f, 0.843f, 0.0f, 1.0f }  // 金色
+			: DirectX::XMFLOAT4{ 1.0f, 1.0f, 1.0f, 1.0f };   // 白色
+
+			trackingDataFont.DrawTextW(dc, label,
+				baseX + scaledLabelOffset.x, y + scaledLabelOffset.y,
+				scaledLabelFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
+			float valueWidth = 0.0f, valueHeight = 0.0f;
+			trackingDataFont.MeasureText(value, scaledValueFontScale, valueWidth, valueHeight);
+			float valueX = valueColumnCenterX - valueWidth * 0.5f;
+
+			trackingDataFont.DrawTextW(dc, value,
+				valueX + scaledValueOffset.x, y + scaledValueOffset.y,
+				scaledValueFontScale, valueColor.x, valueColor.y, valueColor.z, valueColor.w);
 		};
 
-	//DrawLabelAndValue(trackingDataLabel, "", lineY + TrackingDataLabelOffsetY, { 0.0f, 0.0f }, { 0.0f, 0.0f });
+	
 	DrawLabelAndValue(angleLabel, angleValue, lineY, angleLabelOffset, angleValueOffset);
 	DrawLabelAndValue(speedLabel, speedValue, lineY + lineHeight, speedLabelOffset, speedValueOffset);
 	DrawLabelAndValue(directionLabel , directionValue, lineY + 2 * lineHeight, directionLabelOffset, directionValueOffset);

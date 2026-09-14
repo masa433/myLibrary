@@ -229,8 +229,8 @@ void LoadingTips::Render(float alpha)
 		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(loadingBallSpriteData->size);
 
 		DirectX::XMFLOAT2 centerPosition = {
-			scaledPosition.x - scaledSize.x * 0.5f,
-			scaledPosition.y - scaledSize.y * 0.5f
+			scaledPosition.x - scaledSize.x / 2.0f,
+			scaledPosition.y - scaledSize.y / 2.0f
 		};
 
 		loadingBallSprite->render(context,

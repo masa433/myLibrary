@@ -61,6 +61,11 @@ public:
 	{
 		AddMoney(currentBallZoneBonusMoney);
 		TriggerBallZoneBonusAnimation();
+		if (getMoneySound)
+		{
+			getMoneySound->PlayOneShot();
+		}
+
 		if (consoleLog)
 		{
 			consoleLog->push_back(u8"[Info]ボールゾーンボーナスが適用されました。");

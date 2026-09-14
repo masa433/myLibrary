@@ -445,6 +445,7 @@ void SpecialAbility::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -464,11 +465,12 @@ void SpecialAbility::Render()
 				(abilities[i].ballPenaltyCondition && abilities[i].ballPenaltyCondition())) 
 			&& Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch && RoundManager::Instance().IsPlaying())
 		{
-			
+			DirectX::XMFLOAT2 scaledIconPosition = screenScaler.Scale(abilitySprites[i]->iconPosition);
+			DirectX::XMFLOAT2 scaledIconSize = screenScaler.ScaleSize(abilitySprites[i]->iconSize);
 
 			abilitySprites[i]->iconSprite->render(dc,
-				abilitySprites[i]->iconPosition.x, abilitySprites[i]->iconPosition.y,
-				abilitySprites[i]->iconSize.x, abilitySprites[i]->iconSize.y,
+				scaledIconPosition.x, scaledIconPosition.y,
+				scaledIconSize.x, scaledIconSize.y,
 				abilitySprites[i]->spriteData->color.x, abilitySprites[i]->spriteData->color.y, abilitySprites[i]->spriteData->color.z, abilitySprites[i]->spriteData->color.w,
 				abilitySprites[i]->spriteData->rotation);
 		}
@@ -483,10 +485,12 @@ void SpecialAbility::Render()
 	{
 		if (selectedBatterIndex >= 0 && selectedBatterIndex < BATTER_COUNT)
 		{
+			DirectX::XMFLOAT2 scaledBatterIconPosition = screenScaler.Scale(batterIconPosition);
+			DirectX::XMFLOAT2 scaledBatterIconSize = screenScaler.ScaleSize(batterIconSize);
 			//選択されているバッターのアイコンを描画
 			batterSprites[selectedBatterIndex]->render(dc,
-				batterIconPosition.x, batterIconPosition.y,
-				batterIconSize.x, batterIconSize.y,
+				scaledBatterIconPosition.x, scaledBatterIconPosition.y,
+				scaledBatterIconSize.x, scaledBatterIconSize.y,
 				batterSpriteData[selectedBatterIndex]->color.x, batterSpriteData[selectedBatterIndex]->color.y, batterSpriteData[selectedBatterIndex]->color.z, batterSpriteData[selectedBatterIndex]->color.w,
 				batterSpriteData[selectedBatterIndex]->rotation);
 		}
@@ -563,14 +567,24 @@ void SpecialAbility::Render()
 				}
 
 				//パワーとミートの値を描画
+				auto scaledText = [&](const DirectX::XMFLOAT2& scaledPos, float scaledSize) -> std::pair<DirectX::XMFLOAT2, float>
+					{
+						return {
+							screenScaler.Scale(scaledPos),
+							scaledSize * screenScaler.GetUniformScale()
+						};
+					};
+
+				auto [scaledPowerPos, scaledPowerSize] = scaledText(powerRankFontData.position, powerRankFontData.scale);
+				auto [scaledContactPos, scaledContactSize] = scaledText(contactRankFontData.position, contactRankFontData.scale);
 
 				fontRenderer.DrawTextW(dc, GetBatterPowerRankString(powerRank),
-					powerRankFontData.position.x, powerRankFontData.position.y, powerRankFontData.scale,
+					scaledPowerPos.x, scaledPowerPos.y, scaledPowerSize,
 					powerRankFontData.color.x, powerRankFontData.color.y, powerRankFontData.color.z, powerRankFontData.color.w);
 
 
 				fontRenderer.DrawTextW(dc, GetBatterContactRankString(contactRank),
-					contactRankFontData.position.x, contactRankFontData.position.y, contactRankFontData.scale,
+					scaledContactPos.x, scaledContactPos.y, scaledContactSize,
 					contactRankFontData.color.x, contactRankFontData.color.y, contactRankFontData.color.z, contactRankFontData.color.w);
 
 			}
@@ -590,6 +604,8 @@ void SpecialAbility::Render()
 
 void SpecialAbility::RenderAbilityIcons(AbilityID id, const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, bool isHighlighted)
 {
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
 	int index = static_cast<int>(id);
 	if (index < 0 || index >= ABILITY_COUNT) return;
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
@@ -606,7 +622,6 @@ void SpecialAbility::RenderAbilityIcons(AbilityID id, const DirectX::XMFLOAT2& p
 	}
 
 	
-
 	abilitySprites[index]->iconSprite->render(dc,
 		position.x - hoverSize.x / 2.0f, position.y - hoverSize.y / 2.0f,
 		hoverSize.x, hoverSize.y,
@@ -616,10 +631,13 @@ void SpecialAbility::RenderAbilityIcons(AbilityID id, const DirectX::XMFLOAT2& p
 	//ホバー中に、対応している能力の説明を描画する
 	if (isHighlighted)
 	{
+		DirectX::XMFLOAT2 scaledDescriptionPosition = screenScaler.Scale(abilitySprites[index]->descriptionPosition);
+		DirectX::XMFLOAT2 scaledDescriptionSize = screenScaler.ScaleSize(abilitySprites[index]->descriptionSize);
+		DirectX::XMFLOAT2 scaledDescriptionCenterPosition = { scaledDescriptionPosition.x - scaledDescriptionSize.x / 2.0f, scaledDescriptionPosition.y - scaledDescriptionSize.y / 2.0f };
+
 		abilitySprites[index]->descriptionSprite->render(dc,
-			abilitySprites[index]->descriptionPosition.x - abilitySprites[index]->descriptionSize.x / 2.0f,
-			abilitySprites[index]->descriptionPosition.y - abilitySprites[index]->descriptionSize.y / 2.0f,
-			abilitySprites[index]->descriptionSize.x, abilitySprites[index]->descriptionSize.y,
+			scaledDescriptionCenterPosition.x, scaledDescriptionCenterPosition.y,
+			scaledDescriptionSize.x, scaledDescriptionSize.y,
 			color.x, color.y, color.z, color.w,
 			abilitySprites[index]->spriteData->rotation);
 	}
