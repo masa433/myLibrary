@@ -245,10 +245,7 @@ void BatSprite::UpdateCursorSizeByContact(int contact)
 {
 	if (batCursorSpriteData == nullptr) return;
 
-	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
-	DirectX::XMFLOAT2 scaledOriginalCursorSize = screenScaler.ScaleSize(originalCursorSize);
 	
-
 	// contact の値を 0～99の範囲に制限
 	float t = (std::max)(0.0f, (std::min)(99.0f, static_cast<float>(contact))) / 99.0f;
 
@@ -259,12 +256,12 @@ void BatSprite::UpdateCursorSizeByContact(int contact)
 	{
 		batCursorSpriteData->size =
 		{
-			scaledOriginalCursorSize.x * scale,
-			scaledOriginalCursorSize.y * scale,
+			originalCursorSize.x * scale,
+			originalCursorSize.y * scale,
 		};
 	}
 
-	HitJudge2D::Instance().cursorRadius = screenScaler.ScaleWidth(batCursorSpriteData->size.x) * 0.5f;
+	HitJudge2D::Instance().cursorRadius = batCursorSpriteData->size.x * 0.5f;
 }
 
 void BatSprite::Render()
