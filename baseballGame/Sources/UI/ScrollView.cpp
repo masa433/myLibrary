@@ -670,8 +670,8 @@ void ScrollView::Update(float elapsedTime)
 			DirectX::XMFLOAT2 scaledButtonPos = screenScaler.Scale({ playerButtonDataList[i].position.x, rawTopY });
 			DirectX::XMFLOAT2 scaledButtonSize = screenScaler.ScaleSize(playerButtonDataList[i].size);
 
-			float buttonTopY = rawTopY - scaledButtonSize.y / 2.0f;
-			float buttonBottomY = rawTopY + scaledButtonSize.y / 2.0f;
+			float buttonTopY = scaledButtonPos.y - scaledButtonSize.y / 2.0f;
+			float buttonBottomY = scaledButtonPos.y + scaledButtonSize.y / 2.0f;
 
 			bool isVisible = (buttonBottomY >= visibleMinY) && (buttonTopY <= visibleMaxY);
 
