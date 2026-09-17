@@ -214,6 +214,54 @@ void BroadcastCamera::SetupDefaultCameras()
 		preset.cameraId = 11; // 確信ホームランカメラ6のIDを設定
 		AddCameraPreset(preset);
 	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"ピッチャーカメラ1";
+		preset.eye = { -5.0f, 2.0f, 16.5f };
+		preset.focus = { 0.0f, 1.0f, 18.4f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::EventCamera;
+		preset.cameraId = 12; // ピッチャーカメラ1のIDを設定
+		AddCameraPreset(preset);
+	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"ピッチャーカメラ2";
+		preset.eye = { 5.0f, 2.0f, 16.5f };
+		preset.focus = { 0.0f, 1.0f, 18.4f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::EventCamera;
+		preset.cameraId = 13; // ピッチャーカメラ2のIDを設定
+		AddCameraPreset(preset);
+	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"バッターカメラ1";
+		preset.eye = { 8.0f, 1.0f, 1.5f };
+		preset.focus = { 0.0f, 1.0f, 0.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::EventCamera;
+		preset.cameraId = 14; // バッターカメラ1のIDを設定
+		AddCameraPreset(preset);
+	}
+
+	{
+		CameraPreset preset;
+		preset.name = u8"バッターカメラ2";
+		preset.eye = { -8.0f, 1.0f, 1.5f };
+		preset.focus = { 0.0f, 1.0f, 0.0f };
+		preset.fov = DirectX::XMConvertToRadians(45.0f);
+		preset.enableTrackingZoom = false;
+		preset.type = CameraType::EventCamera;
+		preset.cameraId = 15; // バッターカメラ2のIDを設定
+		AddCameraPreset(preset);
+	}
 	//activeCameraIndex = 0;// 最初のカメラをアクティブにする
 }
 
@@ -294,15 +342,15 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 
 					if(randomIndex == 0)
 					{
-						activeCameraIndex = 6;//確信ホームランカメラ1
+						activeCameraIndex = GetCameraIndexById(6);//確信ホームランカメラ1
 					}
 					else if(randomIndex == 1)
 					{
-						activeCameraIndex = 8;//確信ホームランカメラ3
+						activeCameraIndex = GetCameraIndexById(8);//確信ホームランカメラ3
 					}
 					else
 					{
-						activeCameraIndex = 11;//確信ホームランカメラ6
+						activeCameraIndex = GetCameraIndexById(11);//確信ホームランカメラ6
 					}
 
 				}
@@ -313,15 +361,15 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 
 					if(randomIndex == 0)
 					{
-						activeCameraIndex = 6;//確信ホームランカメラ1
+						activeCameraIndex = GetCameraIndexById(6);//確信ホームランカメラ1
 					}
 					else if(randomIndex == 1)
 					{
-						activeCameraIndex = 7;//確信ホームランカメラ2
+						activeCameraIndex = GetCameraIndexById(7);//確信ホームランカメラ2
 					}
 					else
 					{
-						activeCameraIndex = 10;//確信ホームランカメラ5
+						activeCameraIndex = GetCameraIndexById(10);//確信ホームランカメラ5
 					}
 				}
 				else
@@ -331,11 +379,11 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 
 					if(randomIndex == 0)
 					{
-						activeCameraIndex = 6;//確信ホームランカメラ1
+						activeCameraIndex = GetCameraIndexById(6);//確信ホームランカメラ1
 					}
 					else
 					{
-						activeCameraIndex = 9;//確信ホームランカメラ4
+						activeCameraIndex = GetCameraIndexById(9);//確信ホームランカメラ4
 					}
 				}
 
@@ -367,11 +415,11 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 
 					if (randomIndex == 0)
 					{
-						activeCameraIndex = 1;//バックネットカメラ
+						activeCameraIndex = GetCameraIndexById(1);//バックネットカメラ
 					}
 					else
 					{
-						activeCameraIndex = 2;//1塁側カメラ
+						activeCameraIndex = GetCameraIndexById(2);//1塁側カメラ
 					}
 				}
 				else if (originalDirection >= 15.0f && originalDirection <= 45.0f)
@@ -381,11 +429,11 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 
 					if (randomIndex == 0)
 					{
-						activeCameraIndex = 1;//バックネットカメラ
+						activeCameraIndex = GetCameraIndexById(1);//バックネットカメラ
 					}
 					else
 					{
-						activeCameraIndex = 5;//3塁側カメラ
+						activeCameraIndex = GetCameraIndexById(5);//3塁側カメラ
 					}
 				}
 				else
@@ -395,11 +443,11 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 
 					if (randomIndex == 0)
 					{
-						activeCameraIndex = 1;//バックネットカメラ
+						activeCameraIndex = GetCameraIndexById(1);//バックネットカメラ
 					}
 					else
 					{
-						activeCameraIndex = 2;//1塁側カメラ
+						activeCameraIndex = GetCameraIndexById(2);//1塁側カメラ
 					}				
 				}
 			}
@@ -436,11 +484,11 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 
 						if(randomIndex == 0)
 						{
-							activeCameraIndex = 1;//バックネットカメラ
+							activeCameraIndex = GetCameraIndexById(1);//バックネットカメラ
 						}
 						else
 						{
-							activeCameraIndex = 2;//1塁側カメラ
+							activeCameraIndex = GetCameraIndexById(2);//1塁側カメラ
 						}
 					}
 					else if(originalDirection >=15.0f && originalDirection <=45.0f)
@@ -450,11 +498,11 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 
 						if(randomIndex == 0)
 						{
-							activeCameraIndex = 1;//バックネットカメラ
+							activeCameraIndex = GetCameraIndexById(1);//バックネットカメラ
 						}
 						else
 						{
-							activeCameraIndex = 5;//3塁側カメラ
+							activeCameraIndex = GetCameraIndexById(5);//3塁側カメラ
 						}
 					}
 					else
@@ -464,11 +512,11 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 
 						if(randomIndex == 0)
 						{
-							activeCameraIndex = 1;//バックネットカメラ
+							activeCameraIndex = GetCameraIndexById(1);//バックネットカメラ
 						}
 						else
 						{
-							activeCameraIndex = 2;//1塁側カメラ
+							activeCameraIndex = GetCameraIndexById(2);//1塁側カメラ
 						}
 						
 					}
@@ -513,13 +561,26 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 
 void BroadcastCamera::SyncToCamera(Camera& camera, float aspect, float nearZ, float farZ)
 {
+	if (cameraControllers.empty())
+	{
+		return;
+	}
+
+	// 範囲外アクセスを防止
+	activeCameraIndex = (std::max)(0, (std::min)(activeCameraIndex, static_cast<int>(cameraControllers.size()) - 1));
+
 	cameraControllers[activeCameraIndex].SyncControllerToCamera(camera);
 	camera.SetPerspectiveFov(cameraControllers[activeCameraIndex].GetCurrentFov(), aspect, nearZ, farZ);
 }
 
 bool BroadcastCamera::IsTrackingBall() const
 {
-	return cameraControllers[activeCameraIndex].IsTrackingBall();
+	//配列が空の時はfalseを返す
+	if(cameraControllers.empty()) return false;
+
+	int safeIndex = (std::max)(0, (std::min)(activeCameraIndex, static_cast<int>(cameraControllers.size()) - 1));
+
+	return cameraControllers[safeIndex].IsTrackingBall();
 }
 
 void BroadcastCamera::StopAllTracking()
@@ -543,6 +604,11 @@ std::string BroadcastCamera::GetPresetNameById(int cameraId) const
 		}
 	}
 	return ""; // 該当するカメラIDが見つからなかった場合は空文字を返す
+}
+
+void BroadcastCamera::StartEventCameraZoom(float targetFov, float duration)
+{
+	cameraControllers[activeCameraIndex].StartEventZoom(targetFov, duration);
 }
 
 void BroadcastCamera::DrawGUI()

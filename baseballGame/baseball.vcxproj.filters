@@ -244,6 +244,9 @@
     <ClCompile Include="Sources\Game\ShopManager.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Scene\GameIntroSequence.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -515,6 +518,9 @@
     </ClInclude>
     <ClInclude Include="Sources\UI\ScreenScaler.h">
       <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Scene\GameIntroSequence.h">
+      <Filter>Sources\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

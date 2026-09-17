@@ -105,6 +105,25 @@ void CameraController::StopTrackingBall()
 // 更新処理
 void CameraController::Update(float elapsedTime)
 {
+	//イベントカメラのズーム処理
+	if(eventCameraZoomActive)
+	{
+		eventCameraZoomTime += elapsedTime;
+
+		float progress = (std::min)(1.0f, eventCameraZoomTime / eventCameraZoomDuration);
+		float t = Smoothstep(progress);
+
+		currentFov = Lerp3({ eventCameraStartFov, 0.0f, 0.0f }, { eventCameraTargetFov, 0.0f, 0.0f }, t).x;
+
+		if(eventCameraZoomTime >= eventCameraZoomDuration)
+		{
+			eventCameraZoomActive = false;
+			currentFov = eventCameraTargetFov;
+		}
+		
+	}
+
+
 	//追跡状態のカメラ
 	if (trackingState != TrackState::None && trackedBall)
 	{
@@ -193,6 +212,16 @@ void CameraController::TriggerImpactZoom(float impactFov, float duration)
 	impactZoomDuration = duration;
 	impactZoomActive = true;
 
+	lockFocusY = false; // Y固定モードを解除
+}
+
+void CameraController::StartEventZoom(float impactFov, float duration)
+{
+	eventCameraTargetFov = impactFov;
+	eventCameraStartFov = currentFov;
+	eventCameraZoomDuration = duration;
+	eventCameraZoomActive = true;
+	eventCameraZoomTime = 0.0f;
 	lockFocusY = false; // Y固定モードを解除
 }
 

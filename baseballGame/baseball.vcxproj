@@ -324,6 +324,7 @@
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="Sources\Scene\batterSelectScene.cpp" />
+    <ClCompile Include="Sources\Scene\GameIntroSequence.cpp" />
     <ClCompile Include="Sources\Scene\sceneManager.cpp" />
     <ClCompile Include="Sources\Scene\scene_game.cpp">
       <DeploymentContent>false</DeploymentContent>
@@ -495,6 +496,7 @@
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Sources\Scene\batterSelectScene.h" />
+    <ClInclude Include="Sources\Scene\GameIntroSequence.h" />
     <ClInclude Include="Sources\Scene\scene.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

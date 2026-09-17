@@ -64,6 +64,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\SkyRenderer.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\sprite.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\sprite.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\sprite_batch.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\sprite_batch.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\batterSelectScene.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\batterSelectScene.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\GameIntroSequence.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\GameIntroSequence.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\sceneManager.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\sceneManager.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\scene_game.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_loading.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\scene_loading.obj

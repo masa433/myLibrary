@@ -344,6 +344,7 @@ void scene_game::initialize()
 
 void scene_game::update(float elapsed_time)
 {
+    
     // Ctrl + S で設定保存
     ImGuiIO& io = ImGui::GetIO();
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S))
@@ -407,6 +408,8 @@ void scene_game::update(float elapsed_time)
             enableShadows = true;
         }*/
     }
+
+   
 
     ballSprite::Instance().Update(elapsed_time);
 
@@ -483,6 +486,12 @@ void scene_game::update(float elapsed_time)
         directional_light_color,
         directional_light_intensity
     );
+
+    if (!gameIntroSequence.IsPlaying())
+    {
+        gameIntroSequence.UpdateIntro(elapsed_time, broadcastCamera);
+        return; // 通常のゲームロジックは走らせない
+    }
 }
 
 

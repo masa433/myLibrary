@@ -133,9 +133,21 @@ public:
 
 	//ホームラン着弾時の球ズーム演出
 	void TriggerImpactZoom(float impactFov = DirectX::XMConvertToRadians(5.0f), float duration = 5.0f);
+
+	//ボールに依存しないカメラ演出用のズーム演出
+	// impactFov : ズーム後の画角（ラジアン）
+	// duration  : ズーム演出の持続時間（秒）
+	void StartEventZoom(float impactFov, float duration);
+	
 	
 private:
 	bool impactZoomActive = false;
 	float impactZoomFov = 0.0f;
 	float impactZoomDuration = 5.0f;
+
+	bool eventCameraZoomActive = false;
+	float eventCameraTargetFov = 0.0f;
+	float eventCameraStartFov = 0.0f;
+	float eventCameraZoomDuration = 10.0f;
+	float eventCameraZoomTime = 0.0f;
 };

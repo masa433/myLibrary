@@ -55,6 +55,9 @@ public:
 	bool IsTrackingBall() const;
 	void StopAllTracking();
 
+	//イベントカメラのfovを時間で狭める関数
+	void StartEventCameraZoom(float targetFov, float duration);
+
 	std::string GetActiveCameraName() const
 	{
 		if(cameraPresets.empty() || activeCameraIndex < 0 || activeCameraIndex >= static_cast<int>(cameraPresets.size()))
@@ -64,7 +67,13 @@ public:
 		return cameraPresets[activeCameraIndex].name;
 	}
 	int GetActiveIndex() const { return activeCameraIndex; }
-	void SetActiveIndex(int i) { activeCameraIndex = i; }
+
+	void SetActiveIndex(int i)
+	{
+		if (cameraPresets.empty()) { activeCameraIndex = 0; return; }
+		activeCameraIndex = (std::max)(0, (std::min)(i, static_cast<int>(cameraPresets.size()) - 1));
+	}
+
 	std::vector<CameraPreset>& Presets() { return cameraPresets; }
 	
 	CameraType GetActiveCameraType() const
@@ -74,6 +83,25 @@ public:
 			return CameraType::NormalCamera; // デフォルトのカメラタイプを返す
 		}
 		return cameraPresets[activeCameraIndex].type;
+	}
+
+	int GetCameraIndexById(int cameraId) const
+	{
+		for (size_t i = 0; i < cameraPresets.size(); ++i)
+		{
+			if (cameraPresets[i].cameraId == cameraId)
+			{
+				return static_cast<int>(i);
+			}
+		}
+		return activeCameraIndex; // 見つからなかったらデフォルトのカメラを返す
+	}
+
+	void ResetCameraToPreset(int index)
+	{
+		if (index < 0 || index >= static_cast<int>(cameraPresets.size()))
+			return; // インデックスが範囲外の場合は何もしない
+		ApplyPresetToController(cameraPresets[index], cameraControllers[index]);
 	}
 
 	std::string GetPresetNameById(int cameraId) const;
@@ -87,8 +115,8 @@ public:
 	float zoomStartTime = 0.2f; // ズーム開始までの時間（秒）
 private:
 	//カメラ配列
-	std::vector<CameraPreset> cameraPresets;
-	std::vector<CameraController> cameraControllers;
+	std::vector<CameraPreset> cameraPresets;//カメラプリセットの配列
+	std::vector<CameraController> cameraControllers;//カメラコントローラーの配列
 	int activeCameraIndex = 0;
 
 

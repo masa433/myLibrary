@@ -1974,8 +1974,8 @@ void Pitcher::ApplyAIBezierTarget()
 		{
 			// ゾーン外4方向のどれかへ外す
 			const float missAmount = GenerateRandomFloat(
-				(std::max)(0.02f, aiNearBallMargin * 0.5f),
-				(std::max)(0.04f, aiNearBallMargin));
+				(std::max)(0.01f, aiNearBallMargin * 0.5f),
+				(std::max)(0.02f, aiNearBallMargin));
 
 			const float randomOffset = GenerateRandomFloat(-0.1f, 0.1f);
 

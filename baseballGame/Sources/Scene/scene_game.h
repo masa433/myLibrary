@@ -18,6 +18,7 @@
 #include "BloomRenderer.h"
 #include "BallNet.h"
 #include "json.hpp"
+#include "GameIntroSequence.h"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
 CONST LONG SCREEN_HEIGHT{ 1080 };
@@ -212,4 +213,8 @@ private:
     float trackingTime = 0.0f;
 	bool showGUI = true;
     bool showResult = false;
+
+private:
+	GameIntroSequence gameIntroSequence;
+    
 };
