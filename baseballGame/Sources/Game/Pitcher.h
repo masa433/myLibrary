@@ -17,6 +17,7 @@
 #include "Effect.h"
 #include "../Sources/Audio/Audio.h"
 #include "../Sources/Audio/AudioSource.h"
+#include "GameIntroSequence.h"
 
 using json = nlohmann::json;
 
@@ -58,6 +59,8 @@ public:
 	void SetBallSpeedKmh(float speed) { ballSpeedKmh = speed; }
 
 	void ResetPitchFlags(); // pitchFlagsをリセットする関数
+
+	void SetIntroSequence(const GameIntroSequence* sequence) { intro = sequence; }
 
 	bool IsBezierTargetCenter(float threshold = 0.1f) const
 	{
@@ -619,6 +622,8 @@ private:
 
 	//風の影響を受けるかどうか
 	bool windEffectEnabled = true;
+
+	const GameIntroSequence* intro = nullptr; // ゲームイントロシーケンスへのポインタ
 
 public:
 

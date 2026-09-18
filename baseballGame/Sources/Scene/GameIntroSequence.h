@@ -25,5 +25,5 @@ private:
 	GameIntroState introState = GameIntroState::ShowingPitcher;
 	float introTimer = 0.0f;// イントロのタイマー
 	bool introStarted = false;
-	const float introDuration = 10.0f; // イントロの表示時間(カメラのズーム終了までにかかる時間)
+	float introDuration = 10.0f; // イントロの表示時間(カメラのズーム終了までにかかる時間)
 };

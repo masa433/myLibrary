@@ -7,12 +7,15 @@
 #include "RenderContext.h"
 #include "json.hpp"
 #include "FontRenderer.h"
+#include "GameIntroSequence.h"
 
 using json = nlohmann::json;
 
 class ballCount
 {
 public:
+
+	
 	static ballCount& Instance()
 	{
 		static ballCount instance;
@@ -32,9 +35,17 @@ public:
 	void SetInitialBalls(int balls) { initialBalls = balls; remainingBalls = balls; }
 	int GetInitialBalls() const { return initialBalls; }
 
+	void SetIntroSequence(const GameIntroSequence* introSeq) { intro = introSeq; }
+
 	//球数を減らす関数
 	void DecreaseRemainingBalls(int amount)
 	{
+		
+		if(intro && intro->GetIntroState() != GameIntroSequence::GameIntroState::Playing)
+		{
+			return; // イントロ中は球数を減らさない
+		}
+
 		if (hasCountedHit) return;
 
 
@@ -85,4 +96,6 @@ private:
 	int remainingBalls = 10;
 	bool hasCountedHit = false; //ヒット判定済みかどうか
 
+
+	const GameIntroSequence* intro = nullptr; //イントロシーケンスへのポインタ
 };

@@ -537,9 +537,12 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	currentPitcher->render_batched(rc.deviceContext, transform, animated_nodes);
 	Ball::Instance().Render(rc, renderer, isBallThrown, !isShadowPass);
 
-	Wind::Instance().Render(rc);
+	if(intro->IsPlaying())
+	{
+		Wind::Instance().Render(rc);
 
-	ballCount::Instance().Render();
+		ballCount::Instance().Render();
+	}
 	
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -547,7 +550,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
-	if (currentState == State::SelectingPitch)
+	if (currentState == State::SelectingPitch && intro->IsPlaying())
 	{
 
 		if (infoBackData && infoBackSprite)
@@ -590,7 +593,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	}
 
 	//選択されているピッチャーの番号のアイコンを描画
-	if (currentState == State::SelectingPitch)
+	if (currentState == State::SelectingPitch && intro->IsPlaying())
 	{
 		// RealPitcher::None でない場合のみ描画
 		if (selectedRealPitcher != RealPitcher::None)
@@ -1409,10 +1412,13 @@ void Pitcher::SelectPitchTypeByAI()
 	ApplyAIBezierTarget();
 
 	// 配球履歴を更新（直近 kPitchHistorySize 球分だけ保持）
-	pitchHistory.push_back(selectedPitchType);
-	if (static_cast<int>(pitchHistory.size()) > PITCH_HISTORY_SIZE)
+	if (intro && intro->GetIntroState() == GameIntroSequence::GameIntroState::Playing)
 	{
-		pitchHistory.pop_front();
+		pitchHistory.push_back(selectedPitchType);
+		if (static_cast<int>(pitchHistory.size()) > PITCH_HISTORY_SIZE)
+		{
+			pitchHistory.pop_front();
+		}
 	}
 
 	const float side = IsRightPitcher() ? 1.0f : -1.0f;
@@ -1430,6 +1436,12 @@ void Pitcher::SelectPitchTypeByAI()
 
 Pitcher::PitchType Pitcher::ChooseAIPitchType() const
 {
+
+	if(intro && intro->GetIntroState() != GameIntroSequence::GameIntroState::Playing)
+	{
+		return PitchType::Fastball; //イントロ中はストレート固定
+	}
+
 	//実在投手プリセットが選択されていたら、実測の投球割合をそのまま反映
 	if (!realPitcherArsenal.empty())
 	{

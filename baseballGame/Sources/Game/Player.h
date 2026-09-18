@@ -12,12 +12,13 @@
 #include "sprite.h"
 #include "..\Sources\Audio\AudioSource.h"
 #include "..\Sources\Audio\Audio.h"
+#include "GameIntroSequence.h"
 
 using json = nlohmann::json;
 
 class Player : public GameObject
 {
-	//インスタンス
+	
 public:
     static Player& Instance()
     {
@@ -39,6 +40,8 @@ public:
 
     void SaveToJson(json& j);
     void LoadFromJson(const json& j);
+
+	void SetIntroSequence(const GameIntroSequence* introSeq) { intro = introSeq; }
 
 private:
     // キー入力処理
@@ -70,7 +73,7 @@ public:
         BattingIdle,
         BeforeSwing,
         Swinging,
-        Idle,
+        StepIn,
         Count
     };
 
@@ -79,6 +82,7 @@ public:
         BattingIdle,
         BeforeSwing,
         Swing,
+        StepIn,
     };
 
     void ChangeState(State newState);
@@ -147,6 +151,8 @@ private:
 
 	int swingCount = 0; // スイング回数のカウント
 
+	bool isStepIn = false; // ステップイン中かどうかのフラグ
+	bool isPlayedStepInAnimation = false; // ステップインアニメーションが再生されたかどうかのフラグ
 	
 	void IncreaseSwingCount() { swingCount++; } // スイング回数をインクリメントするメソッド
 
@@ -404,4 +410,6 @@ public:
 
 private:
 	AudioSource* swingSound = nullptr;
+
+	const GameIntroSequence* intro = nullptr;
 };

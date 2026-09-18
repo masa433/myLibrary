@@ -50,6 +50,7 @@ void Player::Initialize()
     animation_indices[static_cast<int>(State::BattingIdle)] = 0;      // Idleアニメーション
     animation_indices[static_cast<int>(State::BeforeSwing)] = 1; // BattingIdleアニメーション
     animation_indices[static_cast<int>(State::Swinging)] = 2;   // Swingingアニメーション
+	animation_indices[static_cast<int>(State::StepIn)] = 3;     // StepInアニメーション
 
 
     // 初期ステート設定
@@ -187,6 +188,8 @@ void Player::Initialize()
     }
 
 	swingSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Swing.wav");
+
+	isPlayedStepInAnimation = false;
 
 	SelectRealBatter(selectedRealBatter);
 	UpdateBatterModel();
@@ -384,6 +387,15 @@ void Player::Update(float elapsedTime)
 
     }
 
+    if (intro && intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingBatter)
+    {
+        position = isRightBatter ? DirectX::XMFLOAT3(-1.35f, 0.01f, -0.6f) : DirectX::XMFLOAT3(1.35f, 0.01f, -0.6f);
+    }
+    else if (intro && intro->GetIntroState() == GameIntroSequence::GameIntroState::Playing && current_state != State::StepIn)
+    {
+        position = isRightBatter ? DirectX::XMFLOAT3(-1.0f, 0.01f, -0.4f) : DirectX::XMFLOAT3(1.0f, 0.01f, -0.4f);
+    }
+
     // キー入力による移動処理
     HandleInput(elapsedTime);
 
@@ -405,13 +417,15 @@ void Player::Update(float elapsedTime)
     {
         showSwingTimingSprite = true;
     }
+
+    
 }
 
 // キー入力処理
 void Player::HandleInput(float elapsedTime)
 {
     //if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)) return;
-	if (ballCount::Instance().GetRemainingBalls() <= 0) return;
+	if (ballCount::Instance().GetRemainingBalls() <= 0 || (intro && intro->GetIntroState() != GameIntroSequence::GameIntroState::Playing)) return;
 
     float ballZ = Ball::Instance().GetWorldPosition().z;
 
@@ -698,6 +712,8 @@ void Player::DrawGUI()
 		}
     }
 
+	ImGui::Text("currentState: %s", (current_state == State::BattingIdle) ? "BattingIdle" : (current_state == State::BeforeSwing) ? "BeforeSwing" : (current_state == State::Swinging) ? "Swinging" : (current_state == State::StepIn) ? "StepIn" : "Unknown");
+
 #endif
 }
 
@@ -783,11 +799,58 @@ void Player::AttachBatToHand()
         }
     }
 }
+
 // ステートマシン更新
 void Player::UpdateAnimation(float elapsedTime)
 {
     if (animation_playing && currentBatter&& !currentBatter->animations.empty())
     {
+		//バッターを映している時はStepInアニメーションを再生する
+        if(intro && intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingBatter && !isPlayedStepInAnimation)
+        {
+            // 最初のフレームならアニメーションインデックスを設定
+            if (!isStepIn && !isPlayedStepInAnimation)
+            {
+                current_animation_index = animation_indices[static_cast<int>(State::StepIn)];
+				current_state = State::StepIn;
+				animation_time = 0.0f; // アニメーション時間をリセット
+				isStepIn = true;
+                isPlayedStepInAnimation = true; // ステップインアニメーション再生済みフラグを設定
+            }
+
+            if(isStepIn)
+            {
+                animation_time += elapsedTime;
+                currentBatter->animate(current_animation_index, animation_time, animated_nodes);
+
+                // 再生が終了したら BattingIdle へ遷移
+                if (animation_time >= currentBatter->animations[current_animation_index].duration)
+                {
+                    ChangeState(State::BattingIdle);
+					current_state = State::BattingIdle;
+                    animation_time = 0.0f; // アニメーション時間をリセット
+                    isStepIn = false; // StepInフラグをリセット	
+                    
+                }
+            }
+           
+            return;
+		}
+
+		//introが終了していたら、ステートをBattingIdleに戻す
+        if(intro && intro->GetIntroState() == GameIntroSequence::GameIntroState::Playing && isPlayedStepInAnimation)
+        {
+            ChangeState(State::BattingIdle);
+            current_state = State::BattingIdle;
+            animation_time = 0.0f; // アニメーション時間をリセット
+            isPlayedStepInAnimation = false; // ステップインアニメーション再生済みフラグをリセット
+		}
+
+        if (isStepIn)
+        {
+			isStepIn = false; // StepInフラグをリセット
+        }
+
         //アニメーションの開始位置をどれくらい進めるか（秒単位で指定）
         // 例：最初の0.1秒をカットして、0.1秒の時点から再生を始める場合
         const float START_OFFSET = 0.05f;

@@ -52,6 +52,11 @@ void scene_game::initialize()
 	Combo::Instance().SetConsoleLog(&consoleLog);
 	SpecialAbility::Instance().SetConsoleLog(&consoleLog);
 
+
+	ballCount::Instance().SetIntroSequence(&gameIntroSequence);
+	Pitcher::Instance().SetIntroSequence(&gameIntroSequence);
+	Player::Instance().SetIntroSequence(&gameIntroSequence);
+
     // カメラ設定をここに移動
     float screenWidth = Graphics::Instance().GetScreenWidth();
     float screenHeight = Graphics::Instance().GetScreenHeight();
@@ -419,10 +424,18 @@ void scene_game::update(float elapsed_time)
     stage::Instance().update(elapsed_time);
 
     // プレイヤーの更新
-    Player::Instance().Update(elapsed_time);
+    if (gameIntroSequence.GetIntroState() == GameIntroSequence::GameIntroState::Playing ||
+        gameIntroSequence.GetIntroState() == GameIntroSequence::GameIntroState::ShowingBatter)
+    {
+        Player::Instance().Update(elapsed_time);
+    }
 
     // ピッチャーの更新
-    Pitcher::Instance().Update(elapsed_time);
+    if(gameIntroSequence.GetIntroState() == GameIntroSequence::GameIntroState::Playing ||
+        gameIntroSequence.GetIntroState() == GameIntroSequence::GameIntroState::ShowingPitcher)
+    {
+        Pitcher::Instance().Update(elapsed_time);
+    }
    
     // 物理システムの更新
     Physics::Instance().Update(elapsed_time);
@@ -745,23 +758,24 @@ void scene_game::render(float elapsedTime)
 
     EffectManager::Instance().Render(camera.GetView(), camera.GetProjection());
    
-    BatSprite::Instance().Render();
+	if (gameIntroSequence.IsPlaying())
+    {
+        BatSprite::Instance().Render();
 
-    ballSprite::Instance().Render();
+        ballSprite::Instance().Render();
 
-    //GameTimer::Instance().Render();
+        HomeRunCount::Instance().Render();
 
-    HomeRunCount::Instance().Render();
+        FoulSprite::Instance().Render();
 
-    FoulSprite::Instance().Render();
+        BallDistance::Instance().Render();
 
-	BallDistance::Instance().Render();
+        Money::Instance().Render();
 
-	Money::Instance().Render();
+        RoundManager::Instance().Render();
 
-	RoundManager::Instance().Render();
-
-	SpecialAbility::Instance().Render();
+        SpecialAbility::Instance().Render();
+    }
 
     // ShapeRenderer の描画実行
 
