@@ -336,6 +336,8 @@ void scene_game::initialize()
 
     bloomRenderer.Initialize(device, scene_shader_resource_view.Get(), Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight());
 
+	gameIntroSequence.Initialize(device);
+
     //ドローコール表示用
     D3D11_QUERY_DESC query_desc{};
     query_desc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
@@ -777,6 +779,8 @@ void scene_game::render(float elapsedTime)
         SpecialAbility::Instance().Render();
     }
 
+    gameIntroSequence.Render();
+
     // ShapeRenderer の描画実行
 
     if (showPhysxDebug)
@@ -852,6 +856,7 @@ void scene_game::uninitialize()
     skyRenderer.Uninitialize();
 	shadowRenderer.Uninitialize();
 	bloomRenderer.Uninitialize();
+	gameIntroSequence.Uninitialize();
 
     // 最後に物理システムなどを終了
     Physics::Instance().Finalize();
