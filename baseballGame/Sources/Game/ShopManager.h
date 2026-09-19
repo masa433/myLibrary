@@ -270,7 +270,7 @@ public:
 			int itemIndex = currentShopItemIndices[i];
 			if (shopItems[itemIndex].id != ShopItemID::Reroll) // リロールボタンは除外
 			{
-				shopItems[itemIndex].price /= 2; // 価格を半額にする
+				shopItems[itemIndex].price = shopItems[itemIndex].originalPrice / 2; // 価格を半額にする
 				isHalfPriceApplied = true; // 半額適用フラグを設定
 			}
 		}
@@ -293,19 +293,19 @@ public:
 	//無料中もしくは半額中にどれか一つでも購入したら、すべての商品の無料状態を解除する関数
 	void RemoveFreeOrHalfPrice()
 	{
-		for (int i = 0; i < SHOP_ITEM_DISPLAY_COUNT; ++i)
+		for (auto& item : shopItems)
 		{
-			int itemIndex = currentShopItemIndices[i];
-			if (shopItems[itemIndex].id != ShopItemID::Reroll) // リロールボタンは除外
+			if (item.id != ShopItemID::Reroll) // リロールボタンは除外
 			{
-				if (shopItems[itemIndex].price == 0 || shopItems[itemIndex].price == shopItems[itemIndex].originalPrice / 2) // 無料状態または半額状態のアイテムがある場合
+				if (item.price == 0 || item.price == item.originalPrice / 2) // 無料状態または半額状態のアイテムがある場合
 				{
-					shopItems[itemIndex].price = shopItems[itemIndex].originalPrice; // 元の価格に戻す
-					isHalfPriceApplied = false; // 半額適用フラグをリセット
-					isFreePriceApplied = false; // 無料適用フラグをリセット
+					item.price = item.originalPrice; // 元の価格に戻す
+					
 				}
 			}
 		}
+		isHalfPriceApplied = false; // 半額適用フラグをリセット
+		isFreePriceApplied = false; // 無料適用フラグをリセット
 	}
 
 	//マウス座標が次へボタンの範囲内にあるかどうかを判定する関数
