@@ -1,2 +1,137 @@
-﻿  GameIntroSequence.cpp
+﻿  BroadcastCamera.cpp
+  camera_controller.cpp
+  GameTimer.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\GameTimer.cpp(60,21): warning C4244: '-=': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\GameTimer.cpp(61,47): warning C4244: '=': 'float' から 'int' への変換です。データが失われる可能性があります。
+  HomeRunCount.cpp
+  Money.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(439,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Money.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(440,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Money.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Money.cpp(534,23): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Money.cpp(539,18): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  Pitcher.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+  Player.cpp
+  Result.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Result.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Result.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Result.cpp(42,12): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Result.cpp(42,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+  RoundManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(439,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/RoundManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(440,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/RoundManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(259,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(259,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(281,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(281,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  ShopManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(439,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(440,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(71,42): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(564,100): warning C4244: '引数': 'const int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(680,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(680,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(827,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(827,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(952,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(952,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  SpecialAbility.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(420,25): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(421,27): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
+  SubMission.cpp
+  TrackingData.cpp
+  Wind.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(439,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Wind.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(440,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Game/Wind.cpp' をコンパイルしています)
+  
+  ballCount.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballCount.cpp(43,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballCount.cpp(42,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+  ballDistance.cpp
+  ballSprite.cpp
+  batSprite.cpp
+  catcher.cpp
+  physxManager.cpp
+  コードを生成中...
+  コンパイル中...
+  ShadowRenderer.cpp
+  GameIntroSequence.cpp
+  batterSelectScene.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\batterSelectScene.cpp(28,24): warning C4267: '=': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+  scene_game.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/scene_game.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(337,147): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(337,107): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(573,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+  scene_title.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(109,144): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(109,104): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  framework.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
+  
+  main.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/System/main.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/System/main.cpp' をコンパイルしています)
+  
+  ButtonManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/UI/ButtonManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'Sources/UI/ButtonManager.cpp' をコンパイルしています)
+  
+  ScrollView.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\UI\ScrollView.cpp(528,13): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  コードを生成中...
+  ライブラリを検索しています。
+      C:\Program Files (x86)\Windows Kits\10\lib\10.0.26100.0\um\x64\d3d11.lib を検索中:
+  ライブラリの検索が終了しました。
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

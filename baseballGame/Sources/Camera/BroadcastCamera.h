@@ -58,6 +58,9 @@ public:
 	//イベントカメラのfovを時間で狭める関数
 	void StartEventCameraZoom(float targetFov, float duration);
 
+	//イベントカメラのfocusのY座標を時間で変化させる関数
+	void StartEventCameraFocusYShift(float targetFocusY, float duration);
+
 	std::string GetActiveCameraName() const
 	{
 		if(cameraPresets.empty() || activeCameraIndex < 0 || activeCameraIndex >= static_cast<int>(cameraPresets.size()))
@@ -103,6 +106,8 @@ public:
 			return; // インデックスが範囲外の場合は何もしない
 		ApplyPresetToController(cameraPresets[index], cameraControllers[index]);
 	}
+
+	
 
 	std::string GetPresetNameById(int cameraId) const;
 

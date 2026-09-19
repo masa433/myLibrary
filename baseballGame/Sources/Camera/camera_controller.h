@@ -138,8 +138,9 @@ public:
 	// impactFov : ズーム後の画角（ラジアン）
 	// duration  : ズーム演出の持続時間（秒）
 	void StartEventZoom(float impactFov, float duration);
-	
-	
+
+	void StartEventFucusYShift(float targetFocusY, float duration);
+
 private:
 	bool impactZoomActive = false;
 	float impactZoomFov = 0.0f;
@@ -150,4 +151,10 @@ private:
 	float eventCameraStartFov = 0.0f;
 	float eventCameraZoomDuration = 10.0f;
 	float eventCameraZoomTime = 0.0f;
+
+	bool eventFocusYShiftActive = false;
+	float eventFocusYShiftTarget = 0.0f;
+	float eventFocusYShiftStart = 0.0f;
+	float eventFocusYShiftDuration = 0.0f;
+	float eventFocusYShiftTime = 0.0f;
 };

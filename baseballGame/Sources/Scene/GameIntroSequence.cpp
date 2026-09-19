@@ -129,6 +129,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
         broadcastCamera.SetActiveIndex(index);
         broadcastCamera.ResetCameraToPreset(index);
         broadcastCamera.StartEventCameraZoom(DirectX::XMConvertToRadians(30.0f), introDuration);
+		broadcastCamera.StartEventCameraFocusYShift(0.0f, introDuration);
     }
 
     if (introTimer >= introDuration)
