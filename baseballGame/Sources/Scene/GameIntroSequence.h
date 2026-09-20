@@ -24,6 +24,8 @@ public:
 
 	enum class GameIntroState
 	{
+		ShowingStand,
+		ShowingGround,
 		ShowingPitcher,
 		ShowingBatter,
 		Playing,
@@ -34,14 +36,19 @@ public:
 	void UpdateIntro(float elapsedTime,BroadcastCamera& broadcastCamera);// イントロの更新処理
 	void Render();
 
+	// 水平方向に塗りつぶす描画関数
 	void DrawFillHorizontal(sprite* spr, IntroData* data, ID3D11DeviceContext* context,
 		DirectX::XMFLOAT2& pos,DirectX::XMFLOAT2& size, float amount);
+
+	// 中心から水平方向に塗りつぶす描画関数
+	void DrawFillHorizontalFromCenter(sprite* spr, IntroData* data, ID3D11DeviceContext* context,
+		DirectX::XMFLOAT2& pos, DirectX::XMFLOAT2& size, float amount);
 
 	GameIntroState GetIntroState() const { return introState; }
 	bool IsPlaying() const { return introState == GameIntroState::Playing; }
 
 private:
-	GameIntroState introState = GameIntroState::ShowingPitcher;
+	GameIntroState introState = GameIntroState::ShowingGround;
 	float introTimer = 0.0f;// イントロのタイマー
 	bool introStarted = false;
 	float introDuration = 10.0f; // イントロの表示時間(カメラのズーム終了までにかかる時間)
@@ -52,6 +59,9 @@ private:
 
 	float amountTimer = 0.0f; // 進行度のタイマー
 	float amountDuration = 1.0f; // 進行度が1.0になるまでの時間
+
+	float showNameBoardTimer = 0.0f; // スタジアム名ボードの表示タイマー
+	float maxShowNameBoardTime = 9.0f; // スタジアム名ボードの最大表示時間
 
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
 
@@ -67,6 +77,12 @@ private:
 
 	DirectX::XMFLOAT2 batterIntroPosition = { 960.0f, 900.0f };
 	DirectX::XMFLOAT2 batterIntroSize = { 1200.0f, 150.0f };
+
+	std::unique_ptr<IntroData> stadiumNameBoardData;
+	std::unique_ptr<sprite> stadiumNameBoardSprite;
+
+	DirectX::XMFLOAT2 stadiumNameBoardPosition = { 960.0f, 900.0f };
+	DirectX::XMFLOAT2 stadiumNameBoardSize = { 1200.0f, 100.0f };
 
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;

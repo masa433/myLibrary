@@ -137,6 +137,19 @@ void CameraController::Update(float elapsedTime)
 		
 	}
 
+	if(eventFocusZShiftActive)
+	{
+		eventFocusZShiftTime += elapsedTime;
+		float progress = (std::min)(1.0f, eventFocusZShiftTime / eventFocusZShiftDuration);
+		float t = Smoothstep(progress);
+		focus.z = Lerp3({ eventFocusZShiftStart, 0.0f, 0.0f }, { eventFocusZShiftTarget, 0.0f, 0.0f }, t).x;
+		if(eventFocusZShiftTime >= eventFocusZShiftDuration)
+		{
+			eventFocusZShiftActive = false;
+			focus.z = eventFocusZShiftTarget;
+		}
+		
+	}
 
 	//追跡状態のカメラ
 	if (trackingState != TrackState::None && trackedBall)
@@ -246,6 +259,16 @@ void CameraController::StartEventFucusYShift(float targetY, float duration)
 	eventFocusYShiftDuration = duration;
 	eventFocusYShiftActive = true;
 	eventFocusYShiftTime = 0.0f;
+	lockFocusY = false; // Y固定モードを解除
+}
+
+void CameraController::StartEventFocusZShift(float targetZ, float duration)
+{
+	eventFocusZShiftTarget = targetZ;
+	eventFocusZShiftStart = focus.z;
+	eventFocusZShiftDuration = duration;
+	eventFocusZShiftActive = true;
+	eventFocusZShiftTime = 0.0f;
 	lockFocusY = false; // Y固定モードを解除
 }
 

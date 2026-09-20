@@ -426,15 +426,13 @@ void scene_game::update(float elapsed_time)
     stage::Instance().update(elapsed_time);
 
     // プレイヤーの更新
-    if (gameIntroSequence.GetIntroState() == GameIntroSequence::GameIntroState::Playing ||
-        gameIntroSequence.GetIntroState() == GameIntroSequence::GameIntroState::ShowingBatter)
+    if (gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingPitcher )
     {
         Player::Instance().Update(elapsed_time);
     }
 
     // ピッチャーの更新
-    if(gameIntroSequence.GetIntroState() == GameIntroSequence::GameIntroState::Playing ||
-        gameIntroSequence.GetIntroState() == GameIntroSequence::GameIntroState::ShowingPitcher)
+    if(gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingBatter )
     {
         Pitcher::Instance().Update(elapsed_time);
     }

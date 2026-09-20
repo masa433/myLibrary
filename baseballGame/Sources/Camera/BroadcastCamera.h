@@ -61,6 +61,8 @@ public:
 	//イベントカメラのfocusのY座標を時間で変化させる関数
 	void StartEventCameraFocusYShift(float targetFocusY, float duration);
 
+	void StartEventCameraFocusZShift(float targetFocusZ, float duration);
+
 	std::string GetActiveCameraName() const
 	{
 		if(cameraPresets.empty() || activeCameraIndex < 0 || activeCameraIndex >= static_cast<int>(cameraPresets.size()))

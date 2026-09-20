@@ -212,140 +212,118 @@ void Pitcher::Update(float elapsedTime)
 
 	foulSound->Update();
 
-	//// **バックスペースキーで強制的に投球開始**
-	//if (GetAsyncKeyState(VK_LSHIFT) & 0x8000)
-	//{
-	//	if (currentState == State::SelectingPitch)
-	//	{
-	//		currentState = State::Throwing;
-	//		stateTime = 0.0f;
-	//		SelectPitchTypeByAI(); // 球種選択
-	//		ResetPitchFlags(); // pitchFlagsをリセット
-	//		Player::Instance().SetShowSwingTimingSprite(false);
-	//		Ball::Instance().SetHasCollidedWithBat(false);
-	//		OutputDebugStringA("Forced Throw: Backspace pressed\n");
-
-	//		if(consoleLog)
-	//		{
-	//			char debugMessage[256];
-	//			snprintf(debugMessage, sizeof(debugMessage), "[Info] Forced Throw: Backspace pressed\n");
-	//			consoleLog->push_back(debugMessage);
-	//		}
-	//		isBallThrown = false;
-	//		ballSprite::Instance().SetShowBallBoard(false); // ボールボードを非表示にする
-	//		ballSprite::Instance().SetStopBallOnHit(false); // ボールがヒットしたら止まるフラグをリセット
-	//	}
-	//}
-
 	// 状態に応じた処理
-	switch (currentState)
+	if (intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingGround && intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingStand)
 	{
-	case State::SelectingPitch:
-		stateTime += elapsedTime;
-		Player::Instance().SetShowSwingTimingSprite(false);
-		Ball::Instance().SetHasCollidedWithBat(false);
-		ResetPitchFlags(); // pitchFlagsをリセット
-		isBallThrown = false;
-		TrackingData::Instance().Reset(); // トラッキングデータをリセット
-		if (stateTime > 2.0f) // 2秒後に投球開始
+		switch (currentState)
 		{
-			currentState = State::Throwing;
-			stateTime = 0.0f;
-			hasReachedZero = false;
-			throwCounter = 0.0f;		
-			
-			
-			if (consoleLog)
+		case State::SelectingPitch:
+			stateTime += elapsedTime;
+			Player::Instance().SetShowSwingTimingSprite(false);
+			Ball::Instance().SetHasCollidedWithBat(false);
+			ResetPitchFlags(); // pitchFlagsをリセット
+			isBallThrown = false;
+			TrackingData::Instance().Reset(); // トラッキングデータをリセット
+			if (stateTime > 2.0f) // 2秒後に投球開始
 			{
-				consoleLog->push_back(u8"[Info] リセットしました\n");
+				currentState = State::Throwing;
+				stateTime = 0.0f;
+				hasReachedZero = false;
+				throwCounter = 0.0f;
+
+
+				if (consoleLog)
+				{
+					consoleLog->push_back(u8"[Info] リセットしました\n");
+				}
+				SelectPitchTypeByAI(); // 球種選択		
+				OutputDebugStringA("Judgment reset\n");
+				if (consoleLog)
+				{
+					char debugMessage[256];
+					snprintf(debugMessage, sizeof(debugMessage), "[Info] Judgment reset\n");
+					consoleLog->push_back(debugMessage);
+				}
 			}
-			SelectPitchTypeByAI(); // 球種選択		
-			OutputDebugStringA("Judgment reset\n");
-			if(consoleLog)
+			break;
+
+		case State::Throwing:
+			// 投げるアニメーションを再生
+			UpdateAnimation(elapsedTime);
+
+			// アニメーションが終了したら球種選択状態に遷移
+			if (animation_time >= currentPitcher->animations[current_animation_index].duration)
 			{
-				 char debugMessage[256];
-				 snprintf(debugMessage, sizeof(debugMessage), "[Info] Judgment reset\n");
-				 consoleLog->push_back(debugMessage);
+				animation_time = 0.0f; // アニメーション時間をリセット
+
+				bool ballWasHit = Ball::Instance().GetHasCollidedWithBat();
+				bool isCompleteFoul = Ball::Instance().GetIsFoulConfirmed();
+
+
+				if (!ballWasHit || isCompleteFoul)
+				{
+					TrackingData::Instance().Reset(); // トラッキングデータをリセット
+					//ResetPitchFlags(); // pitchFlagsをリセット
+					currentState = State::SelectingPitch; // 球種選択状態に戻る
+					stateTime = 0.0f; // 状態時間をリセット
+				}
+				else
+				{
+					// ボールがヒットしてファウル確定の場合、判定待ち状態に遷移
+					currentState = State::WaitingForResult;
+					resultWaitTimer = 0.0f; // 状態時間をリセット
+				}
+
 			}
-		}
-		break;
+			break;
 
-	case State::Throwing:
-		// 投げるアニメーションを再生
-		UpdateAnimation(elapsedTime);
-		
-		// アニメーションが終了したら球種選択状態に遷移
-		if (animation_time >= currentPitcher->animations[current_animation_index].duration)
-		{
-			animation_time = 0.0f; // アニメーション時間をリセット
-			
-			bool ballWasHit = Ball::Instance().GetHasCollidedWithBat();
-			bool isCompleteFoul = Ball::Instance().GetIsFoulConfirmed();
+		case State::WaitingForResult:
+			// 判定待ち状態では、ボールが地面またはフェンスに衝突したかどうかを監視
+			bool ballsettled = Ball::Instance().GetHasCollidedWithGround() || Ball::Instance().GetHasCollidedWithFence();
 
-			
-			if (!ballWasHit || isCompleteFoul)
+			//途中でファウルになったら、球種選択へ
+			if (Ball::Instance().GetIsFoulConfirmed())
 			{
-				TrackingData::Instance().Reset(); // トラッキングデータをリセット
-				//ResetPitchFlags(); // pitchFlagsをリセット
-				currentState = State::SelectingPitch; // 球種選択状態に戻る
-				stateTime = 0.0f; // 状態時間をリセット
+				currentFoulWaitTime += elapsedTime;
+
+				if (currentFoulWaitTime >= foulWaitTime)
+				{
+					currentFoulWaitTime = 0.0f; // ファウル待機時間をリセット
+					TrackingData::Instance().Reset(); // トラッキングデータをリセット
+					//ResetPitchFlags(); // pitchFlagsをリセット
+					currentState = State::SelectingPitch;
+					stateTime = 0.0f; // 状態時間をリセット
+				}
+
+				break;
 			}
-			else
+			// ボールの完全停止チェック
+			bool isBallStopped = false;
+			physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
+			if (ballCollider)
 			{
-				// ボールがヒットしてファウル確定の場合、判定待ち状態に遷移
-				currentState = State::WaitingForResult;
-				resultWaitTimer = 0.0f; // 状態時間をリセット
+				float speed = ballCollider->getLinearVelocity().magnitude();
+				// 速度がほぼ 0（完全停止）しているか判定
+				isBallStopped = (speed < 0.5f);
 			}
 
-		}
-		break;
-
-	case State::WaitingForResult:
-		// 判定待ち状態では、ボールが地面またはフェンスに衝突したかどうかを監視
-		bool ballsettled = Ball::Instance().GetHasCollidedWithGround() || Ball::Instance().GetHasCollidedWithFence();
-
-		//途中でファウルになったら、球種選択へ
-		if (Ball::Instance().GetIsFoulConfirmed())
-		{
-			currentFoulWaitTime += elapsedTime;
-
-			if(currentFoulWaitTime >= foulWaitTime)
+			// 「地面/フェンスに当たった」かつ「ボールが完全に止まった」状態からタイマーを開始
+			if (ballsettled && isBallStopped)
 			{
-				currentFoulWaitTime = 0.0f; // ファウル待機時間をリセット
-				TrackingData::Instance().Reset(); // トラッキングデータをリセット
-				//ResetPitchFlags(); // pitchFlagsをリセット
-				currentState = State::SelectingPitch;
-				stateTime = 0.0f; // 状態時間をリセット
-			}
+				resultWaitTimer += elapsedTime;
 
+				// 停止後、結果表示の猶予時間（1.0秒）を経てから遷移
+				constexpr float RESULT_DISPLAY_DURATION = 1.0f;
+				if (resultWaitTimer >= RESULT_DISPLAY_DURATION)
+				{
+					TrackingData::Instance().Reset();
+					//ResetPitchFlags();
+					currentState = State::SelectingPitch;
+					stateTime = 0.0f;
+				}
+			}
 			break;
 		}
-		// ボールの完全停止チェック
-		bool isBallStopped = false;
-		physx::PxRigidDynamic* ballCollider = Ball::Instance().GetBallCollider();
-		if (ballCollider)
-		{
-			float speed = ballCollider->getLinearVelocity().magnitude();
-			// 速度がほぼ 0（完全停止）しているか判定
-			isBallStopped = (speed < 0.5f);
-		}
-
-		// 「地面/フェンスに当たった」かつ「ボールが完全に止まった」状態からタイマーを開始
-		if (ballsettled && isBallStopped)
-		{
-			resultWaitTimer += elapsedTime;
-
-			// 停止後、結果表示の猶予時間（1.0秒）を経てから遷移
-			constexpr float RESULT_DISPLAY_DURATION = 1.0f;
-			if (resultWaitTimer >= RESULT_DISPLAY_DURATION)
-			{
-				TrackingData::Instance().Reset();
-				//ResetPitchFlags();
-				currentState = State::SelectingPitch;
-				stateTime = 0.0f;
-			}
-		}
-		break;
 	}
 
 	// 共通の更新処理

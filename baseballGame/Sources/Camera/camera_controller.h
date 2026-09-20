@@ -141,6 +141,8 @@ public:
 
 	void StartEventFucusYShift(float targetFocusY, float duration);
 
+	void StartEventFocusZShift(float targetFocusZ, float duration);
+
 private:
 	bool impactZoomActive = false;
 	float impactZoomFov = 0.0f;
@@ -157,4 +159,10 @@ private:
 	float eventFocusYShiftStart = 0.0f;
 	float eventFocusYShiftDuration = 0.0f;
 	float eventFocusYShiftTime = 0.0f;
+
+	bool eventFocusZShiftActive = false;
+	float eventFocusZShiftTarget = 0.0f;
+	float eventFocusZShiftStart = 0.0f;
+	float eventFocusZShiftDuration = 0.0f;
+	float eventFocusZShiftTime = 0.0f;
 };

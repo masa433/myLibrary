@@ -616,6 +616,11 @@ void BroadcastCamera::StartEventCameraFocusYShift(float targetFocusY, float dura
 	cameraControllers[activeCameraIndex].StartEventFucusYShift(targetFocusY, duration);
 }
 
+void BroadcastCamera::StartEventCameraFocusZShift(float targetFocusZ, float duration)
+{
+	cameraControllers[activeCameraIndex].StartEventFocusZShift(targetFocusZ, duration);
+}
+
 void BroadcastCamera::DrawGUI()
 {
 	//’†ŒpƒJƒƒ‰‚Ìİ’è
