@@ -398,8 +398,8 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"球威ワンランクダウン";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\pitcherPowerDown.png";
 	a[index].price = 200;
-	a[index].originalPrice = 200;
-	a[index].appearanceRate = 10.0f;// 10%の確率で出現
+	a[index].originalPrice = 400;
+	a[index].appearanceRate = 5.0f;// 5%の確率で出現
 	a[index].level = 1;
 	a[index].pitcherPowerPenalty = 1; 
 	a[index].onButtonPressed = [this, penalty = a[index].pitcherPowerPenalty]() { this->PitcherPowerRankDown(penalty); }; // ボタンが押されたときの処理を設定
@@ -411,8 +411,8 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"変化量ワンランクダウン";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\pitcherBreakDown.png";
 	a[index].price = 200;
-	a[index].originalPrice = 200;
-	a[index].appearanceRate = 10.0f;// 10%の確率で出現
+	a[index].originalPrice = 400;
+	a[index].appearanceRate = 5.0f;// 5%の確率で出現
 	a[index].level = 1;
 	a[index].pitcherBreakBallPenalty = 1;
 	a[index].onButtonPressed = [this, penalty = a[index].pitcherBreakBallPenalty]() { this->PitcherBreakBallRankDown(penalty); }; // ボタンが押されたときの処理を設定
@@ -424,8 +424,8 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"球種減少";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\pitchTypeDecrease.png";
 	a[index].price = 300;
-	a[index].originalPrice = 300;
-	a[index].appearanceRate = 8.0f;// 8%の確率で出現
+	a[index].originalPrice = 500;
+	a[index].appearanceRate = 5.0f;// 5%の確率で出現
 	a[index].level = 1;
 	a[index].onButtonPressed = [this]() { this->SelectPitchTypeState(); }; // ボタンが押されたときの処理を設定
 	a[index].isButtonEnabled = [this]()
@@ -478,8 +478,8 @@ void ShopManager::BuildShopItem()
 	a[index].name = u8"特殊能力発動率アップ";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\specialAbilityActiveRateUp.png";
 	a[index].price = 200;
-	a[index].originalPrice = 200;
-	a[index].appearanceRate = 30.0f;// 30%の確率で出現
+	a[index].originalPrice = 400;
+	a[index].appearanceRate = 20.0f;// 20%の確率で出現
 	a[index].level = 1;
 	a[index].specialAbilityActiveRateUp = 5.0f; // 特殊能力発動率を5%増加
 	a[index].isButtonVisible = [this]() { return AbilityIsOwned(); };// 特殊能力を所有している場合のみ表示
@@ -543,9 +543,9 @@ void ShopManager::BuildShopItem()
 	a[index].id = ShopItemID::BallZoneRateUp;
 	a[index].name = u8"ボール球率アップ";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\ballZoneRateUp.png";
-	a[index].price = 10;
-	a[index].originalPrice = 10;
-	a[index].appearanceRate = 30.0f;// 30%の確率で出現
+	a[index].price = 100;
+	a[index].originalPrice = 100;
+	a[index].appearanceRate = 20.0f;// 20%の確率で出現
 	a[index].level = 1;
 	a[index].ballZoneRateUp = 0.05f; // ボール球率を5%増加
 	a[index].onButtonPressed = [this, rate = a[index].ballZoneRateUp]() { this->IncreaseBallZoneRate(rate); }; // ボタンが押されたときの処理を設定
