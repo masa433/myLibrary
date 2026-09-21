@@ -63,6 +63,8 @@ public:
 
 	void StartEventCameraFocusZShift(float targetFocusZ, float duration);
 
+	void StartEventCameraEyeXZShift(float targetEyeX, float targetEyeZ, float centerTargetEyeZ, float duration);
+
 	std::string GetActiveCameraName() const
 	{
 		if(cameraPresets.empty() || activeCameraIndex < 0 || activeCameraIndex >= static_cast<int>(cameraPresets.size()))

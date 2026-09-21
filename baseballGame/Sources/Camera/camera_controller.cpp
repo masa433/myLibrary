@@ -151,6 +151,36 @@ void CameraController::Update(float elapsedTime)
 		
 	}
 
+	if(eventEyeXZShiftActive)
+	{
+		eventEyeXZShiftTime += elapsedTime;
+		float progress = (std::min)(1.0f, eventEyeXZShiftTime / eventEyeXZShiftDuration);
+		float t = Smoothstep(progress);
+		eye.x = Lerp3({ eventEyeXZShiftStartX, 0.0f, 0.0f }, { eventEyeXZShiftTargetX, 0.0f, 0.0f }, t).x;
+		
+		//指定タイムの前半はcenterTargetZに向かってeye.zを補間し、後半はeventEyeXZShiftTargetZに向かって補間する
+		if(eventEyeXZShiftTime < eventEyeXZShiftDuration * 0.5f)
+		{
+			float halfProgress = (std::min)(1.0f, (eventEyeXZShiftTime / (eventEyeXZShiftDuration * 0.5f)));
+			float halfT = Smoothstep(halfProgress);
+			eye.z = Lerp3({ eventEyeXZShiftStartZ, 0.0f, 0.0f }, { eventEyeCenterTargetZ, 0.0f, 0.0f }, halfT).x;
+		}
+		else
+		{
+			float secondHalfProgress = (std::min)(1.0f, ((eventEyeXZShiftTime - eventEyeXZShiftDuration * 0.5f) / (eventEyeXZShiftDuration * 0.5f)));
+			float secondHalfT = Smoothstep(secondHalfProgress);
+			eye.z = Lerp3({ eventEyeCenterTargetZ, 0.0f, 0.0f }, { eventEyeXZShiftTargetZ, 0.0f, 0.0f }, secondHalfT).x;
+		}
+
+		if(eventEyeXZShiftTime >= eventEyeXZShiftDuration)
+		{
+			eventEyeXZShiftActive = false;
+			eye.x = eventEyeXZShiftTargetX;
+			eye.z = eventEyeXZShiftTargetZ;
+		}
+		
+	}
+
 	//追跡状態のカメラ
 	if (trackingState != TrackState::None && trackedBall)
 	{
@@ -269,6 +299,19 @@ void CameraController::StartEventFocusZShift(float targetZ, float duration)
 	eventFocusZShiftDuration = duration;
 	eventFocusZShiftActive = true;
 	eventFocusZShiftTime = 0.0f;
+	lockFocusY = false; // Y固定モードを解除
+}
+
+void CameraController::StartEventEyeXZShift(float targetEyeX, float targetEyeZ, float centerTargetEyeZ, float duration)
+{
+	eventEyeXZShiftTargetX = targetEyeX;
+	eventEyeXZShiftTargetZ = targetEyeZ;
+	eventEyeXZShiftStartX = eye.x;
+	eventEyeXZShiftStartZ = eye.z;
+	eventEyeCenterTargetZ = centerTargetEyeZ;
+	eventEyeXZShiftDuration = duration;
+	eventEyeXZShiftActive = true;
+	eventEyeXZShiftTime = 0.0f;
 	lockFocusY = false; // Y固定モードを解除
 }
 

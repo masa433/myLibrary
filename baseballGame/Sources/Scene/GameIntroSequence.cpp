@@ -128,13 +128,20 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 
         if (introState == GameIntroState::ShowingStand)
         {
-            standCameraId = 16; // スタンドを映すカメラID
+			standCameraId = (rand() % 2 == 0) ? 16 : 21; // ランダムにスタンドカメラIDを選択
             int index = broadcastCamera.GetCameraIndexById(standCameraId);
             broadcastCamera.SetActiveIndex(index);
             broadcastCamera.ResetCameraToPreset(index);
-			broadcastCamera.StartEventCameraZoom(DirectX::XMConvertToRadians(45.0f), introDuration);
-			broadcastCamera.StartEventCameraFocusZShift(30.0f, introDuration + 1.0f);
-			broadcastCamera.StartEventCameraFocusYShift(0.0f, introDuration);
+            if(standCameraId == 16)
+            {
+                broadcastCamera.StartEventCameraZoom(DirectX::XMConvertToRadians(45.0f), introDuration);
+                broadcastCamera.StartEventCameraFocusZShift(30.0f, introDuration + 1.0f);
+                broadcastCamera.StartEventCameraFocusYShift(0.0f, introDuration);
+            }
+            else if(standCameraId == 21)
+            {
+				broadcastCamera.StartEventCameraEyeXZShift(-65.0f, 15.0f, -25.0f, introDuration + 3.0f);
+			}
         }
 
         if(Pitcher::Instance().IsRightPitcher())

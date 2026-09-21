@@ -143,6 +143,9 @@ public:
 
 	void StartEventFocusZShift(float targetFocusZ, float duration);
 
+	//カメラのeyeXとeyeZを減少させる関数
+	void StartEventEyeXZShift(float targetEyeX, float targetEyeZ, float centerTargetEyeZ, float duration);
+
 private:
 	bool impactZoomActive = false;
 	float impactZoomFov = 0.0f;
@@ -165,4 +168,13 @@ private:
 	float eventFocusZShiftStart = 0.0f;
 	float eventFocusZShiftDuration = 0.0f;
 	float eventFocusZShiftTime = 0.0f;
+
+	bool eventEyeXZShiftActive = false;
+	float eventEyeXZShiftTargetX = 0.0f;
+	float eventEyeXZShiftTargetZ = 0.0f;
+	float eventEyeXZShiftStartX = 0.0f;
+	float eventEyeXZShiftStartZ = 0.0f;
+	float eventEyeXZShiftDuration = 0.0f;
+	float eventEyeXZShiftTime = 0.0f;
+	float eventEyeCenterTargetZ = 0.0f;
 };

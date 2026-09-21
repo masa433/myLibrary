@@ -274,7 +274,6 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 	}
 	activeCameraIndex = (std::max)(0, (std::min)(activeCameraIndex, static_cast<int>(cameraPresets.size() - 1)));
 
-
 	bool nowShowTrackingData = TrackingData::Instance().IsTrackingDataVisible();
 	bool nowIsHomeRun = Physics::Instance().GetIsHomeRun();
 
@@ -625,6 +624,11 @@ void BroadcastCamera::StartEventCameraFocusYShift(float targetFocusY, float dura
 void BroadcastCamera::StartEventCameraFocusZShift(float targetFocusZ, float duration)
 {
 	cameraControllers[activeCameraIndex].StartEventFocusZShift(targetFocusZ, duration);
+}
+
+void BroadcastCamera::StartEventCameraEyeXZShift(float targetEyeX, float targetEyeZ, float centerTargetEyeZ, float duration)
+{
+	cameraControllers[activeCameraIndex].StartEventEyeXZShift(targetEyeX, targetEyeZ, centerTargetEyeZ, duration);
 }
 
 void BroadcastCamera::DrawGUI()
