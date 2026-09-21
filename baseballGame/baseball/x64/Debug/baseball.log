@@ -1,16 +1,2 @@
-﻿  ShopManager.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(448,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Game/ShopManager.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(449,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Game/ShopManager.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(71,42): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(564,100): warning C4244: '引数': 'const int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(680,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(680,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(827,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(827,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(952,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(952,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+﻿  BroadcastCamera.cpp
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

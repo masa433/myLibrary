@@ -315,6 +315,12 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 				cameraControllers[i].StartTrackingBall(&Ball::Instance(), 3.0f, -30.0f, lockY);
 			}
 		}
+
+		//カメラ19と20の時は追跡しない
+		if(activeCameraIndex == GetCameraIndexById(19) || activeCameraIndex == GetCameraIndexById(20))
+		{
+			cameraControllers[activeCameraIndex].StopTrackingBall();
+		}
 	}
 
 	//確信ホームランの立ち上がりでHomeRunCameraに切り替える
