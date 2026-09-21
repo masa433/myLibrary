@@ -543,8 +543,8 @@ void ShopManager::BuildShopItem()
 	a[index].id = ShopItemID::BallZoneRateUp;
 	a[index].name = u8"ボール球率アップ";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\ballZoneRateUp.png";
-	a[index].price = 50;
-	a[index].originalPrice = 50;
+	a[index].price = 10;
+	a[index].originalPrice = 10;
 	a[index].appearanceRate = 30.0f;// 30%の確率で出現
 	a[index].level = 1;
 	a[index].ballZoneRateUp = 0.05f; // ボール球率を5%増加

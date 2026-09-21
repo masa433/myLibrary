@@ -256,6 +256,15 @@ public:
 	{
 		currentShopItemIndices = ShopLayout();
 
+		//ƒŠƒ[ƒ‹‚ÌŒ»İ‚Ì‰¿Ši‚ğ”{‚É‚·‚é
+		for (int i = 0; i < SHOP_ITEM_COUNT; ++i)
+		{
+			if (shopItems[i].id == ShopItemID::Reroll)
+			{
+				shopItems[i].price *= 2;
+				break;
+			}
+		}
 		
 		std::fill(std::begin(slotPurchased), std::end(slotPurchased), false);
 		std::fill(std::begin(slotHover), std::end(slotHover), false);
