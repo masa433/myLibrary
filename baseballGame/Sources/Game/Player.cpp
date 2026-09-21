@@ -409,7 +409,7 @@ void Player::Update(float elapsedTime)
     AttachBatToHand();
 
     // ボールの位置を取得してルックアット処理を実行
-    const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetBallPosition();
+    const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetWorldPosition();
     UpdateLookAt(ballPosition);
 
     float ballZ = Ball::Instance().GetWorldPosition().z;
