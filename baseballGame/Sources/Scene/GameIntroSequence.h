@@ -35,6 +35,8 @@ public:
 	void Uninitialize();
 	void UpdateIntro(float elapsedTime,BroadcastCamera& broadcastCamera);// イントロの更新処理
 	void Render();
+	void UpdateFadeIn(float elapsedTime); // フェードインの更新処理
+	void UpdateFadeOut(float elapsedTime); // フェードアウトの更新処理
 
 	// 水平方向に塗りつぶす描画関数
 	void DrawFillHorizontal(sprite* spr, IntroData* data, ID3D11DeviceContext* context,
@@ -63,6 +65,13 @@ private:
 	float showNameBoardTimer = 0.0f; // スタジアム名ボードの表示タイマー
 	float maxShowNameBoardTime = 9.0f; // スタジアム名ボードの最大表示時間
 
+	//カメラのフェード用の変数
+	float fadeTimer = 0.0f; // フェードのタイマー
+	float fadeDuration = 1.0f; // フェードが完了するまでの時間
+	float fadeAlpha = 1.0f; // フェードの透明度（0.0から1.0）
+	bool isFadingIn = true; // フェードイン中かどうか
+	bool isFadingOut = false; // フェードアウト中かどうか
+
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
 
 private:
@@ -83,6 +92,9 @@ private:
 
 	DirectX::XMFLOAT2 stadiumNameBoardPosition = { 960.0f, 900.0f };
 	DirectX::XMFLOAT2 stadiumNameBoardSize = { 1200.0f, 100.0f };
+
+	std::unique_ptr<IntroData> cameraFadeData;
+	std::unique_ptr<sprite> cameraFadeSprite;
 
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;

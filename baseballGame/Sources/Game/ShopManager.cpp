@@ -532,8 +532,8 @@ void ShopManager::BuildShopItem()
 	a[index].id = ShopItemID::Reroll;
 	a[index].name = u8"リロール";
 	a[index].texturePath = L".\\resources\\textures\\shopIcon\\reroll.png";
-	a[index].price = 50;
-	a[index].originalPrice = 50;
+	a[index].price = 10;
+	a[index].originalPrice = 10;
 	a[index].appearanceRate = 100.0f;// 100%の確率で出現
 	a[index].level = 1;
 	a[index].onButtonPressed = [this]() { this->RerollShopItems(); }; // ボタンが押されたときの処理を設定

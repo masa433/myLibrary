@@ -50,6 +50,14 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 	stadiumNameBoardData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	stadiumNameBoardSprite = std::make_unique<sprite>(device, context, stadiumNameBoardData->texturePath.c_str());
 
+	cameraFadeData = std::make_unique<IntroData>();
+	cameraFadeData->texturePath = L".\\resources\\textures\\scrollViewBack.png";
+	cameraFadeData->position = { 960.0f, 540.0f };
+	cameraFadeData->size = { 1920.0f, 1080.0f };
+	cameraFadeData->rotation = 0.0f;
+	cameraFadeData->color = { 0.0f, 0.0f, 0.0f, 1.0f };
+	cameraFadeSprite = std::make_unique<sprite>(device, context, cameraFadeData->texturePath.c_str());
+
     // 初期化処理
     introTimer = 0.0f;
     introStarted = false;
@@ -57,6 +65,9 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 	introAmount = 0.0f; // 初期の進行度を設定
     introState = (rand() % 2 == 0) ? GameIntroState::ShowingGround : GameIntroState::ShowingStand;
 	
+	fadeTimer = 0.0f;
+	fadeDuration = 0.5f;
+	fadeAlpha = 0.0f;
 
 	//テクスチャを左側から順に表示するためのラスタライザステートを作成
     D3D11_RASTERIZER_DESC rsDesc = {};
@@ -87,11 +98,23 @@ void GameIntroSequence::Uninitialize()
 
 void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcastCamera)
 {
-   
+	UpdateFadeOut(elapsed_time);
+	UpdateFadeIn(elapsed_time);
+
     introTimer += elapsed_time;
 
 	amountTimer += elapsed_time;
 	showNameBoardTimer += elapsed_time;
+
+    if (introState == GameIntroState::ShowingGround || introState == GameIntroState::ShowingStand)
+    {
+        if (introTimer >= (introDuration - 0.5f) && !isFadingOut && fadeAlpha < 1.0f)
+        {
+			isFadingOut = true;
+            fadeTimer = 0.0f;
+            fadeDuration = 0.5f;
+		}
+    }
 
     if(showNameBoardTimer >= maxShowNameBoardTime)
     {
@@ -123,7 +146,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
             int index = broadcastCamera.GetCameraIndexById(groundCameraId);
             broadcastCamera.SetActiveIndex(index);
             broadcastCamera.ResetCameraToPreset(index);
-            broadcastCamera.StartEventCameraFocusYShift(0.0f, introDuration);
+            broadcastCamera.StartEventCameraFocusYShift(0.0f, introDuration + 1.0f);
 		}
 
         if (introState == GameIntroState::ShowingStand)
@@ -140,7 +163,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
             }
             else if(standCameraId == 21)
             {
-				broadcastCamera.StartEventCameraEyeXZShift(-65.0f, 15.0f, -25.0f, introDuration + 3.0f);
+				broadcastCamera.StartEventCameraEyeXZShift(-65.0f, 15.0f, -25.0f, introDuration + 1.0f);
 			}
         }
 
@@ -180,19 +203,18 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
     {
         introTimer = 0.0f;
         introStarted = false;
-        if(introState == GameIntroState::ShowingStand)
+        if(introState == GameIntroState::ShowingStand || introState == GameIntroState::ShowingGround)
         {
 			introState = GameIntroState::ShowingPitcher;
 			introDuration = 10.0f; // グラウンドを映す時間に変更
 			introAmount = 0.0f; // グラウンドのイントロ用にリセット
             amountTimer = 0.0f; // グラウンドのイントロ用にリセット
-        }
-		else if (introState == GameIntroState::ShowingGround)
-        {
-            introState = GameIntroState::ShowingPitcher;
-			introDuration = 10.0f; // ピッチャーを映す時間に変更
-			introAmount = 0.0f; // ピッチャーのイントロ用にリセット
-			amountTimer = 0.0f; // ピッチャーのイントロ用にリセット
+
+            isFadingOut = false; // フェードアウト停止
+            isFadingIn = true;   // フェードイン開始
+            fadeTimer = 0.0f;
+            fadeDuration = 0.5f; // 0.5秒かけて徐々に明らむ
+            fadeAlpha = 1.0f;    // 開始時点は真っ黒にする
         }
         else if (introState == GameIntroState::ShowingPitcher)
         {
@@ -206,6 +228,34 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
             introState = GameIntroState::Playing;
             broadcastCamera.StopAllTracking();
             
+        }
+    }
+}
+
+void GameIntroSequence::UpdateFadeIn(float elapsedTime)
+{
+    if (isFadingIn)
+    {
+        fadeTimer += elapsedTime;
+        fadeAlpha = 1.0f - (fadeTimer / fadeDuration);
+        if (fadeAlpha < 0.0f)
+        {
+            fadeAlpha = 0.0f;
+            isFadingIn = false; // フェードイン完了
+        }
+    }
+}
+
+void GameIntroSequence::UpdateFadeOut(float elapsedTime)
+{
+    if (isFadingOut)
+    {
+        fadeTimer += elapsedTime;
+        fadeAlpha = fadeTimer / fadeDuration;
+        if (fadeAlpha > 1.0f)
+        {
+            fadeAlpha = 1.0f;
+            isFadingOut = false; // フェードアウト完了
         }
     }
 }
@@ -286,6 +336,27 @@ void GameIntroSequence::Render()
 				introAmount);
         }
     }
+
+    if(cameraFadeData && cameraFadeSprite && (isFadingIn || isFadingOut))
+    {
+        DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(cameraFadeData->position);
+        DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(cameraFadeData->size);
+        DirectX::XMFLOAT2 scaledCenteredPos =
+        {
+            scaledPosition.x - scaledSize.x / 2.0f,
+            scaledPosition.y - scaledSize.y / 2.0f
+        };
+        cameraFadeSprite->render(context,
+            scaledCenteredPos.x,
+            scaledCenteredPos.y,
+            scaledSize.x,
+            scaledSize.y,
+            cameraFadeData->color.x,
+            cameraFadeData->color.y,
+            cameraFadeData->color.z,
+			cameraFadeData->color.w * fadeAlpha,
+            cameraFadeData->rotation);
+	}
 
 	//シェーダーの設定を解除
     context->VSSetShader(nullptr, nullptr, 0);
