@@ -17,6 +17,7 @@
 #include "ballCount.h"
 #include "Money.h"
 #include "Combo.h"
+#include "ReplayManager.h"
 
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
@@ -203,6 +204,17 @@ void Pitcher::Uninitialize()
 // 更新
 void Pitcher::Update(float elapsedTime)
 {
+	if (ReplayManager::Instance().IsPlaying())
+	{
+		const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
+		
+		UpdateTransform();
+		UpdateAnimation(elapsedTime);
+
+		Ball::Instance().ApplyReplayFrame(frame.ballPosition, frame.ballRotation);
+		return;
+	}
+
 
 	//if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(currentState == State::Throwing))
 	if(ballCount::Instance().GetRemainingBalls() <=0 && !Ball::Instance().GetHasCollidedWithBat() && (currentState == State::SelectingPitch))

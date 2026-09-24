@@ -87,6 +87,11 @@ public:
 
     void ChangeState(State newState);
 
+	int GetCurrentAnimationIndex() const { return current_animation_index; }
+	float GetAnimationTime() const { return animation_time; }
+
+    void SetAnimationState(int animIndex, float animTime) { current_animation_index = animIndex, animation_time = animTime; };
+
 private:
     // モデル関連
     std::unique_ptr<Model> bat;

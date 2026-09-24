@@ -16,6 +16,7 @@ namespace
 		std::uniform_real_distribution<float> dis(min, max);
 		return dis(gen);
 	}
+
 }
 
 void Ball::SetBezierTargetPosition(const DirectX::XMFLOAT3& targetPosition)
@@ -358,6 +359,8 @@ void Ball::UpdateFromPhysics(float elapsedTime)
 		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(worldScale.x, worldScale.y, worldScale.z);
 		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(worldPosition.x, worldPosition.y, worldPosition.z);
 		DirectX::XMStoreFloat4x4(&worldTransform, S * R * T);
+
+		rotationQuat = { pose.q.x, pose.q.y, pose.q.z, pose.q.w };
 	}
 	else
 	{
@@ -377,6 +380,8 @@ void Ball::UpdateFromPhysics(float elapsedTime)
 		WrapAngle(modelAngle.y);
 		WrapAngle(modelAngle.z);
 		UpdateWorldTransform();
+
+		DirectX::XMStoreFloat4(&rotationQuat, DirectX::XMQuaternionRotationRollPitchYaw(modelAngle.x, modelAngle.y, modelAngle.z));
 	}
 
 	// 物理演算中（飛んでいる時）にトレイルを記録
@@ -399,6 +404,16 @@ void Ball::UpdateFromPhysics(float elapsedTime)
 			}
 		}
 	}
+}
+
+void Ball::ApplyReplayFrame(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& angle)
+{
+	worldPosition = position;
+	rotationQuat = angle;
+	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(worldScale.x, worldScale.y, worldScale.z);
+	DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(XMLoadFloat4(&rotationQuat));
+	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(worldPosition.x, worldPosition.y, worldPosition.z);
+	XMStoreFloat4x4(&worldTransform, S * R * T);
 }
 
 void Ball::UpdateCollider()

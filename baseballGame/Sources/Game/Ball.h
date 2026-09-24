@@ -44,6 +44,8 @@ public:
 	void Throw(const physx::PxVec3& initialVelocity, const physx::PxVec3& angularVelocity, const DirectX::XMFLOAT3& visualRotationSpeed, const DirectX::XMFLOAT3& visualAngle);
 	void ResetMotion();
 
+	void ApplyReplayFrame(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& angle);
+
 	const DirectX::XMFLOAT3& GetBallPosition() const { return position; }
 	const DirectX::XMFLOAT3& GetBallScale() const { return scale; }
 	const DirectX::XMFLOAT3& GetBallAngle() const { return angle; }
@@ -172,6 +174,7 @@ public:
 	void SetHasCollidedWithNet(bool value) { hasCollidedWithNet = value; }
 
 	void SetModelRotationSpeed(const DirectX::XMFLOAT3& speed) { modelRotationSpeed = speed; }
+	const DirectX::XMFLOAT3& GetModelRotationSpeed() const { return modelRotationSpeed; }
 	const DirectX::XMFLOAT3& GetModelAngle() const { return modelAngle; }
 
 	void SetModelAngle(const DirectX::XMFLOAT3& angle) { modelAngle = angle; }
@@ -184,6 +187,9 @@ public:
 
 	//ベジェ曲線のターゲット位置を設定する関数
 	void SetBezierTargetPosition(const DirectX::XMFLOAT3& targetPosition);
+
+	DirectX::XMFLOAT4 GetRotationQuat() const { return rotationQuat; }
+	void SetRotationQuat(const DirectX::XMFLOAT4& quat) { rotationQuat = quat; }
 
 private:
 
@@ -198,6 +204,7 @@ private:
 
 	DirectX::XMFLOAT3 previousBezierPos;// 前回のベジェ曲線上の位置
 
+	DirectX::XMFLOAT4 rotationQuat = { 0.0f, 0.0f, 0.0f, 1.0f };// 回転クォータニオン
 
 public:
 

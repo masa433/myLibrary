@@ -218,13 +218,34 @@ ReplayFrame ReplayManager::LerpFrame(const ReplayFrame& frame1, const ReplayFram
 	//位置の線形補間
 	XMStoreFloat3(&result.pitcherPosition, XMVectorLerp(XMLoadFloat3(&frame1.pitcherPosition), XMLoadFloat3(&frame2.pitcherPosition), t));
 	XMStoreFloat3(&result.pitcherRotation, XMVectorLerp(XMLoadFloat3(&frame1.pitcherRotation), XMLoadFloat3(&frame2.pitcherRotation), t));
+	if(frame1.pitcherCurrentAnimationIndex == frame2.pitcherCurrentAnimationIndex)
+	{
+		//アニメーションインデックスが同じ場合は、アニメーションタイムを補間
+		result.pitcherCurrentAnimationIndex = frame1.pitcherCurrentAnimationIndex;
+		result.pitcherAnimationTime = frame1.pitcherAnimationTime + (frame2.pitcherAnimationTime - frame1.pitcherAnimationTime) * t;
+	}
+	else
+	{
+		result.pitcherCurrentAnimationIndex = (t < 0.5f) ? frame1.pitcherCurrentAnimationIndex : frame2.pitcherCurrentAnimationIndex;
+		result.pitcherAnimationTime = (t < 0.5f) ? frame1.pitcherAnimationTime : frame2.pitcherAnimationTime;
+	}
 
 	XMStoreFloat3(&result.batterPosition, XMVectorLerp(XMLoadFloat3(&frame1.batterPosition), XMLoadFloat3(&frame2.batterPosition), t));
 	XMStoreFloat3(&result.batterRotation, XMVectorLerp(XMLoadFloat3(&frame1.batterRotation), XMLoadFloat3(&frame2.batterRotation), t));
+	if(frame1.batterCurrentAnimationIndex == frame2.batterCurrentAnimationIndex)
+	{//アニメーションインデックスが同じ場合は、アニメーションタイムを補間
+		result.batterCurrentAnimationIndex = frame1.batterCurrentAnimationIndex;
+		result.batterAnimationTime = frame1.batterAnimationTime + (frame2.batterAnimationTime - frame1.batterAnimationTime) * t;
+	}
+	else
+	{
+		result.batterCurrentAnimationIndex = (t < 0.5f) ? frame1.batterCurrentAnimationIndex : frame2.batterCurrentAnimationIndex;
+		result.batterAnimationTime = (t < 0.5f) ? frame1.batterAnimationTime : frame2.batterAnimationTime;
+	}
 
 	XMStoreFloat3(&result.ballPosition, XMVectorLerp(XMLoadFloat3(&frame1.ballPosition), XMLoadFloat3(&frame2.ballPosition), t));
 	XMStoreFloat3(&result.ballVelocity, XMVectorLerp(XMLoadFloat3(&frame1.ballVelocity), XMLoadFloat3(&frame2.ballVelocity), t));
-	XMStoreFloat3(&result.ballRotation, XMVectorLerp(XMLoadFloat3(&frame1.ballRotation), XMLoadFloat3(&frame2.ballRotation), t));
+	XMStoreFloat4(&result.ballRotation, XMQuaternionSlerp(XMLoadFloat4(&frame1.ballRotation), XMLoadFloat4(&frame2.ballRotation), t));
 
 	XMStoreFloat3(&result.cameraEyePosition, XMVectorLerp(XMLoadFloat3(&frame1.cameraEyePosition), XMLoadFloat3(&frame2.cameraEyePosition), t));
 	XMStoreFloat3(&result.cameraFocusPosition, XMVectorLerp(XMLoadFloat3(&frame1.cameraFocusPosition), XMLoadFloat3(&frame2.cameraFocusPosition), t));

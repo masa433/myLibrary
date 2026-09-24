@@ -1,13 +1,3 @@
-﻿  Result.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Game/Result.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(108,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル 'Sources/Game/Result.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Result.cpp(43,12): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Result.cpp(43,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
-  ライブラリを検索しています。
-      C:\Program Files (x86)\Windows Kits\10\lib\10.0.26100.0\um\x64\d3d11.lib を検索中:
-  ライブラリの検索が終了しました。
+﻿  Ball.cpp
+Effekseerd.lib(Effekseer.PointCacheGenerator.obj) : warning LNK4099: PDB 'Effekseerd.pdb' が 'Effekseerd.lib(Effekseer.PointCacheGenerator.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\Effekseerd.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

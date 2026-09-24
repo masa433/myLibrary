@@ -526,15 +526,19 @@ void scene_game::update(float elapsed_time)
         //ピッチャーの位置と回転を保存
         frame.pitcherPosition = Pitcher::Instance().GetPosition();
         frame.pitcherRotation = Pitcher::Instance().GetAngle();
+        frame.pitcherAnimationTime = Pitcher::Instance().GetAnimationTime();
+        frame.pitcherCurrentAnimationIndex = Pitcher::Instance().GetCurrentAnimationIndex();
 
         //バッターの位置と回転を保存
         frame.batterPosition = Player::Instance().GetPosition();
         frame.batterRotation = Player::Instance().GetAngle();
+        frame.batterAnimationTime = Player::Instance().GetAnimationTime();
+        frame.batterCurrentAnimationIndex = Player::Instance().GetCurrentAnimationIndex();
 
         //ボールの位置と速度を保存
         frame.ballPosition = Ball::Instance().GetWorldPosition();
         frame.ballVelocity = Ball::Instance().GetVelocity();
-        frame.ballRotation = Ball::Instance().GetWorldAngle();
+        frame.ballRotation = Ball::Instance().GetRotationQuat();
 
         //カメラの位置と回転を保存
         Camera& camera = Camera::Instance();

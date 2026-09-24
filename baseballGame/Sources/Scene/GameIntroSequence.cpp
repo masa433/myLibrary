@@ -98,6 +98,21 @@ void GameIntroSequence::Uninitialize()
 
 void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcastCamera)
 {
+	//仮で右クリックを押したらすべてのイントロをスキップする
+    if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+    {
+        introState = GameIntroState::Playing;
+        introTimer = 0.0f;
+        introStarted = false;
+        introDuration = 0.0f;
+        introAmount = 1.0f; // 進行度を1.0に設定
+        amountTimer = 0.0f; // 進行度のタイマーをリセット
+        showNameBoardTimer = maxShowNameBoardTime; // スタジアム名ボードの表示タイマーを最大値に設定
+		broadcastCamera.StopAllTracking(); // カメラの追跡を停止
+		return;// 右クリックが押された場合は以降の処理をスキップ
+    }
+
+
 	UpdateFadeOut(elapsed_time);
 	UpdateFadeIn(elapsed_time);
 

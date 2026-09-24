@@ -11,14 +11,18 @@ struct ReplayFrame
 
 	DirectX::XMFLOAT3 pitcherPosition; //ピッチャーの位置
 	DirectX::XMFLOAT3 pitcherRotation; //ピッチャーの回転（クォータニオン）
+	int pitcherCurrentAnimationIndex; //ピッチャーのアニメーションインデックス
+	float pitcherAnimationTime; //ピッチャーのアニメーションタイム
 
 	DirectX::XMFLOAT3 batterPosition; //バッターの位置
 	DirectX::XMFLOAT3 batterRotation; //バッターの回転（クォータニオン）
+	int batterCurrentAnimationIndex; // バッターのアニメーションインデックス
+	float batterAnimationTime; //バッターのアニメーションタイム
 
 	//ボールの位置
 	DirectX::XMFLOAT3 ballPosition; //ボールの位置
 	DirectX::XMFLOAT3 ballVelocity; //ボールの速度
-	DirectX::XMFLOAT3 ballRotation; //ボールの回転（クォータニオン）
+	DirectX::XMFLOAT4 ballRotation; //ボールの回転（クォータニオン）
 
 	//カメラ
 	DirectX::XMFLOAT3 cameraEyePosition; //カメラの位置

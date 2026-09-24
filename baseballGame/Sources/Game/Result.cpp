@@ -92,13 +92,15 @@ void Result::Update(float elapsedTime)
 		//リプレイのフレーム情報を使って、必要な処理を行う
 		Pitcher::Instance().SetPosition(DirectX::XMFLOAT3(frame.pitcherPosition));
 		Pitcher::Instance().SetAngle(DirectX::XMFLOAT3(frame.pitcherRotation));
+		Pitcher::Instance().SetAnimationState(frame.pitcherCurrentAnimationIndex, frame.pitcherAnimationTime);
 
 		Player::Instance().SetPosition(DirectX::XMFLOAT3(frame.batterPosition));
 		Player::Instance().SetAngle(DirectX::XMFLOAT3(frame.batterRotation));
+		Player::Instance().SetAnimationState(frame.batterCurrentAnimationIndex, frame.batterAnimationTime);
 
 		Ball::Instance().SetWorldPosition(DirectX::XMFLOAT3(frame.ballPosition));
 		Ball::Instance().SetVelocity(DirectX::XMFLOAT3(frame.ballVelocity));
-		Ball::Instance().SetWorldAngle(DirectX::XMFLOAT3(frame.ballRotation));
+		Ball::Instance().SetRotationQuat(DirectX::XMFLOAT4(frame.ballRotation));
 
 		Camera::Instance().SetEye(DirectX::XMFLOAT3(frame.cameraEyePosition));
 		Camera::Instance().SetFocus(DirectX::XMFLOAT3(frame.cameraFocusPosition));
