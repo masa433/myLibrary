@@ -256,6 +256,7 @@
     <ClCompile Include="Sources\Game\Player.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Game\ReplayManager.cpp" />
     <ClCompile Include="Sources\Game\Result.cpp" />
     <ClCompile Include="Sources\Game\RoundManager.cpp" />
     <ClCompile Include="Sources\Game\ShopManager.cpp" />
@@ -422,6 +423,7 @@
     <ClInclude Include="Sources\Game\Player.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Game\ReplayManager.h" />
     <ClInclude Include="Sources\Game\Result.h" />
     <ClInclude Include="Sources\Game\RoundManager.h" />
     <ClInclude Include="Sources\Game\ShopManager.h" />

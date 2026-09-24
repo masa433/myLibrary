@@ -43,6 +43,12 @@ public:
 	//視点取得
 	const DirectX::XMFLOAT3& GetEye() const { return eye; }
 
+	//視点設定
+	void SetEye(const DirectX::XMFLOAT3& eye) { this->eye = eye; }
+
+	//注視点設定
+	void SetFocus(const DirectX::XMFLOAT3& focus) { this->focus = focus; }
+
 	//画角設定
 	void SetFov(float f) { fovY = f; }
 

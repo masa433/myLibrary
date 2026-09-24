@@ -71,6 +71,7 @@ void BallDistance::Update(float elapsedTime)
 	{
 		hasDistanceText = false;
 		isDistanceLocked = false;
+		hasUpdatedMaxDistance = false;
 		return;
 	}
 
@@ -129,6 +130,7 @@ void BallDistance::Update(float elapsedTime)
 		if(currentDistance > maxDistance)
 		{
 			maxDistance = currentDistance;
+			hasUpdatedMaxDistance = true;
 		}
 
 		if (Ball::Instance().GetHasPassedHomeRunZone() || Ball::Instance().GetHasCollidedWithPole())

@@ -32,6 +32,7 @@
 #include "Combo.h"
 #include "EffectManager.h"
 #include "SpecialAbility.h"
+#include "ReplayManager.h"
 
 using json = nlohmann::json;
 
@@ -51,6 +52,7 @@ void scene_game::initialize()
 	Money::Instance().SetConsoleLog(&consoleLog);
 	Combo::Instance().SetConsoleLog(&consoleLog);
 	SpecialAbility::Instance().SetConsoleLog(&consoleLog);
+	ReplayManager::Instance().SetConsoleLog(&consoleLog);
 
 
 	ballCount::Instance().SetIntroSequence(&gameIntroSequence);
@@ -165,6 +167,8 @@ void scene_game::initialize()
     RoundManager::Instance().Initialize(device);
 
 	SpecialAbility::Instance().Initialize(device);
+
+	ReplayManager::Instance().Initialize();
 
     shadowRenderer.Initialize();
 
@@ -500,10 +504,78 @@ void scene_game::update(float elapsed_time)
         directional_light_intensity
     );
 
+
     if (!gameIntroSequence.IsPlaying())
     {
         gameIntroSequence.UpdateIntro(elapsed_time, broadcastCamera);
         return; // 通常のゲームロジックは走らせない
+    }
+
+    bool isBallThrowing = Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing;
+
+    if (isBallThrowing && !ReplayManager::Instance().IsRecording() && !Ball::Instance().GetHasCollidedWithBat())
+    {
+        ReplayManager::Instance().StartRecording(0.0f);
+    }
+
+    //記録中ならフレームデータを保存
+    if (ReplayManager::Instance().IsRecording())
+    {
+        ReplayFrame frame{};
+
+        //ピッチャーの位置と回転を保存
+        frame.pitcherPosition = Pitcher::Instance().GetPosition();
+        frame.pitcherRotation = Pitcher::Instance().GetAngle();
+
+        //バッターの位置と回転を保存
+        frame.batterPosition = Player::Instance().GetPosition();
+        frame.batterRotation = Player::Instance().GetAngle();
+
+        //ボールの位置と速度を保存
+        frame.ballPosition = Ball::Instance().GetWorldPosition();
+        frame.ballVelocity = Ball::Instance().GetVelocity();
+        frame.ballRotation = Ball::Instance().GetWorldAngle();
+
+        //カメラの位置と回転を保存
+        Camera& camera = Camera::Instance();
+        frame.cameraEyePosition = camera.GetEye();
+        frame.cameraFocusPosition = camera.GetFocus();
+
+        ReplayManager::Instance().RecordFrame(frame, elapsed_time);
+    }
+
+    bool isFinished = Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround();
+
+    bool isHomeRun = (Ball::Instance().GetHasPassedHomeRunZone() && isFinished) || Ball::Instance().GetHasCollidedWithPole();
+
+    //普通のヒット判定
+    bool isHit = isFinished && !Ball::Instance().GetIsFoulConfirmed();
+
+    if (!ReplayManager::Instance().IsPendingSave())
+    {
+        if (isHomeRun)
+        {
+            ReplayManager::Instance().OnHomeRunHit();
+        }
+        else if (isHit)
+        {
+            ReplayManager::Instance().OnHit();
+        }
+    }
+    // 保存待機中なら時間をカウント
+    if (ReplayManager::Instance().IsPendingSave())
+    {
+        ReplayManager::Instance().SaveRecording(elapsed_time);
+    }
+
+  
+	//ファウル時はリプレイをクリアする
+    if (Ball::Instance().GetIsFoulConfirmed())
+    {
+        if(!ReplayManager::Instance().IsPendingSave())
+        {
+            ReplayManager::Instance().ClearRecording();
+        }
     }
 }
 
@@ -850,7 +922,7 @@ void scene_game::uninitialize()
 	Money::Instance().Uninitialize();
 	RoundManager::Instance().Uninitialize();
 	SpecialAbility::Instance().Uninitialize();
-
+    ReplayManager::Instance().Uninitialize();
     skyRenderer.Uninitialize();
 	shadowRenderer.Uninitialize();
 	bloomRenderer.Uninitialize();

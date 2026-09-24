@@ -5,6 +5,7 @@
 #include "Money.h"
 #include "Combo.h"
 #include "RoundManager.h"
+#include "ReplayManager.h"
 
 void Result::Initialize(ID3D11Device* device)
 {
@@ -50,12 +51,15 @@ void Result::Initialize(ID3D11Device* device)
 	isResultToBatterSelect = false;
 	isResultToRetry = false;
 
-	currentState = State::Result;
+	hasEnteredResult = false;
+	hasReplay = false;
 
+	currentState = State::Result;
 }
 
 void Result::Uninitialize()
 {
+	ReplayManager::Instance().StopPlayback(); //再生停止
 	resultFont.Uninitialize();
 	resultSprite.reset();
 	resultSpriteData.reset();
@@ -65,7 +69,40 @@ void Result::Uninitialize()
 
 void Result::Update(float elapsedTime)
 {
-	
+	bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
+
+	if(isGameFinished && !hasEnteredResult)
+	{
+		hasEnteredResult = true;
+		
+		hasReplay = ReplayManager::Instance().HasSavedReplay();//再生可能なリプレイがあるかどうかを取得
+		if (hasReplay)
+		{
+			ReplayManager::Instance().SetLoopPlayback(true); //ループ再生を有効化
+			ReplayManager::Instance().StartPlayback(); //再生開始
+		}
+	}
+
+	//リプレイの再生を進める
+	if (isGameFinished && hasReplay && ReplayManager::Instance().IsPlaying())
+	{
+		ReplayManager::Instance().UpdatePlayback(elapsedTime);
+		const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
+
+		//リプレイのフレーム情報を使って、必要な処理を行う
+		Pitcher::Instance().SetPosition(DirectX::XMFLOAT3(frame.pitcherPosition));
+		Pitcher::Instance().SetAngle(DirectX::XMFLOAT3(frame.pitcherRotation));
+
+		Player::Instance().SetPosition(DirectX::XMFLOAT3(frame.batterPosition));
+		Player::Instance().SetAngle(DirectX::XMFLOAT3(frame.batterRotation));
+
+		Ball::Instance().SetWorldPosition(DirectX::XMFLOAT3(frame.ballPosition));
+		Ball::Instance().SetVelocity(DirectX::XMFLOAT3(frame.ballVelocity));
+		Ball::Instance().SetWorldAngle(DirectX::XMFLOAT3(frame.ballRotation));
+
+		Camera::Instance().SetEye(DirectX::XMFLOAT3(frame.cameraEyePosition));
+		Camera::Instance().SetFocus(DirectX::XMFLOAT3(frame.cameraFocusPosition));
+	}
 
 
 	switch (currentState)
@@ -83,6 +120,9 @@ void Result::Update(float elapsedTime)
 					hexTransitionEffect.Start(1.0f);
 					buttonManager.ResetTitleRequest(false);
 					currentState = State::Transition;
+
+					ReplayManager::Instance().StopPlayback();
+					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 				}
 				if (buttonManager.IsRetryRequested())
 				{
@@ -90,6 +130,9 @@ void Result::Update(float elapsedTime)
 					hexTransitionEffect.Start(1.0f);
 					buttonManager.ResetRetryRequest(false);
 					currentState = State::Transition;
+
+					ReplayManager::Instance().StopPlayback();
+					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 				}
 				if (buttonManager.IsBatterSelectRequested())
 				{
@@ -97,6 +140,9 @@ void Result::Update(float elapsedTime)
 					hexTransitionEffect.Start(1.0f);
 					buttonManager.ResetBatterSelectRequest(false);
 					currentState = State::Transition;
+
+					ReplayManager::Instance().StopPlayback();
+					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 				}
 			}
 
@@ -126,7 +172,6 @@ void Result::Update(float elapsedTime)
 		}
 	}
 
-
 	
 	
 }
@@ -142,9 +187,6 @@ void Result::Render()
 	dc->IASetInputLayout(spriteInputLayout.Get());
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
-
-
-
 	
 	// スプライトの描画
 	if (resultSprite)

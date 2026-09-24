@@ -39,6 +39,9 @@ public:
 
 private:
 
+	bool hasReplay = false;//再生可能なリプレイがあるかどうか
+	bool hasEnteredResult = false;//リザルト画面に入ったかどうか
+
 	//スプライトデータ
 	struct Sprite
 	{

@@ -247,6 +247,9 @@
     <ClCompile Include="Sources\Scene\GameIntroSequence.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Game\ReplayManager.cpp">
+      <Filter>Sources\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -521,6 +524,9 @@
     </ClInclude>
     <ClInclude Include="Sources\Scene\GameIntroSequence.h">
       <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Game\ReplayManager.h">
+      <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

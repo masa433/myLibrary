@@ -41,6 +41,9 @@ public:
 
 	bool GetDistanceLock() const { return isDistanceLocked; }
 
+	//最高飛距離を更新したかどうかを取得する関数
+	bool HasUpdatedMaxDistance() const { return hasUpdatedMaxDistance; }
+
 private:
 
 	FontRenderer ballDistanceFont;
@@ -62,6 +65,9 @@ private:
 	char directionLabel[32] = u8"";
 	bool hasDistanceText = false;
 	bool isDistanceLocked = false;
+
+	//最高飛距離を更新したかどうか
+	bool hasUpdatedMaxDistance = false;
 	
 	struct DistanceBackData
 	{
