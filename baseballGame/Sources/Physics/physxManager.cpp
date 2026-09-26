@@ -1380,8 +1380,8 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			
 			
 			constexpr float SOFT_LIMIT_THRESHOLD = 165.0f;// 165km/h以上は回転を抑制
-			constexpr float SOFT_LIMIT_MAX = 190.0f;// 190km/h以上は回転を抑制
-			constexpr float SOFT_LIMIT_KNEE = SOFT_LIMIT_MAX - SOFT_LIMIT_THRESHOLD;// 25km/hの範囲で抑制
+			constexpr float SOFT_LIMIT_MAX = 195.0f;// 195km/h以上は回転を抑制
+			constexpr float SOFT_LIMIT_KNEE = SOFT_LIMIT_MAX - SOFT_LIMIT_THRESHOLD;// 30km/hの範囲で抑制
 
 			// 最終速度
 			physx::PxVec3 newBallVelocity = launchDirection * estimatedExitVelocity;
