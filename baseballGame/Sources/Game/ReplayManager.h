@@ -3,6 +3,7 @@
 #include <memory>
 #include <DirectXMath.h>
 #include <string>
+#include <Ball.h>
 
 //1フレーム分のリプレイデータを格納する構造体
 struct ReplayFrame
@@ -18,6 +19,7 @@ struct ReplayFrame
 	DirectX::XMFLOAT3 batterRotation; //バッターの回転（クォータニオン）
 	int batterCurrentAnimationIndex; // バッターのアニメーションインデックス
 	float batterAnimationTime; //バッターのアニメーションタイム
+	bool hasCollidedWithBat; //ボールがバットに当たったかどうか
 
 	//ボールの位置
 	DirectX::XMFLOAT3 ballPosition; //ボールの位置
@@ -48,6 +50,8 @@ public:
 	ReplayManager& operator=(const ReplayManager&) = delete;// コピー代入演算子を削除
 	void Initialize();
 	void Uninitialize();
+
+	void DrawGUI(); //GUI描画関数
 
 	//ピッチャーが投げ始めたときの記録開始関数
 	void StartRecording(float startTime);
@@ -93,6 +97,22 @@ public:
 	void SetLoopPlayback(bool loop) { isLoopPlayback = loop; } //ループ再生するかどうかを設定
 	void StopPlayback() { isPlaying = false; } //再生を停止する関数
 
+	//ループ再生したかどうか
+	bool HasLoopedPlayback() const { return hasLooped; }
+
+	// 現在の再生場所が最初かどうか
+	bool IsAtFirstFrame() const { return playbackIndex == 0 && playbackTime <= 0.05f; }
+
+	// 現在の再生場所が最後かどうか
+	bool IsAtLastFrame() const
+	{
+		if (savedReplayList.empty()) return false;
+		return playbackTime >= savedReplayList.back().time;
+	}
+
+	void SetPlaybackSpeed(float speed) { playbackSpeed = speed; } //再生速度を設定する関数
+	float GetPlaybackSpeed() const { return playbackSpeed; } //再生速度を取得する関数
+
 private:
 	std::vector<ReplayFrame> replayFrames; //リプレイデータを格納するベクター
 	std::vector<ReplayFrame> savedReplayList;//保存済みのリプレイデータを格納するベクター
@@ -106,7 +126,9 @@ private:
 
 	float recordElapsedTime = 0.0f; //記録中の経過時間
 
+	bool hasLooped = false;//ループ再生したかどうかのフラグ
 
+	float playbackSpeed = 1.0f; //再生速度（1.0fが通常速度）
 private:
 
 	//2つのフレーム間を補間する関数

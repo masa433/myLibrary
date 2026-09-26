@@ -109,6 +109,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
         amountTimer = 0.0f; // 進行度のタイマーをリセット
         showNameBoardTimer = maxShowNameBoardTime; // スタジアム名ボードの表示タイマーを最大値に設定
 		broadcastCamera.StopAllTracking(); // カメラの追跡を停止
+		broadcastCamera.SetReplayMode(false); // リプレイモードを無効化
 		return;// 右クリックが押された場合は以降の処理をスキップ
     }
 
@@ -242,7 +243,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
         {
             introState = GameIntroState::Playing;
             broadcastCamera.StopAllTracking();
-            
+            broadcastCamera.SetReplayMode(false); // リプレイモードを無効化
         }
     }
 }

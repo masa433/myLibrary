@@ -3,6 +3,7 @@
 #include "physxManager.h"
 #include "TrackingData.h"
 #include <imgui.h>
+#include <ReplayManager.h>
 
 //カメラ管理
 void BroadcastCamera::ApplyPresetToController(const CameraPreset& preset, CameraController& controller)
@@ -316,7 +317,7 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 		}
 
 		//カメラ19と20の時は追跡しない
-		if(activeCameraIndex == GetCameraIndexById(19) || activeCameraIndex == GetCameraIndexById(20))
+		if(activeCameraIndex == GetCameraIndexById(19) || activeCameraIndex == GetCameraIndexById(20) || activeCameraIndex == GetCameraIndexById(3))
 		{
 			cameraControllers[activeCameraIndex].StopTrackingBall();
 		}
@@ -533,12 +534,15 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 	//バットの接触状態が解除されたら、NormalCameraに戻す
 	if(!ballHasCollidedWithBat && prevHasCollidedWithBat)
 	{
-		for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
+		if(!isReplayMode)
 		{
-			if (cameraPresets[i].type == CameraType::NormalCamera)
+			for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
 			{
-				activeCameraIndex = i;
-				break;
+				if (cameraPresets[i].type == CameraType::NormalCamera)
+				{
+					activeCameraIndex = i;
+					break;
+				}
 			}
 		}
 		forceLockFocusYThisPlay = false;
@@ -562,6 +566,156 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 	{
 		controller.Update(elapsed_time);
 	}
+}
+
+void BroadcastCamera::ActivateReplayCamera()
+{
+	//最初にリプレイカメラ19か20か3のどれかをランダムで選択する
+	int randomCameraId[] = {3,19,20};
+	int randomIndex = rand() % 3;
+
+	for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
+	{
+		if (cameraPresets[i].type == CameraType::ReplayCamera)
+		{
+			activeCameraIndex = GetCameraIndexById(randomCameraId[randomIndex]);
+			
+			
+		}
+	}
+	StopAllTracking();
+
+	//cameraControllers[chosen].StartTrackingBall(&Ball::Instance(), 3.0f, -30.0f, false);
+}
+
+
+
+void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollidedWithBat)
+{
+	const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
+
+	// もしアクティブカメラが ReplayCamera でない場合、強制的に ReplayCamera に切り替える
+	if (cameraPresets[activeCameraIndex].type != CameraType::ReplayCamera || ReplayManager::Instance().HasLoopedPlayback())
+	{
+		ResetReplayCamera();
+		StopAllTracking();
+
+		cameraMode = ReplayCameraMode::ShowingBatter;
+		replayTimer = 0.0f;
+
+		ActivateReplayCamera(); // 19番か20番か3番が選ばれる
+
+		//再生速度を0.75倍にする
+		ReplayManager::Instance().SetPlaybackSpeed(0.75f);
+
+		prevHasCollidedWithBat = ballHasCollidedWithBat;
+		return;
+	}
+
+	//カメラ19と20と3の時は追跡しない
+	if (activeCameraIndex == GetCameraIndexById(19) || activeCameraIndex == GetCameraIndexById(20) || activeCameraIndex == GetCameraIndexById(3))
+	{
+		cameraControllers[activeCameraIndex].StopTrackingBall();
+	}
+
+	
+	replayTimer += elapsedTime;
+
+	if (ballHasCollidedWithBat && !prevHasCollidedWithBat)
+	{
+		replayTimer = 0.0f;// タイマーをリセット
+		replayDuration = 1.2f; // バットに当たった瞬間のカメラ表示時間を設定
+
+		forceLockFocusYThisPlay = (Physics::Instance().GetBallAngle() >= 55.0f);
+
+		//バットに当たったらリプレイカメラはボールを追跡する
+		for(int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
+		{
+			if (cameraPresets[i].type == CameraType::ReplayCamera)
+			{
+				//bool lockY = cameraPresets[i].lockFocusY || forceLockFocusYThisPlay;
+				cameraControllers[i].StartTrackingBall(&Ball::Instance(), 3.0f, -30.0f, false);
+			}
+		}
+	}
+
+	switch (cameraMode)
+	{
+		case ReplayCameraMode::ShowingBatter:
+		{
+			if (ballHasCollidedWithBat && replayTimer >= replayDuration)
+			{
+				
+				cameraMode = ReplayCameraMode::ShowingBall;
+				replayTimer = 0.0f; // タイマーをリセット
+				replayDuration = 1.8f; // ShowingBallの表示時間を設定
+
+				// 17,18,22のカメラのどれかに切り替える
+				int cameraIds[] = { 17, 18, 22};
+				int randomIndex = rand() % 3;
+				activeCameraIndex = GetCameraIndexById(cameraIds[randomIndex]);
+	
+				//再生速度を1.0倍に戻す
+				ReplayManager::Instance().SetPlaybackSpeed(1.0f);
+			}
+
+			break;
+		}
+		case ReplayCameraMode::ShowingBall:
+		{
+			//showingBallでは、一定時間がたったら今アクティブになっているカメラのままにするか
+			//22,23,24などのどれかのカメラに変えるかを選択する
+
+			if(replayTimer >= replayDuration)
+			{
+				
+
+				//現在アクティブのカメラのままにするか、22,23,24のどれかに切り替えるかをランダムで決定する
+				int randomChoice = rand() % 2; // 0か1をランダムで選ぶ
+
+				if(randomChoice == 0)
+				{
+					//現在アクティブのカメラのままにする
+					cameraMode = ReplayCameraMode::ShowingHitResult;
+					replayTimer = 0.0f; // タイマーをリセット
+					break;
+				}
+				else// 1の場合は23,24,25のどれかに切り替える
+				{
+					//再生速度を0.75倍に戻す
+					ReplayManager::Instance().SetPlaybackSpeed(0.75f);
+					// 23,24,25のカメラのどれかに切り替える
+					int cameraIds[] = { 23, 24, 25 };
+					int randomIndex = rand() % 3;
+					activeCameraIndex = GetCameraIndexById(cameraIds[randomIndex]);
+					cameraMode = ReplayCameraMode::ShowingHitResult;
+					replayTimer = 0.0f; // タイマーをリセット
+				}
+			}
+
+
+			break;
+		}
+		case ReplayCameraMode::ShowingHitResult:
+		{
+			
+			break;
+		}
+	}
+
+	
+
+	prevHasCollidedWithBat = ballHasCollidedWithBat; // 前フレームの状態を更新
+
+	// リプレイ用のカメラ更新処理
+	for (auto& controller : cameraControllers)
+	{
+		controller.SetTrackedPosition(frame.ballPosition);
+
+		// リプレイ再生中のボール位置に追従する場合
+		controller.Update(elapsedTime);		
+	}
+
 }
 
 void BroadcastCamera::SyncToCamera(Camera& camera, float aspect, float nearZ, float farZ)
@@ -594,7 +748,11 @@ void BroadcastCamera::StopAllTracking()
 	{
 		controller.StopTrackingBall();
 	}
-	activeCameraIndex = 0; // デフォルトカメラに戻す
+
+	if(!isReplayMode)
+	{
+		activeCameraIndex = 0; // デフォルトカメラに戻す
+	}
 	hasTriggeredImpactZoom = false; // インパクトズームのフラグをリセット
 	zoomStartDelay = 0.0f;
 }
@@ -630,6 +788,8 @@ void BroadcastCamera::StartEventCameraEyeXZShift(float targetEyeX, float targetE
 {
 	cameraControllers[activeCameraIndex].StartEventEyeXZShift(targetEyeX, targetEyeZ, centerTargetEyeZ, duration);
 }
+
+
 
 void BroadcastCamera::DrawGUI()
 {

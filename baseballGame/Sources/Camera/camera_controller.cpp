@@ -86,6 +86,28 @@ void CameraController::StartTrackingBall(const Ball* ball, float offsetTracking,
 	trackingState = TrackState::Transition;
 }
 
+void CameraController::StartTrackingReplayCamera(const DirectX::XMFLOAT3& ballPos, float offsetBack, float offsetUp, bool lockY)
+{
+	savedEye = eye;
+	savedFocus = focus;
+
+	trackedBall = nullptr;//リプレイカメラはBallインスタンスを追跡しない
+	trackedPosition = ballPos;
+
+	transitionStartFocus = focus;
+	smoothFocus = focus;
+
+	lockFocusY = lockY;
+	trackedFocusY = focus.y;
+
+	zoomTime = 0.0f;
+	defaultFov = currentFov;
+	trackingBlendTime = 0.0f;
+
+	transitionTime = 0.0f;
+	trackingState = TrackState::Transition;
+}
+
 // ボール追跡カメラを停止する
 void CameraController::StopTrackingBall()
 {
@@ -94,10 +116,23 @@ void CameraController::StopTrackingBall()
 
 	trackedBall = nullptr;
 	trackingState = TrackState::None;
-
+	trackedPosition = {};
 	eye = savedEye;
 	focus = savedFocus;
 
+	currentFov = defaultFov;
+	impactZoomActive = false;
+}
+
+void CameraController::StopTrackingReplayCamera()
+{
+	//追跡していなかったら何もしない
+	if (trackingState == TrackState::None) return;
+	trackedBall = nullptr;
+	trackingState = TrackState::None;
+	trackedPosition = {};
+	eye = savedEye;
+	focus = savedFocus;
 	currentFov = defaultFov;
 	impactZoomActive = false;
 }
@@ -182,10 +217,10 @@ void CameraController::Update(float elapsedTime)
 	}
 
 	//追跡状態のカメラ
-	if (trackingState != TrackState::None && trackedBall)
+	if (trackingState != TrackState::None)
 	{
 		//ボールの位置と速度を保存
-		DirectX::XMFLOAT3 ballPos = trackedBall->GetWorldPosition();
+		DirectX::XMFLOAT3 ballPos = trackedBall ? trackedBall->GetWorldPosition() : trackedPosition;
 		if (lockFocusY)
 		{
 			ballPos.y = trackedFocusY; // Y固定モードなら目標のYを上書き

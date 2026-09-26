@@ -80,6 +80,8 @@ void Result::Update(float elapsedTime)
 		{
 			ReplayManager::Instance().SetLoopPlayback(true); //ループ再生を有効化
 			ReplayManager::Instance().StartPlayback(); //再生開始
+
+			broadcastCamera.SetReplayMode(true);
 		}
 	}
 
@@ -98,12 +100,11 @@ void Result::Update(float elapsedTime)
 		Player::Instance().SetAngle(DirectX::XMFLOAT3(frame.batterRotation));
 		Player::Instance().SetAnimationState(frame.batterCurrentAnimationIndex, frame.batterAnimationTime);
 
+		Ball::Instance().SetHasCollidedWithBat(frame.hasCollidedWithBat);
+
 		Ball::Instance().SetWorldPosition(DirectX::XMFLOAT3(frame.ballPosition));
 		Ball::Instance().SetVelocity(DirectX::XMFLOAT3(frame.ballVelocity));
 		Ball::Instance().SetRotationQuat(DirectX::XMFLOAT4(frame.ballRotation));
-
-		Camera::Instance().SetEye(DirectX::XMFLOAT3(frame.cameraEyePosition));
-		Camera::Instance().SetFocus(DirectX::XMFLOAT3(frame.cameraFocusPosition));
 	}
 
 

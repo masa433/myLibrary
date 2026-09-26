@@ -14,6 +14,15 @@ public:
 	// 更新処理
 	void Update(float elapsedTime);
 
+	// リプレイ等で位置座標を直接セットする用
+	void SetTrackedPosition(const DirectX::XMFLOAT3& pos) { trackedPosition = pos; }
+
+	//リプレイカメラ用の追跡カメラ
+	void StartTrackingReplayCamera(const DirectX::XMFLOAT3& ballPos, float offsetBack = 3.0f, float offsetUp = 0.5f, bool lockY = false);
+
+	//リプレイカメラの追跡カメラを停止する
+	void StopTrackingReplayCamera();
+
 	//ボール追跡カメラ
 	//バットにボールが当たった瞬間に呼び出される
 	// ball        : 追跡対象のBallインスタンス
@@ -104,6 +113,8 @@ private:
 
 	float minEyeY = 0.5f; // カメラの最低高さ
 	float maxEyeY = 10.0f; // カメラの最高高さ
+
+	DirectX::XMFLOAT3 trackedPosition = {}; // リプレイカメラ用の追跡位置
 
 public:
 	void SetTrackingZoomOut(bool enable,

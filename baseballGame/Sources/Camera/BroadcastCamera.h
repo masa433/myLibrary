@@ -111,9 +111,19 @@ public:
 		ApplyPresetToController(cameraPresets[index], cameraControllers[index]);
 	}
 
-	
+	//リプレイカメラをアクティブにする関数
+	void ActivateReplayCamera();
+	void UpdateReplayCamera(float elapsedTime, bool ballHasCollidedWithBat);
 
 	std::string GetPresetNameById(int cameraId) const;
+
+	void ResetReplayCamera()
+	{
+		for(auto& controller : cameraControllers)
+		{
+			controller.StopTrackingReplayCamera();
+		}
+	}
 
 	bool prevHasCollidedWithBat = false; // 前フレームでボールがバットに当たったかどうかのフラグ
 	bool prevHasShowTrackingData = false; // 前フレームで追跡データを表示していたかどうかのフラグ
@@ -122,11 +132,29 @@ public:
 	bool hasTriggeredImpactZoom = false;//ホームラン時のズームを一度だけ発動させるためのフラグ
 	float zoomStartDelay = 0.0f; // ズーム開始までの遅延時間（秒）
 	float zoomStartTime = 0.2f; // ズーム開始までの時間（秒）
+
+	float replayTimer = 0.0f; // リプレイカメラのタイマー
+	float replayDuration = 3.0f; // リプレイカメラの再生時間（秒）
+
+	enum class ReplayCameraMode
+	{
+		ShowingBatter, // バッターを見せるモード
+		ShowingBall,   // ボールを追跡するモード
+		ShowingHitResult, // 打球結果を見せるモード
+	};
+
+	ReplayCameraMode cameraMode = ReplayCameraMode::ShowingBatter;
+
 private:
 	//カメラ配列
 	std::vector<CameraPreset> cameraPresets;//カメラプリセットの配列
 	std::vector<CameraController> cameraControllers;//カメラコントローラーの配列
 	int activeCameraIndex = 0;
 
+	bool isReplayMode = false; // リプレイモードかどうかのフラグ
 
+public:
+
+	void SetReplayMode(bool replayMode) { isReplayMode = replayMode; }
+	bool IsReplayMode() const { return isReplayMode; }
 };

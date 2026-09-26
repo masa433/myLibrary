@@ -10,6 +10,7 @@
 #include "ballDistance.h"
 #include "ButtonManager.h"
 #include "Hextransitioneffect.h"
+#include "BroadcastCamera.h"
 
 enum class State
 {
@@ -36,6 +37,8 @@ public:
 	void DrawGUI();
 	void SaveToJson(nlohmann::json& j);
 	void LoadFromJson(const nlohmann::json& j);
+
+	BroadcastCamera broadcastCamera;
 
 private:
 

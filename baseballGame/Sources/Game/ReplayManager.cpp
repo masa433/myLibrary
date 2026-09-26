@@ -1,5 +1,7 @@
 #include "ReplayManager.h"
 #include "ballDistance.h"
+#include "HomeRunCount.h"
+#include <imgui.h>
 
 void ReplayManager::Initialize()
 {
@@ -11,6 +13,7 @@ void ReplayManager::Initialize()
 	recordElapsedTime = 0.0f;
 	isRecording = false;
 	isPendingSave = false;
+	hasLooped = false;
 }
 
 void ReplayManager::Uninitialize()
@@ -58,11 +61,11 @@ void ReplayManager::OnHomeRunHit()
 	{
 		homeRunHitTime = replayFrames.back().time;//ホームラン着弾時間を記録
 		isPendingSave = true;//保存待機中フラグを立てる
-		saveTimeRemaining = 2.0f;//2秒後に保存する
+		saveTimeRemaining = 1.0f;//1秒後に保存する
 
 		if(consoleLog)
 		{
-			consoleLog->push_back(u8"ホームラン着弾！2秒後に録画を保存します");
+			consoleLog->push_back(u8"ホームラン着弾！1秒後に録画を保存します");
 		}
 	}
 }
@@ -73,10 +76,10 @@ void ReplayManager::OnHit()
 	{
 		homeRunHitTime = replayFrames.back().time;//ヒット着弾時間を記録
 		isPendingSave = true;//保存待機中フラグを立てる
-		saveTimeRemaining = 2.0f;//2秒後に保存する
+		saveTimeRemaining = 1.0f;//1秒後に保存する
 		if(consoleLog)
 		{
-			consoleLog->push_back(u8"ヒット着弾！2秒後に録画を保存します");
+			consoleLog->push_back(u8"ヒット着弾！1秒後に録画を保存します");
 		}
 	}
 }
@@ -86,6 +89,14 @@ void ReplayManager::SaveRecording(float elapsedTime)
 	if (isPendingSave)
 	{
 		saveTimeRemaining -= elapsedTime;//保存までの残り時間を減らす
+
+		bool isFinished = Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround();
+
+		bool isHomeRun = (Ball::Instance().GetHasPassedHomeRunZone() && isFinished) || Ball::Instance().GetHasCollidedWithPole();
+
+		//普通のヒット判定
+		bool isHit = isFinished && !Ball::Instance().GetIsFoulConfirmed();
+
 		if (saveTimeRemaining <= 0.0f)
 		{
 			
@@ -100,6 +111,15 @@ void ReplayManager::SaveRecording(float elapsedTime)
 				if(consoleLog)
 				{
 					consoleLog->push_back(u8"最高飛距離を更新したため、録画を保存しました");
+				}
+			}
+			//ヒットの時に最高飛距離を更新しても、ホームランをすでに打っていれば保存しない
+			else if(BallDistance::Instance().HasUpdatedMaxDistance() && HomeRunCount::Instance().GetTotalHomeRunCount() > 0 && isHit)
+			{
+				replayFrames.clear();//最高飛距離を更新していなければ保存しない
+				if(consoleLog)
+				{
+					consoleLog->push_back(u8"ヒット時に最高飛距離を更新しても、ホームランをすでに打っているため、録画は保存されませんでした");
 				}
 			}
 			else
@@ -137,6 +157,7 @@ void ReplayManager::StartPlayback()
 		isPlaying = true;
 		playbackTime = 0.0f;
 		playbackIndex = 0;
+		hasLooped = false;
 		currentPlaybackFrame = savedReplayList.front();//最初のフレームを設定
 		if(consoleLog)
 		{
@@ -158,7 +179,9 @@ void ReplayManager::UpdatePlayback(float elapsedTime)
 {
 	if(!isPlaying || savedReplayList.empty()) return;
 
-	playbackTime += elapsedTime;
+	hasLooped = false;
+
+	playbackTime += elapsedTime * playbackSpeed;//再生時間・再生速度を更新
 
 	const float lastTime = savedReplayList.back().time;//最後のフレームの時間
 
@@ -168,6 +191,7 @@ void ReplayManager::UpdatePlayback(float elapsedTime)
 		{
 			playbackTime = 0.0f;
 			playbackIndex = 0;
+			hasLooped = true;
 			currentPlaybackFrame = savedReplayList.front();
 			if(consoleLog)
 			{
@@ -243,6 +267,8 @@ ReplayFrame ReplayManager::LerpFrame(const ReplayFrame& frame1, const ReplayFram
 		result.batterAnimationTime = (t < 0.5f) ? frame1.batterAnimationTime : frame2.batterAnimationTime;
 	}
 
+	result.hasCollidedWithBat = (t < 0.5f) ? frame1.hasCollidedWithBat : frame2.hasCollidedWithBat;
+
 	XMStoreFloat3(&result.ballPosition, XMVectorLerp(XMLoadFloat3(&frame1.ballPosition), XMLoadFloat3(&frame2.ballPosition), t));
 	XMStoreFloat3(&result.ballVelocity, XMVectorLerp(XMLoadFloat3(&frame1.ballVelocity), XMLoadFloat3(&frame2.ballVelocity), t));
 	XMStoreFloat4(&result.ballRotation, XMQuaternionSlerp(XMLoadFloat4(&frame1.ballRotation), XMLoadFloat4(&frame2.ballRotation), t));
@@ -251,4 +277,28 @@ ReplayFrame ReplayManager::LerpFrame(const ReplayFrame& frame1, const ReplayFram
 	XMStoreFloat3(&result.cameraFocusPosition, XMVectorLerp(XMLoadFloat3(&frame1.cameraFocusPosition), XMLoadFloat3(&frame2.cameraFocusPosition), t));
 
 	return result;
+}
+
+void ReplayManager::DrawGUI()
+{
+	if (ImGui::CollapsingHeader("Replay Manager"))
+	{
+		ImGui::Text("Recording: %s", isRecording ? "Yes" : "No");
+		ImGui::Text("Pending Save: %s", isPendingSave ? "Yes" : "No");
+		ImGui::Text("Save Time Remaining: %.2f", saveTimeRemaining);
+		ImGui::Text("Saved Replay Frames: %zu", savedReplayList.size());
+		ImGui::Text("Playback Time: %.2f", playbackTime);
+		ImGui::Text("Is Playing: %s", isPlaying ? "Yes" : "No");
+		ImGui::Text("Loop Playback: %s", isLoopPlayback ? "Yes" : "No");
+
+		//バットに当たっているかを表示
+		if (isPlaying && !savedReplayList.empty())
+		{
+			ImGui::Text("Has Collided With Bat: %s", currentPlaybackFrame.hasCollidedWithBat ? "Yes" : "No");
+		}
+		else
+		{
+			ImGui::Text("Has Collided With Bat: N/A");
+		}
+	}
 }

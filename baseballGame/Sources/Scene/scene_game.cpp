@@ -374,7 +374,23 @@ void scene_game::update(float elapsed_time)
 
     elapsed_time *= timeScale;
 
-    broadcastCamera.Update(elapsed_time, Ball::Instance().GetHasCollidedWithBat());
+    
+
+    if(ReplayManager::Instance().IsPlaying())
+    {
+        const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
+
+		broadcastCamera.SetReplayMode(true);
+        broadcastCamera.UpdateReplayCamera(elapsed_time, frame.hasCollidedWithBat);
+	 
+	}
+    else
+    {
+        broadcastCamera.SetReplayMode(false);
+        broadcastCamera.Update(elapsed_time, Ball::Instance().GetHasCollidedWithBat());
+    }
+
+    Result::Instance().Update(elapsed_time);
 
     float screenWidth = static_cast<float>(Graphics::Instance().GetScreenWidth());
     float screenHeight = static_cast<float>(Graphics::Instance().GetScreenHeight());
@@ -396,31 +412,6 @@ void scene_game::update(float elapsed_time)
         enableShadows = true;
     }
     cameraPosition = camera.GetEye();
-
-    if (broadcastCamera.IsTrackingBall())
-    {
-        
-        /*const auto& vel = Ball::Instance().GetVelocity();
-        float speed = sqrtf(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
-        if (speed < 0.1f)
-        {
-            trackingTime += elapsed_time;
-            if (trackingTime > 1.0f)
-            {
-                broadcastCamera.StopAllTracking();
-                trackingTime = 0.0f;
-                enableShadows = true;
-            }
-        }*/
-        /*if (ImGui::IsKeyPressed(ImGuiKey_LeftShift))
-        {
-            broadcastCamera.StopAllTracking();
-            trackingTime = 0.0f;
-            enableShadows = true;
-        }*/
-    }
-
-   
 
     ballSprite::Instance().Update(elapsed_time);
 
@@ -450,8 +441,6 @@ void scene_game::update(float elapsed_time)
     HomeRunCount::Instance().Update(elapsed_time);
 
     Catcher::Instance().Update(elapsed_time);
-
-	Result::Instance().Update(elapsed_time);
 
 	BallNet::Instance().Update(elapsed_time);
 
@@ -535,15 +524,17 @@ void scene_game::update(float elapsed_time)
         frame.batterAnimationTime = Player::Instance().GetAnimationTime();
         frame.batterCurrentAnimationIndex = Player::Instance().GetCurrentAnimationIndex();
 
+		frame.hasCollidedWithBat = Ball::Instance().GetHasCollidedWithBat();
+
         //ボールの位置と速度を保存
         frame.ballPosition = Ball::Instance().GetWorldPosition();
         frame.ballVelocity = Ball::Instance().GetVelocity();
         frame.ballRotation = Ball::Instance().GetRotationQuat();
-
-        //カメラの位置と回転を保存
-        Camera& camera = Camera::Instance();
-        frame.cameraEyePosition = camera.GetEye();
-        frame.cameraFocusPosition = camera.GetFocus();
+		
+        ////カメラの位置と回転を保存
+        //Camera& camera = Camera::Instance();
+        //frame.cameraEyePosition = camera.GetEye();
+        //frame.cameraFocusPosition = camera.GetFocus();
 
         ReplayManager::Instance().RecordFrame(frame, elapsed_time);
     }
@@ -1021,6 +1012,8 @@ void scene_game::DrawGUI()
 		if (ImGui::CollapsingHeader("Round Manager")) { RoundManager::Instance().DrawGUI(); }
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Special Ability")) { SpecialAbility::Instance().DrawGUI(); }
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Replay Manager")) { ReplayManager::Instance().DrawGUI(); }
 
         ImGui::End();
 
