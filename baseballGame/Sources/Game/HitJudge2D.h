@@ -365,7 +365,7 @@ private:
             {
                 snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just/Inside)\n", timeToZone_);
                 OutputDebugStringA(buffer);
-                return 1.1f;
+                return 1.05f;
             }
         }
         else
@@ -375,11 +375,11 @@ private:
             {
                 snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just/Outside)\n", timeToZone_);
                 OutputDebugStringA(buffer);
-                return 1.1f;
+                return 1.05f;
             }
         }
 
-		return 1.0f; // デフォルト倍率
+		return 0.95f; // デフォルト倍率
     }
 
     // ---- 内部状態 ----

@@ -1327,10 +1327,10 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			float batterPowerScale = PowerToExitVelocityScale(static_cast<float>(batterPower));
 			float pitchPowerScale = ballSprite::Instance().GetCurrentPitchPowerScale();
 			//スイングのタイミングによって打球速度を補正する
-			//ボールスプライトのターゲットが中心の時はバッターのパワーを1.1倍にして反映させる
-			if(Pitcher::Instance().IsBezierTargetCenter())
+			//ボールスプライトのターゲットが中心の時または変化球の時は打球速度を1.05倍にして反映させる
+			if(Pitcher::Instance().IsBezierTargetCenter() || Pitcher::Instance().IsBreakingBallBonus())
 			{
-				batterPowerScale *= 1.1f;
+				estimatedExitVelocity *= 1.05f;
 			}
 			
 			//特殊能力による打球速度補正
