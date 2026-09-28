@@ -868,59 +868,52 @@ void Player::UpdateAnimation(float elapsedTime)
             swingStartTime += elapsedTime;
         }
 
-        // BeforeSwingステート以外は通常の速度でアニメーションを再生
-        if (current_state != State::BeforeSwing)
-        {
-            animation_time += elapsedTime;
-        }
-        else
-        {
-            // BeforeSwingステートでベジェ曲線投球中の場合、ベジェ曲線の進行度に合わせてアニメーション時間を調整
-            if (isBezierPitching && Ball::Instance().IsBezierFlying())
-            {
-                float bezierT = Ball::Instance().GetBezierT();
-                float animation_duration = currentBatter->animations[current_animation_index].duration;
-
-                // ベジェ曲線の進行度に基づいてアニメーション時間を計算
-                // bezierT = 0.0 の時は animation_time = beforeSwingStartTime
-                // bezierT = 1.0 の時は animation_time = beforeSwingStartTime + animation_duration
-                animation_time = beforeSwingStartTime + animation_duration * bezierT;
-            }
-            else
-            {
-                // ベジェ曲線が終了したら通常の速度でアニメーションを再生
-                animation_time += elapsedTime;
-            }
-        }
-
-        // 現在のアニメーションを再生
-        currentBatter->animate(current_animation_index, animation_time, animated_nodes);
-
-        // アニメーションの長さを取得
-        float animation_duration = currentBatter->animations[current_animation_index].duration;
-
         
-        if (current_state == State::BeforeSwing)
-        {
-            // BeforeSwingアニメーションが終了したらBattingIdleに戻す
-            if (animation_time >= currentBatter->animations[current_animation_index].duration + beforeSwingStartTime)
-            {
-                ChangeState(State::BattingIdle);
-                ThrowingStateTime = 0.0f;  // ThrowingStateTimeをリセット
-                beforeSwingStartTime = 0.0f; // beforeSwingStartTimeをリセット
-            }
-        }
-        else if (Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)
-        {
-            ThrowingStateTime += elapsedTime;
 
-            // ThrowingStateTimeが0.8以上で、まだアニメーションを再生していない場合
-            if (ThrowingStateTime >= 0.75f && !hasPlayBeforeSwing)
+
+        if (Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)
+        {
+
+            switch(Pitcher::Instance().GetBallSpeedMode())
             {
-                ChangeState(State::BeforeSwing); // ホームランアニメーションに切り替え
-                hasPlayBeforeSwing = true;      // アニメーション再生済みフラグを設定
-                beforeSwingStartTime = animation_time; // BeforeSwing開始時のanimation_timeを記録
-            }
+                case Pitcher::BallSpeedMode::realSpeed:
+                    // リアルスピードモードの処理
+                    ThrowingStateTime += elapsedTime;
+
+                    if (ThrowingStateTime >= 0.75f && !hasPlayBeforeSwing)
+                    {
+                        ChangeState(State::BeforeSwing); // ホームランアニメーションに切り替え
+                        hasPlayBeforeSwing = true;      // アニメーション再生済みフラグを設定
+                        beforeSwingStartTime = animation_time; // BeforeSwing開始時のanimation_timeを記録    
+                    }
+
+                    break;
+                case Pitcher::BallSpeedMode::slowSpeed:
+                    // スローモーションモードの処理
+                    if(Ball::Instance().IsBezierFlying()&&!hasPlayBeforeSwing)
+                    {
+                        ChangeState(State::BeforeSwing); // ホームランアニメーションに切り替え
+                        hasPlayBeforeSwing = true;      // アニメーション再生済みフラグを設定
+                    }
+
+                    break;
+                case Pitcher::BallSpeedMode::highSpeed:
+                    // 早送りモードの処理
+                    ThrowingStateTime += elapsedTime;
+
+                    if (ThrowingStateTime >= 0.85f && !hasPlayBeforeSwing)
+                    {
+                        ChangeState(State::BeforeSwing); // ホームランアニメーションに切り替え
+                        hasPlayBeforeSwing = true;      // アニメーション再生済みフラグを設定
+                        beforeSwingStartTime = animation_time; // BeforeSwing開始時のanimation_timeを記録    
+                    }
+
+                    break;
+                default:
+                    break;
+			}
+
+			
         }
         else
         {
@@ -929,6 +922,55 @@ void Player::UpdateAnimation(float elapsedTime)
             hasPlayBeforeSwing = false; // フラグをリセット
             beforeSwingStartTime = 0.0f; // beforeSwingStartTimeをリセット
         }
+
+        // アニメーションの長さを取得
+        float animation_duration = currentBatter->animations[current_animation_index].duration;
+
+        
+        if (current_state == State::BeforeSwing)
+        {
+            
+            switch (Pitcher::Instance().GetBallSpeedMode())
+            {
+            case Pitcher::BallSpeedMode::realSpeed:
+                // リアルスピードモードの処理
+                animation_time += elapsedTime;
+                break;
+            case Pitcher::BallSpeedMode::slowSpeed:
+                // スローモーションモードの処理
+                if (Ball::Instance().IsBezierFlying())
+                {
+                    // BeforeSwingステートでベジェ曲線投球中の場合、ベジェ曲線の進行度に合わせてアニメーション時間を調整          
+                    float bezierT = Ball::Instance().GetBezierT();
+
+                    animation_time = animation_duration * bezierT;
+                }
+                break;
+            case Pitcher::BallSpeedMode::highSpeed:
+                // 早送りモードの処理
+                animation_time += elapsedTime;
+                break;
+            default:
+                break;
+            }
+            
+            
+            // BeforeSwingアニメーションが終了したらBattingIdleに戻す
+            if (animation_time >= animation_duration)
+            {
+                ChangeState(State::BattingIdle);
+                beforeSwingStartTime = 0.0f; // beforeSwingStartTimeをリセット
+            }
+        }
+        // BeforeSwingステート以外は通常の速度でアニメーションを再生
+        else
+        {
+            animation_time += elapsedTime;
+        }
+        
+
+        // 現在のアニメーションを再生
+        currentBatter->animate(current_animation_index, animation_time, animated_nodes);
 
         // Swingアニメーションの場合、マウス位置に応じて腕の角度を変更
         if (current_state == State::Swinging)

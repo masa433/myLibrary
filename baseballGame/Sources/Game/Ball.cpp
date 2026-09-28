@@ -479,7 +479,7 @@ void Ball::ApplyPitchPhysics(bool isKnuckleball, const physx::PxVec3& windVeloci
 	{
 		spinParameter = (BALL_RADIUS * angularSpeed) / relativeSpeed;
 		float liftCoeff = 1.0f * spinParameter;//揚力係数の計算（簡略化）
-		if (liftCoeff > 0.35f) liftCoeff = 0.35f;//揚力係数の上限を設定
+		if (liftCoeff > 0.4f) liftCoeff = 0.4f;//揚力係数の上限を設定
 		magnusMag = 0.5f * AIR_DENSITY * relativeSpeed * relativeSpeed * liftCoeff * ballArea;//マグナス力の大きさ
 
 		physx::PxVec3 magnusDir = angularVelocity.cross(relativeVelocity);//マグナス力の方向は回転軸と速度ベクトルの外積で決まる

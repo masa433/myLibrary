@@ -605,8 +605,8 @@ void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollided
 
 		ActivateReplayCamera(); // 19番か20番か3番が選ばれる
 
-		//再生速度を0.75倍にする
-		ReplayManager::Instance().SetPlaybackSpeed(0.75f);
+		//再生速度を0.5倍にする
+		ReplayManager::Instance().SetPlaybackSpeed(0.5f);
 
 		prevHasCollidedWithBat = ballHasCollidedWithBat;
 		return;
@@ -624,7 +624,7 @@ void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollided
 	if (ballHasCollidedWithBat && !prevHasCollidedWithBat)
 	{
 		replayTimer = 0.0f;// タイマーをリセット
-		replayDuration = 1.2f; // バットに当たった瞬間のカメラ表示時間を設定
+		replayDuration = 1.8f; // バットに当たった瞬間のカメラ表示時間を設定
 
 		forceLockFocusYThisPlay = (Physics::Instance().GetBallAngle() >= 55.0f);
 
@@ -648,7 +648,7 @@ void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollided
 				
 				cameraMode = ReplayCameraMode::ShowingBall;
 				replayTimer = 0.0f; // タイマーをリセット
-				replayDuration = 1.8f; // ShowingBallの表示時間を設定
+				replayDuration = 2.5f; // ShowingBallの表示時間を設定
 
 				// 17,18,22のカメラのどれかに切り替える
 				int cameraIds[] = { 17, 18, 22};
@@ -682,8 +682,8 @@ void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollided
 				}
 				else// 1の場合は23,24,25のどれかに切り替える
 				{
-					//再生速度を0.75倍に戻す
-					ReplayManager::Instance().SetPlaybackSpeed(0.75f);
+					//再生速度を0.5倍に戻す
+					ReplayManager::Instance().SetPlaybackSpeed(0.5f);
 					// 23,24,25のカメラのどれかに切り替える
 					int cameraIds[] = { 23, 24, 25 };
 					int randomIndex = rand() % 3;

@@ -10,6 +10,7 @@
 #include "SpecialAbility.h"
 #include "SubMission.h"
 #include <ShopManager.h>
+#include "ReplayManager.h"
 
 // 小数点以下の不要な 0 を削除する関数(小数第1位は消さない)
 std::string FormatFloat(float value)
@@ -249,7 +250,7 @@ void Money::Update(float elapsedTime)
 	//ファールの時は、お金が増えないようにする
 	if (Ball::Instance().GetIsFoulConfirmed()) return;
 
-	
+	if (ReplayManager::Instance().IsPlaying()) return; //リプレイ再生中はお金が増えないようにする
 
 	if (isLocked && !prevDistanceLocked)
 	{
