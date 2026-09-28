@@ -229,6 +229,29 @@ void ReplayManager::UpdatePlayback(float elapsedTime)
 	{
 		currentPlaybackFrame = a;
 	}
+
+	//リプレイ再生中にボールのトレイルを構築する処理
+
+	if (currentPlaybackFrame.hasCollidedWithBat)
+	{
+		std::deque<DirectX::XMFLOAT3> replayTrail;
+		const size_t maxTrailPoints = 100; // 最大トレイルポイント数
+
+		for(int i = static_cast<int>(playbackIndex); i>= 0 && replayTrail.size() < maxTrailPoints; --i)
+		{
+			// 打球前のフレームに達したらトレイルの記録を中断
+			if (!savedReplayList[i].hasCollidedWithBat) break;
+
+			replayTrail.push_front(savedReplayList[i].ballPosition);
+		}
+
+		replayTrail.push_back(currentPlaybackFrame.ballPosition);
+		Ball::Instance().SetBallTrail(replayTrail);//ボールのトレイルを設定
+	}
+	else
+	{
+		Ball::Instance().ClearBallTrail();//ボールのトレイルをクリア
+	}
 }
 
 //2つのフレーム間を補間する関数

@@ -179,6 +179,12 @@ public:
 
 	void SetModelAngle(const DirectX::XMFLOAT3& angle) { modelAngle = angle; }
 
+	//トレイルのセット関数
+	void SetBallTrail(const std::deque<DirectX::XMFLOAT3>& trail) { ballTrail = trail; }
+
+	//トレイルのクリア関数
+	void ClearBallTrail() { ballTrail.clear(); }
+
 public:
 	// 物理コライダーから現在の正確な速度ベクトル(m/s)を取得する関数
 	physx::PxVec3 GetLinearVelocity() const {
