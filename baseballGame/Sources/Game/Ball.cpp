@@ -452,7 +452,7 @@ void Ball::ApplyPitchPhysics(bool isKnuckleball, const physx::PxVec3& windVeloci
 	constexpr float airDensity = 1.225f;//空気密度(kg/m^3)
 	constexpr float ballRadius = 0.0365f;//野球ボールの半径(m)
 	const float ballArea = DirectX::XM_PI * ballRadius * ballRadius;//ボールの断面積(m^2)
-	constexpr float dragCoeff = 0.38f;//抗力係数
+	constexpr float dragCoeff = 0.32f;//抗力係数
 
 	if (relativeSpeed > 0.0f)
 	{
@@ -467,8 +467,8 @@ void Ball::ApplyPitchPhysics(bool isKnuckleball, const physx::PxVec3& windVeloci
 	if (relativeSpeed > 0.0f && angularSpeed > 0.0f)
 	{
 		float spinParameter = (ballRadius * angularSpeed) / relativeSpeed;
-		float liftCoeff = 1.5f * spinParameter;//揚力係数の計算（簡略化）
-		if (liftCoeff > 0.4f) liftCoeff = 0.4f;//揚力係数の上限を設定
+		float liftCoeff = 1.0f * spinParameter;//揚力係数の計算（簡略化）
+		if (liftCoeff > 0.35f) liftCoeff = 0.35f;//揚力係数の上限を設定
 		float magnusMag = 0.5f * airDensity * relativeSpeed * relativeSpeed * liftCoeff * ballArea;//マグナス力の大きさ
 
 		physx::PxVec3 magnusDir = angularVelocity.cross(relativeVelocity);//マグナス力の方向は回転軸と速度ベクトルの外積で決まる
