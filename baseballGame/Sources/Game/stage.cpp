@@ -109,13 +109,13 @@ void stage::initialize()
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
 		// Ground用のマテリアル（よく跳ねる）
-		groundMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.2f);
+		groundMaterial = pxPhysics->createMaterial(0.5f, 0.4f, 0.2f);
 
 		// Stand用のマテリアル（ほぼ跳ねない）
-		standMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.0f);
+		standMaterial = pxPhysics->createMaterial(0.5f, 0.4f, 0.1f);
 
 		//Pole用のマテリアル（あまり跳ねない）
-		poleMaterial = pxPhysics->createMaterial(1.0f, 1.0f, 0.2f);
+		poleMaterial = pxPhysics->createMaterial(0.4f, 0.3f, 0.4f);
 
 		DirectX::XMMATRIX StandTransform = DirectX::XMLoadFloat4x4(&standTransform);
 		DirectX::XMMATRIX GroundTransform = DirectX::XMLoadFloat4x4(&groundTransform);

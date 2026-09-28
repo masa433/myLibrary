@@ -256,4 +256,18 @@ private:
 	// ヘルパー: ベジェ曲線の微分を評価する関数
 	DirectX::XMFLOAT3 EvalCubicBezierDerivative(float t) const;
 
+public:
+
+	//ボールの物理定数
+	static constexpr float BALL_MASS = 0.145f; // ボールの質量(kg)
+	static constexpr float BALL_RADIUS = 0.0365f; // ボールの半径(m)
+	float AIR_DENSITY = 1.225f; // 空気密度(kg/m^3)
+	float DRAG_COEFFICIENT = 0.32f; // 抗力係数
+
+private:
+	float angularSpeed = 0.0f; // 回転速度(rad/s)
+	float relativeSpeed = 0.0f; // 相対速度(m/s)
+	float spinParameter = 0.0f; // スピンパラメータ
+	float magnusMag = 0.0f; // マグナス力の大きさ(N)
+	float dragMag = 0.0f; // 抗力の大きさ(N)
 };

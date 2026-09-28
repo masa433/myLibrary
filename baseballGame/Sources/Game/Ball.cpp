@@ -172,7 +172,7 @@ void Ball::Initialize()
 	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 	physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-	material = pxPhysics->createMaterial(0.4f, 0.3f, 0.42f);
+	material = pxPhysics->createMaterial(0.4f, 0.35f, 0.42f);
 	physx::PxSphereGeometry geometry(debugRadius);
 	physx::PxTransform transform(physx::PxVec3(worldPosition.x, worldPosition.y, worldPosition.z));
 
@@ -184,7 +184,7 @@ void Ball::Initialize()
 	collider->attachShape(*shape);
 	shape->release();
 
-	physx::PxRigidBodyExt::setMassAndUpdateInertia(*collider, 0.145f);
+	physx::PxRigidBodyExt::setMassAndUpdateInertia(*collider, BALL_MASS);
 	pxScene->addActor(*collider);
 }
 
@@ -285,6 +285,17 @@ void Ball::DrawGUI()
 	//記録するまでの遅延時間を設定する
 	ImGui::DragFloat("Trail Record Delay Time", &trailRecordDelayTime, 0.01f, 0.0f, 5.0f, "%.2f");
 	ImGui::DragFloat("Trail Record Time", &trailRecordTimer, 0.01f, 0.01f, 1.0f, "%.2f");
+
+	if (ImGui::CollapsingHeader("Ball Physics Debug"))
+	{
+		ImGui::DragFloat(u8"angularSpeed(回転速度)", &angularSpeed, 0.1f, 0.1f, 10.0f, "%.2f");
+		ImGui::DragFloat(u8"relativeSpeed(相対速度)", &relativeSpeed, 0.1f, 0.1f, 10.0f, "%.2f");
+		ImGui::DragFloat(u8"spinParameter(スピンパラメータ)", &spinParameter, 0.1f, 0.1f, 10.0f, "%.2f");
+		ImGui::DragFloat(u8"magnusMag(マグナス力の大きさ)", &magnusMag, 0.1f, 0.1f, 10.0f, "%.2f");
+		ImGui::DragFloat(u8"dragMag(抗力の大きさ)", &dragMag, 0.1f, 0.1f, 10.0f, "%.2f");
+		ImGui::DragFloat(u8"DRAG_COEFFICIENT(抗力係数)", &DRAG_COEFFICIENT, 0.01f, 0.0f, 1.0f, "%.2f");
+		ImGui::DragFloat(u8"AIR_DENSITY(空気密度)", &AIR_DENSITY, 0.01f, 0.0f, 1.0f, "%.2f");
+	}
 
 #endif
 }
@@ -447,29 +458,29 @@ void Ball::ApplyPitchPhysics(bool isKnuckleball, const physx::PxVec3& windVeloci
 	velocity = { currentVelocity.x, currentVelocity.y, currentVelocity.z };
 
 	physx::PxVec3 relativeVelocity = currentVelocity - windVelocity;
-	float relativeSpeed = relativeVelocity.magnitude();
+	relativeSpeed = relativeVelocity.magnitude();
 
-	constexpr float airDensity = 1.225f;//空気密度(kg/m^3)
-	constexpr float ballRadius = 0.0365f;//野球ボールの半径(m)
-	const float ballArea = DirectX::XM_PI * ballRadius * ballRadius;//ボールの断面積(m^2)
-	constexpr float dragCoeff = 0.32f;//抗力係数
+	
+	
+	const float ballArea = DirectX::XM_PI * BALL_RADIUS * BALL_RADIUS;//ボールの断面積(m^2)
+	
 
 	if (relativeSpeed > 0.0f)
 	{
-		float dragMag = 0.5f * airDensity * relativeSpeed * relativeSpeed * dragCoeff * ballArea;
+		dragMag = 0.5f * AIR_DENSITY * relativeSpeed * relativeSpeed * DRAG_COEFFICIENT * ballArea;
 		physx::PxVec3 dragForce = -relativeVelocity.getNormalized() * dragMag;
 		collider->addForce(dragForce, physx::PxForceMode::eFORCE);
 	}
 
 	physx::PxVec3 angularVelocity = collider->getAngularVelocity();
-	float angularSpeed = angularVelocity.magnitude();
+	angularSpeed = angularVelocity.magnitude();
 
 	if (relativeSpeed > 0.0f && angularSpeed > 0.0f)
 	{
-		float spinParameter = (ballRadius * angularSpeed) / relativeSpeed;
+		spinParameter = (BALL_RADIUS * angularSpeed) / relativeSpeed;
 		float liftCoeff = 1.0f * spinParameter;//揚力係数の計算（簡略化）
 		if (liftCoeff > 0.35f) liftCoeff = 0.35f;//揚力係数の上限を設定
-		float magnusMag = 0.5f * airDensity * relativeSpeed * relativeSpeed * liftCoeff * ballArea;//マグナス力の大きさ
+		magnusMag = 0.5f * AIR_DENSITY * relativeSpeed * relativeSpeed * liftCoeff * ballArea;//マグナス力の大きさ
 
 		physx::PxVec3 magnusDir = angularVelocity.cross(relativeVelocity);//マグナス力の方向は回転軸と速度ベクトルの外積で決まる
 		if (magnusDir.magnitudeSquared() > 0.0f)
