@@ -190,6 +190,7 @@ void Player::Initialize()
 	swingSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Swing.wav");
 
 	isPlayedStepInAnimation = false;
+    showSwingTimingSprite = false;
 
 	SelectRealBatter(selectedRealBatter);
 	UpdateBatterModel();

@@ -32,6 +32,9 @@ public:
 
 	void AttachMittToHand();
 
+	void UpdateLookAt(const DirectX::XMFLOAT3& targetPosition);
+
+
 	DirectX::XMFLOAT3 GetMittWorldPosition() const
 	{
 		return { mittTransform._41, mittTransform._42, mittTransform._43 };//ミットのワールド座標を返す
@@ -40,13 +43,7 @@ public:
 private:
 	//キャッチャーのモデル
 	std::shared_ptr<gltf_model> catcherModel;
-	//キャッチャーの位置と角度
-	DirectX::XMFLOAT3 catcherPosition;
-	DirectX::XMFLOAT3 catcherAngle;
-	//キャッチャーのスケール
-	DirectX::XMFLOAT3 catcherScale;
-	DirectX::XMFLOAT4X4 catcherTransform = DirectX::XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-
+	
 	//キャッチャーのアニメーション関連
 	std::vector<gltf_model::node> animatedNodes;
 
