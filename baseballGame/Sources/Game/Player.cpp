@@ -930,33 +930,35 @@ void Player::UpdateAnimation(float elapsedTime)
         if (current_state == State::BeforeSwing)
         {
             
-            switch (Pitcher::Instance().GetBallSpeedMode())
+			auto speedMode = Pitcher::Instance().GetBallSpeedMode();
+
+            if (speedMode == Pitcher::BallSpeedMode::slowSpeed)
             {
-            case Pitcher::BallSpeedMode::realSpeed:
-                // リアルスピードモードの処理
-                animation_time += elapsedTime;
-                break;
-            case Pitcher::BallSpeedMode::slowSpeed:
-                // スローモーションモードの処理
                 if (Ball::Instance().IsBezierFlying())
                 {
-                    // BeforeSwingステートでベジェ曲線投球中の場合、ベジェ曲線の進行度に合わせてアニメーション時間を調整          
-                    float bezierT = Ball::Instance().GetBezierT();
-
-                    animation_time = animation_duration * bezierT;
+					float bezierT = Ball::Instance().GetBezierT();
+                    // Bezier曲線の進行度に応じてBeforeSwingアニメーションを進める
+					animation_time = animation_duration * bezierT;
                 }
-                break;
-            case Pitcher::BallSpeedMode::highSpeed:
-                // 早送りモードの処理
+                else
+                {
+                    // Bezier飛行が終了した場合は、BeforeSwingアニメーションを通常速度で再生
+					animation_time += elapsedTime;
+                }
+            }
+            else
+            {
+                // リアルスピードモードや早送りモードでは、BeforeSwingアニメーションを早く再生
                 animation_time += elapsedTime;
-                break;
-            default:
-                break;
             }
             
-            
+            bool isAnimationFinished = (animation_time >= animation_duration);
+            bool isBezierFinished = (speedMode == Pitcher::BallSpeedMode::slowSpeed &&
+                Ball::Instance().IsBezierFlying() &&
+                Ball::Instance().GetBezierT() >= 0.99f);
+
             // BeforeSwingアニメーションが終了したらBattingIdleに戻す
-            if (animation_time >= animation_duration)
+            if (isAnimationFinished || isBezierFinished)
             {
                 ChangeState(State::BattingIdle);
                 beforeSwingStartTime = 0.0f; // beforeSwingStartTimeをリセット
