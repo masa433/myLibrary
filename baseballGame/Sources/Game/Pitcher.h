@@ -137,6 +137,7 @@ public:
 
 	int GetCurrentAnimationIndex() const { return current_animation_index; }
 	float GetAnimationTime() const { return animation_time; }
+	void SetAnimationTime(float animTime) { animation_time = animTime; }
 
 	void SetAnimationState(int animIndex, float animTime) { current_animation_index = animIndex, animation_time = animTime; };
 
@@ -291,6 +292,7 @@ public:
 	State currentState = State::SelectingPitch;
 	float stateTime = 0.0f; // 現在の状態に入ってからの経過時間
 	const State GetCurrentState() const { return currentState; }
+	void SetCurrentState(State newState) { currentState = newState; stateTime = 0.0f; }
 
 
 
