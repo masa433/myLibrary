@@ -517,6 +517,7 @@ void scene_game::update(float elapsed_time)
         frame.pitcherRotation = Pitcher::Instance().GetAngle();
         frame.pitcherAnimationTime = Pitcher::Instance().GetAnimationTime();
         frame.pitcherCurrentAnimationIndex = Pitcher::Instance().GetCurrentAnimationIndex();
+        frame.hasThrownBall = Pitcher::Instance().GetIsBallThrown();
 
         //バッターの位置と回転を保存
         frame.batterPosition = Player::Instance().GetPosition();

@@ -276,6 +276,7 @@ ReplayFrame ReplayManager::LerpFrame(const ReplayFrame& frame1, const ReplayFram
 		result.pitcherCurrentAnimationIndex = (t < 0.5f) ? frame1.pitcherCurrentAnimationIndex : frame2.pitcherCurrentAnimationIndex;
 		result.pitcherAnimationTime = (t < 0.5f) ? frame1.pitcherAnimationTime : frame2.pitcherAnimationTime;
 	}
+	result.hasThrownBall = (t < 0.5f) ? frame1.hasThrownBall : frame2.hasThrownBall;
 
 	XMStoreFloat3(&result.batterPosition, XMVectorLerp(XMLoadFloat3(&frame1.batterPosition), XMLoadFloat3(&frame2.batterPosition), t));
 	XMStoreFloat3(&result.batterRotation, XMVectorLerp(XMLoadFloat3(&frame1.batterRotation), XMLoadFloat3(&frame2.batterRotation), t));

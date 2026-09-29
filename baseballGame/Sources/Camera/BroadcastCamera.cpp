@@ -4,6 +4,7 @@
 #include "TrackingData.h"
 #include <imgui.h>
 #include <ReplayManager.h>
+#include "Player.h"
 
 //カメラ管理
 void BroadcastCamera::ApplyPresetToController(const CameraPreset& preset, CameraController& controller)
@@ -568,21 +569,50 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 	}
 }
 
+void BroadcastCamera::StartPitchZoom(bool hasThrown,float targetFov,float duration)
+{
+	const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
+
+	if(hasThrown)
+	{
+		auto& controller = cameraControllers[activeCameraIndex];
+
+		if(!controller.IsTrackingBall())
+		{
+			controller.StartTrackingReplayCamera(frame.ballPosition, 3.0f, -30.0f, false);
+		}
+
+		controller.StartPitchZoom(targetFov, duration);
+	}
+}
+
 void BroadcastCamera::ActivateReplayCamera()
 {
 	//最初にリプレイカメラ19か20か3のどれかをランダムで選択する
-	int randomCameraId[] = {3,19,20};
-	int randomIndex = rand() % 3;
+	int randomCameraId[] = {3,19,20,26,27,28};
+	int randomIndex = rand() % 6;
 
 	for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
 	{
 		if (cameraPresets[i].type == CameraType::ReplayCamera)
 		{
 			activeCameraIndex = GetCameraIndexById(randomCameraId[randomIndex]);
-			
-			
 		}
 	}
+
+	//26もしくは27が選ばれたときに、右バッターなら26、左バッターなら27に切り替える
+	if(activeCameraIndex == GetCameraIndexById(26) || activeCameraIndex == GetCameraIndexById(27))
+	{
+		if(Player::Instance().IsRightBatter())
+		{
+			activeCameraIndex = GetCameraIndexById(26);
+		}
+		else
+		{
+			activeCameraIndex = GetCameraIndexById(27);
+		}
+	}
+
 	StopAllTracking();
 
 	//cameraControllers[chosen].StartTrackingBall(&Ball::Instance(), 3.0f, -30.0f, false);
@@ -608,16 +638,40 @@ void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollided
 		//再生速度を0.5倍にする
 		ReplayManager::Instance().SetPlaybackSpeed(0.5f);
 
+		for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
+		{
+			if (i == GetCameraIndexById(26) || i == GetCameraIndexById(27))
+			{
+				cameraControllers[i].ResetPitchZoom();// 26と27のカメラ状態をリセット
+
+			}
+
+		}
+
 		prevHasCollidedWithBat = ballHasCollidedWithBat;
 		return;
 	}
 
 	//カメラ19と20と3の時は追跡しない
-	if (activeCameraIndex == GetCameraIndexById(19) || activeCameraIndex == GetCameraIndexById(20) || activeCameraIndex == GetCameraIndexById(3))
+	if (activeCameraIndex == GetCameraIndexById(19) || activeCameraIndex == GetCameraIndexById(20) || activeCameraIndex == GetCameraIndexById(3) || activeCameraIndex == GetCameraIndexById(28))
 	{
 		cameraControllers[activeCameraIndex].StopTrackingBall();
 	}
 
+
+	
+	if(activeCameraIndex == GetCameraIndexById(26) || activeCameraIndex == GetCameraIndexById(27))
+	{
+		if(frame.hasThrownBall && !ballHasCollidedWithBat)
+		{
+
+			static constexpr float targetFov = DirectX::XMConvertToRadians(10.0f); // 目標のFOVを設定
+
+			StartPitchZoom(frame.hasThrownBall, targetFov, 1.0f);
+		}	
+
+		
+	}
 	
 	replayTimer += elapsedTime;
 
@@ -628,13 +682,22 @@ void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollided
 
 		forceLockFocusYThisPlay = (Physics::Instance().GetBallAngle() >= 55.0f);
 
+		
 		//バットに当たったらリプレイカメラはボールを追跡する
 		for(int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
 		{
+			//26と27はバットに当たったら追跡を止める
+			if(i == GetCameraIndexById(26) || i == GetCameraIndexById(27))
+			{
+				cameraControllers[i].StopPitchZoom();
+				continue;
+			}
+
 			if (cameraPresets[i].type == CameraType::ReplayCamera)
 			{
 				//bool lockY = cameraPresets[i].lockFocusY || forceLockFocusYThisPlay;
 				cameraControllers[i].StartTrackingBall(&Ball::Instance(), 3.0f, -30.0f, false);
+
 			}
 		}
 	}
@@ -657,6 +720,7 @@ void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollided
 	
 				//再生速度を1.0倍に戻す
 				ReplayManager::Instance().SetPlaybackSpeed(1.0f);
+
 			}
 
 			break;

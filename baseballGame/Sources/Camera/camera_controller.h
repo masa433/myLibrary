@@ -22,6 +22,10 @@ public:
 
 	//リプレイカメラの追跡カメラを停止する
 	void StopTrackingReplayCamera();
+	void StopPitchZoom();
+	void ResetPitchZoom();
+
+	
 
 	//ボール追跡カメラ
 	//バットにボールが当たった瞬間に呼び出される
@@ -157,6 +161,8 @@ public:
 	//カメラのeyeXとeyeZを減少させる関数
 	void StartEventEyeXZShift(float targetEyeX, float targetEyeZ, float centerTargetEyeZ, float duration);
 
+	void StartPitchZoom(float targetFov, float duration);
+
 private:
 	bool impactZoomActive = false;
 	float impactZoomFov = 0.0f;
@@ -188,4 +194,10 @@ private:
 	float eventEyeXZShiftDuration = 0.0f;
 	float eventEyeXZShiftTime = 0.0f;
 	float eventEyeCenterTargetZ = 0.0f;
+
+	bool isPitchZoomActive = false;
+	float isPitchZoomTargetFov = 0.0f;
+	float isPitchZoomStartFov = 0.0f;
+	float isPitchZoomDuration = 0.0f;
+	float isPitchZoomTime = 0.0f;
 };

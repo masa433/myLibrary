@@ -1,4 +1,5 @@
 ﻿#include "Camera.h"
+#include <algorithm>
 
 //指定方向を向く
 void Camera::SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up)
@@ -38,9 +39,12 @@ void Camera::SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& fo
 //パースペクティブ設定
 void Camera::SetPerspectiveFov(float fovY, float aspect, float nearZ, float farZ)
 {
-    this->fovY = fovY;
+	float safeFov = (std::max)(DirectX::XMConvertToRadians(1.0f), (std::min)(fovY, DirectX::XMConvertToRadians(179.0f)));
+
+
+    this->fovY = safeFov;
     //画角、画面比率、クリップ距離からプロジェクション行列を作成
-    DirectX::XMMATRIX Projection = DirectX::XMMatrixPerspectiveFovLH(fovY, aspect, nearZ, farZ);
+    DirectX::XMMATRIX Projection = DirectX::XMMatrixPerspectiveFovLH(safeFov, aspect, nearZ, farZ);
 
     DirectX::XMStoreFloat4x4(&projection, Projection);
 }

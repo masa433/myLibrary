@@ -137,6 +137,33 @@ void CameraController::StopTrackingReplayCamera()
 	impactZoomActive = false;
 }
 
+void CameraController::StartPitchZoom(float targetFov, float duration)
+{
+	isPitchZoomActive = true;
+	isPitchZoomStartFov = currentFov;
+	isPitchZoomTargetFov = targetFov;
+	isPitchZoomDuration = duration;
+	isPitchZoomTime = 0.0f;
+}
+
+void CameraController::StopPitchZoom()
+{
+	isPitchZoomActive = false;
+	currentFov = isPitchZoomTargetFov;
+	trackingState = TrackState::None;
+	
+}
+
+void CameraController::ResetPitchZoom()
+{
+	isPitchZoomActive = false;
+	trackedBall = nullptr;
+	currentFov = defaultFov;
+	eye = savedEye;
+	focus = savedFocus;
+	trackingState = TrackState::None;
+}
+
 // 更新処理
 void CameraController::Update(float elapsedTime)
 {
@@ -212,6 +239,23 @@ void CameraController::Update(float elapsedTime)
 			eventEyeXZShiftActive = false;
 			eye.x = eventEyeXZShiftTargetX;
 			eye.z = eventEyeXZShiftTargetZ;
+		}
+		
+	}
+
+	if(isPitchZoomActive)
+	{
+		isPitchZoomTime += elapsedTime;
+
+		float progress = (std::min)(1.0f, isPitchZoomTime / isPitchZoomDuration);
+		float t = Smoothstep(progress);
+
+		currentFov = Lerp3({ isPitchZoomStartFov, 0.0f, 0.0f }, { isPitchZoomTargetFov, 0.0f, 0.0f }, t).x;
+
+		if(isPitchZoomTime >= isPitchZoomDuration)
+		{
+			isPitchZoomActive = false;
+			currentFov = isPitchZoomTargetFov;
 		}
 		
 	}

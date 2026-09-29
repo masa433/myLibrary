@@ -131,6 +131,7 @@ public:
 
 	PitchType GetSelectedPitchType() const { return selectedPitchType; }
 	bool GetIsBallThrown() const { return isBallThrown; }
+	void SetIsBallThrown(bool thrown) { isBallThrown = thrown; }
 
 	float GetSpeedVarianceKmh(PitchType pitchType) const;
 	const char* GetPitchTypeName(PitchType pitchType) const;

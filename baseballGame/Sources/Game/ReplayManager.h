@@ -14,6 +14,7 @@ struct ReplayFrame
 	DirectX::XMFLOAT3 pitcherRotation; //ピッチャーの回転（クォータニオン）
 	int pitcherCurrentAnimationIndex; //ピッチャーのアニメーションインデックス
 	float pitcherAnimationTime; //ピッチャーのアニメーションタイム
+	bool hasThrownBall; //ピッチャーがボールを投げたかどうか
 
 	DirectX::XMFLOAT3 batterPosition; //バッターの位置
 	DirectX::XMFLOAT3 batterRotation; //バッターの回転（クォータニオン）

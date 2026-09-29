@@ -65,6 +65,8 @@ public:
 
 	void StartEventCameraEyeXZShift(float targetEyeX, float targetEyeZ, float centerTargetEyeZ, float duration);
 
+	void StartPitchZoom(bool hasThrown, float targetFov,float duration);
+
 	std::string GetActiveCameraName() const
 	{
 		if(cameraPresets.empty() || activeCameraIndex < 0 || activeCameraIndex >= static_cast<int>(cameraPresets.size()))

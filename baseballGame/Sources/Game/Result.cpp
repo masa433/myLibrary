@@ -95,6 +95,7 @@ void Result::Update(float elapsedTime)
 		Pitcher::Instance().SetPosition(DirectX::XMFLOAT3(frame.pitcherPosition));
 		Pitcher::Instance().SetAngle(DirectX::XMFLOAT3(frame.pitcherRotation));
 		Pitcher::Instance().SetAnimationState(frame.pitcherCurrentAnimationIndex, frame.pitcherAnimationTime);
+		Pitcher::Instance().SetIsBallThrown(frame.hasThrownBall);
 
 		Player::Instance().SetPosition(DirectX::XMFLOAT3(frame.batterPosition));
 		Player::Instance().SetAngle(DirectX::XMFLOAT3(frame.batterRotation));
