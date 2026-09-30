@@ -288,6 +288,14 @@ void Wind::DrawGUI()
 			windDirection.x * windStrength,
 			windDirection.y * windStrength,
 			windDirection.z * windStrength);
+
+		//ボタンを押したら今の風向きを逆向きにする
+		if (ImGui::Button("Reverse Wind Direction"))
+		{
+			windDirection.x = -windDirection.x;
+			windDirection.y = -windDirection.y;
+			windDirection.z = -windDirection.z;
+		}
 	}
 
 	//スプライトのデバッグ表示

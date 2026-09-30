@@ -588,9 +588,6 @@ void ballSprite::Update(float elapsedTime)
 				case 12: // ナックルボール
 				case 13: // スローボール
 				case 15: // パーム
-				case 16: // ナチュラルシュート
-				case 17: // 真っスラ
-				case 18: // 火の玉ストレート
 				{
 					// 山なりに大きく曲がる軌道はP1とP3の間での進行度を返す
 					static constexpr float P1T_Curve = 0.1f;
@@ -631,6 +628,29 @@ void ballSprite::Update(float elapsedTime)
 					else
 					{
 						float linear = (t - P1T_Fall) / (P3T_Fall - P1T_Fall);
+						return SmoothStep(linear);
+					}
+				}
+				break;
+
+				case 16: // ナチュラルシュート
+				case 17: // 真っスラ
+				case 18: // 火の玉ストレート
+				{
+					// これらの球種はP1とP3の間での進行度を返す
+					static constexpr float P1T_Special = 0.3f;
+					static constexpr float P3T_Special = 1.0f;
+					if (t < P1T_Special)
+					{
+						return 0.0f;
+					}
+					else if (t > P3T_Special)
+					{
+						return 1.0f;
+					}
+					else
+					{
+						float linear = (t - P1T_Special) / (P3T_Special - P1T_Special);
 						return SmoothStep(linear);
 					}
 				}
