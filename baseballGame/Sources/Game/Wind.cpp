@@ -296,6 +296,17 @@ void Wind::DrawGUI()
 			windDirection.y = -windDirection.y;
 			windDirection.z = -windDirection.z;
 		}
+
+		//風の強さを+1,-1するボタン
+		if (ImGui::Button("Increase Wind Strength"))
+		{
+			windStrength += 1.0f;
+		}
+		if (ImGui::Button("Decrease Wind Strength"))
+		{
+			windStrength -= 1.0f;
+			if (windStrength < 0.0f) windStrength = 0.0f;
+		}
 	}
 
 	//スプライトのデバッグ表示

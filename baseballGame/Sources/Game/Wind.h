@@ -36,6 +36,15 @@ class Wind
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
+	//風を逆風にする関数
+	void ReverseWindDirection() { windDirection.x = -windDirection.x; windDirection.z = -windDirection.z; }
+
+	//風の強さを増やす関数
+	void IncreaseWindStrength(float amount) { windStrength += amount; }
+
+	//風の強さを減らす関数
+	void DecreaseWindStrength(float amount) { windStrength -= amount; if (windStrength < 0.0f) windStrength = 0.0f; }
+
 private:
 	struct WindLine
 	{

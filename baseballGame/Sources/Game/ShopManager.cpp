@@ -8,6 +8,7 @@
 #include "ballCount.h"
 #include "batSprite.h"
 #include "physxManager.h"
+#include "Wind.h"
 
 bool ShopManager::AbilityIsOwned() const
 {
@@ -74,6 +75,21 @@ void ShopManager::IncreaseBallZoneBonus(float bonus)
 void ShopManager::ChangeGravity(float gravity)
 {
 	Physics::Instance().SetGravity({0.0f, gravity, 0.0f});
+}
+
+void ShopManager::ReverseWindDirection()
+{
+	Wind::Instance().ReverseWindDirection();
+}
+
+void ShopManager::IncreaseWindEffect(float amount)
+{
+	Wind::Instance().IncreaseWindStrength(amount);
+}
+
+void ShopManager::DecreaseWindEffect(float amount)
+{
+	Wind::Instance().DecreaseWindStrength(amount);
 }
 
 std::wstring ShopManager::GetPitchTypeIconPath(Pitcher::PitchType type)
@@ -563,6 +579,39 @@ void ShopManager::BuildShopItem()
 	a[index].ballZoneBonus = 50; // ボール球ボーナスを50増加
 	a[index].onButtonPressed = [this, bonus = a[index].ballZoneBonus]() { this->IncreaseBallZoneBonus(bonus); }; // ボタンが押されたときの処理を設定
 	a[index].isButtonVisible = [this]() { return Pitcher::Instance().GetCurrentStrikeRate() < 1.0f; }; // ボール球ボーナスはストライク率が1.0未満の場合のみ表示
+	++index;
+
+	//逆風
+	a[index].id = ShopItemID::WindReverse;
+	a[index].name = u8"逆風";
+	a[index].texturePath = L".\\resources\\textures\\shopIcon\\windReverse.png";
+	a[index].price = 300;
+	a[index].originalPrice = 300;
+	a[index].appearanceRate = 5.0f;// 5%の確率で出現
+	a[index].level = 1;
+	a[index].onButtonPressed = [this]() { this->ReverseWindDirection(); }; // ボタンが押されたときの処理を設定
+	++index;
+
+	//風+1m
+	a[index].id = ShopItemID::WindIncrease;
+	a[index].name = u8"風+1m";
+	a[index].texturePath = L".\\resources\\textures\\shopIcon\\windIncrease.png";
+	a[index].price = 100;
+	a[index].originalPrice = 100;
+	a[index].appearanceRate = 20.0f;// 20%の確率で出現
+	a[index].level = 1;
+	a[index].onButtonPressed = [this]() { this->IncreaseWindEffect(1.0f); }; // ボタンが押されたときの処理を設定
+	++index;
+
+	//風-1m
+	a[index].id = ShopItemID::WindDecrease;
+	a[index].name = u8"風-1m";
+	a[index].texturePath = L".\\resources\\textures\\shopIcon\\windDecrease.png";
+	a[index].price = 100;
+	a[index].originalPrice = 100;
+	a[index].appearanceRate = 20.0f;// 20%の確率で出現
+	a[index].level = 1;
+	a[index].onButtonPressed = [this]() { this->DecreaseWindEffect(1.0f); }; // ボタンが押されたときの処理を設定
 	++index;
 }
 

@@ -16,7 +16,7 @@
 #include "..\Sources\Audio\Audio.h"
 
 #define BATTER_COUNT 24
-#define SHOP_ITEM_COUNT 22
+#define SHOP_ITEM_COUNT 25
 #define SHOP_ITEM_DISPLAY_COUNT 7
 #define SHOP_ITEM_RANDOM 6
 
@@ -45,6 +45,9 @@ public:
 		Reroll,
 		BallZoneRateUp,
 		BallZoneBonus,
+		WindReverse,
+		WindIncrease,
+		WindDecrease,
 	};
 
 	static ShopManager& Instance()
@@ -219,7 +222,8 @@ public:
 				shopItems[allItems[chosen]].id == ShopItemID::HalfPrice ||
 				shopItems[allItems[chosen]].id == ShopItemID::FreePrice||
 				shopItems[allItems[chosen]].id == ShopItemID::SpecialAbilityActiveRateUp||
-				shopItems[allItems[chosen]].id == ShopItemID::PitchTypeDecrease) 
+				shopItems[allItems[chosen]].id == ShopItemID::PitchTypeDecrease||
+				shopItems[allItems[chosen]].id == ShopItemID::WindReverse)
 			{
 				allItems.erase(allItems.begin() + chosen);//選ばれたアイテムを削除して、次の選択で同じアイテムが出現しないようにする
 			}
@@ -455,6 +459,8 @@ private:
 		int targetHomerun = 0; // ホームランの目標数
 		float ballZoneRateUp = 0.0f; // ボールゾーンの出現率アップの効果量
 		int ballZoneBonus = 0; // ボールゾーンのボーナス倍率の効果量
+		float windIncrease = 0.0f; // 風の増加の効果量
+		float windDecrease = 0.0f; // 風の減少の効果量
 		
 		std::function<bool()> isButtonVisible; //ボタンの出現条件
 		std::function<bool()> isButtonEnabled; //ボタンの有効条件
@@ -498,6 +504,9 @@ private:
 	void ChangeGravity(float gravity);
 	void SelectPitchTypeState();//ピッチャーの持っている球種を選択するステート	
 	void SelectSpecialAbilityState();//バッターが持っている特殊能力を選択するステート
+	void ReverseWindDirection();//風向きを逆にする関数
+	void IncreaseWindEffect(float amount);//風の影響を増加させる関数
+	void DecreaseWindEffect(float amount);//風の影響を減少させる関数
 
 	int shopPowerRankDown = 0; //ショップでの威圧感能力の投手へのペナルティ
 	int shopBreakRankDown = 0; //ショップでの威圧感能力の変化球へのペナルティ
