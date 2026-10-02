@@ -4,6 +4,7 @@
 #include "Graphics.h"
 #include "shader.h"
 #include "UiEasing.h"
+#include "imgui.h"
 
 void GameIntroSequence::Initialize(ID3D11Device* device)
 {
@@ -58,6 +59,26 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 	cameraFadeData->color = { 0.0f, 0.0f, 0.0f, 1.0f };
 	cameraFadeSprite = std::make_unique<sprite>(device, context, cameraFadeData->texturePath.c_str());
 
+	pitchParamData = std::make_unique<IntroData>();
+	pitchParamData->texturePath = L".\\resources\\textures\\pitchParamBoard.png";
+	pitchParamData->position = pitchParamPosition;
+    pitchParamData->size = pitchParamSize;
+	pitchParamData->rotation = 0.0f;
+	pitchParamData->color = { 1.0f, 1.0f, 1.0f, 0.9f };
+	pitchParamSprite = std::make_unique<sprite>(device, context, pitchParamData->texturePath.c_str());
+
+    for(int i = 0; i < GRAPH_COUNT; ++i)
+    {
+        graphData[i] = std::make_unique<IntroData>();
+        graphData[i]->texturePath = L".\\resources\\textures\\pitchWeightGraphs\\pitchWeightGraph" + std::to_wstring(i + 1) + L".png";
+        graphData[i]->position = graphPosition;
+        graphData[i]->size = graphSize;
+        graphData[i]->rotation = 0.0f;
+        graphData[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+        graphSprite[i] = std::make_unique<sprite>(device, context, graphData[i]->texturePath.c_str());
+	}
+
+
     // 初期化処理
     introTimer = 0.0f;
     introStarted = false;
@@ -76,6 +97,27 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 	rsDesc.DepthClipEnable = TRUE;// デプスクリッピングを有効にする
 	rsDesc.ScissorEnable = TRUE;// スクリーン外の描画を防ぐためにシザーを有効にする
     device->CreateRasterizerState(&rsDesc, rasterizerState.ReleaseAndGetAddressOf());
+
+    //フォントレンダラー初期化
+
+	Graphics& graphics = Graphics::Instance();
+	const int screenWidth = static_cast<int>(graphics.GetScreenWidth());
+	const int screenHeight = static_cast<int>(graphics.GetScreenHeight());
+
+	std::vector<int> codepoints = FontRenderer::Utf8ToCodepoints(
+        u8"0123456789.%"
+        u8"持ち球種投球割合"
+        u8"失投ストレートスライダー"
+        u8"カーブチェンジアップフォーク"
+        u8"ツーシームカットボールシンカー"
+        u8"スクリュー縦スプリットスローカーブ"
+        u8"シュートナックルボールスイーパーパーム"
+        u8"ナチュラルシュート真っスラ火の玉ストレート");
+
+	pitchParamFont.Initialize(device, 
+        L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf", 
+        100.0f, screenWidth, screenHeight, 
+        2048, 2048, &codepoints);
 }
 
 void GameIntroSequence::Uninitialize()
@@ -94,6 +136,12 @@ void GameIntroSequence::Uninitialize()
         batterIntroSprite[i].reset();
         batterIntroSpriteData[i].reset();
     }
+    for(int i = 0; i < GRAPH_COUNT; ++i)
+    {
+        graphSprite[i].reset();
+        graphData[i].reset();
+	}
+	pitchParamFont.Uninitialize();
 }
 
 void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcastCamera)
@@ -107,6 +155,8 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
         introDuration = 0.0f;
         introAmount = 1.0f; // 進行度を1.0に設定
         amountTimer = 0.0f; // 進行度のタイマーをリセット
+		graphAmount = 1.0f; // グラフの進行度を1.0に設定
+		graphTimer = 0.0f; // グラフのタイマーをリセット
 		fadeAlpha = 0.0f; // フェードの透明度をリセット
         showNameBoardTimer = maxShowNameBoardTime; // スタジアム名ボードの表示タイマーを最大値に設定
 		broadcastCamera.StopAllTracking(); // カメラの追跡を停止
@@ -127,6 +177,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 
 	amountTimer += elapsed_time;
 	showNameBoardTimer += elapsed_time;
+	graphTimer += elapsed_time;
 
     if (introState == GameIntroState::ShowingGround || introState == GameIntroState::ShowingStand)
     {
@@ -151,9 +202,11 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 
 	float amountProgress = amountTimer / amountDuration;
 
+	float graphProgress = graphTimer / graphDuration;
 
 	//イージング関数を用いてintroAmountを0.0から1.0に変化させる
     introAmount = UiEasing::Lerp(0.0f, 1.0f, amountProgress, UiEasing::EasingType::OutQuint);
+	graphAmount = UiEasing::Lerp(0.0f, 1.0f, graphProgress, UiEasing::EasingType::InOutSine);
 
     if (!introStarted)
     {
@@ -231,6 +284,8 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 			introDuration = 10.0f; // グラウンドを映す時間に変更
 			introAmount = 0.0f; // グラウンドのイントロ用にリセット
             amountTimer = 0.0f; // グラウンドのイントロ用にリセット
+			graphAmount = 0.0f; // グラフの進行度をリセット
+			graphTimer = 0.0f; // グラフのタイマーをリセット
 
             isFadingOut = false; // フェードアウト停止
             isFadingIn = true;   // フェードイン開始
@@ -317,6 +372,10 @@ void GameIntroSequence::Render()
     {
 		Pitcher::RealPitcher selectedPitcher = Pitcher::Instance().GetSelectedRealPitcher();
 
+        //ピッチャーの持っている球種と投球割合を上から順に表示する
+        auto& pitchType = Pitcher::Instance().GetCurrentPitcherPitchTypes();
+        auto& weights = Pitcher::Instance().GetCurrentPitcherPitchWeights();
+
         selectedPitcherIndex = static_cast<int>(selectedPitcher) - 1;
         if (selectedPitcherIndex >= 0 && selectedPitcherIndex < PITCHER_COUNT)
         {
@@ -334,6 +393,158 @@ void GameIntroSequence::Render()
 				pitcherIntroSpriteData[selectedPitcherIndex].get(), context,
                 scaledCenteredPos, scaledSize, 
                 introAmount);
+        }
+
+		//1行当たりの高さを37.5に設定
+		const float headerHeight = 50.0f;
+		const float rowHeight = 37.5f;
+
+		//表示に必要な行数を下から計算
+        size_t activeRowCount = pitchType.size();
+        if (activeRowCount > 8) activeRowCount = 8; // 最大8行に制限
+
+        float currentParamHeight = headerHeight + (rowHeight * static_cast<float>(activeRowCount));
+
+        //パラメーターボードの描画
+		DirectX::XMFLOAT2 scaledPitchParamPosition = screenScaler.Scale(pitchParamPosition);
+		DirectX::XMFLOAT2 scaledPitchParamSize = screenScaler.ScaleSize(pitchParamSize);
+
+       
+        DirectX::XMFLOAT2 scaledPitchParamCenteredPos =
+        {
+            scaledPitchParamPosition.x - scaledPitchParamSize.x / 2.0f,
+            scaledPitchParamPosition.y - scaledPitchParamSize.y / 2.0f
+		};
+
+		float scaleY = screenScaler.GetScaleY();
+        float scaledVisibleHeight = currentParamHeight * scaleY;
+
+        if(pitchParamData && pitchParamSprite)
+        {
+			//シザー領域で描画範囲を制限する
+			D3D11_RECT scissorRect;
+			scissorRect.left = static_cast<LONG>(scaledPitchParamCenteredPos.x);
+			scissorRect.top = static_cast<LONG>(scaledPitchParamCenteredPos.y);
+			scissorRect.right = static_cast<LONG>(scaledPitchParamCenteredPos.x + scaledPitchParamSize.x);
+			scissorRect.bottom = static_cast<LONG>(scaledPitchParamCenteredPos.y + scaledVisibleHeight);
+
+            context->RSSetScissorRects(1, &scissorRect);
+            context->RSSetState(rasterizerState.Get()); // ScissorEnable = TRUE のステートを適用
+
+            pitchParamSprite->render(context, scaledPitchParamCenteredPos.x, scaledPitchParamCenteredPos.y,
+                scaledPitchParamSize.x, scaledPitchParamSize.y, 1.0f, 1.0f, 1.0f, pitchParamData->color.w, pitchParamData->rotation);
+
+			// スプライト描画後にシザーを無効化する
+            // シザー領域を画面全体に戻す
+            D3D11_RECT fullRect = { 0, 0, static_cast<LONG>(Graphics::Instance().GetScreenWidth()), static_cast<LONG>(Graphics::Instance().GetScreenHeight()) };
+            context->RSSetScissorRects(1, &fullRect);
+		}
+
+
+        //右ぞろえにするヘルパー関数
+        auto rightTextPosition = [&](const std::string& text, float fontSize, float x, float y) -> DirectX::XMFLOAT2
+            {
+                float textWidth = 0.0f;
+                float textHeight = 0.0f;
+                pitchParamFont.MeasureText(text.c_str(), fontSize, textWidth, textHeight);
+                return { x - textWidth, y - textHeight / 2.0f };
+            };
+
+		//中央ぞろえにするヘルパー関数
+        auto centerTextPosition = [&](const std::string& text, float fontSize, float x, float y) -> DirectX::XMFLOAT2
+            {
+                float textWidth = 0.0f;
+                float textHeight = 0.0f;
+                pitchParamFont.MeasureText(text.c_str(), fontSize, textWidth, textHeight);
+                return { x - textWidth / 2.0f, y - textHeight / 2.0f };
+			};
+
+
+		//球種と投球割合のラベルを表示する
+		char pitchTypeLabelBuffer[256];
+        snprintf(pitchTypeLabelBuffer, sizeof(pitchTypeLabelBuffer), u8"持ち球");
+		DirectX::XMFLOAT2 scaledLabelPosition = screenScaler.Scale(pitchTypeLabelPosition);
+		const float labelScale = pitchTypeLabelScale * screenScaler.GetUniformScale();
+		//中央ぞろえの位置を計算       
+		DirectX::XMFLOAT2 centerAlignedLabelPos = centerTextPosition(pitchTypeLabelBuffer, labelScale, scaledLabelPosition.x, scaledLabelPosition.y);
+		pitchParamFont.DrawTextW(context, pitchTypeLabelBuffer, centerAlignedLabelPos.x, centerAlignedLabelPos.y, labelScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
+		//投球割合のラベルを表示する
+        char pitchWeightLabelBuffer[256];
+		snprintf(pitchWeightLabelBuffer, sizeof(pitchWeightLabelBuffer), u8"投球割合");
+		DirectX::XMFLOAT2 scaledWeightLabelPosition = screenScaler.Scale(pitchWeightLabelPosition);
+		const float weightLabelScale = pitchWeightLabelScale * screenScaler.GetUniformScale();
+        //中央ぞろえの位置を計算		
+		DirectX::XMFLOAT2 centerAlignedWeightLabelPos = centerTextPosition(pitchWeightLabelBuffer, weightLabelScale, scaledWeightLabelPosition.x, scaledWeightLabelPosition.y);
+		pitchParamFont.DrawTextW(context, pitchWeightLabelBuffer, centerAlignedWeightLabelPos.x, centerAlignedWeightLabelPos.y, weightLabelScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
+        for(size_t i = 0;i < pitchType.size(); ++i)
+        {
+			
+            //球種名の表示
+			char buffer[256];
+			snprintf(buffer, sizeof(buffer), "%s", Pitcher::Instance().GetPitchTypeName(pitchType[i]));
+            DirectX::XMFLOAT2 textPosition = {pitchTypeFontPosition.x, pitchTypeFontPosition.y + static_cast<float>(i) * offsetY}; // 適切な位置に調整
+			textPosition = screenScaler.Scale(textPosition);
+			const float textScale = pitchTypeFontScale * screenScaler.GetUniformScale();
+            
+			//中央ぞろえの位置を計算
+			DirectX::XMFLOAT2 centerAlignedPos = centerTextPosition(buffer, textScale, textPosition.x, textPosition.y);       
+			pitchParamFont.DrawTextW(context, buffer, centerAlignedPos.x, centerAlignedPos.y, textScale, 1.0f, 1.0f, 1.0f, 1.0f);
+            
+
+			//投球割合の表示
+			char weightBuffer[256];
+			snprintf(weightBuffer, sizeof(weightBuffer), u8"%.1f%%", weights[i]);
+			DirectX::XMFLOAT2 weightTextPosition = { pitchWeightFontPosition.x, pitchWeightFontPosition.y + static_cast<float>(i) * offsetY }; // 適切な位置に調整
+			weightTextPosition = screenScaler.Scale(weightTextPosition);
+            const float weightTextScale = pitchWeightFontScale * screenScaler.GetUniformScale();
+			
+			//右ぞろえの位置を計算
+			DirectX::XMFLOAT2 rightAlignedWeightPos = rightTextPosition(weightBuffer, weightTextScale, weightTextPosition.x, weightTextPosition.y);
+			pitchParamFont.DrawTextW(context, weightBuffer, rightAlignedWeightPos.x, rightAlignedWeightPos.y, weightTextScale, 1.0f, 1.0f, 1.0f, 1.0f);
+		}
+
+        context->VSSetShader(spriteVS.Get(), nullptr, 0);
+        context->PSSetShader(spritePS.Get(), nullptr, 0);
+        context->IASetInputLayout(spriteInputLayout.Get());
+
+		//グラフの描画
+        //投球割合の大きさで描画するグラフを選択する(40%以上でグラフ1、30%～39%でグラフ2など)
+        auto getGraphIndex = [](float weight) -> int
+        {
+            if(weight >= 40.0f) return 0;
+            else if(weight >= 30.0f) return 1;
+            else if(weight >= 20.0f) return 2;
+            else if(weight >= 10.0f) return 3;
+			else if (weight >= 1.0f) return 4;
+            else return 5; // 10%未満の場合はグラフ6を使用
+		};
+        
+        DirectX::XMFLOAT2 scaledGraphPosition = screenScaler.Scale(graphPosition);
+        DirectX::XMFLOAT2 scaledGraphSize = screenScaler.ScaleSize(graphSize);
+        float graphScaleY = screenScaler.GetScaleY();
+        float scaledOffsetY = offsetY * graphScaleY;
+
+        DirectX::XMFLOAT2 scaledCenteredGraphPos =
+        {
+            scaledGraphPosition.x - scaledGraphSize.x / 2.0f,
+            scaledGraphPosition.y - scaledGraphSize.y / 2.0f
+		};
+
+        for (size_t i = 0; i < weights.size(); ++i)
+        {
+            int graphIndex = getGraphIndex(weights[i]);
+            DirectX::XMFLOAT2 graphPos = { scaledCenteredGraphPos.x, scaledCenteredGraphPos.y + static_cast<float>(i) * scaledOffsetY };
+            if (graphIndex >= 0 && graphIndex < GRAPH_COUNT)
+            {
+				//グラフの描画を投球割合の大きさに応じてグラフの横幅を変化させる
+
+				float graphWidth = scaledGraphSize.x * (weights[i] / 100.0f); // 投球割合に応じて横幅を計算
+
+                DrawFillGraph(graphSprite[graphIndex].get(), graphData[graphIndex].get(), context, graphPos, DirectX::XMFLOAT2(graphWidth, scaledGraphSize.y), graphAmount);
+
+            }
         }
     }
     else if (introState == GameIntroState::ShowingBatter)
@@ -463,4 +674,142 @@ void GameIntroSequence::DrawFillHorizontalFromCenter(sprite* spr, IntroData* dat
     fullRect.right = static_cast<LONG>(Graphics::Instance().GetScreenWidth());
     fullRect.bottom = static_cast<LONG>(Graphics::Instance().GetScreenHeight());
     context->RSSetScissorRects(1, &fullRect);// シザー矩形を元に戻す
+}
+
+void GameIntroSequence::DrawFillGraph(sprite* spr, IntroData* data, ID3D11DeviceContext* context,
+    DirectX::XMFLOAT2& pos, DirectX::XMFLOAT2& size, float amount)
+{
+    // amountは0.0から1.0の範囲で、描画する幅の割合を示す
+    amount = (std::max)(0.0f, (std::min)(1.0f, amount)); // 0.0から1.0の範囲に制限
+    //左端から描画する幅を計算
+    D3D11_RECT scissorRect;
+    scissorRect.left = static_cast<LONG>(pos.x);
+    scissorRect.top = static_cast<LONG>(pos.y);
+    scissorRect.right = static_cast<LONG>(pos.x + size.x * amount);
+    scissorRect.bottom = static_cast<LONG>(pos.y + size.y);
+    context->RSSetScissorRects(1, &scissorRect);// シザー矩形を設定
+    context->RSSetState(rasterizerState.Get());// ラスタライザステートを設定
+    // スプライトを描画
+    spr->render(context,
+        pos.x,
+        pos.y,
+        size.x,
+        size.y,
+        data->color.x,
+        data->color.y,
+        data->color.z,
+        data->color.w,
+        data->rotation);
+    // シザー矩形を元に戻す
+    D3D11_RECT fullRect;
+    fullRect.left = 0;
+    fullRect.top = 0;
+    fullRect.right = static_cast<LONG>(Graphics::Instance().GetScreenWidth());
+    fullRect.bottom = static_cast<LONG>(Graphics::Instance().GetScreenHeight());
+    context->RSSetScissorRects(1, &fullRect);// シザー矩形を元に戻す
+}
+
+void GameIntroSequence::DrawGUI()
+{
+    if (ImGui::CollapsingHeader("IntroSequence"))
+    {
+        //テクスチャの設定
+		ImGui::DragFloat2("ParamBoard Position", &pitchParamPosition.x, 1.0f);
+        ImGui::DragFloat2("ParamBoard Size", &pitchParamSize.x, 1.0f);
+		ImGui::Separator();
+        ImGui::DragFloat2("PitchType Font Position", &pitchTypeFontPosition.x, 1.0f);
+        ImGui::DragFloat("PitchType Font Scale", &pitchTypeFontScale, 0.01f, 0.01f, 10.0f);
+        ImGui::DragFloat2("PitchWeight Font Position", &pitchWeightFontPosition.x, 1.0f);
+        ImGui::DragFloat("PitchWeight Font Scale", &pitchWeightFontScale, 0.01f, 0.01f, 10.0f);
+        ImGui::DragFloat2("PitchType Label Position", &pitchTypeLabelPosition.x, 1.0f);
+        ImGui::DragFloat("PitchType Label Scale", &pitchTypeLabelScale, 0.01f, 0.01f, 10.0f);
+        ImGui::DragFloat2("PitchWeight Label Position", &pitchWeightLabelPosition.x, 1.0f);
+		ImGui::DragFloat("PitchWeight Label Scale", &pitchWeightLabelScale, 0.01f, 0.01f, 10.0f);
+		ImGui::DragFloat("Offset Y", &offsetY, 1.0f, 0.0f, 100.0f);
+		ImGui::Separator();
+		ImGui::DragFloat2("Graph Position", &graphPosition.x, 1.0f);
+		ImGui::DragFloat2("Graph Size", &graphSize.x, 1.0f);
+    }
+   
+}
+
+void GameIntroSequence::SaveToJson(nlohmann::json& json)
+{
+    json["pitchParamPosition"] = { pitchParamPosition.x, pitchParamPosition.y };
+    json["pitchParamSize"] = { pitchParamSize.x, pitchParamSize.y };
+    json["pitchTypeFontPosition"] = { pitchTypeFontPosition.x, pitchTypeFontPosition.y };
+    json["pitchTypeFontScale"] = pitchTypeFontScale;
+    json["pitchWeightFontPosition"] = { pitchWeightFontPosition.x, pitchWeightFontPosition.y };
+    json["pitchWeightFontScale"] = pitchWeightFontScale;
+    json["pitchTypeLabelPosition"] = { pitchTypeLabelPosition.x, pitchTypeLabelPosition.y };
+    json["pitchTypeLabelScale"] = pitchTypeLabelScale;
+    json["pitchWeightLabelPosition"] = { pitchWeightLabelPosition.x, pitchWeightLabelPosition.y };
+    json["pitchWeightLabelScale"] = pitchWeightLabelScale;
+	json["offsetY"] = offsetY;
+	json["graphPosition"] = { graphPosition.x, graphPosition.y };
+	json["graphSize"] = { graphSize.x, graphSize.y };
+}
+
+void GameIntroSequence::LoadFromJson(const nlohmann::json& json)
+{
+    if (json.contains("pitchParamPosition"))
+    {
+        pitchParamPosition.x = json["pitchParamPosition"][0];
+        pitchParamPosition.y = json["pitchParamPosition"][1];
+    }
+    if (json.contains("pitchParamSize"))
+    {
+        pitchParamSize.x = json["pitchParamSize"][0];
+        pitchParamSize.y = json["pitchParamSize"][1];
+    }
+    if (json.contains("pitchTypeFontPosition"))
+    {
+        pitchTypeFontPosition.x = json["pitchTypeFontPosition"][0];
+        pitchTypeFontPosition.y = json["pitchTypeFontPosition"][1];
+    }
+    if (json.contains("pitchTypeFontScale"))
+    {
+        pitchTypeFontScale = json["pitchTypeFontScale"];
+    }
+    if (json.contains("pitchWeightFontPosition"))
+    {
+        pitchWeightFontPosition.x = json["pitchWeightFontPosition"][0];
+        pitchWeightFontPosition.y = json["pitchWeightFontPosition"][1];
+    }
+    if (json.contains("pitchWeightFontScale"))
+    {
+        pitchWeightFontScale = json["pitchWeightFontScale"];
+    }
+    if (json.contains("pitchTypeLabelPosition"))
+    {
+        pitchTypeLabelPosition.x = json["pitchTypeLabelPosition"][0];
+        pitchTypeLabelPosition.y = json["pitchTypeLabelPosition"][1];
+    }
+    if (json.contains("pitchTypeLabelScale"))
+    {
+        pitchTypeLabelScale = json["pitchTypeLabelScale"];
+    }
+    if (json.contains("pitchWeightLabelPosition"))
+    {
+        pitchWeightLabelPosition.x = json["pitchWeightLabelPosition"][0];
+        pitchWeightLabelPosition.y = json["pitchWeightLabelPosition"][1];
+    }
+    if (json.contains("pitchWeightLabelScale"))
+    {
+        pitchWeightLabelScale = json["pitchWeightLabelScale"];
+    }
+    if (json.contains("offsetY"))
+    {
+        offsetY = json["offsetY"];
+    }
+    if (json.contains("graphPosition"))
+    {
+        graphPosition.x = json["graphPosition"][0];
+        graphPosition.y = json["graphPosition"][1];
+	}
+    if (json.contains("graphSize"))
+    {
+        graphSize.x = json["graphSize"][0];
+        graphSize.y = json["graphSize"][1];
+	}
 }

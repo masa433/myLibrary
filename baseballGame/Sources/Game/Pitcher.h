@@ -626,6 +626,39 @@ public:
 		return aiStrikeRate <= MIN_STRIKE_RATE;
 	}
 
+	//選択されたピッチャーの球種を取得する関数
+	std::vector<PitchType> GetCurrentPitcherPitchTypes() const
+	{
+		std::vector<PitchType> pitchTypes;
+		for (const auto& entry : realPitcherArsenal)
+		{
+			pitchTypes.push_back(entry.pitchType);
+		}
+		return pitchTypes;
+	}
+	
+	//選択されたピッチャーの投球割合を取得する関数
+	std::vector<float> GetCurrentPitcherPitchWeights() const
+	{
+		std::vector<float> weights;
+		for (const auto& entry : realPitcherArsenal)
+		{
+			weights.push_back(entry.weightPercent);
+		}
+		return weights;
+	}
+
+	//選択されたピッチャーの球種の数を取得する関数
+	std::vector<int> GetCurrentPitcherPitchCount() const
+	{
+		std::vector<int> counts;
+		for (const auto& entry : realPitcherArsenal)
+		{
+			counts.push_back(static_cast<int>(entry.pitchType));
+		}
+		return counts;
+	}
+
 private:
 	std::vector<PitchType> disabledPitchTypes; // ショップで減らされた球種のリスト
 

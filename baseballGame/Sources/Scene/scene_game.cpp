@@ -1015,6 +1015,8 @@ void scene_game::DrawGUI()
 		if (ImGui::CollapsingHeader("Special Ability")) { SpecialAbility::Instance().DrawGUI(); }
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Replay Manager")) { ReplayManager::Instance().DrawGUI(); }
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Game Intro Sequence")) { gameIntroSequence.DrawGUI(); }
 
         ImGui::End();
 
@@ -1486,6 +1488,7 @@ void scene_game::SaveSetting()
 	BallNet::Instance().SaveToJson(j["ballNet"]);
 	Money::Instance().SaveToJson(j["money"]);
 	RoundManager::Instance().SaveToJson(j["roundManager"]);
+	gameIntroSequence.SaveToJson(j["gameIntroSequence"]);
 
     // ファイルに保存
     std::ofstream file("resources\\setting\\settings.json");
@@ -1658,5 +1661,6 @@ void scene_game::LoadSetting()
 	if (j.contains("ballNet")) BallNet::Instance().LoadFromJson(j["ballNet"]);
 	if (j.contains("money")) Money::Instance().LoadFromJson(j["money"]);
 	if (j.contains("roundManager")) RoundManager::Instance().LoadFromJson(j["roundManager"]);
+	if (j.contains("gameIntroSequence")) gameIntroSequence.LoadFromJson(j["gameIntroSequence"]);
     consoleLog.push_back("[Info] Settings loaded.");
 }

@@ -5,13 +5,20 @@
 #include <memory>
 #include "BroadcastCamera.h"
 #include "sprite.h"
+#include "FontRenderer.h"
+#include "json.hpp"
 
 #define PITCHER_COUNT 21
 #define BATTER_COUNT 24
+#define GRAPH_COUNT 6
+
+using json = nlohmann::json;
 
 class GameIntroSequence
 {
 public:
+
+	FontRenderer pitchParamFont;// ピッチャーのパラメータ表示用フォントレンダラー
 
 	struct IntroData
 	{
@@ -37,6 +44,9 @@ public:
 	void Render();
 	void UpdateFadeIn(float elapsedTime); // フェードインの更新処理
 	void UpdateFadeOut(float elapsedTime); // フェードアウトの更新処理
+	void DrawGUI(); // GUIの描画処理
+	void SaveToJson(json& j);
+	void LoadFromJson(const json& j);
 
 	// 水平方向に塗りつぶす描画関数
 	void DrawFillHorizontal(sprite* spr, IntroData* data, ID3D11DeviceContext* context,
@@ -48,6 +58,10 @@ public:
 
 	GameIntroState GetIntroState() const { return introState; }
 	bool IsPlaying() const { return introState == GameIntroState::Playing; }
+
+	//グラフを左から右に投球割合の分だけ塗りつぶす描画関数
+	void DrawFillGraph(sprite* spr, IntroData* data, ID3D11DeviceContext* context,
+		DirectX::XMFLOAT2& pos, DirectX::XMFLOAT2& size, float amount);
 
 private:
 	GameIntroState introState = GameIntroState::ShowingGround;
@@ -71,6 +85,10 @@ private:
 	float fadeAlpha = 1.0f; // フェードの透明度（0.0から1.0）
 	bool isFadingIn = true; // フェードイン中かどうか
 	bool isFadingOut = false; // フェードアウト中かどうか
+
+	float graphAmount = 0.0f; // グラフの進行度（0.0から1.0）
+	float graphDuration = 1.3f; // グラフが塗りつぶされるまでの時間
+	float graphTimer = 0.0f; // グラフのタイマー
 
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
 
@@ -96,8 +114,34 @@ private:
 	std::unique_ptr<IntroData> cameraFadeData;
 	std::unique_ptr<sprite> cameraFadeSprite;
 
+	std::unique_ptr<IntroData> pitchParamData;
+	std::unique_ptr<sprite> pitchParamSprite;
+
+	DirectX::XMFLOAT2 pitchParamPosition = { 1350.0f, 450.0f };
+	DirectX::XMFLOAT2 pitchParamSize = { 700.0f, 350.0f };
+
+	std::unique_ptr<IntroData> graphData[GRAPH_COUNT];
+	std::unique_ptr<sprite> graphSprite[GRAPH_COUNT];
+
+	DirectX::XMFLOAT2 graphPosition = {1510.0f, 345.0f};
+	DirectX::XMFLOAT2 graphSize = { 340.0f, 20.0f };
+
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
+
+	DirectX::XMFLOAT2 pitchTypeFontPosition = { 1300.0f, 400.0f };
+	float pitchTypeFontScale = 0.5f;
+
+	DirectX::XMFLOAT2 pitchWeightFontPosition = { 1500.0f, 400.0f };
+	float pitchWeightFontScale = 0.5f;
+
+	DirectX::XMFLOAT2 pitchTypeLabelPosition = { 1300.0f, 350.0f };
+	float pitchTypeLabelScale = 0.5f;
+
+	DirectX::XMFLOAT2 pitchWeightLabelPosition = { 1500.0f, 350.0f };
+	float pitchWeightLabelScale = 0.5f;
+
+	float offsetY = 0.0f; // Y方向のオフセット値
 };
