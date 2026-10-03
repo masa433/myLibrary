@@ -493,9 +493,15 @@ void GameIntroSequence::Render()
 			pitchParamFont.DrawTextW(context, buffer, centerAlignedPos.x, centerAlignedPos.y, textScale, 1.0f, 1.0f, 1.0f, 1.0f);
             
 
+			float targetWeight = weights[i];
+			float currentWeight = targetWeight * graphAmount; // graphAmount‚É‰‚¶‚Ä“Š‹…Š„‡‚ğ‘‰Á‚³‚¹‚é
+
+
 			//“Š‹…Š„‡‚Ì•\¦
 			char weightBuffer[256];
-			snprintf(weightBuffer, sizeof(weightBuffer), u8"%.1f%%", weights[i]);
+			snprintf(weightBuffer, sizeof(weightBuffer), u8"%.1f%%", currentWeight);
+
+			
 			DirectX::XMFLOAT2 weightTextPosition = { pitchWeightFontPosition.x, pitchWeightFontPosition.y + static_cast<float>(i) * offsetY }; // “KØ‚ÈˆÊ’u‚É’²®
 			weightTextPosition = screenScaler.Scale(weightTextPosition);
             const float weightTextScale = pitchWeightFontScale * screenScaler.GetUniformScale();

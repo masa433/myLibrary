@@ -269,5 +269,5 @@ private:
 	float relativeSpeed = 0.0f; // 相対速度(m/s)
 	float spinParameter = 0.0f; // スピンパラメータ
 	float magnusMag = 0.0f; // マグナス力の大きさ(N)
-	float dragMag = 0.0f; // 抗力の大きさ(N)
+	float dragMag = 0.0f; // 抗力の大きさ(N)z
 };

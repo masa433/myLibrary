@@ -235,7 +235,7 @@ void ReplayManager::UpdatePlayback(float elapsedTime)
 	if (currentPlaybackFrame.hasCollidedWithBat)
 	{
 		std::deque<DirectX::XMFLOAT3> replayTrail;
-		const size_t maxTrailPoints = 100; // 最大トレイルポイント数
+		const size_t maxTrailPoints = 1000; // 最大トレイルポイント数
 
 		for(int i = static_cast<int>(playbackIndex); i>= 0 && replayTrail.size() < maxTrailPoints; --i)
 		{
