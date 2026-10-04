@@ -127,7 +127,8 @@ void HomeRunCount::Render()
 {
 	
 	bool isSelectPitching = Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch;
-	bool isTracking = broadcastCamera.IsTrackingBall();
+	//カメラタイプがヒットカメラかどうかを判定
+	bool isTracking = broadcastCamera.GetActiveCameraType() == CameraType::HitCamera;
 
 	bool shouldRenderHomeRunCount = isSelectPitching || isTracking;// セレクト中かつヒットカメラでない場合、またはセレクト中でなくヒットカメラの場合に描画する
 	if (shouldRenderHomeRunCount) 
@@ -301,6 +302,10 @@ void HomeRunCount::DrawGUI()
 		ImGui::Separator();
 		ImGui::DragFloat2("Mission Label Position", &missionLabelPosition.x);
 		ImGui::DragFloat("Mission Label Scale", &missionLabelScale);
+
+		//今追跡中かどうかを表示
+		bool isTracking = broadcastCamera.IsTrackingBall();
+		ImGui::Text("Is Tracking Ball: %s", isTracking ? "Yes" : "No");
 	}
 	Combo::Instance().DrawGUI();
 

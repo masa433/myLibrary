@@ -159,9 +159,16 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 		graphTimer = 0.0f; // グラフのタイマーをリセット
 		fadeAlpha = 0.0f; // フェードの透明度をリセット
         showNameBoardTimer = maxShowNameBoardTime; // スタジアム名ボードの表示タイマーを最大値に設定
-		broadcastCamera.StopAllTracking(); // カメラの追跡を停止
+		
+        //アクティブカメラをデフォルトのカメラに戻す
+        int defaultCameraId = 0; // デフォルトのカメラID
+        int index = broadcastCamera.GetCameraIndexById(defaultCameraId);
+        broadcastCamera.SetActiveIndex(index);
+        broadcastCamera.ResetCameraToPreset(index);
+
 		broadcastCamera.SetReplayMode(false); // リプレイモードを無効化
 		Pitcher& pitcher = Pitcher::Instance();
+
 
 		pitcher.SetCurrentState(Pitcher::State::SelectingPitch); // ピッチャーの状態を判定待ちに設定
 		pitcher.SetAnimationTime(0.0f); // ピッチャーのアニメーション時間をリセット
@@ -303,7 +310,12 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
         else if (introState == GameIntroState::ShowingBatter)
         {
             introState = GameIntroState::Playing;
-            broadcastCamera.StopAllTracking();
+			//アクティブカメラをデフォルトのカメラに戻す
+			int defaultCameraId = 0; // デフォルトのカメラID
+			int index = broadcastCamera.GetCameraIndexById(defaultCameraId);
+            broadcastCamera.SetActiveIndex(index);
+            broadcastCamera.ResetCameraToPreset(index);
+
             broadcastCamera.SetReplayMode(false); // リプレイモードを無効化
         }
     }
