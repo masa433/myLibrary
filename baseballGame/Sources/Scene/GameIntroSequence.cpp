@@ -78,6 +78,13 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
         graphSprite[i] = std::make_unique<sprite>(device, context, graphData[i]->texturePath.c_str());
 	}
 
+	introBoardData = std::make_unique<IntroData>();
+	introBoardData->texturePath = L".\\resources\\textures\\introBoard.png";
+	introBoardData->position = introBoardPosition;
+	introBoardData->size = introBoardSize;
+	introBoardData->rotation = 0.0f;
+	introBoardData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	introBoardSprite = std::make_unique<sprite>(device, context, introBoardData->texturePath.c_str());
 
     // 初期化処理
     introTimer = 0.0f;
@@ -89,6 +96,10 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 	fadeTimer = 0.0f;
 	fadeDuration = 0.5f;
 	fadeAlpha = 0.0f;
+
+    introBoardAlpha = 1.0f;
+    introBoardFadeTimer = 0.0f; 
+    introBoardFadeDuration = 2.0f;
 
 	//テクスチャを左側から順に表示するためのラスタライザステートを作成
     D3D11_RASTERIZER_DESC rsDesc = {};
@@ -149,16 +160,20 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 	//仮で右クリックを押したらすべてのイントロをスキップする
     if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
     {
-        introState = GameIntroState::Playing;
+        introState = GameIntroState::ShowingIntroBoard;
         introTimer = 0.0f;
         introStarted = false;
-        introDuration = 0.0f;
+        introDuration = 3.0f;
         introAmount = 1.0f; // 進行度を1.0に設定
         amountTimer = 0.0f; // 進行度のタイマーをリセット
 		graphAmount = 1.0f; // グラフの進行度を1.0に設定
 		graphTimer = 0.0f; // グラフのタイマーをリセット
 		fadeAlpha = 0.0f; // フェードの透明度をリセット
         showNameBoardTimer = maxShowNameBoardTime; // スタジアム名ボードの表示タイマーを最大値に設定
+
+        introBoardAlpha = 1.0f;
+        introBoardFadeTimer = 0.0f;
+        introBoardFadeDuration = 2.0f;
 		
         //アクティブカメラをデフォルトのカメラに戻す
         int defaultCameraId = 0; // デフォルトのカメラID
@@ -206,6 +221,23 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
             stadiumNameBoardData->color.w = 0.0f; // 透明度が負にならないように制限
 		}
 	}
+
+    if (introState == GameIntroState::ShowingIntroBoard)
+    {
+		introBoardFadeTimer += elapsed_time;
+
+		if (introBoardFadeTimer >= introBoardFadeDuration)
+        {
+			introBoardFadeTimer = introBoardFadeDuration; // フェードアウトが完了したらタイマーを最大値に固定
+
+            introBoardAlpha -= elapsed_time / (introBoardFadeDuration * 0.5f); // イントロボードを徐々にフェードアウト
+            if (introBoardAlpha < 0.0f)
+            {
+                introBoardAlpha = 0.0f; // 透明度が負にならないように制限
+            }
+        }
+
+    }
 
 	float amountProgress = amountTimer / amountDuration;
 
@@ -309,13 +341,24 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
         }
         else if (introState == GameIntroState::ShowingBatter)
         {
-            introState = GameIntroState::Playing;
+            introState = GameIntroState::ShowingIntroBoard;
 			//アクティブカメラをデフォルトのカメラに戻す
 			int defaultCameraId = 0; // デフォルトのカメラID
 			int index = broadcastCamera.GetCameraIndexById(defaultCameraId);
             broadcastCamera.SetActiveIndex(index);
             broadcastCamera.ResetCameraToPreset(index);
+			introDuration = 3.0f; // イントロボードを映す時間に変更
+            
+        }
+        else if (introState == GameIntroState::ShowingIntroBoard)
+        {
+            if(introBoardAlpha <= 0.0f)
+            {
+                introBoardAlpha = 0.0f; // 透明度が負にならないように制限
+                introState = GameIntroState::Playing;
+			}
 
+            
             broadcastCamera.SetReplayMode(false); // リプレイモードを無効化
         }
     }
@@ -586,6 +629,26 @@ void GameIntroSequence::Render()
                 scaledCenteredPos, scaledSize, 
 				introAmount);
         }
+    }
+    else if (introState == GameIntroState::ShowingIntroBoard)
+    {
+        DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(introBoardPosition);
+        DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(introBoardSize);
+        DirectX::XMFLOAT2 scaledCenteredPos =
+        {
+            scaledPosition.x - scaledSize.x / 2.0f,
+            scaledPosition.y - scaledSize.y / 2.0f
+        };
+
+		introBoardSprite->render(
+            context,
+            scaledCenteredPos.x, scaledCenteredPos.y,
+            scaledSize.x, scaledSize.y,
+			introBoardData->color.x,
+            introBoardData->color.y,
+            introBoardData->color.z,
+			introBoardData->color.w * introBoardAlpha,
+			introBoardData->rotation);
     }
 
     if(cameraFadeData && cameraFadeSprite && (isFadingIn || isFadingOut))

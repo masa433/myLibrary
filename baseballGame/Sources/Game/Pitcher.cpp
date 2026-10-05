@@ -225,7 +225,9 @@ void Pitcher::Update(float elapsedTime)
 	foulSound->Update();
 
 	// 状態に応じた処理
-	if (intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingGround && intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingStand)
+	if (intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingGround &&
+		intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingStand &&
+		intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingIntroBoard)
 	{
 		switch (currentState)
 		{

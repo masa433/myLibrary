@@ -35,6 +35,7 @@ public:
 		ShowingGround,
 		ShowingPitcher,
 		ShowingBatter,
+		ShowingIntroBoard,
 		Playing,
 	};
 
@@ -90,6 +91,10 @@ private:
 	float graphDuration = 1.3f; // グラフが塗りつぶされるまでの時間
 	float graphTimer = 0.0f; // グラフのタイマー
 
+	float introBoardAlpha = 1.0f; // イントロボードの透明度（1.0から0.0）
+	float introBoardFadeTimer = 0.0f; // イントロボードのフェードタイマー
+	float introBoardFadeDuration = 2.0f; // イントロボードがフェードアウトするまでの時間
+
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
 
 private:
@@ -126,6 +131,11 @@ private:
 	DirectX::XMFLOAT2 graphPosition = {1510.0f, 345.0f};
 	DirectX::XMFLOAT2 graphSize = { 340.0f, 20.0f };
 
+	std::unique_ptr<IntroData> introBoardData;
+	std::unique_ptr<sprite> introBoardSprite;
+
+	DirectX::XMFLOAT2 introBoardPosition = { 960.0f, 540.0f };
+	DirectX::XMFLOAT2 introBoardSize = { 600.0f, 320.0f };
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
