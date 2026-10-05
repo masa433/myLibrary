@@ -427,7 +427,7 @@ void scene_game::update(float elapsed_time)
     }
 
     // ピッチャーの更新
-    if(gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingBatter )
+    if(gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingBatter && gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingIntroBoard)
     {
         Pitcher::Instance().Update(elapsed_time);
     }
@@ -438,19 +438,24 @@ void scene_game::update(float elapsed_time)
     //GameTimer::Instance().Update(elapsed_time);
 	BallDistance::Instance().Update(elapsed_time);
 
-    HomeRunCount::Instance().Update(elapsed_time);
-
     Catcher::Instance().Update(elapsed_time);
 
-	BallNet::Instance().Update(elapsed_time);
+    if(gameIntroSequence.IsPlaying())
+    {
+        HomeRunCount::Instance().Update(elapsed_time);
 
-	Money::Instance().Update(elapsed_time);
+        BallNet::Instance().Update(elapsed_time);
 
-	RoundManager::Instance().Update(elapsed_time);
+        Money::Instance().Update(elapsed_time);
 
-	EffectManager::Instance().Update(elapsed_time);
+        RoundManager::Instance().Update(elapsed_time);
 
-	SpecialAbility::Instance().Update(elapsed_time);
+        EffectManager::Instance().Update(elapsed_time);
+
+        SpecialAbility::Instance().Update(elapsed_time);
+    }
+
+    
 
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);

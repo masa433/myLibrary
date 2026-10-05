@@ -135,7 +135,7 @@ private:
 	std::unique_ptr<sprite> introBoardSprite;
 
 	DirectX::XMFLOAT2 introBoardPosition = { 960.0f, 540.0f };
-	DirectX::XMFLOAT2 introBoardSize = { 600.0f, 320.0f };
+	DirectX::XMFLOAT2 introBoardSize = { 700.0f, 420.0f };
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
