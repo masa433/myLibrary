@@ -7,6 +7,7 @@
 #include "sprite.h"
 #include "FontRenderer.h"
 #include "json.hpp"
+#include "ButtonManager.h"
 
 #define PITCHER_COUNT 21
 #define BATTER_COUNT 24
@@ -19,6 +20,8 @@ class GameIntroSequence
 public:
 
 	FontRenderer pitchParamFont;// ピッチャーのパラメータ表示用フォントレンダラー
+
+	ButtonManager buttonManager; // ボタン管理クラスのインスタンス
 
 	struct IntroData
 	{

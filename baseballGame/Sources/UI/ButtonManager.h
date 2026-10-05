@@ -35,6 +35,7 @@ public:
 		BatterSelect,//打者選択ボタン
 		Retry,//リトライボタン
 		ShowPitchParam,//ピッチャーパラメータ表示ボタン
+		Skip,//スキップボタン
 		Count
 	};
 
@@ -78,6 +79,9 @@ public:
 
 	void ResetShowPitchParamRequest(bool requested) { isShowPitchParamRequested = requested; }
 	bool IsShowPitchParamRequested() const { return isShowPitchParamRequested; }
+
+	void ResetSkipRequest(bool requested) { isSkipRequested = requested; }
+	bool IsSkipRequested() const { return isSkipRequested; }
 
 	//ボタンの色を変える関数
 	void ChangeColor(DirectX::XMFLOAT4 color, ButtonType buttonType = ButtonType::None);
@@ -133,6 +137,7 @@ private:
 	bool isRetryRequested = false;
 	bool isBatterSelectRequested = false;
 	bool isShowPitchParamRequested = false;
+	bool isSkipRequested = false;
 
 	AudioSource* buttonHoverSound = nullptr;
 	AudioSource* buttonClickSound = nullptr;

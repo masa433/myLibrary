@@ -129,6 +129,8 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
         L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf", 
         100.0f, screenWidth, screenHeight, 
         2048, 2048, &codepoints);
+
+    buttonManager.Initialize();
 }
 
 void GameIntroSequence::Uninitialize()
@@ -153,13 +155,17 @@ void GameIntroSequence::Uninitialize()
         graphData[i].reset();
 	}
 	pitchParamFont.Uninitialize();
+	buttonManager.Uninitialize();
 }
 
 void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcastCamera)
 {
-	//仮で右クリックを押したらすべてのイントロをスキップする
-    if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+	buttonManager.Update(elapsed_time);
+
+    //スキップボタンが押されたときの処理
+    if (buttonManager.IsSkipRequested())
     {
+		buttonManager.ResetSkipRequest(false); // スキップボタンのリクエストをリセット
         introState = GameIntroState::ShowingIntroBoard;
         introTimer = 0.0f;
         introStarted = false;
@@ -408,6 +414,8 @@ void GameIntroSequence::Render()
         renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
     context->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
+   
+
     if (introState == GameIntroState::ShowingStand || introState == GameIntroState::ShowingGround)
     {
 
@@ -651,6 +659,16 @@ void GameIntroSequence::Render()
 			introBoardData->rotation);
     }
 
+    //スキップボタンの描画
+    if(introState != GameIntroState::ShowingIntroBoard && !IsPlaying()) buttonManager.Render(1.0f, ButtonManager::ButtonType::Skip);
+
+    context->VSSetShader(spriteVS.Get(), nullptr, 0);
+    context->PSSetShader(spritePS.Get(), nullptr, 0);
+    context->IASetInputLayout(spriteInputLayout.Get());
+
+    context->OMSetDepthStencilState(
+        renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
     if(cameraFadeData && cameraFadeSprite && (isFadingIn || isFadingOut))
     {
         DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(cameraFadeData->position);
@@ -810,6 +828,8 @@ void GameIntroSequence::DrawGUI()
 		ImGui::Separator();
 		ImGui::DragFloat2("Graph Position", &graphPosition.x, 1.0f);
 		ImGui::DragFloat2("Graph Size", &graphSize.x, 1.0f);
+
+		buttonManager.DrawGUI();
     }
    
 }
@@ -829,6 +849,8 @@ void GameIntroSequence::SaveToJson(nlohmann::json& json)
 	json["offsetY"] = offsetY;
 	json["graphPosition"] = { graphPosition.x, graphPosition.y };
 	json["graphSize"] = { graphSize.x, graphSize.y };
+
+	buttonManager.SaveToJson(json["buttonManager"]);
 }
 
 void GameIntroSequence::LoadFromJson(const nlohmann::json& json)
@@ -893,4 +915,8 @@ void GameIntroSequence::LoadFromJson(const nlohmann::json& json)
         graphSize.x = json["graphSize"][0];
         graphSize.y = json["graphSize"][1];
 	}
+    if (json.contains("buttonManager"))
+    {
+        buttonManager.LoadFromJson(json["buttonManager"]);
+    }
 }
