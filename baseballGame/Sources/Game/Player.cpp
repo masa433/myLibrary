@@ -15,6 +15,7 @@
 #include <ballCount.h>
 #include <Money.h>
 #include "shader.h"
+#include "ReplayManager.h"
 
 
 
@@ -580,7 +581,8 @@ void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
     dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
 
-    if (showSwingTimingSprite && swingTimingInfo && currentSwingTiming != SwingTiming::None)
+    if (showSwingTimingSprite && swingTimingInfo && currentSwingTiming != SwingTiming::None &&
+        intro->IsPlaying() && !ReplayManager::Instance().IsPlaying())
     {
         int timingIndex = static_cast<int>(currentSwingTiming);
         if (timingIndex >= 0 && timingIndex < static_cast<int>(SwingTiming::Count))

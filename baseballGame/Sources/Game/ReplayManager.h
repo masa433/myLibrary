@@ -27,6 +27,10 @@ struct ReplayFrame
 	DirectX::XMFLOAT3 ballVelocity; //ボールの速度
 	DirectX::XMFLOAT4 ballRotation; //ボールの回転（クォータニオン）
 
+	//打球速度と打球角度
+	float ballSpeedKmh; //打球速度（km/h）
+	float ballLaunchAngleDegrees; //打球角度（度）
+
 	//カメラ
 	DirectX::XMFLOAT3 cameraEyePosition; //カメラの位置
 	DirectX::XMFLOAT3 cameraFocusPosition; //カメラの注視点
@@ -111,6 +115,9 @@ public:
 		return playbackTime >= savedReplayList.back().time;
 	}
 
+	//1度でもループ再生したかどうかを取得する関数
+	bool HasEverLooped() const { return hasEverLooped; }
+
 	void SetPlaybackSpeed(float speed) { playbackSpeed = speed; } //再生速度を設定する関数
 	float GetPlaybackSpeed() const { return playbackSpeed; } //再生速度を取得する関数
 
@@ -140,6 +147,7 @@ private:
 	ReplayFrame currentPlaybackFrame; //現在の再生時間における補間済みフレーム
 	bool isPlaying = false; //再生中かどうかのフラグ
 	bool isLoopPlayback = false; //ループ再生するかどうかのフラグ
+	bool hasEverLooped = false; //一度でもループ再生したかどうかのフラグ
 
 public:
 	// コンソールログへのポインタをセット

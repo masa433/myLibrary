@@ -528,7 +528,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	currentPitcher->render_batched(rc.deviceContext, transform, animated_nodes);
 	Ball::Instance().Render(rc, renderer, isBallThrown, !isShadowPass);
 
-	if(intro->IsPlaying())
+	if(intro->IsPlaying() && !ReplayManager::Instance().IsPlaying())
 	{
 		Wind::Instance().Render(rc);
 
@@ -541,7 +541,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
-	if (currentState == State::SelectingPitch && intro->IsPlaying())
+	if (currentState == State::SelectingPitch && intro->IsPlaying() && !ReplayManager::Instance().IsPlaying())
 	{
 
 		if (infoBackData && infoBackSprite)
@@ -584,7 +584,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	}
 
 	//選択されているピッチャーの番号のアイコンを描画
-	if (currentState == State::SelectingPitch && intro->IsPlaying())
+	if (currentState == State::SelectingPitch && intro->IsPlaying() && !ReplayManager::Instance().IsPlaying())
 	{
 		// RealPitcher::None でない場合のみ描画
 		if (selectedRealPitcher != RealPitcher::None)

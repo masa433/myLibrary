@@ -536,6 +536,10 @@ void scene_game::update(float elapsed_time)
         frame.ballPosition = Ball::Instance().GetWorldPosition();
         frame.ballVelocity = Ball::Instance().GetVelocity();
         frame.ballRotation = Ball::Instance().GetRotationQuat();
+
+		//打球速度と打球角度を保存
+		frame.ballSpeedKmh = Physics::Instance().GetBallSpeed();
+		frame.ballLaunchAngleDegrees = Physics::Instance().GetBallAngle();
 		
         ////カメラの位置と回転を保存
         //Camera& camera = Camera::Instance();
@@ -831,7 +835,7 @@ void scene_game::render(float elapsedTime)
 
     EffectManager::Instance().Render(camera.GetView(), camera.GetProjection());
    
-	if (gameIntroSequence.IsPlaying())
+	if (gameIntroSequence.IsPlaying() && !ReplayManager::Instance().IsPlaying())
     {
         BatSprite::Instance().Render();
 

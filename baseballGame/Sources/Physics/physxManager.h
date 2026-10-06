@@ -136,7 +136,9 @@ public:
 
 	//打球速度・打球角度・打球方向を取得するゲッター
 	float GetBallSpeed() const { return outSpeed; }//打球速度
+	void SetBallSpeed(float value) { outSpeed = value; }//打球速度を設定するセッター
 	float GetBallAngle() const { return outAngle; }//打球角度
+	void SetBallAngle(float value) { outAngle = value; }//打球角度を設定するセッター
 	float GetBallDirection() const { return outDirection; }//打球方向
 	float GetBallOriginalDirection() const { return outOriginalDirection; }//打球方向（元の方向）
 	void SetBallOriginalDirection(float value) { outOriginalDirection = value; }//打球方向（元の方向）を設定するセッター

@@ -62,6 +62,18 @@ private:
 	DirectX::XMFLOAT2 spriteSize = { 1920.0f, 1080.0f };
 	DirectX::XMFLOAT4 spriteColor = { 1.0f, 1.0f, 1.0f, 0.5f };
 
+	std::unique_ptr<Sprite> replayTrackingBoard;
+	std::unique_ptr<sprite> replayTrackingSprite;
+
+	DirectX::XMFLOAT2 replayTrackingPosition = { 0.0f, 0.0f };
+	DirectX::XMFLOAT2 replayTrackingSize = { 500.0f, 350.0f };
+
+	std::unique_ptr<Sprite> trackingArrow;
+	std::unique_ptr<sprite> trackingArrowSprite;
+
+	DirectX::XMFLOAT2 trackingArrowPosition = { 0.0f, 0.0f };
+	DirectX::XMFLOAT2 trackingArrowSize = { 100.0f, 100.0f };
+
 	// シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>   spritePS;
@@ -93,6 +105,14 @@ private:
 	DirectX::XMFLOAT2 roundFontPosition = { 700.0f, 1200.0f };
 	float roundFontSize = 1.0f;
 	DirectX::XMFLOAT4 roundFontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	//打球速度表示
+	DirectX::XMFLOAT2 speedFontPosition = { 700.0f, 1400.0f };
+	float speedFontSize = 1.0f;
+
+	//打球角度表示
+	DirectX::XMFLOAT2 angleFontPosition = { 700.0f, 1600.0f };
+	float angleFontSize = 1.0f;
 
 	ButtonManager buttonManager;
 	bool isResultToTitle = false;

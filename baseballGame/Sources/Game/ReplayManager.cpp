@@ -14,6 +14,7 @@ void ReplayManager::Initialize()
 	isRecording = false;
 	isPendingSave = false;
 	hasLooped = false;
+	hasEverLooped = false;
 }
 
 void ReplayManager::Uninitialize()
@@ -158,6 +159,7 @@ void ReplayManager::StartPlayback()
 		playbackTime = 0.0f;
 		playbackIndex = 0;
 		hasLooped = false;
+		hasEverLooped = false;
 		currentPlaybackFrame = savedReplayList.front();//最初のフレームを設定
 		if(consoleLog)
 		{
@@ -192,6 +194,7 @@ void ReplayManager::UpdatePlayback(float elapsedTime)
 			playbackTime = 0.0f;
 			playbackIndex = 0;
 			hasLooped = true;
+			hasEverLooped = true;
 			currentPlaybackFrame = savedReplayList.front();
 			if(consoleLog)
 			{
@@ -299,6 +302,11 @@ ReplayFrame ReplayManager::LerpFrame(const ReplayFrame& frame1, const ReplayFram
 
 	XMStoreFloat3(&result.cameraEyePosition, XMVectorLerp(XMLoadFloat3(&frame1.cameraEyePosition), XMLoadFloat3(&frame2.cameraEyePosition), t));
 	XMStoreFloat3(&result.cameraFocusPosition, XMVectorLerp(XMLoadFloat3(&frame1.cameraFocusPosition), XMLoadFloat3(&frame2.cameraFocusPosition), t));
+
+	//打球速度と打球角度の補間
+	result.ballSpeedKmh = frame1.ballSpeedKmh + (frame2.ballSpeedKmh - frame1.ballSpeedKmh) * t;//打球速度の線形補間
+
+	result.ballLaunchAngleDegrees = frame1.ballLaunchAngleDegrees + (frame2.ballLaunchAngleDegrees - frame1.ballLaunchAngleDegrees) * t;//打球角度の線形補間
 
 	return result;
 }

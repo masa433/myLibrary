@@ -61,6 +61,7 @@ public:
 		DirectX::XMFLOAT2& pos, DirectX::XMFLOAT2& size, float amount);
 
 	GameIntroState GetIntroState() const { return introState; }
+	//ゲームが始まっているか
 	bool IsPlaying() const { return introState == GameIntroState::Playing; }
 
 	//グラフを左から右に投球割合の分だけ塗りつぶす描画関数

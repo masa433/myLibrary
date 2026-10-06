@@ -635,8 +635,8 @@ void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollided
 
 		ActivateReplayCamera(); // 19”Ô‚©20”Ô‚©3”Ô‚ª‘I‚Î‚ê‚é
 
-		//Ä¶‘¬“x‚ğ0.5”{‚É‚·‚é
-		ReplayManager::Instance().SetPlaybackSpeed(0.5f);
+		//Ä¶‘¬“x‚ğ0.3”{‚É‚·‚é
+		ReplayManager::Instance().SetPlaybackSpeed(0.3f);
 
 		for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
 		{

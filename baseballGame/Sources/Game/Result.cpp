@@ -27,6 +27,23 @@ void Result::Initialize(ID3D11Device* device)
 	resultSpriteData->rotation = 0.0f;
 	resultSpriteData->color = { spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w };
 	resultSprite = std::make_unique<sprite>(device, context, resultSpriteData->texturePath.c_str());
+
+	replayTrackingBoard = std::make_unique<Sprite>();
+	replayTrackingBoard->texturePath = L".\\resources\\textures\\replayTrackingBoard.png";
+	replayTrackingBoard->position = { replayTrackingPosition.x, replayTrackingPosition.y };
+	replayTrackingBoard->size = { replayTrackingSize.x, replayTrackingSize.y };
+	replayTrackingBoard->rotation = 0.0f;
+	replayTrackingBoard->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	replayTrackingSprite = std::make_unique<sprite>(device, context, replayTrackingBoard->texturePath.c_str());
+
+	trackingArrow = std::make_unique<Sprite>();
+	trackingArrow->texturePath = L".\\resources\\textures\\trackingArrow.png";
+	trackingArrow->position = { trackingArrowPosition.x, trackingArrowPosition.y };
+	trackingArrow->size = { trackingArrowSize.x, trackingArrowSize.y };
+	trackingArrow->rotation = 0.0f;
+	trackingArrow->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	trackingArrowSprite = std::make_unique<sprite>(device, context, trackingArrow->texturePath.c_str());
+
 	// フォントレンダラーの初期化
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
@@ -35,7 +52,8 @@ void Result::Initialize(ID3D11Device* device)
 		u8"最高飛距離m"
 	u8"所持金G"
 	u8"最大コンボ数"
-	u8"到達ラウンド数");
+	u8"到達ラウンド数"
+	u8"km/h°");
 	resultFont.Initialize(device,
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
 		100.0f,
@@ -63,6 +81,8 @@ void Result::Uninitialize()
 	resultFont.Uninitialize();
 	resultSprite.reset();
 	resultSpriteData.reset();
+	replayTrackingBoard.reset();
+	replayTrackingSprite.reset();
 	hexTransitionEffect.Reset();
 	buttonManager.Uninitialize();
 }
@@ -106,6 +126,10 @@ void Result::Update(float elapsedTime)
 		Ball::Instance().SetWorldPosition(DirectX::XMFLOAT3(frame.ballPosition));
 		Ball::Instance().SetVelocity(DirectX::XMFLOAT3(frame.ballVelocity));
 		Ball::Instance().SetRotationQuat(DirectX::XMFLOAT4(frame.ballRotation));
+
+		//打球速度と打球角度
+		Physics::Instance().SetBallSpeed(frame.ballSpeedKmh);
+		Physics::Instance().SetBallAngle(frame.ballLaunchAngleDegrees);
 	}
 
 
@@ -192,8 +216,144 @@ void Result::Render()
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 	
+	const auto& savedList = ReplayManager::Instance().GetSavedReplayList();//保存済みのリプレイデータを取得
+	const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();//現在の再生時間における補間済みフレームを取得
+
+	if(replayTrackingBoard && replayTrackingSprite)
+	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(replayTrackingPosition);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(replayTrackingSize);
+
+		DirectX::XMFLOAT2 scaledCenterPos =
+		{
+			scaledPosition.x - scaledSize.x / 2.0f,
+			scaledPosition.y - scaledSize.y / 2.0f
+		};
+
+		replayTrackingSprite->render(dc,
+			scaledCenterPos.x, scaledCenterPos.y,
+			scaledSize.x, scaledSize.y,
+			replayTrackingBoard->color.x, replayTrackingBoard->color.y, replayTrackingBoard->color.z, replayTrackingBoard->color.w,
+			replayTrackingBoard->rotation);
+	}
+
+	auto scaledText = [&](const DirectX::XMFLOAT2& scaledPos, float scaledSize) -> std::pair<DirectX::XMFLOAT2, float>
+		{
+			return {
+				screenScaler.Scale(scaledPos),
+				scaledSize * screenScaler.GetUniformScale()
+			};
+		};
+
+	//保存した打球速度と打球角度を表示
+	if(resultFont.IsValid())
+	{
+		
+
+		float targetSpeed = savedList.back().ballSpeedKmh;//保存済みのリプレイデータの最後のフレームの打球速度を取得
+		float targetAngle = savedList.back().ballLaunchAngleDegrees;//保存済みのリプレイデータの最後のフレームの打球角度を取得
+
+		float progress = 1.0f; // デフォルトで1.0に設定
+
+		if(!ReplayManager::Instance().HasEverLooped())
+		{
+			float currentPlaybackTime = frame.time;
+			float duration = 0.3f; // 0.3秒間で変化させる
+
+			progress = currentPlaybackTime / duration;
+			if (progress < 0.0f) progress = 0.0f;
+			if (progress > 1.0f) progress = 1.0f;
+		}
+
+		int displayedSpeed = static_cast<int>(targetSpeed * progress);
+		int displayedAngle = static_cast<int>(targetAngle * progress);
+
+		std::string speedText = std::to_string(displayedSpeed) + u8"km/h";
+		std::string angleText = std::to_string(displayedAngle) + u8"°";
+		//打球速度の描画
+		auto [scaledSpeedFontPosition, scaledSpeedFontSize] = scaledText(speedFontPosition, speedFontSize);
+
+		float speedTextWidth, speedTextHeight;
+		resultFont.MeasureText(speedText.c_str(), scaledSpeedFontSize, speedTextWidth, speedTextHeight);
+		float drawSpeedX = scaledSpeedFontPosition.x - speedTextWidth / 2.0f;
+		float drawSpeedY = scaledSpeedFontPosition.y - speedTextHeight / 2.0f;
+
+		resultFont.DrawTextW(dc, speedText.c_str(),
+			drawSpeedX, drawSpeedY,
+			scaledSpeedFontSize,
+			1.0f, 1.0f, 1.0f, 1.0f);
+
+		//打球角度の描画
+		auto [scaledAngleFontPosition, scaledAngleFontSize] = scaledText(angleFontPosition, angleFontSize);
+
+		float angleTextWidth, angleTextHeight;
+		resultFont.MeasureText(angleText.c_str(), scaledAngleFontSize, angleTextWidth, angleTextHeight);
+		float drawAngleX = scaledAngleFontPosition.x - angleTextWidth / 2.0f;
+		float drawAngleY = scaledAngleFontPosition.y - angleTextHeight / 2.0f;
+
+		resultFont.DrawTextW(dc, angleText.c_str(),
+			drawAngleX, drawAngleY,
+			scaledAngleFontSize,
+			1.0f, 1.0f, 1.0f, 1.0f);
+
+	}
+
+	if(trackingArrow && trackingArrowSprite)
+	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(trackingArrowPosition);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(trackingArrowSize);
+		DirectX::XMFLOAT2 scaledCenterPos =
+		{
+			scaledPosition.x - scaledSize.x / 2.0f,
+			scaledPosition.y - scaledSize.y / 2.0f
+		};
+
+		float targetAngle = savedList.back().ballLaunchAngleDegrees; //保存済みのリプレイデータの最後のフレームの打球角度を取得
+
+		float progress = 1.0f; // デフォルトで1.0に設定
+
+		if (!ReplayManager::Instance().HasEverLooped())
+		{
+			float currentPlaybackTime = frame.time;
+			float duration = 0.3f; // 0.3秒間で変化させる
+
+			progress = currentPlaybackTime / duration;
+			if (progress < 0.0f) progress = 0.0f;
+			if (progress > 1.0f) progress = 1.0f;
+		}
+
+		// 角度の補間
+		float displayedAngle = targetAngle * progress;
+
+		float centerX = scaledCenterPos.x + scaledSize.x / 2.0f; // 中心のX座標
+		float centerY = scaledCenterPos.y + scaledSize.y / 2.0f; // 中心のY座標
+
+		//支点を右端に移動差焦る
+		float pivotX = scaledCenterPos.x + scaledSize.x; // 右端に移動するためのオフセット
+		float pivotY = centerY; // 中心のY座標を維持
+
+		float radianAngle = DirectX::XMConvertToRadians(displayedAngle);
+
+		float dx = centerX - pivotX;
+		float dy = centerY - pivotY;
+
+		// 回転後の座標を計算
+		float rotatedX = pivotX + (dx * cos(radianAngle) - dy * sin(radianAngle));
+		float rotatedY = pivotY + (dx * sin(radianAngle) + dy * cos(radianAngle));
+
+		// 回転後の座標を描画位置として使用
+		float finalDrawX = rotatedX - scaledSize.x / 2.0f; // 中心に戻すために半分の幅を引く
+		float finalDrawY = rotatedY - scaledSize.y / 2.0f; // 中心に戻すために半分の高さを引く
+
+		trackingArrowSprite->render(dc,
+			finalDrawX, finalDrawY,
+			scaledSize.x, scaledSize.y,
+			trackingArrow->color.x, trackingArrow->color.y, trackingArrow->color.z, trackingArrow->color.w,
+			displayedAngle);
+	}
+
 	// スプライトの描画
-	if (resultSprite)
+	/*if (resultSprite)
 	{
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(spritePosition);
 		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(spriteSize);
@@ -203,7 +363,7 @@ void Result::Render()
 			scaledSize.x, scaledSize.y,
 			spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w,
 			resultSpriteData->rotation);
-	}
+	}*/
 	// フォントの描画
 	if (resultFont.IsValid())
 	{
@@ -218,16 +378,6 @@ void Result::Render()
 			float fontSize;
 			DirectX::XMFLOAT4 color;
 		};
-
-		auto scaledText = [&](const DirectX::XMFLOAT2& scaledPos, float scaledSize) -> std::pair<DirectX::XMFLOAT2, float>
-		{
-			return {
-				screenScaler.Scale(scaledPos),
-				scaledSize * screenScaler.GetUniformScale()
-			};
-		};
-
-		
 
 		TextInfo textInfos[] = {
 			
@@ -335,6 +485,18 @@ void Result::DrawGUI()
 		ImGui::DragFloat2("Result Sprite Position", &spritePosition.x, 0.01f, 0.0f, 1.0f);
 		ImGui::DragFloat2("Result Sprite Size", &spriteSize.x, 0.01f, 0.0f, 1.0f);
 		ImGui::ColorEdit4("Result Sprite Color", &spriteColor.x);
+
+		ImGui::Separator();
+		ImGui::DragFloat2("Replay Tracking Position", &replayTrackingPosition.x, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat2("Replay Tracking Size", &replayTrackingSize.x, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat2("Speed Font Position", &speedFontPosition.x, 0.1f, 0.0f, 1920.0f);
+		ImGui::DragFloat("Speed Font Size", &speedFontSize, 0.1f, 10.0f, 100.0f);
+		ImGui::DragFloat2("Angle Font Position", &angleFontPosition.x, 0.1f, 0.0f, 1920.0f);
+		ImGui::DragFloat("Angle Font Size", &angleFontSize, 0.1f, 10.0f, 100.0f);
+
+		ImGui::Separator();
+		ImGui::DragFloat2("Tracking Arrow Position", &trackingArrowPosition.x, 0.01f, 0.0f, 2000.0f);
+		ImGui::DragFloat2("Tracking Arrow Size", &trackingArrowSize.x, 0.01f, 0.0f, 2000.0f);
 	}
 
 	buttonManager.DrawGUI();
@@ -360,6 +522,14 @@ void Result::SaveToJson(nlohmann::json& j)
 	j["RoundFontPosition"] = { roundFontPosition.x, roundFontPosition.y };
 	j["RoundFontSize"] = roundFontSize;
 	j["RoundFontColor"] = { roundFontColor.x, roundFontColor.y, roundFontColor.z, roundFontColor.w };
+	j["ReplayTrackingPosition"] = { replayTrackingPosition.x, replayTrackingPosition.y };
+	j["ReplayTrackingSize"] = { replayTrackingSize.x, replayTrackingSize.y };
+	j["SpeedFontPosition"] = { speedFontPosition.x, speedFontPosition.y };
+	j["SpeedFontSize"] = speedFontSize;
+	j["AngleFontPosition"] = { angleFontPosition.x, angleFontPosition.y }; 
+	j["AngleFontSize"] = angleFontSize;
+	j["TrackingArrowPosition"] = { trackingArrowPosition.x, trackingArrowPosition.y };
+	j["TrackingArrowSize"] = { trackingArrowSize.x, trackingArrowSize.y };
 
 	buttonManager.SaveToJson(j);
 }
@@ -462,6 +632,44 @@ void Result::LoadFromJson(const nlohmann::json& j)
 		spriteColor.y = j["ResultSpriteColor"][1].get<float>();
 		spriteColor.z = j["ResultSpriteColor"][2].get<float>();
 		spriteColor.w = j["ResultSpriteColor"][3].get<float>();
+	}
+	if(j.contains("ReplayTrackingPosition"))
+	{
+		replayTrackingPosition.x = j["ReplayTrackingPosition"][0].get<float>();
+		replayTrackingPosition.y = j["ReplayTrackingPosition"][1].get<float>();
+	}
+	if(j.contains("ReplayTrackingSize"))
+	{
+		replayTrackingSize.x = j["ReplayTrackingSize"][0].get<float>();
+		replayTrackingSize.y = j["ReplayTrackingSize"][1].get<float>();
+	}
+	if(j.contains("SpeedFontPosition"))
+	{
+		speedFontPosition.x = j["SpeedFontPosition"][0].get<float>();
+		speedFontPosition.y = j["SpeedFontPosition"][1].get<float>();
+	}
+	if(j.contains("SpeedFontSize"))
+	{
+		speedFontSize = j["SpeedFontSize"].get<float>();
+	}
+	if(j.contains("AngleFontPosition"))
+	{
+		angleFontPosition.x = j["AngleFontPosition"][0].get<float>();
+		angleFontPosition.y = j["AngleFontPosition"][1].get<float>();
+	}
+	if(j.contains("AngleFontSize"))
+	{
+		angleFontSize = j["AngleFontSize"].get<float>();
+	}
+	if(j.contains("TrackingArrowPosition"))
+	{
+		trackingArrowPosition.x = j["TrackingArrowPosition"][0].get<float>();
+		trackingArrowPosition.y = j["TrackingArrowPosition"][1].get<float>();
+	}
+	if(j.contains("TrackingArrowSize"))
+	{
+		trackingArrowSize.x = j["TrackingArrowSize"][0].get<float>();
+		trackingArrowSize.y = j["TrackingArrowSize"][1].get<float>();
 	}
 
 	buttonManager.LoadFromJson(j);
