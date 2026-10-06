@@ -160,7 +160,14 @@ void GameIntroSequence::Uninitialize()
 
 void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcastCamera)
 {
-	buttonManager.Update(elapsed_time);
+	//ステートをintとして扱うための変数
+	int introStateIndex = static_cast<int>(introState);
+
+    //
+    if(introStateIndex < static_cast<int>(GameIntroState::ShowingIntroBoard))
+    {
+        buttonManager.Update(elapsed_time);
+    }
 
     //スキップボタンが押されたときの処理
     if (buttonManager.IsSkipRequested())

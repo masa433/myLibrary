@@ -285,7 +285,14 @@ void ballSprite::Initialize(ID3D11Device* device)
 	//ストライクゾーンの初期化
 	strikeZoneSpriteData = std::make_unique<Sprite>();
 	strikeZoneSpriteData->texturePath = L".\\resources\\textures\\strikeZone.png";
-	strikeZoneSpriteData->position = { 1100.0f, 400.0f };
+	if(Player::Instance().IsRightBatter())
+	{
+		strikeZoneSpriteData->position = { 850.0f, 420.0f };
+	}
+	else
+	{
+		strikeZoneSpriteData->position = { 900.0f, 420.0f };
+	}
 	strikeZoneSpriteData->size = { 200.0f, 300.0f };
 	strikeZoneSpriteData->rotation = 0.0f;
 	strikeZoneSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -1330,7 +1337,7 @@ void ballSprite::SaveToJson(json& j)
 {
 	j["strikeZoneSprite"] = {
 		{"texturePath", strikeZoneSpriteData->texturePath},
-		{"position", {strikeZoneSpriteData->position.x, strikeZoneSpriteData->position.y}},
+		
 		{"size", {strikeZoneSpriteData->size.x, strikeZoneSpriteData->size.y}},
 		{"rotation", strikeZoneSpriteData->rotation},
 		{"color", {strikeZoneSpriteData->color.x, strikeZoneSpriteData->color.y, strikeZoneSpriteData->color.z, strikeZoneSpriteData->color.w}}
@@ -1423,8 +1430,7 @@ void ballSprite::LoadFromJson(const json& j)
 	{
 		const auto& sz = j["strikeZoneSprite"];
 		//strikeZoneSpriteData->texturePath = sz.value("texturePath", L".\\resources\\textures\\strikeZone.png");
-		strikeZoneSpriteData->position.x = sz["position"][0].get<float>();
-		strikeZoneSpriteData->position.y = sz["position"][1].get<float>();
+		
 		strikeZoneSpriteData->size.x = sz["size"][0].get<float>();
 		strikeZoneSpriteData->size.y = sz["size"][1].get<float>();
 		strikeZoneSpriteData->rotation = sz.value("rotation", 0.0f);

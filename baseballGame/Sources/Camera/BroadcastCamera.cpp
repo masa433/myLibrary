@@ -60,8 +60,17 @@ void BroadcastCamera::SetupDefaultCameras()
 	{
 		CameraPreset preset;
 		preset.name = u8"デフォルトカメラ";
-		preset.eye = { 0.0f, 1.0f, -3.5f };
-		preset.focus = { 0.0f, 0.0f, 14.0f };
+
+		if(Player::Instance().IsRightBatter())
+		{
+			preset.eye = { 0.1f, 1.0f, -3.5f };
+			preset.focus = { 0.0f, 0.0f, 14.0f };
+		}
+		else
+		{
+			preset.eye = { -0.1f, 1.0f, -3.5f };
+			preset.focus = { 0.0f, 0.0f, 14.0f };
+		}
 		preset.fov = DirectX::XMConvertToRadians(45.0f);
 		preset.enableTrackingZoom = false;
 		preset.type = CameraType::NormalCamera;
@@ -974,9 +983,16 @@ void BroadcastCamera::DrawGUI()
 
 void BroadcastCamera::SaveToJson(json& j) const
 {
+	
 	for (size_t i = 0; i < cameraPresets.size(); ++i)
 	{
 		const CameraPreset& p = cameraPresets[i];
+
+		if (p.cameraId == 0)
+		{
+			continue;
+		}
+
 		j["relay_cameras"][i]["name"] = p.name;
 		j["relay_cameras"][i]["eye"] = { p.eye.x, p.eye.y, p.eye.z };
 		j["relay_cameras"][i]["focus"] = { p.focus.x, p.focus.y, p.focus.z };
@@ -998,14 +1014,52 @@ void BroadcastCamera::LoadFromJson(const nlohmann::json& j)
 	if (!j.contains("relay_cameras") || j["relay_cameras"].empty())
 		return; // 呼び出し元で SetupDefaultCameras() 済みのデフォルトのまま
 
+	CameraPreset defaultPreset;
+	bool hasDefaultPreset = false;
+
+	for(const auto& preset : cameraPresets)
+	{
+		if(preset.cameraId == 0)
+		{
+			defaultPreset = preset;
+			hasDefaultPreset = true;
+			break;
+		}
+	}
+
 	cameraPresets.clear();
 	cameraControllers.clear();
 
+	if (hasDefaultPreset)
+	{
+		// 打者（左右）に応じた最新の eye を反映させる場合
+		defaultPreset.eye = Player::Instance().IsRightBatter()
+			? DirectX::XMFLOAT3{ 0.1f, 1.0f, -3.5f }
+		: DirectX::XMFLOAT3{ -0.1f, 1.0f, -3.5f };
+
+		AddCameraPreset(defaultPreset);
+	}
+
 	for (auto& jc : j["relay_cameras"])
 	{
+		if (jc.is_null() || !jc.is_object())
+		{
+			continue;
+		}
+
+		int cameraId = jc.value("cameraId", -1);
+		if (cameraId == 0)
+		{
+			continue;
+		}
+	
 		CameraPreset preset;
 		preset.name = jc.value("name", std::string(u8"カメラ"));
-		preset.eye = { jc["eye"][0], jc["eye"][1], jc["eye"][2] };
+
+		////デフォルトカメラはデフォルトのeyeを保持する
+		//int cameraId = jc.value("cameraId", 0);
+		//preset.eye = (cameraId == 0) ? defaultEye : DirectX::XMFLOAT3{ jc["eye"][0], jc["eye"][1], jc["eye"][2] };
+		preset.eye = DirectX::XMFLOAT3{ jc["eye"][0], jc["eye"][1], jc["eye"][2] };
 		preset.focus = { jc["focus"][0], jc["focus"][1], jc["focus"][2] };
 		preset.fov = jc.value("fov", DirectX::XMConvertToRadians(45.0f));
 		preset.enableTrackingZoom = jc.value("enable_tracking_zoom", false);
