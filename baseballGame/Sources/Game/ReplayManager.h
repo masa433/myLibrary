@@ -137,6 +137,9 @@ private:
 	bool hasLooped = false;//ループ再生したかどうかのフラグ
 
 	float playbackSpeed = 1.0f; //再生速度（1.0fが通常速度）
+
+	//すでにクリアされているかどうかのフラグ
+	bool hasClearedRecording = false;
 private:
 
 	//2つのフレーム間を補間する関数

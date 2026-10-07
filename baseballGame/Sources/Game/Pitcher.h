@@ -659,6 +659,14 @@ public:
 		return counts;
 	}
 
+	//ピッチャーの投球履歴をクリアする関数
+	std::deque<PitchType> ClearPitchHistory()
+	{
+		std::deque<PitchType> history = pitchHistory;
+		pitchHistory.clear();
+		return history;
+	}
+
 private:
 	std::vector<PitchType> disabledPitchTypes; // ショップで減らされた球種のリスト
 

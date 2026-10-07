@@ -345,6 +345,9 @@ public:
 	};
 	BallDisplayMode display = BallDisplayMode::Target;
 
+	//ディスプレイモードのゲッター
+	BallDisplayMode GetDisplayMode() const { return display; }
+
 public:
 	struct BallSpinFlip
 	{

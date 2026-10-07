@@ -6,6 +6,7 @@
 #include "Combo.h"
 #include "RoundManager.h"
 #include "ReplayManager.h"
+#include "UiEasing.h"
 
 void Result::Initialize(ID3D11Device* device)
 {
@@ -44,6 +45,14 @@ void Result::Initialize(ID3D11Device* device)
 	trackingArrow->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	trackingArrowSprite = std::make_unique<sprite>(device, context, trackingArrow->texturePath.c_str());
 
+	replayLogo = std::make_unique<Sprite>();
+	replayLogo->texturePath = L".\\resources\\textures\\replayLogo.png";
+	replayLogo->position = { replayLogoAnimation.startPosition.x, replayLogoAnimation.startPosition.y };
+	replayLogo->size = { replayLogoAnimation.startSize.x, replayLogoAnimation.startSize.y };
+	replayLogo->rotation = 0.0f;
+	replayLogo->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	replayLogoSprite = std::make_unique<sprite>(device, context, replayLogo->texturePath.c_str());
+
 	// フォントレンダラーの初期化
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
@@ -72,12 +81,16 @@ void Result::Initialize(ID3D11Device* device)
 	hasEnteredResult = false;
 	hasReplay = false;
 
-	currentState = State::Result;
+	replayLogoMoveTime = 0.0f;
+	isReplayLogoMovingHalf = false;
+
+	currentState = State::Replay;
 }
 
 void Result::Uninitialize()
 {
 	ReplayManager::Instance().StopPlayback(); //再生停止
+	hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 	resultFont.Uninitialize();
 	resultSprite.reset();
 	resultSpriteData.reset();
@@ -91,10 +104,12 @@ void Result::Update(float elapsedTime)
 {
 	bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
 
-	if(isGameFinished && !hasEnteredResult)
+	if(isGameFinished && !hasEnteredResult && currentState == State::Replay && isReplayLogoMovingHalf)
 	{
+
 		hasEnteredResult = true;
-		
+		replayLogoMoveTime = 0.0f;
+
 		hasReplay = ReplayManager::Instance().HasSavedReplay();//再生可能なリプレイがあるかどうかを取得
 		if (hasReplay)
 		{
@@ -105,8 +120,10 @@ void Result::Update(float elapsedTime)
 		}
 	}
 
+	if (currentState == State::Replay) UpdateReplayLogoPosition(elapsedTime);
+
 	//リプレイの再生を進める
-	if (isGameFinished && hasReplay && ReplayManager::Instance().IsPlaying())
+	if (isGameFinished && hasReplay && ReplayManager::Instance().IsPlaying() && isReplayLogoMovingHalf)
 	{
 		ReplayManager::Instance().UpdatePlayback(elapsedTime);
 		const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
@@ -135,6 +152,16 @@ void Result::Update(float elapsedTime)
 
 	switch (currentState)
 	{
+		case State::Replay:
+		{
+			//仮で右クリックを押したらリザルト画面に遷移するようにする
+			if(GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+			{
+				currentState = State::Result;
+			}
+			break;
+		}
+
 		case State::Result:
 		{
 			buttonManager.Update(elapsedTime);
@@ -149,8 +176,6 @@ void Result::Update(float elapsedTime)
 					buttonManager.ResetTitleRequest(false);
 					currentState = State::Transition;
 
-					ReplayManager::Instance().StopPlayback();
-					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 				}
 				if (buttonManager.IsRetryRequested())
 				{
@@ -159,8 +184,6 @@ void Result::Update(float elapsedTime)
 					buttonManager.ResetRetryRequest(false);
 					currentState = State::Transition;
 
-					ReplayManager::Instance().StopPlayback();
-					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 				}
 				if (buttonManager.IsBatterSelectRequested())
 				{
@@ -169,8 +192,6 @@ void Result::Update(float elapsedTime)
 					buttonManager.ResetBatterSelectRequest(false);
 					currentState = State::Transition;
 
-					ReplayManager::Instance().StopPlayback();
-					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 				}
 			}
 
@@ -204,6 +225,62 @@ void Result::Update(float elapsedTime)
 	
 }
 
+void Result::UpdateReplayLogoPosition(float elapsedTime)
+{
+	if (replayLogo)
+	{
+		replayLogoMoveTime += elapsedTime;
+		float t = replayLogoMoveTime / replayLogoMoveDuration;
+		if (t > 1.0f) t = 1.0f;
+
+		// 線形補間で位置を更新
+		//右側からスケールを大きくして真ん中へ移動→
+		// 真ん中付近でゆっくりになって一定時間がたったら早く左側へ移動
+		//スケールも小さくする
+
+		replayLogoAnimation.currentPosition = UiEasing::Lerp(
+			replayLogoAnimation.startPosition, 
+			replayLogoAnimation.endPosition,
+			t,UiEasing::EasingType::InOutSine);
+		replayLogoAnimation.currentSize = UiEasing::Lerp(
+			replayLogoAnimation.startSize,
+			replayLogoAnimation.endSize,
+			t, UiEasing::EasingType::InOutSine);
+
+		if(t < 0.5f)
+		{
+			float t1 = t / 0.5f; // 0.0から0.5秒の間を0.0から1.0に正規化
+
+			replayLogoAnimation.currentPosition = UiEasing::Lerp(
+				replayLogoAnimation.startPosition,
+				replayLogoAnimation.targetPosition,
+				t1, UiEasing::EasingType::OutQuad);
+
+			replayLogoAnimation.currentSize = UiEasing::Lerp(
+				replayLogoAnimation.startSize,
+				replayLogoAnimation.targetSize,
+				t1, UiEasing::EasingType::OutQuad);
+
+			isReplayLogoMovingHalf = true;
+		}
+		else
+		{
+			float t2 = (t - 0.5f) / 0.5f; // 0.5から1.0秒の間を0.0から1.0に正規化
+			replayLogoAnimation.currentPosition = UiEasing::Lerp(
+				replayLogoAnimation.targetPosition,
+				replayLogoAnimation.endPosition,
+				t2, UiEasing::EasingType::InQuad);
+
+			replayLogoAnimation.currentSize = UiEasing::Lerp(
+				replayLogoAnimation.targetSize,
+				replayLogoAnimation.endSize,
+				t2, UiEasing::EasingType::InQuad);
+		}
+
+		
+	}
+}
+
 void Result::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
@@ -219,7 +296,7 @@ void Result::Render()
 	const auto& savedList = ReplayManager::Instance().GetSavedReplayList();//保存済みのリプレイデータを取得
 	const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();//現在の再生時間における補間済みフレームを取得
 
-	if(replayTrackingBoard && replayTrackingSprite)
+	if(replayTrackingBoard && replayTrackingSprite && currentState == State::Replay)
 	{
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(replayTrackingPosition);
 		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(replayTrackingSize);
@@ -246,7 +323,7 @@ void Result::Render()
 		};
 
 	//保存した打球速度と打球角度を表示
-	if(resultFont.IsValid())
+	if(resultFont.IsValid() && currentState == State::Replay)
 	{
 		
 
@@ -298,7 +375,13 @@ void Result::Render()
 
 	}
 
-	if(trackingArrow && trackingArrowSprite)
+	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+	dc->PSSetShader(spritePS.Get(), nullptr, 0);
+	dc->IASetInputLayout(spriteInputLayout.Get());
+	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
+
+	if(trackingArrow && trackingArrowSprite && currentState == State::Replay && isReplayLogoMovingHalf)
 	{
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(trackingArrowPosition);
 		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(trackingArrowSize);
@@ -352,6 +435,22 @@ void Result::Render()
 			displayedAngle);
 	}
 
+	if(replayLogo && replayLogoSprite && currentState == State::Replay)
+	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(replayLogoAnimation.currentPosition);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(replayLogoAnimation.currentSize);
+		DirectX::XMFLOAT2 scaledCenterPos =
+		{
+			scaledPosition.x - scaledSize.x / 2.0f,
+			scaledPosition.y - scaledSize.y / 2.0f
+		};
+		replayLogoSprite->render(dc,
+			scaledCenterPos.x, scaledCenterPos.y,
+			scaledSize.x, scaledSize.y,
+			replayLogo->color.x, replayLogo->color.y, replayLogo->color.z, replayLogo->color.w,
+			replayLogo->rotation);
+	}
+
 	// スプライトの描画
 	/*if (resultSprite)
 	{
@@ -365,7 +464,7 @@ void Result::Render()
 			resultSpriteData->rotation);
 	}*/
 	// フォントの描画
-	if (resultFont.IsValid())
+	if (resultFont.IsValid() && (currentState != State::Replay))
 	{
 
 		float spacingY = 100.0f; // 各テキストの垂直間隔
@@ -433,9 +532,12 @@ void Result::Render()
 		
 	}
 
-	buttonManager.Render(1.0f, ButtonManager::ButtonType::Title);
-	buttonManager.Render(1.0f, ButtonManager::ButtonType::Retry);
-	buttonManager.Render(1.0f, ButtonManager::ButtonType::BatterSelect);
+	if((currentState != State::Replay))
+	{
+		buttonManager.Render(1.0f, ButtonManager::ButtonType::Title);
+		buttonManager.Render(1.0f, ButtonManager::ButtonType::Retry);
+		buttonManager.Render(1.0f, ButtonManager::ButtonType::BatterSelect);
+	}
 
 
 	if(isResultToTitle || isResultToRetry || isResultToBatterSelect)

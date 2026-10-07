@@ -14,6 +14,7 @@
 
 enum class State
 {
+	Replay,
 	Result,
 	Transition,
 };
@@ -37,6 +38,9 @@ public:
 	void DrawGUI();
 	void SaveToJson(nlohmann::json& j);
 	void LoadFromJson(const nlohmann::json& j);
+
+	//リプレイロゴを補間で移動させる関数
+	void UpdateReplayLogoPosition(float elapsedTime);
 
 	BroadcastCamera broadcastCamera;
 
@@ -73,6 +77,30 @@ private:
 
 	DirectX::XMFLOAT2 trackingArrowPosition = { 0.0f, 0.0f };
 	DirectX::XMFLOAT2 trackingArrowSize = { 100.0f, 100.0f };
+
+	std::unique_ptr<Sprite> replayLogo;
+	std::unique_ptr<sprite> replayLogoSprite;
+
+	struct ReplayLogoAnimation
+	{
+		DirectX::XMFLOAT2 startPosition = { 2100.0f, 540.0f };
+		DirectX::XMFLOAT2 targetPosition = { 960.0f, 540.0f };
+		DirectX::XMFLOAT2 endPosition = { -400.0f, 540.0f };
+		DirectX::XMFLOAT2 currentPosition = startPosition;
+
+		DirectX::XMFLOAT2 startSize = { 800.0f, 450.0f };
+		DirectX::XMFLOAT2 targetSize = { 1600.0f, 900.0f };
+		DirectX::XMFLOAT2 endSize = { 800.0f, 450.0f };
+		DirectX::XMFLOAT2 currentSize = startSize;
+		
+	};
+
+	ReplayLogoAnimation replayLogoAnimation;
+
+	float replayLogoMoveTime = 0.0f;
+	float replayLogoMoveDuration = 2.0f;
+	bool isReplayLogoMovingHalf = false;
+
 
 	// シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;

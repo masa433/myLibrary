@@ -338,6 +338,7 @@ void RoundManager::ProcessedToNextRound()
 	HomeRunCount::Instance().ResetCount();
 	Combo::Instance().ResetCombo();
 	currentState = RoundState::Playing;
+	Pitcher::Instance().ClearPitchHistory();// 投球履歴をクリア
 
 	SpecialAbility::Instance().RollRoundActivation(); // ラウンドごとの能力発動判定を行う
 }

@@ -15,6 +15,7 @@ void ReplayManager::Initialize()
 	isPendingSave = false;
 	hasLooped = false;
 	hasEverLooped = false;
+	hasClearedRecording = false;
 }
 
 void ReplayManager::Uninitialize()
@@ -38,6 +39,7 @@ void ReplayManager::StartRecording(float startTime)
 	isRecording = true;//記録中フラグを立てる
 	isPendingSave = false;//保存待機中フラグをリセット
 	recordElapsedTime = 0.0f;//記録中の経過時間をリセット
+	hasClearedRecording = false;//録画をクリアしたかどうかのフラグをリセット
 
 	if(consoleLog)
 	{
@@ -138,16 +140,20 @@ void ReplayManager::SaveRecording(float elapsedTime)
 
 void ReplayManager::ClearRecording()
 {
-	replayFrames.clear();//リプレイデータをクリア
-	recordingStartTime = 0.0f;//記録開始時間をリセット
-	homeRunHitTime = 0.0f;//ホームラン着弾時間をリセット
-	saveTimeRemaining = 0.0f;//保存までの残り時間をリセット
-	isRecording = false;//記録中フラグをリセット
-	isPendingSave = false;//保存待機中フラグをリセット
-
-	if(consoleLog)
+	if(!hasClearedRecording)
 	{
-		consoleLog->push_back(u8"録画をクリアしました");
+		hasClearedRecording = true;
+		replayFrames.clear();//リプレイデータをクリア
+		recordingStartTime = 0.0f;//記録開始時間をリセット
+		homeRunHitTime = 0.0f;//ホームラン着弾時間をリセット
+		saveTimeRemaining = 0.0f;//保存までの残り時間をリセット
+		isRecording = false;//記録中フラグをリセット
+		isPendingSave = false;//保存待機中フラグをリセット
+
+		if (consoleLog)
+		{
+			consoleLog->push_back(u8"録画をクリアしました");
+		}
 	}
 }
 

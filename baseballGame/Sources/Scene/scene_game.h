@@ -214,6 +214,9 @@ private:
 	bool showGUI = true;
     bool showResult = false;
 
+    //すでに録画を開始したかどうか
+	bool isRecordingStarted = false;
+
 private:
 	GameIntroSequence gameIntroSequence;
     

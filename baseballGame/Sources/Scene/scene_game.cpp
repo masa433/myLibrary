@@ -390,8 +390,6 @@ void scene_game::update(float elapsed_time)
         broadcastCamera.Update(elapsed_time, Ball::Instance().GetHasCollidedWithBat());
     }
 
-    Result::Instance().Update(elapsed_time);
-
     float screenWidth = static_cast<float>(Graphics::Instance().GetScreenWidth());
     float screenHeight = static_cast<float>(Graphics::Instance().GetScreenHeight());
 
@@ -455,7 +453,7 @@ void scene_game::update(float elapsed_time)
         SpecialAbility::Instance().Update(elapsed_time);
     }
 
-    
+    Result::Instance().Update(elapsed_time);
 
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
@@ -506,11 +504,19 @@ void scene_game::update(float elapsed_time)
     }
 
     bool isBallThrowing = Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing;
+	bool isBallSpriteMode = ballSprite::Instance().GetDisplayMode() == ballSprite::BallDisplayMode::Target;
+	bool isSelectingPitch = Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch;
 
-    if (isBallThrowing && !ReplayManager::Instance().IsRecording() && !Ball::Instance().GetHasCollidedWithBat())
+    if (isBallThrowing && !ReplayManager::Instance().IsRecording()
+        && !Ball::Instance().GetHasCollidedWithBat() && !isRecordingStarted && isBallSpriteMode)
     {
         ReplayManager::Instance().StartRecording(0.0f);
+        isRecordingStarted = true;
     }
+    if(isSelectingPitch && isRecordingStarted)
+    {
+        isRecordingStarted = false;
+	}
 
     //記録中ならフレームデータを保存
     if (ReplayManager::Instance().IsRecording())
