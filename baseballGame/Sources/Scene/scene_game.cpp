@@ -342,6 +342,12 @@ void scene_game::initialize()
 
 	gameIntroSequence.Initialize(device);
 
+    const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
+	ReplayManager::Instance().ResetReplayFrame(const_cast<ReplayFrame&>(frame));
+
+    broadcastCamera.SetReplayMode(false);
+	broadcastCamera.ResetReplayCamera();
+
     //ドローコール表示用
     D3D11_QUERY_DESC query_desc{};
     query_desc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
@@ -376,7 +382,7 @@ void scene_game::update(float elapsed_time)
 
     
 
-    if(ReplayManager::Instance().IsPlaying())
+    if(ReplayManager::Instance().IsPlaying() && Result::Instance().IsReplayLogoMovedHalf())
     {
         const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
 
@@ -453,7 +459,12 @@ void scene_game::update(float elapsed_time)
         SpecialAbility::Instance().Update(elapsed_time);
     }
 
-    Result::Instance().Update(elapsed_time);
+	bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
+
+    if(isGameFinished)
+    {
+        Result::Instance().Update(elapsed_time);
+	}
 
     // スカイレンダラーの更新
     skyRenderer.Update(elapsed_time * timeScale);
@@ -841,7 +852,7 @@ void scene_game::render(float elapsedTime)
 
     EffectManager::Instance().Render(camera.GetView(), camera.GetProjection());
    
-	if (gameIntroSequence.IsPlaying() && !ReplayManager::Instance().IsPlaying())
+    if (gameIntroSequence.IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
     {
         BatSprite::Instance().Render();
 

@@ -18,6 +18,7 @@
 #include "Money.h"
 #include "Combo.h"
 #include "ReplayManager.h"
+#include "Result.h"
 
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
@@ -143,6 +144,7 @@ void Pitcher::Initialize()
 	SelectRealPitcher(selectedRealPitcher);
 	UpdatePitcherModel();
 	ResetDisabledPitchTypes();
+	ResetPitchFlags();
 }
 
 //ピッチセッティングの初期化
@@ -503,6 +505,7 @@ void Pitcher::ResetPitchFlags()
 	Ball::Instance().SetIsFoulConfirmed(false); // ファウル確定フラグをリセット
 	Ball::Instance().SetHasCollidedWithPole(false);
 	Ball::Instance().SetHasCollidedWithNet(false);
+	Ball::Instance().ClearBallTrail(); // ボールの軌跡をクリア
 	Player::Instance().ResetSwingCount();
 	Player::Instance().SetShowSwingTimingSprite(false);
 	Player::Instance().ResetSwingTiming();
@@ -528,7 +531,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	currentPitcher->render_batched(rc.deviceContext, transform, animated_nodes);
 	Ball::Instance().Render(rc, renderer, isBallThrown, !isShadowPass);
 
-	if(intro->IsPlaying() && !ReplayManager::Instance().IsPlaying())
+	if(intro->IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
 	{
 		Wind::Instance().Render(rc);
 
@@ -541,7 +544,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
-	if (currentState == State::SelectingPitch && intro->IsPlaying() && !ReplayManager::Instance().IsPlaying())
+	if (currentState == State::SelectingPitch && intro->IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
 	{
 
 		if (infoBackData && infoBackSprite)
@@ -584,7 +587,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	}
 
 	//選択されているピッチャーの番号のアイコンを描画
-	if (currentState == State::SelectingPitch && intro->IsPlaying() && !ReplayManager::Instance().IsPlaying())
+	if (currentState == State::SelectingPitch && intro->IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
 	{
 		// RealPitcher::None でない場合のみ描画
 		if (selectedRealPitcher != RealPitcher::None)

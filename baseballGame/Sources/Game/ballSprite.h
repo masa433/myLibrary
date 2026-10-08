@@ -307,6 +307,12 @@ public:
 	ballBreak2D activePitchBreak = {};
 	int activePitchIndex = 0;
 
+	void ResetStrikeZoneFadeTimer() 
+	{ 
+		strikeZoneFadeTime = 1.2f;
+		strikeZoneSpriteData->color.w = 1.0f;
+	}
+
 public:
 	// コンソールログへのポインタをセット
 	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }

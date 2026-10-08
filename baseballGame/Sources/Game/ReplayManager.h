@@ -85,6 +85,28 @@ public:
 	const std::vector<ReplayFrame>& GetSavedReplayList() const { return savedReplayList; }
 	float GetRecordingStartTime() const { return recordingStartTime; } //記録開始時間を返す関数
 
+	//ReplayFrameのすべての位置や回転を0にリセットする関数
+	void ResetReplayFrame(ReplayFrame& frame)
+	{
+		frame.pitcherPosition = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		frame.pitcherRotation = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		frame.pitcherCurrentAnimationIndex = 0;
+		frame.pitcherAnimationTime = 0.0f;
+		frame.hasThrownBall = false;
+		frame.batterPosition = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		frame.batterRotation = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		frame.batterCurrentAnimationIndex = 0;
+		frame.batterAnimationTime = 0.0f;
+		frame.hasCollidedWithBat = false;
+		frame.ballPosition = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		frame.ballVelocity = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		frame.ballRotation = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+		frame.ballSpeedKmh = 0.0f;
+		frame.ballLaunchAngleDegrees = 45.0f;
+		frame.cameraEyePosition = DirectX::XMFLOAT3(10.5f, 2.5f, -10.5f);
+		frame.cameraFocusPosition = DirectX::XMFLOAT3(10.5f, 2.5f, -9.5f);
+	}
+
 public:
 
 	//映像を再生する関数

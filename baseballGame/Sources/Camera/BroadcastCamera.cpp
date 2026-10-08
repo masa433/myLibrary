@@ -55,6 +55,7 @@ void BroadcastCamera::SetupDefaultCameras()
 {
 	cameraPresets.clear();// 既存のカメラプリセットをクリア
 	cameraControllers.clear();// 既存のカメラコントローラーをクリア
+	isReplayMode = false;
 
 
 	{

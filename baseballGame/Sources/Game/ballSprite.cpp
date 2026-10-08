@@ -351,6 +351,9 @@ void ballSprite::Initialize(ID3D11Device* device)
 	catchSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Catch.wav");
 	catchStrongSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CatchStrong.wav");
 
+	currentFadeTime = 0.0f;
+	strikeZoneFadeTime = 1.2f;
+
 	TrackingData::Instance().Initialize(device);
 
 	InitSpinFlip(device, context);
@@ -478,6 +481,8 @@ void ballSprite::Uninitialize()
 
 void ballSprite::Update(float elapsedTime)
 {
+	
+
 	//実在投手の切り替えを検知し、その投手の球種に応じた変化量を設定する
 	SyncRealPitcherBreaks();
 	

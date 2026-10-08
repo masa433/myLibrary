@@ -16,6 +16,7 @@
 #include <Money.h>
 #include "shader.h"
 #include "ReplayManager.h"
+#include "Result.h"
 
 
 
@@ -582,7 +583,7 @@ void Player::RenderPlayer(const RenderContext& rc, ModelRenderer* renderer)
 
 
     if (showSwingTimingSprite && swingTimingInfo && currentSwingTiming != SwingTiming::None &&
-        intro->IsPlaying() && !ReplayManager::Instance().IsPlaying())
+        intro->IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
     {
         int timingIndex = static_cast<int>(currentSwingTiming);
         if (timingIndex >= 0 && timingIndex < static_cast<int>(SwingTiming::Count))

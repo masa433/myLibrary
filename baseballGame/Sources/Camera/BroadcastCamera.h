@@ -124,7 +124,10 @@ public:
 		for(auto& controller : cameraControllers)
 		{
 			controller.StopTrackingReplayCamera();
+			
 		}
+		prevHasCollidedWithBat = false;
+		prevHasShowTrackingData = false;
 	}
 
 	bool prevHasCollidedWithBat = false; // 前フレームでボールがバットに当たったかどうかのフラグ

@@ -5,7 +5,6 @@
 #include "Money.h"
 #include "Combo.h"
 #include "RoundManager.h"
-#include "ReplayManager.h"
 #include "UiEasing.h"
 
 void Result::Initialize(ID3D11Device* device)
@@ -83,13 +82,22 @@ void Result::Initialize(ID3D11Device* device)
 
 	replayLogoMoveTime = 0.0f;
 	isReplayLogoMovingHalf = false;
+	isReplayLogoMovingAll = false;
+	startTimer = 0.0f;
 
 	currentState = State::Replay;
+
+	replayLogoAnimation.currentPosition = replayLogoAnimation.startPosition;
+	replayLogoAnimation.currentSize = replayLogoAnimation.startSize;
+
+	const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
+	ReplayManager::Instance().ResetReplayFrame(const_cast<ReplayFrame&>(frame));
 }
 
 void Result::Uninitialize()
 {
 	ReplayManager::Instance().StopPlayback(); //再生停止
+	broadcastCamera.ResetReplayCamera();
 	hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 	resultFont.Uninitialize();
 	resultSprite.reset();
@@ -102,14 +110,21 @@ void Result::Uninitialize()
 
 void Result::Update(float elapsedTime)
 {
+
+	if (currentState == State::Replay) UpdateReplayLogoPosition(elapsedTime);
+
+	if (isReplayLogoMovingAll)
+	{
+		startTimer += elapsedTime;
+	}
+
 	bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
 
 	if(isGameFinished && !hasEnteredResult && currentState == State::Replay && isReplayLogoMovingHalf)
 	{
 
 		hasEnteredResult = true;
-		replayLogoMoveTime = 0.0f;
-
+		
 		hasReplay = ReplayManager::Instance().HasSavedReplay();//再生可能なリプレイがあるかどうかを取得
 		if (hasReplay)
 		{
@@ -119,8 +134,6 @@ void Result::Update(float elapsedTime)
 			broadcastCamera.SetReplayMode(true);
 		}
 	}
-
-	if (currentState == State::Replay) UpdateReplayLogoPosition(elapsedTime);
 
 	//リプレイの再生を進める
 	if (isGameFinished && hasReplay && ReplayManager::Instance().IsPlaying() && isReplayLogoMovingHalf)
@@ -175,6 +188,7 @@ void Result::Update(float elapsedTime)
 					hexTransitionEffect.Start(1.0f);
 					buttonManager.ResetTitleRequest(false);
 					currentState = State::Transition;
+					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 
 				}
 				if (buttonManager.IsRetryRequested())
@@ -183,6 +197,7 @@ void Result::Update(float elapsedTime)
 					hexTransitionEffect.Start(1.0f);
 					buttonManager.ResetRetryRequest(false);
 					currentState = State::Transition;
+					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 
 				}
 				if (buttonManager.IsBatterSelectRequested())
@@ -191,6 +206,7 @@ void Result::Update(float elapsedTime)
 					hexTransitionEffect.Start(1.0f);
 					buttonManager.ResetBatterSelectRequest(false);
 					currentState = State::Transition;
+					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 
 				}
 			}
@@ -204,17 +220,23 @@ void Result::Update(float elapsedTime)
 
 			if (hexTransitionEffect.IsFinished())
 			{
+				ReplayManager::Instance().SetLoopPlayback(false); //ループ再生を無効化
+				ReplayManager::Instance().StopPlayback(); //再生停止
+
 				if (isResultToTitle)
 				{
 					ChangeSceneGameToTitle();
+					
 				}
 				else if (isResultToRetry)
 				{
 					ChangeSceneGameToGame();
+					
 				}
 				else if (isResultToBatterSelect)
 				{
 					ChangeSceneGameToBatterSelect();
+					
 				}
 			}
 			break;
@@ -231,7 +253,15 @@ void Result::UpdateReplayLogoPosition(float elapsedTime)
 	{
 		replayLogoMoveTime += elapsedTime;
 		float t = replayLogoMoveTime / replayLogoMoveDuration;
-		if (t > 1.0f) t = 1.0f;
+		if (t > 1.0f) 
+		{	
+			t = 1.0f;
+			isReplayLogoMovingAll = true;
+		}
+		if(t > 0.5f)
+		{
+			isReplayLogoMovingHalf = true;
+		}
 
 		// 線形補間で位置を更新
 		//右側からスケールを大きくして真ん中へ移動→
@@ -261,7 +291,7 @@ void Result::UpdateReplayLogoPosition(float elapsedTime)
 				replayLogoAnimation.targetSize,
 				t1, UiEasing::EasingType::OutQuad);
 
-			isReplayLogoMovingHalf = true;
+			
 		}
 		else
 		{
@@ -275,10 +305,24 @@ void Result::UpdateReplayLogoPosition(float elapsedTime)
 				replayLogoAnimation.targetSize,
 				replayLogoAnimation.endSize,
 				t2, UiEasing::EasingType::InQuad);
+
+			
 		}
 
 		
 	}
+}
+
+float Result::CalcStartProgress(const ReplayFrame& frame) const
+{
+	
+	float progress = 1.0f; // デフォルトで1.0に設定
+
+	const float duration = 1.0f; // 1.0秒で補間
+	progress = (std::min)(startTimer / duration, 1.0f); // 0.0から1.0の範囲に制限
+
+	return progress;
+	
 }
 
 void Result::Render()
@@ -296,7 +340,7 @@ void Result::Render()
 	const auto& savedList = ReplayManager::Instance().GetSavedReplayList();//保存済みのリプレイデータを取得
 	const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();//現在の再生時間における補間済みフレームを取得
 
-	if(replayTrackingBoard && replayTrackingSprite && currentState == State::Replay)
+	if(replayTrackingBoard && replayTrackingSprite && currentState == State::Replay && isReplayLogoMovingAll)
 	{
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(replayTrackingPosition);
 		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(replayTrackingSize);
@@ -323,24 +367,16 @@ void Result::Render()
 		};
 
 	//保存した打球速度と打球角度を表示
-	if(resultFont.IsValid() && currentState == State::Replay)
+	if(resultFont.IsValid() && currentState == State::Replay && isReplayLogoMovingAll)
 	{
 		
 
 		float targetSpeed = savedList.back().ballSpeedKmh;//保存済みのリプレイデータの最後のフレームの打球速度を取得
 		float targetAngle = savedList.back().ballLaunchAngleDegrees;//保存済みのリプレイデータの最後のフレームの打球角度を取得
 
-		float progress = 1.0f; // デフォルトで1.0に設定
+		float progress = CalcStartProgress(frame); // デフォルトで1.0に設定
 
-		if(!ReplayManager::Instance().HasEverLooped())
-		{
-			float currentPlaybackTime = frame.time;
-			float duration = 0.3f; // 0.3秒間で変化させる
-
-			progress = currentPlaybackTime / duration;
-			if (progress < 0.0f) progress = 0.0f;
-			if (progress > 1.0f) progress = 1.0f;
-		}
+		
 
 		int displayedSpeed = static_cast<int>(targetSpeed * progress);
 		int displayedAngle = static_cast<int>(targetAngle * progress);
@@ -381,7 +417,7 @@ void Result::Render()
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
-	if(trackingArrow && trackingArrowSprite && currentState == State::Replay && isReplayLogoMovingHalf)
+	if(trackingArrow && trackingArrowSprite && currentState == State::Replay && isReplayLogoMovingAll)
 	{
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(trackingArrowPosition);
 		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(trackingArrowSize);
@@ -393,17 +429,7 @@ void Result::Render()
 
 		float targetAngle = savedList.back().ballLaunchAngleDegrees; //保存済みのリプレイデータの最後のフレームの打球角度を取得
 
-		float progress = 1.0f; // デフォルトで1.0に設定
-
-		if (!ReplayManager::Instance().HasEverLooped())
-		{
-			float currentPlaybackTime = frame.time;
-			float duration = 0.3f; // 0.3秒間で変化させる
-
-			progress = currentPlaybackTime / duration;
-			if (progress < 0.0f) progress = 0.0f;
-			if (progress > 1.0f) progress = 1.0f;
-		}
+		float progress = CalcStartProgress(frame); // デフォルトで1.0に設定
 
 		// 角度の補間
 		float displayedAngle = targetAngle * progress;

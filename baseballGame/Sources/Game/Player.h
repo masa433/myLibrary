@@ -171,6 +171,8 @@ public:
 
 	State GetCurrentState() const { return current_state; } // 現在の状態を取得するメソッド
 
+	void SetCurrentState(State state) { current_state = state; animation_time = 0.0f; } // 現在の状態を設定するメソッド
+
 public:
     // コンソールログへのポインタをセット
     void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }

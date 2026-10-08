@@ -11,6 +11,7 @@
 #include "ButtonManager.h"
 #include "Hextransitioneffect.h"
 #include "BroadcastCamera.h"
+#include "ReplayManager.h"
 
 enum class State
 {
@@ -41,6 +42,18 @@ public:
 
 	//リプレイロゴを補間で移動させる関数
 	void UpdateReplayLogoPosition(float elapsedTime);
+
+	//リプレイロゴが半分移動したかどうかを取得する関数
+	bool IsReplayLogoMovedHalf() const { return isReplayLogoMovingHalf; }
+
+	//ロゴアニメーションがスタートしたかどうか
+	bool IsReplayLogoAnimationStarted() const { return replayLogoAnimation.currentPosition.x != replayLogoAnimation.startPosition.x || replayLogoAnimation.currentPosition.y != replayLogoAnimation.startPosition.y; }
+
+	//現在のステートを取得する関数
+	State GetCurrentState() const { return currentState; }
+
+	float CalcStartProgress(const ReplayFrame& frame) const;
+
 
 	BroadcastCamera broadcastCamera;
 
@@ -83,14 +96,14 @@ private:
 
 	struct ReplayLogoAnimation
 	{
-		DirectX::XMFLOAT2 startPosition = { 2100.0f, 540.0f };
+		DirectX::XMFLOAT2 startPosition = { 2700.0f, 540.0f };
 		DirectX::XMFLOAT2 targetPosition = { 960.0f, 540.0f };
-		DirectX::XMFLOAT2 endPosition = { -400.0f, 540.0f };
+		DirectX::XMFLOAT2 endPosition = { -600.0f, 540.0f };
 		DirectX::XMFLOAT2 currentPosition = startPosition;
 
-		DirectX::XMFLOAT2 startSize = { 800.0f, 450.0f };
+		DirectX::XMFLOAT2 startSize = { 1280.0f, 720.0f };
 		DirectX::XMFLOAT2 targetSize = { 1600.0f, 900.0f };
-		DirectX::XMFLOAT2 endSize = { 800.0f, 450.0f };
+		DirectX::XMFLOAT2 endSize = { 1280.0f, 720.0f };
 		DirectX::XMFLOAT2 currentSize = startSize;
 		
 	};
@@ -100,7 +113,8 @@ private:
 	float replayLogoMoveTime = 0.0f;
 	float replayLogoMoveDuration = 2.0f;
 	bool isReplayLogoMovingHalf = false;
-
+	bool isReplayLogoMovingAll = false;
+	float startTimer = 0.0f;
 
 	// シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;

@@ -57,6 +57,7 @@ void Ball::ThrowBezier(const BezierPitchData& data,
 	startPosition = worldPosition;
 	ballTrail.clear();
 	trailRecordTimer = 0.0f;
+	trailRecordDelayTime = 0.0f;
 }
 
 void Ball::UpdateBezierFlight(float elapsedTime)
@@ -186,6 +187,7 @@ void Ball::Initialize()
 
 	physx::PxRigidBodyExt::setMassAndUpdateInertia(*collider, BALL_MASS);
 	pxScene->addActor(*collider);
+
 }
 
 void Ball::Uninitialize()

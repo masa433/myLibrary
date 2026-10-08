@@ -16,6 +16,8 @@ void ReplayManager::Initialize()
 	hasLooped = false;
 	hasEverLooped = false;
 	hasClearedRecording = false;
+	StopPlayback();
+	
 }
 
 void ReplayManager::Uninitialize()
@@ -28,6 +30,7 @@ void ReplayManager::Uninitialize()
 	isRecording = false;
 	isPendingSave = false;
 	consoleLog = nullptr;
+	StopPlayback();
 }
 
 void ReplayManager::StartRecording(float startTime)

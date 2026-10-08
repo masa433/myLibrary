@@ -131,6 +131,7 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
         2048, 2048, &codepoints);
 
     buttonManager.Initialize();
+
 }
 
 void GameIntroSequence::Uninitialize()
@@ -201,6 +202,11 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 		pitcher.SetCurrentState(Pitcher::State::SelectingPitch); // ピッチャーの状態を判定待ちに設定
 		pitcher.SetAnimationTime(0.0f); // ピッチャーのアニメーション時間をリセット
 		pitcher.UpdateAnimation(0.0f); // ピッチャーのアニメーションを更新
+
+		Player& player = Player::Instance();
+		player.SetCurrentState(Player::State::BattingIdle); // バッターの状態を判定待ちに設定
+		
+		ballSprite::Instance().ResetStrikeZoneFadeTimer(); // ストライクゾーンのフェードタイマーをリセット
 		return;// 右クリックが押された場合は以降の処理をスキップ
     }
 
