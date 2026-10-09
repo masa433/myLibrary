@@ -188,6 +188,16 @@ void Ball::Initialize()
 	physx::PxRigidBodyExt::setMassAndUpdateInertia(*collider, BALL_MASS);
 	pxScene->addActor(*collider);
 
+
+	bezierT = 0.0f;
+	bezierFlying = false;
+	angularSpeed = 0.0f; // 回転速度(rad/s)
+	relativeSpeed = 0.0f; // 相対速度(m/s)
+	spinParameter = 0.0f; // スピンパラメータ
+	magnusMag = 0.0f; // マグナス力の大きさ(N)
+	dragMag = 0.0f; // 抗力の大きさ(N)z
+	pitchTimer = 0.0f;// 投球中のタイマー
+	pitchDuration = 1.0f;// 投球中の時間
 }
 
 void Ball::Uninitialize()

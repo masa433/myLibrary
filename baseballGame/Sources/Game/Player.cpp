@@ -193,6 +193,11 @@ void Player::Initialize()
 
 	isPlayedStepInAnimation = false;
     showSwingTimingSprite = false;
+	remainingTime = 0.0f;
+    ThrowingStateTime = 0.0f;
+    hasPlayBeforeSwing = false; // フラグをリセット
+    beforeSwingStartTime = 0.0f; // beforeSwingStartTimeをリセット
+	animation_time = 0.0f; // animation_timeをリセット
 
 	SelectRealBatter(selectedRealBatter);
 	UpdateBatterModel();
@@ -1085,6 +1090,8 @@ void Player::ChangeState(State newState)
 
     // アニメーションインデックスを変更
     int new_index = animation_indices[static_cast<int>(newState)];
+
+    animation_time = 0.0f;
 
     // インデックスが有効範囲内かチェック
     if (currentBatter && new_index >= 0 && new_index < currentBatter->animations.size())
