@@ -104,6 +104,12 @@ private:
 	std::unique_ptr<Sprite> replayLogo;
 	std::unique_ptr<sprite> replayLogoSprite;
 
+	std::unique_ptr<Sprite> replayBoardData;
+	std::unique_ptr<sprite> replayBoardSprite;
+
+	DirectX::XMFLOAT2 replayBoardPosition = { 150.0f, 100.0f };
+	DirectX::XMFLOAT2 replayBoardSize = { 200.0f, 50.0f };
+
 	struct ReplayLogoAnimation
 	{
 		DirectX::XMFLOAT2 startPosition = { 960.0f, 540.0f };
@@ -112,7 +118,7 @@ private:
 		DirectX::XMFLOAT2 currentPosition = startPosition;
 
 		DirectX::XMFLOAT2 startSize = { 3840.0f, 2160.0f };
-		DirectX::XMFLOAT2 targetSize = { 1920.0f, 1080.0f };
+		DirectX::XMFLOAT2 targetSize = { 1984.0f, 1116.0f };
 		DirectX::XMFLOAT2 endSize = { 3840.0f, 2160.0f };
 		DirectX::XMFLOAT2 currentSize = startSize;
 

@@ -36,7 +36,7 @@ void TrackingData::Initialize(ID3D11Device* device)
 		u8"角度速度方向"
 		u8"0123456789.度"
 		u8"Tracking Data"
-		u8"レフトセンターライト"
+		u8"レフトセンターライトー"
 	);
 
 	// フォントレンダラーの初期化
@@ -151,6 +151,12 @@ void TrackingData::Render()
 
 	char angleLabel[16];     snprintf(angleLabel, sizeof(angleLabel), u8"角度　");
 	char angleValue[32];     snprintf(angleValue, sizeof(angleValue), u8"%.f度", FormatRoundedValue(Physics::Instance().GetBallAngle()));
+
+	//角度が90度以上の場合、角度の表示をーにする
+	if(Physics::Instance().GetBallAngle() >= 90.0f)
+	{
+		snprintf(angleValue, sizeof(angleValue), u8"ー");
+	}
 
 	char speedLabel[16];     snprintf(speedLabel, sizeof(speedLabel), u8"速度　");
 	char speedValue[32];     snprintf(speedValue, sizeof(speedValue), u8"%.fkm/h", FormatRoundedValue(Physics::Instance().GetBallSpeed()));

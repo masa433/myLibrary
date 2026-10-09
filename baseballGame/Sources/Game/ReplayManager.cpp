@@ -1,6 +1,7 @@
 #include "ReplayManager.h"
 #include "ballDistance.h"
 #include "HomeRunCount.h"
+#include "Ball.h"
 #include <imgui.h>
 
 void ReplayManager::Initialize()
@@ -71,7 +72,7 @@ void ReplayManager::OnHomeRunHit()
 
 		if(consoleLog)
 		{
-			consoleLog->push_back(u8"ホームラン着弾！1秒後に録画を保存します");
+			consoleLog->push_back(u8"ホームラン着弾！");
 		}
 	}
 }
@@ -85,7 +86,7 @@ void ReplayManager::OnHit()
 		saveTimeRemaining = 1.0f;//1秒後に保存する
 		if(consoleLog)
 		{
-			consoleLog->push_back(u8"ヒット着弾！1秒後に録画を保存します");
+			consoleLog->push_back(u8"ヒット着弾！");
 		}
 	}
 }
@@ -94,7 +95,7 @@ void ReplayManager::SaveRecording(float elapsedTime)
 {
 	if (isPendingSave)
 	{
-		saveTimeRemaining -= elapsedTime;//保存までの残り時間を減らす
+		//saveTimeRemaining -= elapsedTime;//保存までの残り時間を減らす
 
 		bool isFinished = Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround();
 
@@ -103,7 +104,12 @@ void ReplayManager::SaveRecording(float elapsedTime)
 		//普通のヒット判定
 		bool isHit = isFinished && !Ball::Instance().GetIsFoulConfirmed();
 
-		if (saveTimeRemaining <= 0.0f)
+		//ボールのコライダーの速度を取得
+		Ball& ball = Ball::Instance();
+		physx::PxVec3 ballVelocity = ball.GetBallCollider()->getLinearVelocity();
+
+		//ボールの速度が2.0m/s以下になったら保存する
+		if (ballVelocity.magnitude() <= 2.0f)
 		{
 			
 			isPendingSave = false;//保存待機中フラグをリセット
@@ -195,6 +201,7 @@ void ReplayManager::UpdatePlayback(float elapsedTime)
 	playbackTime += elapsedTime * playbackSpeed;//再生時間・再生速度を更新
 
 	const float lastTime = savedReplayList.back().time;//最後のフレームの時間
+
 
 	if (playbackTime >= lastTime)
 	{

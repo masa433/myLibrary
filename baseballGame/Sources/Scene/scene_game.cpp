@@ -58,6 +58,7 @@ void scene_game::initialize()
 	ballCount::Instance().SetIntroSequence(&gameIntroSequence);
 	Pitcher::Instance().SetIntroSequence(&gameIntroSequence);
 	Player::Instance().SetIntroSequence(&gameIntroSequence);
+	ballSprite::Instance().SetIntroSequence(&gameIntroSequence);
 
     // カメラ設定をここに移動
     float screenWidth = Graphics::Instance().GetScreenWidth();

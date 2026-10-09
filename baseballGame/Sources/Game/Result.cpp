@@ -52,6 +52,14 @@ void Result::Initialize(ID3D11Device* device)
 	replayLogo->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	replayLogoSprite = std::make_unique<sprite>(device, context, replayLogo->texturePath.c_str());
 
+	replayBoardData = std::make_unique<Sprite>();
+	replayBoardData->texturePath = L".\\resources\\textures\\replayBoard.png";
+	replayBoardData->position = { replayBoardPosition.x, replayBoardPosition.y };
+	replayBoardData->size = { replayBoardSize.x, replayBoardSize.y };
+	replayBoardData->rotation = 0.0f;
+	replayBoardData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	replayBoardSprite = std::make_unique<sprite>(device, context, replayBoardData->texturePath.c_str());
+
 	// フォントレンダラーの初期化
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
@@ -114,6 +122,9 @@ void Result::Uninitialize()
 	resultSpriteData.reset();
 	replayTrackingBoard.reset();
 	replayTrackingSprite.reset();
+	trackingArrow.reset();
+	replayLogo.reset();
+	replayLogoSprite.reset();
 	hexTransitionEffect.Reset();
 	buttonManager.Uninitialize();
 }
@@ -393,7 +404,7 @@ void Result::Render()
 	const auto& savedList = ReplayManager::Instance().GetSavedReplayList();//保存済みのリプレイデータを取得
 	const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();//現在の再生時間における補間済みフレームを取得
 
-	if(replayTrackingBoard && replayTrackingSprite && currentState == State::Replay && isReplayLogoMovingAll)
+	if(replayTrackingBoard && replayTrackingSprite && currentState == State::Replay && isReplayLogoMovingHalf)
 	{
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(replayTrackingPosition);
 		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(replayTrackingSize);
@@ -420,7 +431,7 @@ void Result::Render()
 		};
 
 	//保存した打球速度と打球角度を表示
-	if(resultFont.IsValid() && currentState == State::Replay && isReplayLogoMovingAll)
+	if(resultFont.IsValid() && currentState == State::Replay && isReplayLogoMovingHalf)
 	{
 		
 
@@ -470,7 +481,7 @@ void Result::Render()
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
-	if(trackingArrow && trackingArrowSprite && currentState == State::Replay && isReplayLogoMovingAll)
+	if(trackingArrow && trackingArrowSprite && currentState == State::Replay && isReplayLogoMovingHalf)
 	{
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(trackingArrowPosition);
 		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(trackingArrowSize);
@@ -512,6 +523,22 @@ void Result::Render()
 			scaledSize.x, scaledSize.y,
 			trackingArrow->color.x, trackingArrow->color.y, trackingArrow->color.z, trackingArrow->color.w,
 			displayedAngle);
+	}
+
+	if(replayBoardData && replayBoardSprite && currentState == State::Replay && isReplayLogoMovingHalf)
+	{
+		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(replayBoardPosition);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(replayBoardSize);
+		DirectX::XMFLOAT2 scaledCenterPos =
+		{
+			scaledPosition.x - scaledSize.x / 2.0f,
+			scaledPosition.y - scaledSize.y / 2.0f
+		};
+		replayBoardSprite->render(dc,
+			scaledCenterPos.x, scaledCenterPos.y,
+			scaledSize.x, scaledSize.y,
+			replayBoardData->color.x, replayBoardData->color.y, replayBoardData->color.z, replayBoardData->color.w,
+			replayBoardData->rotation);
 	}
 
 	if(replayLogo && replayLogoSprite && currentState == State::Replay)
@@ -707,6 +734,10 @@ void Result::DrawGUI()
 		ImGui::Separator();
 		ImGui::DragFloat2("Tracking Arrow Position", &trackingArrowPosition.x, 0.01f, 0.0f, 2000.0f);
 		ImGui::DragFloat2("Tracking Arrow Size", &trackingArrowSize.x, 0.01f, 0.0f, 2000.0f);
+
+		ImGui::Separator();
+		ImGui::DragFloat2("ReplayBoard Position", &replayBoardPosition.x, 1.0f, 0.0f, 2000.0f);
+		ImGui::DragFloat2("ReplayBoard Size", &replayBoardSize.x, 1.0f, 0.0f, 2000.0f);
 	}
 
 	buttonManager.DrawGUI();
@@ -740,7 +771,8 @@ void Result::SaveToJson(nlohmann::json& j)
 	j["AngleFontSize"] = angleFontSize;
 	j["TrackingArrowPosition"] = { trackingArrowPosition.x, trackingArrowPosition.y };
 	j["TrackingArrowSize"] = { trackingArrowSize.x, trackingArrowSize.y };
-
+	j["ReplayBoardPosition"] = { replayBoardPosition.x, replayBoardPosition.y };
+	j["ReplayBoardSize"] = { replayBoardSize.x, replayBoardSize.y };
 	buttonManager.SaveToJson(j);
 }
 
@@ -880,6 +912,16 @@ void Result::LoadFromJson(const nlohmann::json& j)
 	{
 		trackingArrowSize.x = j["TrackingArrowSize"][0].get<float>();
 		trackingArrowSize.y = j["TrackingArrowSize"][1].get<float>();
+	}
+	if(j.contains("ReplayBoardPosition"))
+	{
+		replayBoardPosition.x = j["ReplayBoardPosition"][0].get<float>();
+		replayBoardPosition.y = j["ReplayBoardPosition"][1].get<float>();
+	}
+	if(j.contains("ReplayBoardSize"))
+	{
+		replayBoardSize.x = j["ReplayBoardSize"][0].get<float>();
+		replayBoardSize.y = j["ReplayBoardSize"][1].get<float>();
 	}
 
 	buttonManager.LoadFromJson(j);

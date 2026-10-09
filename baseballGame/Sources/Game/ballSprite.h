@@ -11,7 +11,7 @@
 #include "FontRenderer.h"
 #include "..\Sources\Audio\AudioSource.h"
 #include "..\Sources\Audio\Audio.h"
-
+#include "GameIntroSequence.h"
 
 using json = nlohmann::json;
 
@@ -35,6 +35,8 @@ public:
 
 	bool GetShowBallBoard() const { return showBallBoard; }
 	void SetShowBallBoard(bool value) { showBallBoard = value; }
+
+	void SetIntroSequence(const GameIntroSequence* sequence) { intro = sequence; }
 
 private:
 	//スプライトデータ
@@ -450,5 +452,7 @@ private:
 	float strikeZoneAlpha = 0.0f; // ストライクゾーンの透明度（0.0～1.0）
 	float strikeZoneFadeTime = 1.2f; // ストライクゾーンのフェード速度
 	float currentFadeTime = 0.0f; // 現在のフェード時間
+
+	const GameIntroSequence* intro = nullptr; // ゲームイントロシーケンスへのポインタ
 
 };

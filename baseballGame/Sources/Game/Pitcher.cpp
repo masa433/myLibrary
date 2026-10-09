@@ -138,6 +138,7 @@ void Pitcher::Initialize()
 	pitchHistory.clear();// 投球履歴をクリア
 	windEffectEnabled = true; // 風の影響を有効にする
 	ballSpeedMode = BallSpeedMode::slowSpeed; // ボール速度モードを初期化
+	isBallThrown = false; // ボールが投げられていない状態に初期化
 
 	InitializePitchSettings();
 	SelectPitchType();
