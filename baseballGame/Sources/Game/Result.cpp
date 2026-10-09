@@ -501,7 +501,7 @@ void Result::Render()
 		float centerX = scaledCenterPos.x + scaledSize.x / 2.0f; // 中心のX座標
 		float centerY = scaledCenterPos.y + scaledSize.y / 2.0f; // 中心のY座標
 
-		//支点を右端に移動差焦る
+		//支点を右端に移動させる
 		float pivotX = scaledCenterPos.x + scaledSize.x; // 右端に移動するためのオフセット
 		float pivotY = centerY; // 中心のY座標を維持
 

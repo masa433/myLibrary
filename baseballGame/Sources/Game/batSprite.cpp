@@ -9,6 +9,7 @@
 #include <TrackingData.h>
 #include <GameTimer.h>
 #include "RoundManager.h"
+#include <ReplayManager.h>
 
 //ラープ関数
 float Lerp(float a, float b, float t)
@@ -104,11 +105,11 @@ void BatSprite::Update(float elapsedTime)
 		}
 
 		//アシスト中はカーソルの位置をボールの位置に合わせる
-		if (isAssisting && RoundManager::Instance().IsPlaying())
+		if (isAssisting && RoundManager::Instance().IsPlaying() && !ReplayManager::Instance().IsPlaying())
 		{
 			assistTimer += elapsedTime;
 
-			// 1. X軸とY軸でそれぞれ進捗率を計算する
+			//X軸とY軸でそれぞれ進捗率を計算する
 			float progressX = (std::min)(assistTimer / assistDuration, 1.0f);
 
 			// yMoveScale（例: 0.5f）を掛けることで、Y軸の補間スピードだけを遅らせる
@@ -120,11 +121,11 @@ void BatSprite::Update(float elapsedTime)
 			);
 			float progressY = (std::min)((assistTimer / assistDuration) * yMoveScale, 1.0f);
 
-			// 2. ボールの最終到達地点を取得（オフセット調整が必要な場合は固定値で足す）
+			//ボールの最終到達地点を取得（オフセット調整が必要な場合は固定値で足す）
 			DirectX::XMFLOAT2 ballFinalPos = bs.GetFinalScreenPos();
 
-			// バットカーソルの中心・芯に合わせるためのオフセット調整（必要な場合）
-			float offsetY = batCursorSpriteData->size.y * 0.2f;
+			// バットカーソルの中心・芯に合わせるためのオフセット調整
+			float offsetY = batCursorSpriteData->size.y * 0.3f;
 
 			float actualFinalY = bs.GetStartScreenPos().y + (ballFinalPos.y - bs.GetStartScreenPos().y) * yMoveScale;
 
@@ -139,7 +140,7 @@ void BatSprite::Update(float elapsedTime)
 			HWND hwnd = GetForegroundWindow();
 			ClientToScreen(hwnd, &targetPt);
 
-			// 3. X軸とY軸で異なる進捗率を使ってカーソル位置を補間
+			//X軸とY軸で異なる進捗率を使ってカーソル位置を補間
 			POINT currentPt;
 			currentPt.x = static_cast<LONG>(assistStartMousePos.x + (targetPt.x - assistStartMousePos.x) * progressX);
 			currentPt.y = static_cast<LONG>(assistStartMousePos.y + (targetPt.y - assistStartMousePos.y) * progressY);
