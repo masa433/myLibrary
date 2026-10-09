@@ -581,7 +581,7 @@ void Result::Render()
 	}
 
 	// スプライトの描画
-	/*if (resultSprite)
+	if (resultSprite && resultSpriteData && currentState != State::Replay)
 	{
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(spritePosition);
 		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(spriteSize);
@@ -591,7 +591,8 @@ void Result::Render()
 			scaledSize.x, scaledSize.y,
 			spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w,
 			resultSpriteData->rotation);
-	}*/
+	}
+
 	// フォントの描画
 	if (resultFont.IsValid() && (currentState != State::Replay))
 	{
