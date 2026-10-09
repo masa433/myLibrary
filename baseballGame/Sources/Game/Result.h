@@ -54,6 +54,16 @@ public:
 
 	float CalcStartProgress(const ReplayFrame& frame) const;
 
+	//ÉçÉSÇÃï\é¶ó¶ÇåvéZÇ∑ÇÈä÷êî
+	float CalcLogoRevealRate(float t) const;
+
+	float CalcLogoHoleRate(float t) const;
+
+	void DrawLogoClipped(ID3D11DeviceContext* dc,
+		float l, float t, float r, float b,
+		const DirectX::XMFLOAT2& topLeft,
+		const DirectX::XMFLOAT2& size,
+		LONG screenW, LONG screenH);
 
 	BroadcastCamera broadcastCamera;
 
@@ -96,22 +106,27 @@ private:
 
 	struct ReplayLogoAnimation
 	{
-		DirectX::XMFLOAT2 startPosition = { 2700.0f, 540.0f };
+		DirectX::XMFLOAT2 startPosition = { 960.0f, 540.0f };
 		DirectX::XMFLOAT2 targetPosition = { 960.0f, 540.0f };
-		DirectX::XMFLOAT2 endPosition = { -600.0f, 540.0f };
+		DirectX::XMFLOAT2 endPosition = { 960.0f, 540.0f };
 		DirectX::XMFLOAT2 currentPosition = startPosition;
 
-		DirectX::XMFLOAT2 startSize = { 1280.0f, 720.0f };
-		DirectX::XMFLOAT2 targetSize = { 1600.0f, 900.0f };
-		DirectX::XMFLOAT2 endSize = { 1280.0f, 720.0f };
+		DirectX::XMFLOAT2 startSize = { 3840.0f, 2160.0f };
+		DirectX::XMFLOAT2 targetSize = { 1920.0f, 1080.0f };
+		DirectX::XMFLOAT2 endSize = { 3840.0f, 2160.0f };
 		DirectX::XMFLOAT2 currentSize = startSize;
+
+		float startRotation = -135.0f;
+		float targetRotation = 0.0f;
+		float endRotation = 0.0f;
+		float currentRotation = startRotation;
 		
 	};
 
 	ReplayLogoAnimation replayLogoAnimation;
 
 	float replayLogoMoveTime = 0.0f;
-	float replayLogoMoveDuration = 2.0f;
+	float replayLogoMoveDuration = 2.5f;
 	bool isReplayLogoMovingHalf = false;
 	bool isReplayLogoMovingAll = false;
 	float startTimer = 0.0f;
@@ -165,4 +180,6 @@ private:
 	HexTransitionEffect hexTransitionEffect;
 
 	State currentState = State::Result;
+
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
 };

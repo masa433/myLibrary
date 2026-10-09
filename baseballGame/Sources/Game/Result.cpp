@@ -89,6 +89,15 @@ void Result::Initialize(ID3D11Device* device)
 
 	replayLogoAnimation.currentPosition = replayLogoAnimation.startPosition;
 	replayLogoAnimation.currentSize = replayLogoAnimation.startSize;
+	replayLogoAnimation.currentRotation = replayLogoAnimation.startRotation;
+
+	//テクスチャを左側から順に表示するためのラスタライザステートを作成
+	D3D11_RASTERIZER_DESC rsDesc = {};
+	rsDesc.FillMode = D3D11_FILL_SOLID;// 塗りつぶしモードを設定
+	rsDesc.CullMode = D3D11_CULL_NONE;// カリングを無効にする
+	rsDesc.DepthClipEnable = TRUE;// デプスクリッピングを有効にする
+	rsDesc.ScissorEnable = TRUE;// スクリーン外の描画を防ぐためにシザーを有効にする
+	device->CreateRasterizerState(&rsDesc, rasterizerState.ReleaseAndGetAddressOf());
 
 	const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
 	ReplayManager::Instance().ResetReplayFrame(const_cast<ReplayFrame&>(frame));
@@ -291,11 +300,22 @@ void Result::UpdateReplayLogoPosition(float elapsedTime)
 				replayLogoAnimation.targetSize,
 				t1, UiEasing::EasingType::OutQuad);
 
+			replayLogoAnimation.currentRotation = UiEasing::Lerp(
+				replayLogoAnimation.startRotation,
+				replayLogoAnimation.targetRotation,
+				t1, UiEasing::EasingType::OutQuad);
+
 			
+		}
+		else if( t >= 0.5f && t <= 0.6f)
+		{
+			replayLogoAnimation.currentPosition = replayLogoAnimation.targetPosition;
+			replayLogoAnimation.currentSize = replayLogoAnimation.targetSize;
+			replayLogoAnimation.currentRotation = replayLogoAnimation.targetRotation;
 		}
 		else
 		{
-			float t2 = (t - 0.5f) / 0.5f; // 0.5から1.0秒の間を0.0から1.0に正規化
+			float t2 = (t - 0.6f) / 0.4f; // 0.6から1.0秒の間を0.0から1.0に正規化
 			replayLogoAnimation.currentPosition = UiEasing::Lerp(
 				replayLogoAnimation.targetPosition,
 				replayLogoAnimation.endPosition,
@@ -304,7 +324,12 @@ void Result::UpdateReplayLogoPosition(float elapsedTime)
 			replayLogoAnimation.currentSize = UiEasing::Lerp(
 				replayLogoAnimation.targetSize,
 				replayLogoAnimation.endSize,
-				t2, UiEasing::EasingType::InQuad);
+				t2 * 1.5f, UiEasing::EasingType::InQuad);
+
+			replayLogoAnimation.currentRotation = UiEasing::Lerp(
+				replayLogoAnimation.targetRotation,
+				replayLogoAnimation.endRotation,
+				t2, UiEasing::EasingType::InQuad);	
 
 			
 		}
@@ -312,6 +337,7 @@ void Result::UpdateReplayLogoPosition(float elapsedTime)
 		
 	}
 }
+
 
 float Result::CalcStartProgress(const ReplayFrame& frame) const
 {
@@ -323,6 +349,24 @@ float Result::CalcStartProgress(const ReplayFrame& frame) const
 
 	return progress;
 	
+}
+
+float Result::CalcLogoRevealRate(float t) const
+{
+	t = std::clamp(t, 0.0f, 1.0f); // tを0.0から1.0の範囲に制限
+
+	if (t < 0.5f)
+	{
+		return UiEasing::Lerp(0.0f, 1.0f, t / 0.5f, UiEasing::EasingType::OutQuint); // 0.0から1.0に補間
+	}
+	else if(t >= 0.5f && t <= 0.6f)
+	{
+		return 1.0f; // 1.0を維持
+	}
+	else
+	{
+		return UiEasing::Lerp(1.0f, 0.0f, ((t - 0.6f) / 0.4f) * 1.5f, UiEasing::EasingType::InOutSine); // 1.0から0.0に補間
+	}
 }
 
 void Result::Render()
@@ -463,6 +507,9 @@ void Result::Render()
 
 	if(replayLogo && replayLogoSprite && currentState == State::Replay)
 	{
+		
+
+
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(replayLogoAnimation.currentPosition);
 		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(replayLogoAnimation.currentSize);
 		DirectX::XMFLOAT2 scaledCenterPos =
@@ -470,11 +517,31 @@ void Result::Render()
 			scaledPosition.x - scaledSize.x / 2.0f,
 			scaledPosition.y - scaledSize.y / 2.0f
 		};
+
+		float t = replayLogoMoveTime / replayLogoMoveDuration;
+		float rate = CalcLogoRevealRate(t);
+
+		float w = scaledSize.x * rate;
+		float h = scaledSize.y * rate;
+
+		//シザーの描画範囲を設定(四角形)
+		D3D11_RECT scissorRect;
+		scissorRect.left = static_cast<LONG>(scaledPosition.x - w / 2.0f);// 左上のX座標
+		scissorRect.top = static_cast<LONG>(scaledPosition.y - h / 2.0f);// 左上のY座標
+		scissorRect.right = static_cast<LONG>(scaledPosition.x + w / 2.0f);// 右下のX座標
+		scissorRect.bottom = static_cast<LONG>(scaledPosition.y + h / 2.0f);// 右下のY座標
+
+		dc->RSSetScissorRects(1, &scissorRect);// シザー矩形を設定
+		dc->RSSetState(rasterizerState.Get());// ラスタライザステートを設定
+
 		replayLogoSprite->render(dc,
 			scaledCenterPos.x, scaledCenterPos.y,
 			scaledSize.x, scaledSize.y,
 			replayLogo->color.x, replayLogo->color.y, replayLogo->color.z, replayLogo->color.w,
-			replayLogo->rotation);
+			replayLogoAnimation.currentRotation);
+
+		D3D11_RECT fullRect = { 0, 0, static_cast<LONG>(Graphics::Instance().GetScreenWidth()), static_cast<LONG>(Graphics::Instance().GetScreenHeight()) };
+		dc->RSSetScissorRects(1, &fullRect);
 	}
 
 	// スプライトの描画
