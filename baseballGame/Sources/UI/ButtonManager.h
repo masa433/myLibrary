@@ -36,6 +36,7 @@ public:
 		Retry,//リトライボタン
 		ShowPitchParam,//ピッチャーパラメータ表示ボタン
 		Skip,//スキップボタン
+		Next,//次へボタン
 		Count
 	};
 
@@ -82,6 +83,62 @@ public:
 
 	void ResetSkipRequest(bool requested) { isSkipRequested = requested; }
 	bool IsSkipRequested() const { return isSkipRequested; }
+
+	void ResetNextRequest(bool requested) { isNextRequested = requested; }
+	bool IsNextRequested() const { return isNextRequested; }
+
+	//ボタンのタイプを取得する関数
+	ButtonType GetButtonType(ButtonType buttonType) const { return buttonType; }
+
+	//ボタンのアルファを0にする関数
+	void ResetButtonAlpha(ButtonType buttonType = ButtonType::None)
+	{
+		if (buttonType == ButtonType::None)
+		{
+			for (auto& button : *buttonSpriteData)
+			{
+				button.currentAlpha = 0.0f;
+			}
+		}
+		else
+		{
+			for (auto& button : *buttonSpriteData)
+			{
+				if (button.buttonType == buttonType)
+				{
+					button.currentAlpha = 0.0f;
+					break;
+				}
+			}
+		}
+	}
+
+	//ボタンのアルファが0かどうかを判定する関数
+	bool IsButtonAlphaZero(ButtonType buttonType = ButtonType::None)
+	{
+		if (buttonType == ButtonType::None)
+		{
+			for (auto& button : *buttonSpriteData)
+			{
+				if (button.currentAlpha != 0.0f)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		else
+		{
+			for (auto& button : *buttonSpriteData)
+			{
+				if (button.buttonType == buttonType)
+				{
+					return button.currentAlpha == 0.0f;
+				}
+			}
+			return true; // 指定されたボタンタイプが見つからなかった場合はtrueを返す
+		}
+	}
 
 	//ボタンの色を変える関数
 	void ChangeColor(DirectX::XMFLOAT4 color, ButtonType buttonType = ButtonType::None);
@@ -138,6 +195,7 @@ private:
 	bool isBatterSelectRequested = false;
 	bool isShowPitchParamRequested = false;
 	bool isSkipRequested = false;
+	bool isNextRequested = false;
 
 	AudioSource* buttonHoverSound = nullptr;
 	AudioSource* buttonClickSound = nullptr;

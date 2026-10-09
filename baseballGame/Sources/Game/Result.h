@@ -130,6 +130,9 @@ private:
 	bool isReplayLogoMovingHalf = false;
 	bool isReplayLogoMovingAll = false;
 	float startTimer = 0.0f;
+	bool isNextButtonPressed = false;
+	//ネクストボタンが描画されているか
+	bool isNextButtonDrawn = false;
 
 	// シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;

@@ -286,11 +286,19 @@ void ButtonManager::Update(float elapsedTime)
 							buttonBackSound->PlayOneShot();
 						}
 						OutputDebugStringA("ShowPitchParam button clicked!\n");
+						break;
 					case ButtonType::Skip:
 						isSkipRequested = true;
 						if(buttonBackSound)
 						{
 							buttonBackSound->PlayOneShot();
+						}
+						break;
+					case ButtonType::Next:
+						isNextRequested = true;
+						if(buttonClickSound)
+						{
+							buttonClickSound->PlayOneShot();
 						}
 						break;
 
@@ -541,7 +549,7 @@ void ButtonManager::DrawGUI()
 			ImGui::ColorEdit4(u8"フォント色", &fontColor.x);
 
 			//ボタンタイプを選択
-			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" , "Reroll", "Title", "BatterSelect", "Retry", "ShowPitchParam", "Skip"};
+			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" , "Reroll", "Title", "BatterSelect", "Retry", "ShowPitchParam", "Skip", "Next"};
 			int currentTypeIndex = static_cast<int>(btn.buttonType);
 			ImGui::Combo(u8"ボタンタイプ", &currentTypeIndex, buttonTypeItems, IM_ARRAYSIZE(buttonTypeItems));
 			btn.buttonType = static_cast<ButtonManager::ButtonType>(currentTypeIndex);

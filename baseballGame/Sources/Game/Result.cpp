@@ -84,6 +84,7 @@ void Result::Initialize(ID3D11Device* device)
 	isReplayLogoMovingHalf = false;
 	isReplayLogoMovingAll = false;
 	startTimer = 0.0f;
+	isNextButtonPressed = false;
 
 	currentState = State::Replay;
 
@@ -171,22 +172,30 @@ void Result::Update(float elapsedTime)
 		Physics::Instance().SetBallAngle(frame.ballLaunchAngleDegrees);
 	}
 
+	
+	if(!buttonManager.IsButtonAlphaZero())
+	{
+		buttonManager.Update(elapsedTime);
+	}
 
 	switch (currentState)
 	{
 		case State::Replay:
 		{
 			//仮で右クリックを押したらリザルト画面に遷移するようにする
-			if(GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+			if(buttonManager.IsNextRequested())
 			{
+				buttonManager.ResetNextRequest(false);
 				currentState = State::Result;
+				isNextButtonPressed = true;
+				buttonManager.ResetButtonAlpha(ButtonManager::ButtonType::Next);
 			}
 			break;
 		}
 
 		case State::Result:
 		{
-			buttonManager.Update(elapsedTime);
+			
 
 			//タイトルシーンに戻るボタンの更新処理
 			if (!isResultToTitle && !isResultToRetry && !isResultToBatterSelect)
@@ -624,12 +633,18 @@ void Result::Render()
 
 		
 	}
+	if(currentState == State::Replay && isReplayLogoMovingAll)
+	{
+		buttonManager.Render(1.0f, ButtonManager::ButtonType::Next);
+		isNextButtonDrawn = true;
+	}
 
 	if((currentState != State::Replay))
 	{
 		buttonManager.Render(1.0f, ButtonManager::ButtonType::Title);
 		buttonManager.Render(1.0f, ButtonManager::ButtonType::Retry);
 		buttonManager.Render(1.0f, ButtonManager::ButtonType::BatterSelect);
+		isNextButtonDrawn = false;
 	}
 
 

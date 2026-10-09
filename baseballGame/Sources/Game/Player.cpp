@@ -461,8 +461,12 @@ void Player::HandleInput(float elapsedTime)
                 }
             }
             
-            if (swingSound) swingSound->Play(false);
-            if(!Ball::Instance().GetHasCollidedWithBat()) ChangeState(State::Swinging); 
+            
+            if(!Ball::Instance().GetHasCollidedWithBat())
+            {
+                if (swingSound) swingSound->Play(false);
+                ChangeState(State::Swinging);
+            }
              if (Pitcher::Instance().GetIsBallThrown())
              {
                  ballCount::Instance().DecreaseRemainingBalls(1);
