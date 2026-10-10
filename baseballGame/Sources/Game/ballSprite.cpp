@@ -179,7 +179,7 @@ static DirectX::XMFLOAT2 WorldToZoneScreen(
 	return { screenX, screenY };
 }
 
-// 3D座標から2Dスクリーン座標への変換
+// 2Dスクリーン座標から3D座標への変換
 static DirectX::XMFLOAT2 ZoneScreenToWorld(
 	float screenX, float screenY,
 	const DirectX::XMFLOAT2& zoneScreenPos,  // ゾーンスプライト左上

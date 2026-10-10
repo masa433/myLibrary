@@ -1275,6 +1275,7 @@ void Pitcher::UpdateAnimation(float elapsedTime)
 	}
 }
 
+//3D上での投球処理（ベジェ曲線）
 void Pitcher::ThrowBallBezier()
 {
 	const auto& params = pitchParameters[static_cast<int>(selectedPitchType)];
@@ -1941,6 +1942,7 @@ void Pitcher::SelectRealPitcher(RealPitcher rp)
 	}
 }
 
+//3D座標から2Dスクリーン座標に変換してAIのターゲットに設定する(2D上でのターゲット設定)
 void Pitcher::ApplyAIBezierTarget()
 {
 	bool throwStrike = (GenerateRandomFloat(0.0f, 1.0f) < aiStrikeRate);
@@ -2003,19 +2005,19 @@ void Pitcher::ApplyAIBezierTarget()
 		}
 	}
 
-	// 2D経由で確定させる（3D→2D→3D で座標系を統一）
+	// 3D座標から2Dスクリーン座標に変換してAIのターゲットに設定
 	ballSprite::Instance().SetAITargetFromWorld(
 		boxPosition.x + targetX,
 		boxPosition.y + targetY);
 
-	// ballSpriteの2D座標から3Dに変換して bezierTarget に書き戻す
-	DirectX::XMFLOAT2 world = ballSprite::Instance().GetAITarget3D();
+	//// ballSpriteの2D座標から3Dに変換して bezierTarget に書き戻す
+	//DirectX::XMFLOAT2 world = ballSprite::Instance().GetAITarget3D();
 	auto& target = pitchParameters[static_cast<int>(selectedPitchType)].bezierTarget;
 
 	const float side = IsRightPitcher() ? 1.0f : -1.0f;
 
-	target.x = world.x - boxPosition.x * side;
-	target.y = world.y - boxPosition.y;
+	target.x = targetX * side;
+	target.y = targetY ;
 	target.z = 0.0f;
 
 
