@@ -161,6 +161,8 @@ private:
 	
 	void IncreaseSwingCount() { swingCount++; } // スイング回数をインクリメントするメソッド
 
+	float maxWidthAngle = DirectX::XMConvertToRadians(10.0f); // 最大横振り角度
+	float maxOutLowAngle = DirectX::XMConvertToRadians(2.0f); // 最大下振り角度
 	
 public:
     void ResetSwingCount() { swingCount = 0; } // スイング回数をリセットするメソッド

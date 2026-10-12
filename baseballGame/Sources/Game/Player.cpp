@@ -401,7 +401,7 @@ void Player::Update(float elapsedTime)
     }
     else if (intro && (intro->GetIntroState() == GameIntroSequence::GameIntroState::Playing || intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingIntroBoard) && current_state != State::StepIn)
     {
-        position = isRightBatter ? DirectX::XMFLOAT3(-1.0f, 0.01f, -0.4f) : DirectX::XMFLOAT3(1.0f, 0.01f, -0.4f);
+        position = isRightBatter ? DirectX::XMFLOAT3(-0.9f, 0.01f, -0.4f) : DirectX::XMFLOAT3(0.9f, 0.01f, -0.4f);
     }
 
     // キー入力による移動処理
@@ -727,6 +727,10 @@ void Player::DrawGUI()
 
 	ImGui::Text("currentState: %s", (current_state == State::BattingIdle) ? "BattingIdle" : (current_state == State::BeforeSwing) ? "BeforeSwing" : (current_state == State::Swinging) ? "Swinging" : (current_state == State::StepIn) ? "StepIn" : "Unknown");
 
+    //maxWidthAngleとmaxOutLowAngleをラジアンに変換して表示する
+	ImGui::DragFloat("maxWidthAngle", &maxWidthAngle, 0.01f, 0.0f, DirectX::XM_PI);
+	ImGui::DragFloat("maxOutLowAngle", &maxOutLowAngle, 0.01f, 0.0f, DirectX::XM_PI);
+
 #endif
 }
 
@@ -1045,13 +1049,12 @@ void Player::UpdateAnimation(float elapsedTime)
             // ・インロー(内角×低め)   : 下向き(プラス)を強める
             // ・インハイ(内角×高め)   : 上向き(マイナス)を強める
             // ・アウトロー/アウトハイ(外角は高さ問わず): 常に上向き(マイナス)を強める
-            static constexpr float maxWidthAngle = DirectX::XMConvertToRadians(10.0f);
-			static constexpr float maxOutLowAngle = DirectX::XMConvertToRadians(2.0f);
+           
             float widthAngleOffset =
-                (inAmount * lowFactor) * maxWidthAngle        // インロー → 下向き
+                (inAmount * lowFactor) * maxWidthAngle * 3.0f        // インロー → 下向き
                 - (inAmount * highFactor) * maxWidthAngle        // インハイ → 上向き
                 - (outAmount * highFactor) * maxWidthAngle        // アウトハイ → 上向き
-                - (outAmount * lowFactor) * maxOutLowAngle;       // アウトロー → やや下向き
+                - (outAmount * lowFactor) * maxOutLowAngle * 0.1f;       // アウトロー → やや下向き
 
             armAngleOffset += widthAngleOffset;
 

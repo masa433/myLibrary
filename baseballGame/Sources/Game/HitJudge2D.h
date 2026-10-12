@@ -5,6 +5,7 @@
 #include "ballSprite.h"
 #include "batSprite.h"
 #include "json.hpp"
+#include "physxManager.h"
 
 using json = nlohmann::json;
 
@@ -230,7 +231,7 @@ public:
 
         //芯を外したときの最低速度と芯でとらえたときの最高速度
 		constexpr float kMinExitVelocityKmh = 80.0f; // 80km/h
-		constexpr float kMaxExitVelocityKmh = 160.0f; // 160km/h
+		constexpr float kMaxExitVelocityKmh = 170.0f; // 170km/h
 
 		// 重なり度に応じて打球初速を線形補間
 		float baseKmh = kMinExitVelocityKmh + (kMaxExitVelocityKmh - kMinExitVelocityKmh) * meetQuality;
@@ -365,7 +366,7 @@ private:
             {
                 snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just/Inside)\n", timeToZone_);
                 OutputDebugStringA(buffer);
-                return 1.05f;
+                return 1.0f;
             }
         }
         else
@@ -375,7 +376,7 @@ private:
             {
                 snprintf(buffer, sizeof(buffer), "Hit timing: %.3f sec (Just/Outside)\n", timeToZone_);
                 OutputDebugStringA(buffer);
-                return 1.05f;
+                return 1.0f;
             }
         }
 
@@ -441,6 +442,9 @@ public:
             ImGui::Text(u8"カーソル重なり: %s", hj.IsCursorOverlapping() ? "YES" : "no");
 
             ImGui::Text(u8"カーソル重なり率: %.2f", hj.overlapResult_.cursorOverlapRatio);
+
+			//exitVelocityMps
+			ImGui::Text(u8"打球速度: %.2f km/h", Physics::Instance().GetBallSpeed());
 
             //インサイドかどうか
 			ImGui::Text(u8"インコース: %s", hj.isInsideCourse ? "YES" : "no");
