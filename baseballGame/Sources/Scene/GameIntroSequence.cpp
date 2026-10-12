@@ -204,7 +204,11 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 		pitcher.UpdateAnimation(0.0f); // ピッチャーのアニメーションを更新
 
 		Player& player = Player::Instance();
-		player.SetCurrentState(Player::State::BattingIdle); // バッターの状態を判定待ちに設定
+		player.ChangeState(Player::State::BattingIdle); // バッターの状態を判定待ちに設定
+		player.SetIsStepIn(false); // ステップイン中フラグをリセット
+		player.SetIsStepInAnimationPlayed(true); // ステップインアニメーション再生済みフラグをリセット
+		player.SetAnimationTime(0.0f); // バッターのアニメーション時間をリセット
+		//player.UpdateAnimation(0.0f); // バッターのアニメーションを更新
 		
 		ballSprite::Instance().ResetStrikeZoneFadeTimer(); // ストライクゾーンのフェードタイマーをリセット
 		return;// 右クリックが押された場合は以降の処理をスキップ

@@ -43,16 +43,19 @@ public:
 
 	void SetIntroSequence(const GameIntroSequence* introSeq) { intro = introSeq; }
 
+	void SetAnimationTime(float time) { animation_time = time; }
+
+    void UpdateAnimation(float elapsedTime);
+
+	void SetIsStepIn(bool stepIn) { isStepIn = stepIn; } // ステップイン中フラグを設定
+
+	void SetIsStepInAnimationPlayed(bool played) { isPlayedStepInAnimation = played; } // ステップインアニメーション再生済みフラグを設定
 private:
     // キー入力処理
     void HandleInput(float elapsedTime);
     
     // アタッチメント処理
     void AttachBatToHand();
-
-	void UpdateAnimation(float elapsedTime);
-
-	
 
     void UpdateLookAt(const DirectX::XMFLOAT3& targetPosition); // 頭のルックアット処理
 

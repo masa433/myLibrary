@@ -401,7 +401,7 @@ void Player::Update(float elapsedTime)
     }
     else if (intro && (intro->GetIntroState() == GameIntroSequence::GameIntroState::Playing || intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingIntroBoard) && current_state != State::StepIn)
     {
-        position = isRightBatter ? DirectX::XMFLOAT3(-0.9f, 0.01f, -0.4f) : DirectX::XMFLOAT3(0.9f, 0.01f, -0.4f);
+        position = isRightBatter ? DirectX::XMFLOAT3(-0.95f, 0.01f, -0.4f) : DirectX::XMFLOAT3(0.95f, 0.01f, -0.4f);
     }
 
     // キー入力による移動処理
@@ -823,7 +823,7 @@ void Player::UpdateAnimation(float elapsedTime)
     if (animation_playing && currentBatter&& !currentBatter->animations.empty())
     {
 		//バッターを映している時はStepInアニメーションを再生する
-        if(intro && intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingBatter && !isPlayedStepInAnimation)
+        if (intro && intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingBatter && (!isPlayedStepInAnimation || isStepIn))
         {
             // 最初のフレームならアニメーションインデックスを設定
             if (!isStepIn && !isPlayedStepInAnimation)
@@ -855,12 +855,13 @@ void Player::UpdateAnimation(float elapsedTime)
 		}
 
 		//introが終了していたら、ステートをBattingIdleに戻す
-        if (intro && (intro->GetIntroState() == GameIntroSequence::GameIntroState::Playing || intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingIntroBoard) && isPlayedStepInAnimation)
+        if (intro && intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingIntroBoard && isPlayedStepInAnimation)
         {
             ChangeState(State::BattingIdle);
             current_state = State::BattingIdle;
             animation_time = 0.0f; // アニメーション時間をリセット
-            isPlayedStepInAnimation = false; // ステップインアニメーション再生済みフラグをリセット
+            isPlayedStepInAnimation = true; // ステップインアニメーション再生済みフラグをリセット
+			isStepIn = false; // StepInフラグをリセット
 		}
 
         if (isStepIn)
@@ -1123,6 +1124,7 @@ void Player::ChangeState(State newState)
         }
     }
 }
+
 
 
 // マウスの位置によってスイングの高さを変える
