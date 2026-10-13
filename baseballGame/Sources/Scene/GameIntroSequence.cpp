@@ -238,7 +238,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 		Player& player = Player::Instance();
 		player.ChangeState(Player::State::BattingIdle); // バッターの状態を判定待ちに設定
 		player.SetIsStepIn(false); // ステップイン中フラグをリセット
-		//player.SetIsStepInAnimationPlayed(true); // ステップインアニメーション再生済みフラグをリセット
+		player.SetIsStepInAnimationPlayed(false); // ステップインアニメーション再生済みフラグをリセット
 		//player.SetAnimationTime(0.0f); // バッターのアニメーション時間をリセット
 		//player.UpdateAnimation(0.0f); // バッターのアニメーションを更新
 		

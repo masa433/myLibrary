@@ -860,8 +860,8 @@ void Player::UpdateAnimation(float elapsedTime)
             ChangeState(State::BattingIdle);
             current_state = State::BattingIdle;
             animation_time = 0.0f; // アニメーション時間をリセット
-            isPlayedStepInAnimation = true; // ステップインアニメーション再生済みフラグをリセット
 			isStepIn = false; // StepInフラグをリセット
+			isPlayedStepInAnimation = false; // ステップインアニメーション再生済みフラグをリセット
 		}
 
         if (isStepIn)
