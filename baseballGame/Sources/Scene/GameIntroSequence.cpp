@@ -80,7 +80,7 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 
 	introBoardData = std::make_unique<IntroData>();
 	introBoardData->texturePath = L".\\resources\\textures\\introBoard.png";
-	introBoardData->position = introBoardPosition;
+	introBoardData->position = introBoardCurrentPosition;
 	introBoardData->size = introBoardSize;
 	introBoardData->rotation = 0.0f;
 	introBoardData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -100,6 +100,9 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
     introBoardAlpha = 1.0f;
     introBoardFadeTimer = 0.0f; 
     introBoardFadeDuration = 2.0f;
+
+	introBoardAnimationTimer = 0.0f;
+    introBoardAnimationDuration = 1.5f;
 
 	//テクスチャを左側から順に表示するためのラスタライザステートを作成
     D3D11_RASTERIZER_DESC rsDesc = {};
@@ -159,12 +162,31 @@ void GameIntroSequence::Uninitialize()
 	buttonManager.Uninitialize();
 }
 
+void GameIntroSequence::UpdateIntroBoardAnimation(float elapsedTime)
+{
+	introBoardAnimationTimer += elapsedTime;
+	float t = introBoardAnimationTimer / introBoardAnimationDuration;
+
+    if (t > 1.0f)
+    {
+        t = 1.0f; // アニメーションが完了したらタイマーを最大値に固定
+	}
+
+    introBoardCurrentPosition = UiEasing::Lerp(introBoardStartPosition, introBoardTargetPosition, t , UiEasing::EasingType::OutQuart);
+}
+
 void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcastCamera)
 {
 	//ステートをintとして扱うための変数
 	int introStateIndex = static_cast<int>(introState);
 
-    //
+
+    //showingboardのアニメーション更新関数
+	if(introState == GameIntroState::ShowingIntroBoard)
+	{
+		UpdateIntroBoardAnimation(elapsed_time);
+	}
+
     if(introStateIndex < static_cast<int>(GameIntroState::ShowingIntroBoard))
     {
         buttonManager.Update(elapsed_time);
@@ -206,8 +228,8 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 		Player& player = Player::Instance();
 		player.ChangeState(Player::State::BattingIdle); // バッターの状態を判定待ちに設定
 		player.SetIsStepIn(false); // ステップイン中フラグをリセット
-		player.SetIsStepInAnimationPlayed(true); // ステップインアニメーション再生済みフラグをリセット
-		player.SetAnimationTime(0.0f); // バッターのアニメーション時間をリセット
+		//player.SetIsStepInAnimationPlayed(true); // ステップインアニメーション再生済みフラグをリセット
+		//player.SetAnimationTime(0.0f); // バッターのアニメーション時間をリセット
 		//player.UpdateAnimation(0.0f); // バッターのアニメーションを更新
 		
 		ballSprite::Instance().ResetStrikeZoneFadeTimer(); // ストライクゾーンのフェードタイマーをリセット
@@ -657,7 +679,7 @@ void GameIntroSequence::Render()
     }
     else if (introState == GameIntroState::ShowingIntroBoard)
     {
-        DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(introBoardPosition);
+        DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(introBoardCurrentPosition);
         DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(introBoardSize);
         DirectX::XMFLOAT2 scaledCenteredPos =
         {

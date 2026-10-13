@@ -68,6 +68,8 @@ public:
 	void DrawFillGraph(sprite* spr, IntroData* data, ID3D11DeviceContext* context,
 		DirectX::XMFLOAT2& pos, DirectX::XMFLOAT2& size, float amount);
 
+	void UpdateIntroBoardAnimation(float elapsedTime); // イントロボードのアニメーション更新処理
+
 private:
 	GameIntroState introState = GameIntroState::ShowingGround;
 	float introTimer = 0.0f;// イントロのタイマー
@@ -98,6 +100,9 @@ private:
 	float introBoardAlpha = 1.0f; // イントロボードの透明度（1.0から0.0）
 	float introBoardFadeTimer = 0.0f; // イントロボードのフェードタイマー
 	float introBoardFadeDuration = 2.0f; // イントロボードがフェードアウトするまでの時間
+
+	float introBoardAnimationTimer = 0.0f; // イントロボードのアニメーションタイマー
+	float introBoardAnimationDuration = 1.0f; // イントロボードのアニメーションが完了するまでの時間
 
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
 
@@ -138,8 +143,11 @@ private:
 	std::unique_ptr<IntroData> introBoardData;
 	std::unique_ptr<sprite> introBoardSprite;
 
-	DirectX::XMFLOAT2 introBoardPosition = { 960.0f, 540.0f };
-	DirectX::XMFLOAT2 introBoardSize = { 700.0f, 420.0f };
+
+	DirectX::XMFLOAT2 introBoardStartPosition = {-700.0f, 540.0f };
+	DirectX::XMFLOAT2 introBoardTargetPosition = { 960.0f, 540.0f };
+	DirectX::XMFLOAT2 introBoardCurrentPosition = introBoardStartPosition;
+	DirectX::XMFLOAT2 introBoardSize = { 800.0f, 520.0f };
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
