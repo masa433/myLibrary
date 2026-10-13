@@ -131,6 +131,10 @@ private:
 	float moneyMakerBonus = 0.0f; // MoneyMakerボーナスの金額
 	float jackpotBonus = 0.0f; // 一攫千金ボーナスの金額
 
+	float showBonusItemDelay = 0.5f; // ボーナスアイテムの表示開始までの遅延時間
+	float showBonusItemTimer = 0.0f;
+	bool isShowingDelay = false; // ボーナスアイテムの表示遅延中かどうかのフラグ
+
 	struct MoneyData
 	{
 		std::wstring texturePath;

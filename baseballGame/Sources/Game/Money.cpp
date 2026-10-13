@@ -371,20 +371,41 @@ void Money::Update(float elapsedTime)
 
 	if(isBonusAnimating)
 	{
-		bonusAnimTimer += elapsedTime;
-
-		
-		const float delayPerItem = 0.1f; // 各アイテムのアニメーション開始の遅延時間
 
 		bool allItemsFinished = true;
+
+		int activeIndex = 0;
+
+		//0.5秒後にボーナスアイテムのアニメーションを開始する
+
+		if (isShowingDelay)
+		{
+			showBonusItemTimer += elapsedTime;
+
+			if (showBonusItemTimer >= showBonusItemDelay)
+			{
+				allItemsFinished = false; // まだ全てのアイテムが終了していない
+				bonusAnimTimer += elapsedTime; // アニメーションタイマーを進める
+				showBonusItemTimer = showBonusItemDelay; // タイマーを遅延時間に固定
+			}
+		}
+		else //遅延のフラグがない場合は、すぐにアニメーションを進める
+		{
+			bonusAnimTimer += elapsedTime; // アニメーションタイマーを進める
+		}
 
 		for(size_t i = 0; i < bonusItems.size(); ++i)
 		{
 			auto& item = bonusItems[i];
 			if (!item.isActive) continue;
 
+
+			float delayPerItem = 0.2f; // 各アイテムのアニメーション開始の遅延時間
+
 			//アイテムごとのアニメーション開始時間を計算
-			float myTime = bonusAnimTimer - (i * delayPerItem);//アイテムごとの遅延を考慮
+			float myTime = bonusAnimTimer - (activeIndex * delayPerItem);//アイテムごとの遅延を考慮
+
+			activeIndex++;
 
 			if (myTime < 0.0f)
 			{
@@ -432,6 +453,8 @@ void Money::Update(float elapsedTime)
 		if (allItemsFinished)
 		{
 			isBonusAnimating = false;
+			isShowingDelay = false;
+			
 		}
 
 	}
@@ -737,7 +760,9 @@ void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
 	if (activeCount > 0)
 	{
 		isBonusAnimating = true;
+		isShowingDelay = true;
 		bonusAnimTimer = 0.0f;
+		showBonusItemTimer = 0.0f;
 	}
 	else
 	{
@@ -766,4 +791,6 @@ void Money::TriggerBallZoneBonusAnimation()
 	
 	isBonusAnimating = true;
 	bonusAnimTimer = 0.0f;
+	showBonusItemTimer = 0.0f;
+	isShowingDelay = false;
 }
