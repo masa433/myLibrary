@@ -212,9 +212,23 @@ void Pitcher::Update(float elapsedTime)
 		const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
 		
 		UpdateTransform();
-		UpdateAnimation(elapsedTime);
+		//UpdateAnimation(elapsedTime);
 
-		Ball::Instance().ApplyReplayFrame(frame.ballPosition, frame.ballRotation);
+		// 時間を進めず、録画されたanimation_timeのポーズをそのまま適用
+		if (currentPitcher && !currentPitcher->animations.empty())
+		{
+			currentPitcher->animate(current_animation_index, animation_time, animated_nodes);
+		}
+
+		if (!frame.hasThrownBall)
+		{
+			// 投げる前は通常プレイと同じ手のボーンにボールを付ける
+			AttachBallToHand(elapsedTime);
+		}
+		else
+		{
+			Ball::Instance().ApplyReplayFrame(frame.ballPosition, frame.ballRotation);
+		}
 		return;
 	}
 
