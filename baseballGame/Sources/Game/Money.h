@@ -190,6 +190,7 @@ private:
 		std::unique_ptr<FontRenderer> fontRenderer;
 		BonusInfo info;
 		bool isActive = false;
+		bool hasPlayingSound = false; // ボーナスアニメーション中にサウンドを再生したかどうかのフラグ
 
 		//アニメーション制御
 		DirectX::XMFLOAT2 startPos = { 2000.0f, 0.0f };
@@ -213,4 +214,5 @@ private:
 	int penaltyAmount = 0; // ペナルティ金額
 
 	AudioSource* getMoneySound = nullptr;
+	AudioSource* activeBonusSound = nullptr;
 };

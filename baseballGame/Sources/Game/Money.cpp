@@ -233,6 +233,7 @@ void Money::Initialize(ID3D11Device* device)
 
 
 	getMoneySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\GetMoney.wav");
+	activeBonusSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ActiveBonusBoard.wav");
 }
 
 void Money::Uninitialize()
@@ -241,6 +242,8 @@ void Money::Uninitialize()
 	moneySprite.reset();
 	moneyData.reset();
 	consoleLog = nullptr;
+	delete getMoneySound;
+	delete activeBonusSound;
 }
 
 void Money::Update(float elapsedTime)
@@ -412,6 +415,12 @@ void Money::Update(float elapsedTime)
 				item.currentPos = item.startPos; // 遅延中はスタート位置に固定
 				allItemsFinished = false; // まだ全てのアイテムが終了していない
 				continue;
+			}
+
+			if(!item.hasPlayingSound && activeBonusSound && showBonusItemTimer >= showBonusItemDelay)
+			{
+				activeBonusSound->PlayOneShot();
+				item.hasPlayingSound = true; // サウンド再生済みにする
 			}
 
 			// アニメーションの進行度を計算
@@ -752,7 +761,7 @@ void Money::TriggerBonusAnimation(bool isHomeRun, bool isBreaking)
 			bonusItem.startPos = { 2000.0f, targetY };
 			bonusItem.targetPos = { 1500.0f, targetY };
 			bonusItem.currentPos = bonusItem.startPos;
-
+			bonusItem.hasPlayingSound = false; // サウンド再生フラグをリセット
 			activeCount++;
 		}
 	}
