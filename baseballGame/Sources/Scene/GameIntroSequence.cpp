@@ -135,6 +135,8 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 
     buttonManager.Initialize();
 
+	introBoardAnimationSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\introBoardAnimation.wav");
+
 }
 
 void GameIntroSequence::Uninitialize()
@@ -160,6 +162,8 @@ void GameIntroSequence::Uninitialize()
 	}
 	pitchParamFont.Uninitialize();
 	buttonManager.Uninitialize();
+
+    delete introBoardAnimationSound;
 }
 
 void GameIntroSequence::UpdateIntroBoardAnimation(float elapsedTime)
@@ -185,6 +189,12 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 	if(introState == GameIntroState::ShowingIntroBoard)
 	{
 		UpdateIntroBoardAnimation(elapsed_time);
+
+        if (introBoardAnimationSound)
+        {
+            introBoardAnimationSound->PlayOneShot();
+			introBoardAnimationSound = nullptr; // 再生後にポインタをリセットして二重再生を防ぐ
+        }
 	}
 
     if(introStateIndex < static_cast<int>(GameIntroState::ShowingIntroBoard))

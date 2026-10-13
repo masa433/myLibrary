@@ -8,6 +8,8 @@
 #include "FontRenderer.h"
 #include "json.hpp"
 #include "ButtonManager.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 #define PITCHER_COUNT 21
 #define BATTER_COUNT 24
@@ -166,4 +168,6 @@ private:
 	float pitchWeightLabelScale = 0.5f;
 
 	float offsetY = 0.0f; // Y方向のオフセット値
+
+	AudioSource* introBoardAnimationSound = nullptr; // イントロボードのアニメーション音声
 };

@@ -90,6 +90,7 @@ void LoadingTips::Uninitialize()
 	}
 
 	delete loadingArrowSound;
+	delete clickArrowSound;
 }
 
 void LoadingTips::Update(float elapsedTime)
