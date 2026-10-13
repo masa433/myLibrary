@@ -129,6 +129,14 @@ void Pitcher::Initialize()
 		ballTypeSprite[i] = std::make_unique<sprite>(device, context, ballTypeData[i]->texturePath.c_str());
 	}
 
+	missShotData = std::make_unique<InfoData>();
+	missShotData->texturePath = L".\\resources\\textures\\missShot.png";
+	missShotData->position = { missShotPosition.x, missShotPosition.y };
+	missShotData->size = { missShotSize.x, missShotSize.y };
+	missShotData->rotation = 0.0f;
+	missShotData->color = { 1.0f,1.0f,1.0f,1.0f };
+	missShotSprite = std::make_unique<sprite>(device, context, missShotData->texturePath.c_str());
+
 	rosinEffect = std::make_unique<Effect>(".\\resources\\effects\\smoke.efk");
 
 	foulSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Foul.wav");
@@ -139,6 +147,7 @@ void Pitcher::Initialize()
 	windEffectEnabled = true; // 風の影響を有効にする
 	ballSpeedMode = BallSpeedMode::slowSpeed; // ボール速度モードを初期化
 	isBallThrown = false; // ボールが投げられていない状態に初期化
+	isThrowingFromCenter = false; // 中心からの投球ではない状態に初期化
 
 	InitializePitchSettings();
 	SelectPitchType();
@@ -629,6 +638,8 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 					ballTypeData[spriteIndex]->rotation);
 			}
 		}
+
+		
 	}
 
 	// 描画後の状態をリセット
@@ -638,6 +649,69 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+}
+
+void Pitcher::RenderMissShotSprite(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj)
+{
+	if (!(missShotData && missShotSprite && isThrowingFromCenter
+		&& currentState == State::Throwing && isBallThrown)) return;
+
+	// 頭の位置をワールド座標で取得
+	const gltf_model::node* headNode = nullptr;
+	for(const gltf_model::node& node : animated_nodes)
+	{
+		if(node.name == "mixamorig:Head")
+		{
+			headNode = &node;// 頭のノードを見つけたらループを抜ける
+			break;
+		}
+	}
+	if (!headNode) return;// 頭のノードが見つからなかった場合は描画しない
+
+	DirectX::XMMATRIX head = DirectX::XMLoadFloat4x4(&headNode->global_transform) * DirectX::XMLoadFloat4x4(&transform);// 投手のワールド座標を考慮して頭の位置を取得
+	DirectX::XMVECTOR headPos = DirectX::XMVectorAdd(DirectX::XMVectorSetW(head.r[3], 1.0f), DirectX::XMVectorSet(0, 1.5f, 0, 0));
+
+
+	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
+	D3D11_VIEWPORT vp; UINT n = 1;
+	dc->RSGetViewports(&n, &vp);
+
+	
+	DirectX::XMVECTOR s = DirectX::XMVector3Project(
+		headPos, vp.TopLeftX, vp.TopLeftY, vp.Width, vp.Height,
+		0.0f, 1.0f, DirectX::XMLoadFloat4x4(&proj), DirectX::XMLoadFloat4x4(&view), DirectX::XMMatrixIdentity());
+
+	float sx = DirectX::XMVectorGetX(s);
+	float sy = DirectX::XMVectorGetY(s);
+	float sz = DirectX::XMVectorGetZ(s);
+
+
+	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+	dc->PSSetShader(spritePS.Get(), nullptr, 0);
+	dc->IASetInputLayout(spriteInputLayout.Get());
+	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+		
+	DirectX::XMFLOAT2 offset = screenScaler.Scale(missShotPosition);
+	DirectX::XMFLOAT2 size = screenScaler.Scale(missShotSize);
+
+	missShotSprite->render(dc,
+		sx + offset.x - size.x * 0.5f, sy + offset.y - size.y * 0.5f,
+		size.x, size.y,
+		missShotData->color.x, missShotData->color.y, missShotData->color.z, missShotData->color.w,
+		missShotData->rotation);
+
+	// 描画後の状態をリセット
+	dc->VSSetShader(nullptr, nullptr, 0);
+	dc->PSSetShader(nullptr, nullptr, 0);
+	dc->IASetInputLayout(nullptr);
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+	
 }
 
 void Pitcher::UpdatePitcherModel()
@@ -1972,6 +2046,8 @@ void Pitcher::ApplyAIBezierTarget()
 		targetY = 0.0f;
 
 		ballSpeedKmh -= 10.0f;
+
+		isThrowingFromCenter = true;
 	}
 
 	//10%の確率で、ど真ん中をターゲットにする(失投)
@@ -1983,6 +2059,7 @@ void Pitcher::ApplyAIBezierTarget()
 		//その際、球速を10キロぐらい落とす
 		ballSpeedKmh -= 10.0f;
 
+		isThrowingFromCenter = true;
 	}
 
 	//ストライクゾーン内で目標地点を設定
@@ -2017,6 +2094,8 @@ void Pitcher::ApplyAIBezierTarget()
 			case 7: targetX = -boxSize.x * 0.5f - missAmount; targetY = randomOffset; break; //真ん中インコース
 			}
 		}
+
+		isThrowingFromCenter = false;
 	}
 
 	// 3D座標から2Dスクリーン座標に変換してAIのターゲットに設定

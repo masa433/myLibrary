@@ -434,6 +434,11 @@ void Result::Render()
 	if(resultFont.IsValid() && currentState == State::Replay && isReplayLogoMovingHalf)
 	{
 		
+		//ゼロ除算を防ぐために、保存済みのリプレイデータが空でないことを確認
+		if (savedList.empty())
+		{
+			return; // 保存済みのリプレイデータが空の場合は何も描画しない
+		}
 
 		float targetSpeed = savedList.back().ballSpeedKmh;//保存済みのリプレイデータの最後のフレームの打球速度を取得
 		float targetAngle = savedList.back().ballLaunchAngleDegrees;//保存済みのリプレイデータの最後のフレームの打球角度を取得

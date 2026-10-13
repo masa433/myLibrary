@@ -38,6 +38,7 @@ public:
 	void Update(float elapsedTime);
 	void Render(const RenderContext& rc, ModelRenderer* renderer, bool isShadowPass = false);
 	void DrawGUI();
+	void RenderMissShotSprite(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj);
 
 	void AttachBallToHand(float elapsedTime);
 
@@ -245,6 +246,9 @@ private:
 	float currentFoulWaitTime = 0.0f;
 
 	bool foulSpriteTriggered = false; // ファウル判定がトリガーされたかどうか
+
+	//ボールを投げる位置が真ん中かどうか
+	bool isThrowingFromCenter = true;
 
 public:
 	// 5x5グリッド内でAIが狙う内側3x3のセルインデックス (0〜8、row-major)
@@ -498,6 +502,12 @@ private:
 	DirectX::XMFLOAT2 ballTypePosition;
 	DirectX::XMFLOAT2 ballTypeSize;
 	DirectX::XMFLOAT4 ballTypeColor;
+
+	std::unique_ptr<InfoData> missShotData;
+	std::unique_ptr<sprite> missShotSprite;
+
+	DirectX::XMFLOAT2 missShotPosition = {0.0f, 0.0f};
+	DirectX::XMFLOAT2 missShotSize = { 30.0f, 100.0f };
 
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;

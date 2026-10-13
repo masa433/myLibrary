@@ -870,6 +870,8 @@ void scene_game::render(float elapsedTime)
         RoundManager::Instance().Render();
 
         SpecialAbility::Instance().Render();
+
+		Pitcher::Instance().RenderMissShotSprite(camera.GetView(), camera.GetProjection());
     }
 
     gameIntroSequence.Render();
