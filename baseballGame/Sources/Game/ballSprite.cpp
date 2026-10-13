@@ -350,6 +350,8 @@ void ballSprite::Initialize(ID3D11Device* device)
 
 	catchSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Catch.wav");
 	catchStrongSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CatchStrong.wav");
+	strikeSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\StrikeCall.wav");
+	ballSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\BallCall.wav");
 
 	currentFadeTime = 0.0f;
 	strikeZoneFadeTime = 1.2f;
@@ -477,6 +479,8 @@ void ballSprite::Uninitialize()
 	consoleLog = nullptr;
 	delete catchSound;
 	delete catchStrongSound;
+	delete strikeSound;
+	delete ballSound;
 }
 
 void ballSprite::Update(float elapsedTime)
@@ -846,6 +850,7 @@ void ballSprite::Update(float elapsedTime)
 		{
 			ballCount::Instance().DecreaseRemainingBalls(1);	
 			Combo::Instance().ResetCombo();// ストライク判定時はコンボをリセット
+			if (strikeSound && !Ball::Instance().GetHasCollidedWithBat() && !Player::Instance().HasSwungThisPitch()) strikeSound->PlayOneShot(2.0f);
 
 		}
 		else
@@ -861,6 +866,7 @@ void ballSprite::Update(float elapsedTime)
 			{
 				isBall = true;
 				pendingBallZoneBonus = true;
+				if (ballSound && !Ball::Instance().GetHasCollidedWithBat()) ballSound->PlayOneShot(2.0f);
 			}
 		}
 

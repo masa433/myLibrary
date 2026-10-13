@@ -446,6 +446,8 @@ private:
 	AudioSource* catchSound = nullptr;
 	AudioSource* catchStrongSound = nullptr;
 	bool isCatchSoundPlayed = false;
+	AudioSource* strikeSound = nullptr;
+	AudioSource* ballSound = nullptr;
 
 private:
 
