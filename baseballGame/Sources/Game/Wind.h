@@ -45,6 +45,9 @@ class Wind
 	//風の強さを減らす関数
 	void DecreaseWindStrength(float amount) { windStrength -= amount; if (windStrength < 0.0f) windStrength = 0.0f; }
 
+	//風が0m/s以上かどうかを判定する関数
+	bool IsWindCalm() const { return windStrength > 0.0f; }
+
 private:
 	struct WindLine
 	{

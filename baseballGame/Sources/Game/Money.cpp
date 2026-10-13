@@ -403,7 +403,7 @@ void Money::Update(float elapsedTime)
 			if (!item.isActive) continue;
 
 
-			float delayPerItem = 0.2f; // 各アイテムのアニメーション開始の遅延時間
+			float delayPerItem = 0.3f; // 各アイテムのアニメーション開始の遅延時間
 
 			//アイテムごとのアニメーション開始時間を計算
 			float myTime = bonusAnimTimer - (activeIndex * delayPerItem);//アイテムごとの遅延を考慮
@@ -791,6 +791,7 @@ void Money::TriggerBallZoneBonusAnimation()
 			bonusItem.startPos = { 2000.0f, startY };
 			bonusItem.targetPos = { 1500.0f, startY };
 			bonusItem.currentPos = bonusItem.startPos;
+			bonusItem.hasPlayingSound = false; // サウンド再生フラグをリセット
 		}
 		else
 		{

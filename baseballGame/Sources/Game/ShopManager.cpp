@@ -590,6 +590,8 @@ void ShopManager::BuildShopItem()
 	a[index].appearanceRate = 5.0f;// 5%の確率で出現
 	a[index].level = 1;
 	a[index].onButtonPressed = [this]() { this->ReverseWindDirection(); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonVisible = [this]() { return Pitcher::Instance().IsWindEffectEnabled(); }; //風の影響を受けている場合のみ表示
+	a[index].isButtonEnabled = [this]() { return Wind::Instance().IsWindCalm(); }; // 風が0m/s以上の場合のみ有効化
 	++index;
 
 	//風+1m
@@ -601,6 +603,7 @@ void ShopManager::BuildShopItem()
 	a[index].appearanceRate = 20.0f;// 20%の確率で出現
 	a[index].level = 1;
 	a[index].onButtonPressed = [this]() { this->IncreaseWindEffect(1.0f); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonVisible = [this]() { return Pitcher::Instance().IsWindEffectEnabled(); }; //風の影響を受けている場合のみ表示
 	++index;
 
 	//風-1m
@@ -612,6 +615,8 @@ void ShopManager::BuildShopItem()
 	a[index].appearanceRate = 20.0f;// 20%の確率で出現
 	a[index].level = 1;
 	a[index].onButtonPressed = [this]() { this->DecreaseWindEffect(1.0f); }; // ボタンが押されたときの処理を設定
+	a[index].isButtonEnabled = [this]() { return Wind::Instance().IsWindCalm(); }; // 風が0m/s以上の場合のみボタンを有効化
+	a[index].isButtonVisible = [this]() { return Pitcher::Instance().IsWindEffectEnabled(); }; //風の影響を受けている場合のみ表示
 	++index;
 }
 
