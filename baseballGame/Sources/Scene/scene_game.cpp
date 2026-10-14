@@ -349,6 +349,9 @@ void scene_game::initialize()
     broadcastCamera.SetReplayMode(false);
 	broadcastCamera.ResetReplayCamera();
 
+    cheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Cheer.wav");
+	isCheerSoundPlaying = false;
+
     //ドローコール表示用
     D3D11_QUERY_DESC query_desc{};
     query_desc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
@@ -458,6 +461,13 @@ void scene_game::update(float elapsed_time)
         EffectManager::Instance().Update(elapsed_time);
 
         SpecialAbility::Instance().Update(elapsed_time);
+
+        if (cheerSound && !isCheerSoundPlaying)
+        {
+            cheerSound->Play(true);
+			cheerSound->SetVolume(0.5f);
+            isCheerSoundPlaying = true;
+        }
     }
 
 	bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
@@ -972,7 +982,7 @@ void scene_game::uninitialize()
     sprite_input_layout.Reset();
     sprite_pixel_shader.Reset();
     pipeline_stats_query.Reset();
-    
+	delete cheerSound;
    
 }
 

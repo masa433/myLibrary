@@ -110,6 +110,9 @@ void Physics::Initialize()
 	foulSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Foul.wav");
 	boundSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/BallBound.wav");
 	poleHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Pole.wav");
+	homeRunCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRunCheer.wav");
+	standInSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/StandInCheer.wav");
+	hitCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HitCheer.wav");
 }
 
 // 終了化
@@ -149,6 +152,12 @@ void Physics::Finalize()
 	poleHitSound = nullptr;
 	delete foulSound;
 	foulSound = nullptr;
+	delete homeRunCheerSound;
+	homeRunCheerSound = nullptr;
+	delete standInSound;
+	standInSound = nullptr;
+	delete hitCheerSound;
+	hitCheerSound = nullptr;
 
 	consoleLog = nullptr;
 }
@@ -646,6 +655,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 				HomeRunCount::Instance().IncrementCount();
 
+				if (standInSound) standInSound->PlayOneShot(1.5f);
+
 			
 				OutputDebugStringA("ホームラン！：ポールに衝突");
 				if (consoleLog)
@@ -753,6 +764,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 					//ホームランカウントを１増やす
 					HomeRunCount::Instance().IncrementCount();
+
+					if (standInSound) standInSound->PlayOneShot(1.5f);
 					
 					//グラウンドなら実測飛距離、スタンドなら総飛距離を保存
 					if(isGround)
@@ -1479,10 +1492,12 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			if(speedKmh >= 160.0f && speedKmh < 170.0f && launchAngleDeg >= 15.0f && launchAngleDeg <= 40.0f)
 			{
 				if (hitEffect) hitEffect->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z));
+				if (homeRunCheerSound) homeRunCheerSound->PlayOneShot(1.5f);
 			}
 			else if (speedKmh >= 170.0f && launchAngleDeg >= 15.0f && launchAngleDeg <= 40.0f)
 			{
 				if (hitBigEffect) hitBigEffect->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z));
+				
 			}
 			
 			
@@ -1491,11 +1506,13 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			{
 				// 170km/h以上 且つ 角度15度以上：本塁打音
 				if (homeRunSound) homeRunSound->Play(false);
+				if (homeRunCheerSound) homeRunCheerSound->PlayOneShot(1.5f);
 			}
 			else if (speedKmh >= 150.0f)
 			{
 				// 150km/h以上（170km/h以上のゴロ含む）：長打音
 				if (longHitSound) longHitSound->Play(false);
+				if (hitCheerSound) hitCheerSound->PlayOneShot(1.5f);
 			}
 			else if (speedKmh >= 100.0f)
 			{

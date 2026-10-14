@@ -19,6 +19,8 @@
 #include "BallNet.h"
 #include "json.hpp"
 #include "GameIntroSequence.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
 CONST LONG SCREEN_HEIGHT{ 1080 };
@@ -220,4 +222,6 @@ private:
 private:
 	GameIntroSequence gameIntroSequence;
     
+    AudioSource* cheerSound = nullptr;
+	bool isCheerSoundPlaying = false;
 };

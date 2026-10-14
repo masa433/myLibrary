@@ -176,6 +176,9 @@ private:
 	AudioSource* foulSound;//ファウル音のインスタンス
 	AudioSource* boundSound;//バウンド音のインスタンス
 	AudioSource* poleHitSound;//ポールに当たった時の音のインスタンス
+	AudioSource* homeRunCheerSound;//ホームラン時の歓声音のインスタンス
+	AudioSource* standInSound;//スタンドに着地した時の音のインスタンス
+	AudioSource* hitCheerSound;//打球時の歓声音のインスタンス
 
 	bool isFoulSoundPlayed = false; //ファウル音が再生されたかどうかのフラグ
 
