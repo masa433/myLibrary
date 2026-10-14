@@ -326,6 +326,7 @@ public:
 	FontRenderer pitchInfoFont;
 	float pitchInfoFontScale = 1.0f;
 
+	
 	// 球種ごとの表示位置オフセット（19球種分）
 	DirectX::XMFLOAT2 pitchNameOffsets[19] = {
 		{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},{50.0f,10.0f},

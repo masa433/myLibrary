@@ -263,6 +263,9 @@ public:
 	int GetAITargetRow() const { return aiTargetZoneRow; } // AIが狙うターゲット位置の行番号を取得
 	int GetAITargetCol() const { return aiTargetZoneCol; } // AIが狙うターゲット位置の列番号を取得
 
+	bool GetIsThrowingFromCenter() const { return isThrowingFromCenter; } // ボールを投げる位置が真ん中かどうかを取得
+	void SetIsThrowingFromCenter(bool isCenter) { isThrowingFromCenter = isCenter; } // ボールを投げる位置が真ん中かどうかを設定
+
 private:
 	//bool hasBeenJudged = false; // 判定済みフラグ
 
@@ -507,7 +510,7 @@ private:
 	std::unique_ptr<sprite> missShotSprite;
 
 	DirectX::XMFLOAT2 missShotPosition = {0.0f, 0.0f};
-	DirectX::XMFLOAT2 missShotSize = { 30.0f, 100.0f };
+	DirectX::XMFLOAT2 missShotSize = { 24.0f, 80.0f };
 
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;

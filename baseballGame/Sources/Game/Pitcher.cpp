@@ -676,17 +676,17 @@ void Pitcher::RenderMissShotSprite(const DirectX::XMFLOAT4X4& view, const Direct
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
-	D3D11_VIEWPORT vp; UINT n = 1;
-	dc->RSGetViewports(&n, &vp);
+	D3D11_VIEWPORT vp; UINT n = 1;// ビューポートの情報を取得
+	dc->RSGetViewports(&n, &vp);// ビューポートの情報を取得
 
-	
+	// 頭の位置をスクリーン座標に変換
 	DirectX::XMVECTOR s = DirectX::XMVector3Project(
 		headPos, vp.TopLeftX, vp.TopLeftY, vp.Width, vp.Height,
 		0.0f, 1.0f, DirectX::XMLoadFloat4x4(&proj), DirectX::XMLoadFloat4x4(&view), DirectX::XMMatrixIdentity());
 
-	float sx = DirectX::XMVectorGetX(s);
-	float sy = DirectX::XMVectorGetY(s);
-	float sz = DirectX::XMVectorGetZ(s);
+	float sx = DirectX::XMVectorGetX(s);// スクリーン座標のX
+	float sy = DirectX::XMVectorGetY(s);// スクリーン座標のY
+	float sz = DirectX::XMVectorGetZ(s);// スクリーン座標のZ
 
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
@@ -699,7 +699,7 @@ void Pitcher::RenderMissShotSprite(const DirectX::XMFLOAT4X4& view, const Direct
 	DirectX::XMFLOAT2 size = screenScaler.Scale(missShotSize);
 
 	missShotSprite->render(dc,
-		sx + offset.x - size.x * 0.5f, sy + offset.y - size.y * 0.5f,
+		sx + offset.x - size.x * 0.5f, sy + offset.y - size.y * 0.5f,// スプライトの中心を頭の位置に合わせる
 		size.x, size.y,
 		missShotData->color.x, missShotData->color.y, missShotData->color.z, missShotData->color.w,
 		missShotData->rotation);

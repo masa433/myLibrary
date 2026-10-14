@@ -332,7 +332,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 	// 球種名と球速表示に必要な文字だけをベイクする
 	std::vector<int> pitchInfoCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789.km/h"
-		u8"失投ストレートスライダー"
+		u8"()失投ストレートスライダー"
 		u8"カーブチェンジアップフォーク"
 		u8"ツーシームカットボールシンカー"
 		u8"スクリュー縦スプリットスローカーブ"
@@ -723,7 +723,12 @@ void ballSprite::Update(float elapsedTime)
 	// ワインドアップ開始の立ち上がりを検知
 	if (pitchingState && !prevPitchingState)
 	{
-		
+		//失投の時は、ボールの見かけ上のスタート地点を真ん中にする
+		if(Pitcher::Instance().GetIsThrowingFromCenter())
+		{
+			scaledBreak.breakX = 0.0f;
+			scaledBreak.breakY = 0.0f;
+		}
 
 		// 目標地点(生のaiTargetScreen)ではなく、breakX/breakYを考慮した見かけ上のスタート地点(p0)へスナップする
 		// hasAITargetブロックが!nowThrown時に計算するp0と全く同じ式・同じ引数にすることで、直後のジャンプを防ぐ
@@ -778,6 +783,13 @@ void ballSprite::Update(float elapsedTime)
 			zone3DCenter,
 			zone3DSize
 			);
+
+		//ピッチャーが真ん中に投げるときは、変化球でも変化させない
+		if(Pitcher::Instance().GetIsThrowingFromCenter())
+		{
+			scaledBreak.breakX = 0.0f;
+			scaledBreak.breakY = 0.0f;
+		}
 
 		// 開始点はゾーン中心（見た目上「まっすぐ来た場合」の基準点）
 		startScreenPos = EvalPitchBreakScreenPath(
@@ -1066,13 +1078,23 @@ void ballSprite::Render()
 			DirectX::XMFLOAT2 scaledBallBoardPos = screenScaler.Scale(ballBoardSpriteData->position);
 
 			Pitcher& pitcher = Pitcher::Instance();
+			//真ん中に投げるときは(失投)の文字を追加する
 			const char* pitchTypeName = pitcher.GetPitchTypeName(pitcher.GetSelectedPitchType());
+			if(Pitcher::Instance().GetIsThrowingFromCenter())
+			{
+				//球種の隣に(失投)を追加する
+				static char pitchTypeNameWithMiss[64];
+				snprintf(pitchTypeNameWithMiss, sizeof(pitchTypeNameWithMiss), u8"%s (失投)", pitchTypeName);//元の球種の文字列に(失投)を追加
+				pitchTypeName = pitchTypeNameWithMiss;// 文字列を更新
+			}
+
 			const float ballSpeedKmh = pitcher.GetBallSpeedKmh();
 
 			char speedText[32];
 			snprintf(speedText, sizeof(speedText), "%.0fkm/h", ballSpeedKmh);
 
 			const int pitchIndex = Pitcher::PitchTypeToBreakIndex(pitcher.GetSelectedPitchType());
+			
 			const DirectX::XMFLOAT2& nameOffset = screenScaler.Scale(pitchNameOffsets[pitchIndex]);
 			const DirectX::XMFLOAT2& speedOffset = screenScaler.Scale(pitchSpeedOffsets[pitchIndex]);
 
@@ -1085,9 +1107,12 @@ void ballSprite::Render()
 			float speedTextWidth = 0.0f, speedTextHeight = 0.0f;
 			pitchInfoFont.MeasureText(speedText, scaledFontSize, speedTextWidth, speedTextHeight);
 
-			// 左側: 球種（白固定）
-			const float pitchTextX = scaledBallBoardPos.x + nameOffset.x;
-			const float pitchTextY = boardCenterY + nameOffset.y;
+			// 左側: 球種（中央ぞろえで描画）
+
+			float pitchTextWidth = 0.0f, pitchTextHeight = 0.0f;
+			pitchInfoFont.MeasureText(pitchTypeName, scaledFontSize, pitchTextWidth, pitchTextHeight);
+			const float pitchTextX = nameOffset.x - pitchTextWidth * 0.5f;
+			const float pitchTextY = nameOffset.y - pitchTextHeight * 0.5f;
 			pitchInfoFont.DrawTextW(dc, pitchTypeName, pitchTextX, pitchTextY, scaledFontSize, 1.0f, 1.0f, 1.0f, 1.0f);
 
 			// 右側: 球速（150km/h超で黄色、160km/h超でオレンジ色）
@@ -1260,8 +1285,8 @@ void ballSprite::DrawGUI()
 
 	ImGui::Separator();
 	ImGui::Text(u8"球種名/球速 表示位置 (%s)", names[editIndex]);
-	ImGui::DragFloat2(u8"球種名 オフセット(左右, Y)##pitchName", &pitchNameOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
-	ImGui::DragFloat2(u8"球速 オフセット(右寄せ, Y)##pitchSpeed", &pitchSpeedOffsets[editIndex].x, 0.5f, -200.0f, 500.0f);
+	ImGui::DragFloat2(u8"球種名 オフセット(左右, Y)##pitchName", &pitchNameOffsets[editIndex].x, 1.0f, -200.0f, 1920.0f);
+	ImGui::DragFloat2(u8"球速 オフセット(右寄せ, Y)##pitchSpeed", &pitchSpeedOffsets[editIndex].x, 1.0f, -200.0f, 1080.0f);
 }
 
 void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)
