@@ -456,15 +456,18 @@ void Player::HandleInput(float elapsedTime)
         {      
             if(Ball::Instance().IsBezierFlying())
             {
-                remainingTime = Ball::Instance().GetBezierRemainingTime();
-                if (remainingTime > 0.2f)
+                remainingTime = Ball::Instance().GetBezierT();
+                if (remainingTime > 0.0f && remainingTime < 0.7f)
                 {
                     currentSwingTiming = SwingTiming::Early;
                 }
-				else
-                {
-                    currentSwingTiming = SwingTiming::Late;
-                }
+               
+				
+            }
+            else
+            {
+                remainingTime = 0.0f;
+				currentSwingTiming = SwingTiming::Late;
             }
             
             
