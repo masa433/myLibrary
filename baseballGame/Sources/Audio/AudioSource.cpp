@@ -60,6 +60,8 @@ void AudioSource::Stop()
 {
 	if (!sourceVoice) return;
 
+	fadeDuration = 0.0f; // フェードアウト中止
+	
 	HRESULT hr = sourceVoice->Stop(0);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
@@ -118,5 +120,79 @@ void AudioSource::Update()
 		{
 			++it;
 		}
+	}
+}
+
+// フェードアウト開始
+void AudioSource::StartFadeOut(float duration)
+{
+	if (!sourceVoice) return;
+	if (duration <= 0.0f) { Stop(); return; }
+	if (fadeDuration > 0.0f) return;          // すでにフェード中なら何もしない
+	sourceVoice->GetVolume(&fadeStartVol);   // 今の音量から下げる
+	fadeOutTime = 0.0f;
+	fadeDuration = duration;
+}
+
+// フェードアウト更新
+void AudioSource::UpdateFadeOut(float elapsedTime)
+{
+	if (!sourceVoice || fadeDuration <= 0.0f) return;
+	fadeOutTime += elapsedTime;
+	float t = (std::min)(fadeOutTime / fadeDuration, 1.0f);
+
+	float newVolume = fadeStartVol * (1.0f - t);
+	SetVolume(newVolume);
+
+	if (t >= 1.0f)
+	{
+		t = 1.0f;
+		Stop(); // フェードアウト完了後に停止
+	}
+	
+}
+
+// フェードイン開始
+void AudioSource::StartFadeIn(float duration, bool loop)
+{
+	if (!sourceVoice) return;
+	if (duration <= 0.0f) { SetVolume(1.0f); return; }
+	if (fadeInDuration > 0.0f) return;          // すでにフェード中なら何もしない
+	fadeInStartVol = 0.0f;                     // フェードインは0から始める
+	SetVolume(fadeInStartVol);
+	fadeInTime = 0.0f;
+	fadeInDuration = duration;
+
+	Stop();
+
+	// ソースボイスにデータを送信
+	XAUDIO2_BUFFER buffer = { 0 };
+	buffer.AudioBytes = resource->GetAudioBytes();
+	buffer.pAudioData = resource->GetAudioData();
+	buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
+	buffer.Flags = XAUDIO2_END_OF_STREAM;
+
+	HRESULT hr = sourceVoice->SubmitSourceBuffer(&buffer);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	sourceVoice->SetVolume(1.0f);
+	hr = sourceVoice->Start();
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+}
+
+// フェードイン更新
+void AudioSource::UpdateFadeIn(float elapsedTime)
+{
+	if (!sourceVoice || fadeInDuration <= 0.0f) return;
+	fadeInTime += elapsedTime;
+	float t = (std::min)(fadeInTime / fadeInDuration, 1.0f);
+
+	float newVolume = fadeInStartVol + (1.0f - fadeInStartVol) * t;
+	SetVolume(newVolume);
+
+	if (t >= 1.0f)
+	{
+		t = 1.0f;
+		fadeInDuration = 0.0f; // フェードイン完了
 	}
 }

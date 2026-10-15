@@ -465,21 +465,34 @@ void scene_game::update(float elapsed_time)
         
     }
 
-    if (gameIntroSequence.IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
+    
+
+	bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
+
+    if (gameIntroSequence.IsPlaying() && !isGameFinished && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
     {
         if (cheerSound && !isCheerSoundPlaying)
         {
-            cheerSound->Play(true);
+            cheerSound->StartFadeIn(1.0f, true);
             cheerSound->SetVolume(0.5f);
             isCheerSoundPlaying = true;
         }
     }
 
-	bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
+    if (cheerSound)
+    {
+        cheerSound->UpdateFadeOut(elapsed_time);
+		cheerSound->UpdateFadeIn(elapsed_time);
+    }
 
     if(isGameFinished)
     {
         Result::Instance().Update(elapsed_time);
+        if(cheerSound && isCheerSoundPlaying)
+        {
+            cheerSound->StartFadeOut(1.0f); // フェードアウトの時間を指定
+            isCheerSoundPlaying = false;
+		}
 	}
 
     // スカイレンダラーの更新

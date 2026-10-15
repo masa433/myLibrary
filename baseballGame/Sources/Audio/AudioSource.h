@@ -26,6 +26,15 @@ public:
 
 	void Update();
 
+	void StartFadeOut(float duration);
+
+	void UpdateFadeOut(float elapsedTime);
+
+	void StartFadeIn(float duration,bool loop);
+
+	void UpdateFadeIn(float elapsedTime);
+	
+	
 private:
 	IXAudio2SourceVoice* sourceVoice = nullptr;
 	std::shared_ptr<AudioResource>	resource;
@@ -33,4 +42,12 @@ private:
 	IXAudio2* xaudio = nullptr;
 	// 重ね鳴らし用のボイス一覧（再生中のものだけ保持）
 	std::vector<IXAudio2SourceVoice*>  oneShotVoices;
+
+	float fadeOutTime = 0.0f;
+	float fadeDuration = 0.0f;
+	float fadeStartVol = 1.0f;
+
+	float fadeInTime = 0.0f;
+	float fadeInDuration = 0.0f;
+	float fadeInStartVol = 0.0f;
 };
