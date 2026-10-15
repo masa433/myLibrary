@@ -198,6 +198,7 @@ void Player::Initialize()
     hasPlayBeforeSwing = false; // フラグをリセット
     beforeSwingStartTime = 0.0f; // beforeSwingStartTimeをリセット
 	animation_time = 0.0f; // animation_timeをリセット
+	swingStartTime = 0.0f; // swingStartTimeをリセット
 
 	SelectRealBatter(selectedRealBatter);
 	UpdateBatterModel();
@@ -407,18 +408,18 @@ void Player::Update(float elapsedTime)
     // キー入力による移動処理
     HandleInput(elapsedTime);
 
-    // アニメーション更新
-    UpdateAnimation(elapsedTime);
+    // ボールの位置を取得してルックアット処理を実行
+    const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetWorldPosition();
+    UpdateLookAt(ballPosition);
 
     // 位置更新
     UpdateTransform();
 
+    // アニメーション更新
+    UpdateAnimation(elapsedTime);
+
     //バットをアタッチメント
     AttachBatToHand();
-
-    // ボールの位置を取得してルックアット処理を実行
-    const DirectX::XMFLOAT3& ballPosition = Ball::Instance().GetWorldPosition();
-    UpdateLookAt(ballPosition);
 
     float ballZ = Ball::Instance().GetWorldPosition().z;
     if (ballZ <= -5.0f && currentSwingTiming != SwingTiming::None && !Ball::Instance().GetHasCollidedWithBat())
@@ -980,6 +981,7 @@ void Player::UpdateAnimation(float elapsedTime)
             {
                 ChangeState(State::BattingIdle);
                 beforeSwingStartTime = 0.0f; // beforeSwingStartTimeをリセット
+				swingStartTime = 0.0f; // swingStartTimeをリセット
             }
         }
         // BeforeSwingステート以外は通常の速度でアニメーションを再生
@@ -1057,6 +1059,10 @@ void Player::UpdateAnimation(float elapsedTime)
                 - (outAmount * highFactor) * maxWidthAngle        // アウトハイ → 上向き
                 - (outAmount * lowFactor) * maxOutLowAngle * 0.1f;       // アウトロー → やや下向き
 
+			//バットの角度も調整する
+			DirectX::XMFLOAT3 batAngleOffset = { widthAngleOffset * 0.5f, 0.0f, 0.0f }; // バットの角度は腕の半分の影響にする
+			batAngle.x += batAngleOffset.x;
+
             armAngleOffset += widthAngleOffset;
 
             // 腕のボーンを変更
@@ -1068,6 +1074,7 @@ void Player::UpdateAnimation(float elapsedTime)
             if (animation_time >= animation_duration)
             {
                 ChangeState(State::BattingIdle);
+				swingStartTime = 0.0f; // swingStartTimeをリセット
             }
         }
         else

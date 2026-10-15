@@ -862,7 +862,7 @@ void ballSprite::Update(float elapsedTime)
 		{
 			ballCount::Instance().DecreaseRemainingBalls(1);	
 			Combo::Instance().ResetCombo();// ストライク判定時はコンボをリセット
-			if (strikeSound && !Ball::Instance().GetHasCollidedWithBat() && !Player::Instance().HasSwungThisPitch()) strikeSound->PlayOneShot(2.0f);
+			if (strikeSound && !Ball::Instance().GetHasCollidedWithBat() && !Player::Instance().HasSwungThisPitch() && intro && intro->IsPlaying()) strikeSound->PlayOneShot(2.0f);
 
 		}
 		else
@@ -878,7 +878,7 @@ void ballSprite::Update(float elapsedTime)
 			{
 				isBall = true;
 				pendingBallZoneBonus = true;
-				if (ballSound && !Ball::Instance().GetHasCollidedWithBat()) ballSound->PlayOneShot(2.0f);
+				if (ballSound && !Ball::Instance().GetHasCollidedWithBat() && intro && intro->IsPlaying()) ballSound->PlayOneShot(2.0f);
 			}
 		}
 

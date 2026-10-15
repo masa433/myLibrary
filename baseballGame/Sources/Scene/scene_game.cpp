@@ -462,10 +462,15 @@ void scene_game::update(float elapsed_time)
 
         SpecialAbility::Instance().Update(elapsed_time);
 
+        
+    }
+
+    if (gameIntroSequence.IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
+    {
         if (cheerSound && !isCheerSoundPlaying)
         {
             cheerSound->Play(true);
-			cheerSound->SetVolume(0.5f);
+            cheerSound->SetVolume(0.5f);
             isCheerSoundPlaying = true;
         }
     }

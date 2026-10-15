@@ -1,11 +1,4 @@
 ﻿  BroadcastCamera.cpp
-  camera_controller.cpp
-  Ball.cpp
-  BallNet.cpp
-  FoulSprite.cpp
-  GameTimer.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\GameTimer.cpp(60,21): warning C4244: '-=': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\GameTimer.cpp(61,47): warning C4244: '=': 'float' から 'int' への変換です。データが失われる可能性があります。
   Money.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(452,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
   (ソース ファイル 'Sources/Game/Money.cpp' をコンパイルしています)
@@ -23,7 +16,6 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h
   (ソース ファイル 'Sources/Game/Pitcher.cpp' をコンパイルしています)
   
   Player.cpp
-  ReplayManager.cpp
   Result.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
   (ソース ファイル 'Sources/Game/Result.cpp' をコンパイルしています)
@@ -71,16 +63,9 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(452,2
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(453,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
   (ソース ファイル 'Sources/Game/Wind.cpp' をコンパイルしています)
   
-  ballCount.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballCount.cpp(43,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballCount.cpp(42,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
   ballDistance.cpp
   ballSprite.cpp
-  コードを生成中...
-  コンパイル中...
   batSprite.cpp
-  catcher.cpp
-  stage.cpp
   physxManager.cpp
   ShadowRenderer.cpp
   GameIntroSequence.cpp
@@ -101,7 +86,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h
   
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(342,147): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(342,107): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(676,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(681,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
   scene_title.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
   (ソース ファイル 'Sources/Scene/scene_title.cpp' をコンパイルしています)
@@ -111,6 +96,8 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h
   
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(109,144): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(109,104): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  コードを生成中...
+  コンパイル中...
   framework.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(107,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
   (ソース ファイル 'Sources/System/framework.cpp' をコンパイルしています)
@@ -135,6 +122,4 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h
   ScrollView.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\UI\ScrollView.cpp(528,13): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
   コードを生成中...
-Effekseerd.lib(Effekseer.Manager.obj) : warning LNK4099: PDB 'Effekseerd.pdb' が 'Effekseerd.lib(Effekseer.Manager.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\Effekseerd.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
-EffekseerRendererCommond.lib(EffekseerRenderer.GpuParticles.obj) : warning LNK4099: PDB 'EffekseerRendererCommond.pdb' が 'EffekseerRendererCommond.lib(EffekseerRenderer.GpuParticles.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\EffekseerRendererCommond.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe
