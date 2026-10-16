@@ -179,6 +179,7 @@ private:
 	AudioSource* homeRunCheerSound;//ホームラン時の歓声音のインスタンス
 	AudioSource* standInSound;//スタンドに着地した時の音のインスタンス
 	AudioSource* hitCheerSound;//打球時の歓声音のインスタンス
+	AudioSource* clogAndFoulCheerSound;//打球が詰まった時の歓声音のインスタンス
 
 	bool isFoulSoundPlayed = false; //ファウル音が再生されたかどうかのフラグ
 

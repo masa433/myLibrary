@@ -113,6 +113,7 @@ void Physics::Initialize()
 	homeRunCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRunCheer.wav");
 	standInSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/StandInCheer.wav");
 	hitCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HitCheer.wav");
+	clogAndFoulCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/ClogAndFoul.wav");
 }
 
 // 終了化
@@ -158,6 +159,8 @@ void Physics::Finalize()
 	standInSound = nullptr;
 	delete hitCheerSound;
 	hitCheerSound = nullptr;
+	delete clogAndFoulCheerSound;
+	clogAndFoulCheerSound = nullptr;
 
 	consoleLog = nullptr;
 }
@@ -1090,6 +1093,9 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 				ballHorizontalDistance = horizontalDistance;
 				lastDistanceWasTotal = false; // グラウンド着地時は実測飛距離として扱う
+
+				if(clogAndFoulCheerSound)
+					clogAndFoulCheerSound->PlayOneShot();
 			}
 		}
 
@@ -1184,13 +1190,16 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				if (consoleLog)
 					consoleLog->push_back(u8"[Hit] ファウルゾーン通過！");
 				Combo::Instance().ResetCombo(); // ファウルゾーン通過したらコンボをリセット
-				if(foulWhistleSound)
-					foulWhistleSound->PlayOneShot();
+				/*if(foulWhistleSound)
+					foulWhistleSound->PlayOneShot();*/
 				if (foulSound && Ball::Instance().GetHasCollidedWithBat() && !isFoulSoundPlayed)
 				{
 					foulSound->PlayOneShot();
 					isFoulSoundPlayed = true;
 				}
+
+				if(clogAndFoulCheerSound)
+					clogAndFoulCheerSound->PlayOneShot();
 			}
 		}
 
@@ -1500,7 +1509,12 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				
 			}
 			
-			
+			/*if (launchAngleDeg >= 50.0f)
+			{
+				if (clogAndFoulCheerSound) clogAndFoulCheerSound->PlayOneShot(1.5f);
+			}*/
+
+
 			//打球音再生
 			if (speedKmh >= 170.0f && launchAngleDeg >= 15.0f)
 			{
@@ -1530,6 +1544,8 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 					
 					hitSound->PlayOneShotReverb(1.0f, 30.0f);
 				}
+
+				if (hitCheerSound) hitCheerSound->PlayOneShot(1.5f);
 			}
 			else
 			{
@@ -1539,6 +1555,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 					
 					hitClogSound->PlayOneShotReverb(1.0f, 30.0f);
 				}
+				
 			}
 			
 
