@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <xaudio2.h>
+#include <xaudio2fx.h>// リバーブ
 #include "AudioResource.h"
 
 // オーディオソース
@@ -24,6 +25,8 @@ public:
 	//重ねて鳴らす
 	void PlayOneShot(float volume = 1.0f);
 
+	void PlayOneShotReverb(float volume = 1.0f, float wetDryMix = 50.0f);
+
 	void Update();
 
 	void StartFadeOut(float duration);
@@ -34,6 +37,8 @@ public:
 
 	void UpdateFadeIn(float elapsedTime);
 	
+	//リバーブ関数
+	void Reverb(float wetDryMix);
 	
 private:
 	IXAudio2SourceVoice* sourceVoice = nullptr;
@@ -50,4 +55,5 @@ private:
 	float fadeInTime = 0.0f;
 	float fadeInDuration = 0.0f;
 	float fadeInStartVol = 0.0f;
+
 };

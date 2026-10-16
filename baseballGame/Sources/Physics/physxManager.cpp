@@ -1505,24 +1505,40 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			if (speedKmh >= 170.0f && launchAngleDeg >= 15.0f)
 			{
 				// 170km/h以上 且つ 角度15度以上：本塁打音
-				if (homeRunSound) homeRunSound->Play(false);
+				if (homeRunSound)
+				{
+					homeRunSound->PlayOneShotReverb(1.5f, 50.0f);
+				}
 				if (homeRunCheerSound) homeRunCheerSound->PlayOneShot(1.5f);
 			}
 			else if (speedKmh >= 150.0f)
 			{
 				// 150km/h以上（170km/h以上のゴロ含む）：長打音
-				if (longHitSound) longHitSound->Play(false);
+				if (longHitSound)
+				{
+					
+					longHitSound->PlayOneShotReverb(1.5f, 50.0f);
+				}
+
 				if (hitCheerSound) hitCheerSound->PlayOneShot(1.5f);
 			}
 			else if (speedKmh >= 100.0f)
 			{
 				// 100km/h〜150km/h未満：通常ヒット音
-				if (hitSound) hitSound->Play(false);
+				if (hitSound)
+				{
+					
+					hitSound->PlayOneShotReverb(1.0f, 30.0f);
+				}
 			}
 			else
 			{
 				// 上記以外のすべてのケース（100km/h未満）：詰まった音
-				if (hitClogSound) hitClogSound->Play(false);
+				if (hitClogSound)
+				{
+					
+					hitClogSound->PlayOneShotReverb(1.0f, 30.0f);
+				}
 			}
 			
 

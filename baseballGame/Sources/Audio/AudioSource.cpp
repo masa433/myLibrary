@@ -10,6 +10,8 @@ AudioSource::AudioSource(IXAudio2* xaudio, std::shared_ptr<AudioResource>& resou
 	// ソースボイスを生成
 	hr = xaudio->CreateSourceVoice(&sourceVoice, &resource->GetWaveFormat());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	
 }
 
 // デストラクタ
@@ -102,6 +104,55 @@ void AudioSource::PlayOneShot(float volume)
 	oneShotVoices.push_back(oneShotVoice);
 }
 
+void AudioSource::PlayOneShotReverb(float volume, float wetDryMix)
+{
+	if (!sourceVoice || !resource) return;
+	// 新しいソースボイスを作成
+	IXAudio2SourceVoice* oneShotVoice = nullptr;
+	HRESULT hr = xaudio->CreateSourceVoice(&oneShotVoice, &resource->GetWaveFormat());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !oneShotVoice) return;
+	XAUDIO2_BUFFER buffer = { 0 };
+	buffer.AudioBytes = resource->GetAudioBytes();
+	buffer.pAudioData = resource->GetAudioData();
+	buffer.LoopCount = 0;// 1回だけ再生
+	buffer.Flags = XAUDIO2_END_OF_STREAM;
+	hr = oneShotVoice->SubmitSourceBuffer(&buffer);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	oneShotVoice->SetVolume(volume);
+
+	// リバーブエフェクトを追加
+	IUnknown* reverbEffect = nullptr;
+	XAudio2CreateReverb(&reverbEffect);// リバーブエフェクトを作成
+
+	XAUDIO2_EFFECT_DESCRIPTOR effectDesc = {};
+	effectDesc.pEffect = reverbEffect;// リバーブエフェクトを設定
+	effectDesc.InitialState = TRUE; // エフェクトを有効にする
+	effectDesc.OutputChannels = 2; // ステレオ出力
+
+	XAUDIO2_EFFECT_CHAIN effectChain = {};
+	effectChain.EffectCount = 1;// エフェクトの数を設定
+	effectChain.pEffectDescriptors = &effectDesc;// エフェクトチェーンを設定
+	oneShotVoice->SetEffectChain(&effectChain);// エフェクトチェーンをソースボイスに設定
+	reverbEffect->Release(); // リバーブエフェクトの参照を解放
+
+	// リバーブのパラメータを設定
+	XAUDIO2FX_REVERB_I3DL2_PARAMETERS preset = XAUDIO2FX_I3DL2_PRESET_ARENA; // I3DL2プリセットを使用
+	XAUDIO2FX_REVERB_PARAMETERS reverbParams;
+	ReverbConvertI3DL2ToNative(&preset, &reverbParams); // I3DL2プリセットをネイティブパラメータに変換
+	reverbParams.WetDryMix = wetDryMix; // ウェット/ドライ比を設定
+
+	oneShotVoice->SetEffectParameters(0, &reverbParams, sizeof(reverbParams));// リバーブパラメータを設定
+	oneShotVoice->EnableEffect(0); // エフェクトを有効化
+
+	hr = oneShotVoice->Start();
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+
+	// 再生中のボイスを保持
+	oneShotVoices.push_back(oneShotVoice);
+}
+
 // 再生し終わったワンショットボイスを片付ける（毎フレーム呼ぶ）
 void AudioSource::Update()
 {
@@ -156,7 +207,7 @@ void AudioSource::UpdateFadeOut(float elapsedTime)
 void AudioSource::StartFadeIn(float duration, bool loop)
 {
 	if (!sourceVoice) return;
-	if (duration <= 0.0f) { SetVolume(1.0f); return; }
+	if (duration <= 0.0f) { SetVolume(0.0f); return; }
 	if (fadeInDuration > 0.0f) return;          // すでにフェード中なら何もしない
 	fadeInStartVol = 0.0f;                     // フェードインは0から始める
 	SetVolume(fadeInStartVol);
@@ -195,4 +246,32 @@ void AudioSource::UpdateFadeIn(float elapsedTime)
 		t = 1.0f;
 		fadeInDuration = 0.0f; // フェードイン完了
 	}
+}
+
+void AudioSource::Reverb(float wetDryMix)
+{
+	if (!sourceVoice) return;
+
+	IUnknown* reverbEffect = nullptr;
+	XAudio2CreateReverb(&reverbEffect);// リバーブエフェクトを作成
+
+	XAUDIO2_EFFECT_DESCRIPTOR effectDesc = {};
+	effectDesc.pEffect = reverbEffect;// リバーブエフェクトを設定
+	effectDesc.InitialState = TRUE; // エフェクトを有効にする
+	effectDesc.OutputChannels = 2; // ステレオ出力
+
+	XAUDIO2_EFFECT_CHAIN effectChain = {};
+	effectChain.EffectCount = 1;// エフェクトの数を設定
+	effectChain.pEffectDescriptors = &effectDesc;// エフェクトチェーンを設定
+
+	sourceVoice->SetEffectChain(&effectChain);// エフェクトチェーンをソースボイスに設定
+	reverbEffect->Release(); // リバーブエフェクトの参照を解放
+
+	// リバーブのパラメータを設定
+	XAUDIO2FX_REVERB_I3DL2_PARAMETERS preset = XAUDIO2FX_I3DL2_PRESET_ARENA; // I3DL2プリセットを使用
+	XAUDIO2FX_REVERB_PARAMETERS reverbParams;
+	ReverbConvertI3DL2ToNative(&preset, &reverbParams); // I3DL2プリセットをネイティブパラメータに変換
+	reverbParams.WetDryMix = wetDryMix; // ウェット/ドライ比を設定
+	sourceVoice->SetEffectParameters(0, &reverbParams, sizeof(reverbParams));// リバーブパラメータを設定
+	sourceVoice->EnableEffect(0); // エフェクトを有効化
 }
