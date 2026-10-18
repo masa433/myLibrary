@@ -163,6 +163,39 @@ public:
 	bool GetIsFoulSoundPlayed() const { return isFoulSoundPlayed; }
 	void SetIsFoulSoundPlayed(bool value) { isFoulSoundPlayed = value; }
 
+	void StartFadeOut(float duration)
+	{
+		if (longHitSound) longHitSound->StartFadeOutOneShot(duration);
+		if (hitSound) hitSound->StartFadeOutOneShot(duration);
+		if (homeRunSound) homeRunSound->StartFadeOutOneShot(duration);
+		if (hitClogSound) hitClogSound->StartFadeOutOneShot(duration);
+		if (foulWhistleSound) foulWhistleSound->StartFadeOutOneShot(duration);
+		if (foulSound) foulSound->StartFadeOutOneShot(duration);
+		if (boundSound) boundSound->StartFadeOutOneShot(duration);
+		if (poleHitSound) poleHitSound->StartFadeOutOneShot(duration);
+		if (homeRunCheerSound) homeRunCheerSound->StartFadeOutOneShot(duration);
+		if (standInSound) standInSound->StartFadeOutOneShot(duration);
+		if (hitCheerSound) hitCheerSound->StartFadeOutOneShot(duration);
+		if (clogAndFoulCheerSound) clogAndFoulCheerSound->StartFadeOutOneShot(duration);
+		isFoulSoundPlayed = false; // ファウル音再生フラグをリセット
+	}
+
+	void UpdateFadeOut(float elapsedTime)
+	{
+		if (longHitSound) longHitSound->UpdateFadeOutOneShot(elapsedTime);
+		if (hitSound) hitSound->UpdateFadeOutOneShot(elapsedTime);
+		if (homeRunSound) homeRunSound->UpdateFadeOutOneShot(elapsedTime);
+		if (hitClogSound) hitClogSound->UpdateFadeOutOneShot(elapsedTime);
+		if (foulWhistleSound) foulWhistleSound->UpdateFadeOutOneShot(elapsedTime);
+		if (foulSound) foulSound->UpdateFadeOutOneShot(elapsedTime);
+		if (boundSound) boundSound->UpdateFadeOutOneShot(elapsedTime);
+		if (poleHitSound) poleHitSound->UpdateFadeOutOneShot(elapsedTime);
+		if (homeRunCheerSound) homeRunCheerSound->UpdateFadeOutOneShot(elapsedTime);
+		if (standInSound) standInSound->UpdateFadeOutOneShot(elapsedTime);
+		if (hitCheerSound) hitCheerSound->UpdateFadeOutOneShot(elapsedTime);
+		if (clogAndFoulCheerSound) clogAndFoulCheerSound->UpdateFadeOutOneShot(elapsedTime);
+	}
+
 private:
 	std::unique_ptr<Effect> hitEffect;//打球エフェクトのインスタンス
 	std::unique_ptr<Effect> hitSmallEffect;//打球小エフェクトのインスタンス

@@ -351,6 +351,7 @@ void scene_game::initialize()
 
     cheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Cheer.wav");
 	isCheerSoundPlaying = false;
+	isOneShotFadeStarted = false;
 
     //ドローコール表示用
     D3D11_QUERY_DESC query_desc{};
@@ -483,16 +484,27 @@ void scene_game::update(float elapsed_time)
     {
         cheerSound->UpdateFadeOut(elapsed_time);
 		cheerSound->UpdateFadeIn(elapsed_time);
+        
     }
+
+    Physics::Instance().UpdateFadeOut(elapsed_time); //効果音をフェードアウトして止める
 
     if(isGameFinished)
     {
         Result::Instance().Update(elapsed_time);
+       
         if(cheerSound && isCheerSoundPlaying)
         {
             cheerSound->StartFadeOut(1.0f); // フェードアウトの時間を指定
             isCheerSoundPlaying = false;
 		}
+
+        if(!isOneShotFadeStarted)
+        {
+            Physics::Instance().StartFadeOut(1.0f);//効果音をフェードアウトを開始
+            isOneShotFadeStarted = true;
+        }
+		
 	}
 
     // スカイレンダラーの更新

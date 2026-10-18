@@ -39,6 +39,13 @@ public:
 	
 	//リバーブ関数
 	void Reverb(float wetDryMix);
+
+	//今なっているすべてのワンショットの音を止める関数
+	void StopOneShotSounds();
+
+	void StartFadeOutOneShot(float duration, float volume = 1.0f);
+
+	void UpdateFadeOutOneShot(float elapsedTime);
 	
 private:
 	IXAudio2SourceVoice* sourceVoice = nullptr;
@@ -56,4 +63,7 @@ private:
 	float fadeInDuration = 0.0f;
 	float fadeInStartVol = 0.0f;
 
+	float oneShotFadeOutTime = 0.0f;
+	float oneShotFadeDuration = 0.0f;
+	float oneShotFadeStartVol = 1.0f;
 };

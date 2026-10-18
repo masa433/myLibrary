@@ -224,4 +224,5 @@ private:
     
     AudioSource* cheerSound = nullptr;
 	bool isCheerSoundPlaying = false;
+	bool isOneShotFadeStarted = false;
 };

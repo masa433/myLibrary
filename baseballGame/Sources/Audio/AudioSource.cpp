@@ -275,3 +275,58 @@ void AudioSource::Reverb(float wetDryMix)
 	sourceVoice->SetEffectParameters(0, &reverbParams, sizeof(reverbParams));// リバーブパラメータを設定
 	sourceVoice->EnableEffect(0); // エフェクトを有効化
 }
+
+void AudioSource::StopOneShotSounds()
+{
+	oneShotFadeDuration = 0.0f; // フェードアウト中止
+	oneShotFadeOutTime = 0.0f;  // フェードアウト時間リセット
+
+	for (auto* voice : oneShotVoices)
+	{
+		if (voice != nullptr)
+		{
+			voice->Stop(0);
+			voice->DestroyVoice();
+		}
+	}
+	oneShotVoices.clear();
+	oneShotFadeDuration = 0.0f; // フェードアウト中止
+	oneShotFadeOutTime = 0.0f;  // フェードアウト時間リセット
+}
+
+void AudioSource::StartFadeOutOneShot(float duration, float volume)
+{
+	if (duration <= 0.0f) { StopOneShotSounds(); return; }
+	for (auto* voice : oneShotVoices)
+	{
+		if (voice != nullptr)
+		{
+			// フェードアウトのために音量を設定
+			voice->SetVolume(volume);
+		}
+	}
+	oneShotFadeDuration = duration;
+	oneShotFadeOutTime = 0.0f;
+}
+
+void AudioSource::UpdateFadeOutOneShot(float elapsedTime)
+{
+	if (oneShotFadeDuration <= 0.0f) return;
+	oneShotFadeOutTime += elapsedTime;
+	float t = (std::min)(oneShotFadeOutTime / oneShotFadeDuration, 1.0f);
+
+	float newVolume = oneShotFadeStartVol * (1.0f - t);
+	for (auto* voice : oneShotVoices)
+	{
+		if (voice != nullptr)
+		{
+			voice->SetVolume(newVolume);
+		}
+	}
+
+	if (t >= 1.0f)
+	{
+		StopOneShotSounds(); // フェードアウト完了後に停止
+		oneShotFadeDuration = 0.0f; // フェードアウト完了
+	}
+}
