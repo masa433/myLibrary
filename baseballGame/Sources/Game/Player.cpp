@@ -1000,10 +1000,12 @@ void Player::UpdateAnimation(float elapsedTime)
         // Swingアニメーションの場合、マウス位置に応じて腕の角度を変更
         if (current_state == State::Swinging)
         {
+			ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
             // マウスカーソル位置を取得
             Mouse& mouse = Input::Instance().GetMouse();
-            float mouseY = static_cast<float>(mouse.GetPositionY());
-            float mouseX = static_cast<float>(mouse.GetPositionX());
+            float mouseY = static_cast<float>(mouse.GetPositionY()) / screenScaler.GetScaleY();
+            float mouseX = static_cast<float>(mouse.GetPositionX()) / screenScaler.GetScaleX();
 
             // ストライクゾーンのスクリーン境界を取得（コース判定に使用）
             DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
@@ -1011,12 +1013,14 @@ void Player::UpdateAnimation(float elapsedTime)
             float zoneWidth = zoneBottomRight.x - zoneTopLeft.x;
             float zoneHeight = zoneBottomRight.y - zoneTopLeft.y;
 
-            Graphics& graphics = Graphics::Instance();
-            float screenHeight = static_cast<float>(graphics.GetScreenHeight());
+            /*Graphics& graphics = Graphics::Instance();
+            float screenHeight = static_cast<float>(graphics.GetScreenHeight());*/
+
+            constexpr float REF_HEIGHT = 1080.0f;  // 調整した基準解像度の高さ
 
             // マウスY座標を正規化（0.0～1.0）：高さ用（画面基準のまま）
-            swingHeight = mouseY / screenHeight;
-            swingHeight = std::clamp(swingHeight, 0.0f, 1.0f);
+            //swingHeight = mouseY / screenHeight;
+            swingHeight = std::clamp(mouseY / REF_HEIGHT, 0.0f, 1.0f);
 
             // マウスX座標をストライクゾーン基準で正規化（-1.0=内角側 ～ +1.0=外角側）
             swingWidth = 0.0f;

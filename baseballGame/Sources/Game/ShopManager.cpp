@@ -1318,7 +1318,7 @@ void ShopManager::Render()
 		shopItemSpriteObjects[itemIndex]->render(context,
 			drawX,
 			drawY,
-			shopItemSize.x, shopItemSize.y,
+			scaledItemSize.x, scaledItemSize.y,
 			colorRGB, colorRGB, colorRGB, 1.0f,
 			0.0f);
 
