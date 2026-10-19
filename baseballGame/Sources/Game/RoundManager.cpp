@@ -287,7 +287,7 @@ void RoundManager::UpdateSelectAbilityState()
 	for(int i = 0; i < abilitiesChoice.size(); ++i)
 	{
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(abilityIconPositions[i]);
-		DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(abilityIconSize);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(abilityIconSize);
 
 		DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
 
@@ -378,7 +378,7 @@ void RoundManager::Render()
 		{
 			bool isHightlighted = (i == hoveredAbilityIndex);// ホバー中のアイコンかどうかを判定
 			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(abilityIconPositions[i]);
-			DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(abilityIconSize);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(abilityIconSize);
 			SpecialAbility::Instance().RenderAbilityIcons(abilitiesChoice[i], scaledPosition, scaledSize, isHightlighted);
 		}
 

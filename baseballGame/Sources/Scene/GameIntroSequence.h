@@ -15,6 +15,7 @@
 #define BATTER_COUNT 24
 #define GRAPH_COUNT 6
 
+
 using json = nlohmann::json;
 
 class GameIntroSequence
@@ -23,11 +24,31 @@ public:
 
 	FontRenderer pitchParamFont;// ピッチャーのパラメータ表示用フォントレンダラー
 
+	FontRenderer ballModeFont; // ボールモード表示用フォントレンダラー
+
 	ButtonManager buttonManager; // ボタン管理クラスのインスタンス
+
+	enum class BallSpeedMode
+	{
+		SlowSpeed,
+		HighSpeed,
+		RealSpeed,
+		Count
+	};
+
 
 	struct IntroData
 	{
 		std::wstring texturePath;
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT2 size;
+		float rotation;
+		DirectX::XMFLOAT4 color;
+	};
+
+	struct BallSpeedModeData
+	{
+		std::wstring texturePath[static_cast<int>(BallSpeedMode::Count)];
 		DirectX::XMFLOAT2 position;
 		DirectX::XMFLOAT2 size;
 		float rotation;
@@ -41,6 +62,8 @@ public:
 		ShowingPitcher,
 		ShowingBatter,
 		ShowingIntroBoard,
+		ShowingBallMode,
+		ShowingCountDown,
 		Playing,
 	};
 
@@ -71,6 +94,9 @@ public:
 		DirectX::XMFLOAT2& pos, DirectX::XMFLOAT2& size, float amount);
 
 	void UpdateIntroBoardAnimation(float elapsedTime); // イントロボードのアニメーション更新処理
+
+	//ボール球速モードの選択更新処理
+	void UpdateBallSpeedModeSelection();
 
 private:
 	GameIntroState introState = GameIntroState::ShowingGround;
@@ -105,6 +131,8 @@ private:
 
 	float introBoardAnimationTimer = 0.0f; // イントロボードのアニメーションタイマー
 	float introBoardAnimationDuration = 1.0f; // イントロボードのアニメーションが完了するまでの時間
+
+	int hoveredBallModeIndex = -1; // ホバー中のボールモードのインデックス(-1はホバーなし)
 
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
 
@@ -150,6 +178,29 @@ private:
 	DirectX::XMFLOAT2 introBoardTargetPosition = { 960.0f, 540.0f };
 	DirectX::XMFLOAT2 introBoardCurrentPosition = introBoardStartPosition;
 	DirectX::XMFLOAT2 introBoardSize = { 800.0f, 520.0f };
+
+
+	std::unique_ptr<IntroData> ballModeBackData;
+	std::unique_ptr<sprite> ballModeBackSprite;
+
+	DirectX::XMFLOAT2 ballModeBackPosition = { 960.0f, 540.0f };
+	DirectX::XMFLOAT2 ballModeBackSize = { 1920.0f, 1080.0f };
+
+	std::unique_ptr<BallSpeedModeData> ballModeIconData;
+	std::unique_ptr<sprite> ballModeIconSprite[static_cast<int>(BallSpeedMode::Count)];
+
+	//球速モードのアイコンの位置とサイズ
+	DirectX::XMFLOAT2 ballModeIconPositions[static_cast<int>(BallSpeedMode::Count)] =
+	{
+		{ 960.0f, 350.0f }, // 1つ目のアイコンの位置
+		{ 560.0f, 650.0f }, // 2つ目のアイコンの位置
+		{ 1360.0f, 650.0f }  // 3つ目のアイコンの位置
+	};
+
+	DirectX::XMFLOAT2 ballModeIconSize = { 600.0f, 200.0f }; // アイコンのサイズ
+
+	BallSpeedMode currentBallSpeedMode = BallSpeedMode::SlowSpeed; // 現在の球速モード
+
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
@@ -168,6 +219,9 @@ private:
 	float pitchWeightLabelScale = 0.5f;
 
 	float offsetY = 0.0f; // Y方向のオフセット値
+
+	DirectX::XMFLOAT2 ballModeFontPosition = { 960.0f, 200.0f };
+	float ballModeFontScale = 1.0f;
 
 	AudioSource* introBoardAnimationSound = nullptr; // イントロボードのアニメーション音声
 };

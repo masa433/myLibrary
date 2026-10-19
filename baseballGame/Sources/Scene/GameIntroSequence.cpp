@@ -5,6 +5,8 @@
 #include "shader.h"
 #include "UiEasing.h"
 #include "imgui.h"
+#include "GameModeManager.h"
+#include "input.h"
 
 void GameIntroSequence::Initialize(ID3D11Device* device)
 {
@@ -126,12 +128,52 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
         u8"ツーシームカットボールシンカー"
         u8"スクリュー縦スプリットスローカーブ"
         u8"シュートナックルボールスイーパーパーム"
-        u8"ナチュラルシュート真っスラ火の玉ストレート");
+        u8"ナチュラルシュート真っスラ火の玉ストレート"
+        u8"球速モードを選択しよう！");
 
 	pitchParamFont.Initialize(device, 
         L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf", 
         100.0f, screenWidth, screenHeight, 
         2048, 2048, &codepoints);
+
+    //ボールモード関連の初期化
+    {
+        ballModeFont.Initialize(device,
+            L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+            100.0f, screenWidth, screenHeight,
+            2048, 2048, &codepoints);
+
+		//背景のテクスチャを初期化
+        ballModeBackData = std::make_unique<IntroData>();
+        ballModeBackData->texturePath = L".\\resources\\textures\\scrollViewBack.png";
+        ballModeBackData->position = ballModeBackPosition;
+        ballModeBackData->size = ballModeBackSize;
+        ballModeBackData->rotation = 0.0f;
+        ballModeBackData->color = { 1.0f, 1.0f, 1.0f, 0.8f };
+		ballModeBackSprite = std::make_unique<sprite>(device, context, ballModeBackData->texturePath.c_str());
+
+		//ボールモードのテクスチャを初期化
+        
+        ballModeIconData = std::make_unique<BallSpeedModeData>();
+        ballModeIconData->texturePath[static_cast<int>(BallSpeedMode::SlowSpeed)] = L".\\resources\\textures\\slowSpeedButton.png";
+        ballModeIconData->texturePath[static_cast<int>(BallSpeedMode::HighSpeed)] = L".\\resources\\textures\\highSpeedButton.png";
+        ballModeIconData->texturePath[static_cast<int>(BallSpeedMode::RealSpeed)] = L".\\resources\\textures\\realSpeedButton.png";
+		//ボールモードのポジションは3箇所に分けて設定
+        for (int i = 0; i < static_cast<int>(BallSpeedMode::Count); ++i)
+        {
+            ballModeIconData->position = ballModeIconPositions[i];
+        }
+        ballModeIconData->size = ballModeIconSize;
+        ballModeIconData->rotation = 0.0f;
+		ballModeIconData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+        for (int i = 0; i < static_cast<int>(BallSpeedMode::Count); ++i)
+        {
+            ballModeIconSprite[i] = std::make_unique<sprite>(device, context, ballModeIconData->texturePath[i].c_str());
+		}
+           
+		
+    }
+
 
     buttonManager.Initialize();
 
@@ -179,6 +221,74 @@ void GameIntroSequence::UpdateIntroBoardAnimation(float elapsedTime)
     introBoardCurrentPosition = UiEasing::Lerp(introBoardStartPosition, introBoardTargetPosition, t , UiEasing::EasingType::OutQuart);
 }
 
+void GameIntroSequence::UpdateBallSpeedModeSelection()
+{
+    Input& input = Input::Instance();
+    ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
+
+    //マウスの位置を取得
+    DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
+    bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
+
+    int previousSelectedMode = hoveredBallModeIndex;
+	hoveredBallModeIndex = -1; // 初期化
+
+	//ボールモードのアイコンの範囲をチェック
+    for(int i = 0; i < static_cast<int>(BallSpeedMode::Count); ++i)
+    {
+		DirectX::XMFLOAT2 scaledIconPos = screenScaler.Scale(ballModeIconPositions[i]);
+        DirectX::XMFLOAT2 scaledIconSize = screenScaler.ScaleSize(ballModeIconSize);
+        
+        DirectX::XMFLOAT2 scaledCenterPosition =
+        {
+            scaledIconPos.x - scaledIconSize.x / 2.0f,
+            scaledIconPos.y - scaledIconSize.y / 2.0f
+        };
+
+		float iconX = scaledCenterPosition.x;
+		float iconY = scaledCenterPosition.y;
+		float iconWidth = scaledIconSize.x;
+		float iconHeight = scaledIconSize.y;
+
+        bool isHovered = (mousePos.x >= iconX && mousePos.x <= iconX + iconWidth &&
+			mousePos.y >= iconY && mousePos.y <= iconY + iconHeight);
+
+		
+
+        if(isHovered)
+        {
+			
+
+            hoveredBallModeIndex = i; // ホバー中のボールモードのインデックスを更新
+            if(clicked)
+            {
+				// クリックされた場合、選択されたボールモードを更新
+                if(hoveredBallModeIndex >= 0 && hoveredBallModeIndex < static_cast<int>(BallSpeedMode::Count))
+                {
+                    switch(hoveredBallModeIndex)
+                    {
+                        case 0:
+                            Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::slowSpeed);
+                            break;
+                        case 1:
+                            Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::highSpeed);
+                            break;
+                        case 2:
+                            Pitcher ::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::realSpeed);
+                            break;
+					}
+				}
+
+
+                introState = GameIntroState::ShowingCountDown; // カウントダウン表示に遷移
+                return;
+            }
+            
+		}
+	}
+}
+
 void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcastCamera)
 {
 	//ステートをintとして扱うための変数
@@ -195,6 +305,12 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
             introBoardAnimationSound->PlayOneShot();
 			introBoardAnimationSound = nullptr; // 再生後にポインタをリセットして二重再生を防ぐ
         }
+	}
+
+    if(introState == GameIntroState::ShowingBallMode)
+    {
+        UpdateBallSpeedModeSelection();
+        return;
 	}
 
     if(introStateIndex < static_cast<int>(GameIntroState::ShowingIntroBoard))
@@ -396,13 +512,21 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
         }
         else if (introState == GameIntroState::ShowingBatter)
         {
-            introState = GameIntroState::ShowingIntroBoard;
+            if(GameModeManager::Instance().GetCurrentMode() == GameMode::Game)
+            {
+                introState = GameIntroState::ShowingIntroBoard;
+                introDuration = 3.0f; // イントロボードを映す時間に変更
+            }
+			else
+            {
+                introState = GameIntroState::ShowingBallMode;
+				
+            }
 			//アクティブカメラをデフォルトのカメラに戻す
 			int defaultCameraId = 0; // デフォルトのカメラID
 			int index = broadcastCamera.GetCameraIndexById(defaultCameraId);
             broadcastCamera.SetActiveIndex(index);
             broadcastCamera.ResetCameraToPreset(index);
-			introDuration = 3.0f; // イントロボードを映す時間に変更
             
         }
         else if (introState == GameIntroState::ShowingIntroBoard)
@@ -708,8 +832,76 @@ void GameIntroSequence::Render()
 			introBoardData->rotation);
     }
 
+    else if (introState == GameIntroState::ShowingBallMode)
+    {
+        if (ballModeBackSprite && ballModeBackData)
+        {
+            DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(ballModeBackPosition);
+            DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(ballModeBackSize);
+
+            DirectX::XMFLOAT2 scaledCenteredPos =
+            {
+                scaledPosition.x - scaledSize.x / 2.0f,
+                scaledPosition.y - scaledSize.y / 2.0f
+			};
+
+            ballModeBackSprite->render(context,
+                scaledCenteredPos.x, scaledCenteredPos.y,
+                scaledSize.x, scaledSize.y,
+                ballModeBackData->color.x, ballModeBackData->color.y, ballModeBackData->color.z, ballModeBackData->color.w,
+                ballModeBackData->rotation);
+        }
+
+        //球速モードのテクスチャ描画
+        if (ballModeIconSprite && ballModeIconData)
+        {
+            for (int i = 0; i < static_cast<int>(BallSpeedMode::Count); ++i)
+            {
+
+                DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(ballModeIconPositions[i]);
+                DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(ballModeIconSize);
+                
+                if (hoveredBallModeIndex == i)
+                {
+                    scaledSize.x *= 1.1f;
+                    scaledSize.y *= 1.1f;
+                }
+                
+                DirectX::XMFLOAT2 scaledCenteredPos =
+                {
+                    scaledPosition.x - scaledSize.x / 2.0f,
+                    scaledPosition.y - scaledSize.y / 2.0f
+                };
+                ballModeIconSprite[i]->render(context,
+                    scaledCenteredPos.x, scaledCenteredPos.y,
+                    scaledSize.x, scaledSize.y,
+                    ballModeIconData->color.x, ballModeIconData->color.y, ballModeIconData->color.z, ballModeIconData->color.w,
+                    ballModeIconData->rotation);
+
+            }
+		}
+
+		//球速モードのテキストを描画
+        DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(ballModeFontPosition);
+        const float scaledFontScale = ballModeFontScale * screenScaler.GetUniformScale();
+
+        std::string ballModeText = u8"球速モードを選択しよう！";
+
+        float textWidth = 0.0f, textHeight = 0.0f;
+        ballModeFont.MeasureText(ballModeText.c_str(), scaledFontScale, textWidth, textHeight);
+
+        DirectX::XMFLOAT2 scaledCenteredPos =
+        {
+            scaledPosition.x - textWidth / 2.0f,
+            scaledPosition.y - textHeight / 2.0f
+        };
+
+		ballModeFont.DrawTextW(context, ballModeText.c_str(), scaledCenteredPos.x, scaledCenteredPos.y, scaledFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
     //スキップボタンの描画
-    if(introState != GameIntroState::ShowingIntroBoard && !IsPlaying()) buttonManager.Render(1.0f, ButtonManager::ButtonType::Skip);
+    if(introState != GameIntroState::ShowingIntroBoard && introState != GameIntroState::ShowingBallMode && introState != GameIntroState::ShowingCountDown && 
+        !IsPlaying()) buttonManager.Render(1.0f, ButtonManager::ButtonType::Skip);
 
     context->VSSetShader(spriteVS.Get(), nullptr, 0);
     context->PSSetShader(spritePS.Get(), nullptr, 0);
