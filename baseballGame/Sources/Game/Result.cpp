@@ -201,6 +201,14 @@ void Result::Update(float elapsedTime)
 				isNextButtonPressed = true;
 				buttonManager.ResetButtonAlpha(ButtonManager::ButtonType::Next);
 			}
+
+			//もし再生できるリプレイがない場合は、リザルト画面に遷移する
+			if (!ReplayManager::Instance().HasSavedReplay())
+			{
+				currentState = State::Result;
+				isNextButtonPressed = true;
+				buttonManager.ResetButtonAlpha(ButtonManager::ButtonType::Next);
+			}
 			break;
 		}
 
