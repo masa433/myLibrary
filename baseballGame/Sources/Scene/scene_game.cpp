@@ -33,6 +33,7 @@
 #include "EffectManager.h"
 #include "SpecialAbility.h"
 #include "ReplayManager.h"
+#include "GameModeManager.h"
 
 using json = nlohmann::json;
 
@@ -1372,6 +1373,28 @@ void scene_game::DrawGUI()
                 ImGui::SetTooltip("Disable for better FPS");
         }
 
+        //ゲームモード
+        if (ImGui::CollapsingHeader("Game Mode"))
+        {
+            //ゲームモードを文字列で表示
+			GameMode currentMode = GameModeManager::Instance().GetCurrentMode();
+
+			const char* modeName = "Unknown";
+            switch (currentMode)
+            {
+                case GameMode::Game:
+                    modeName = "Game";
+                    break;
+                case GameMode::Tutorial:
+                    modeName = "Tutorial";
+                    break;
+                case GameMode::FreeBatting:
+                    modeName = "Free Batting";
+                    break;
+            }
+
+			ImGui::Text("Current Mode: %s", modeName);
+		}
 
         ImGui::End();
 

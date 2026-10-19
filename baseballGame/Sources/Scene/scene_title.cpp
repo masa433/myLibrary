@@ -10,6 +10,7 @@
 #include <string>
 #include "devmidi.h"
 #include <shader.h>
+#include "GameModeManager.h"
 
 
 void scene_title::initialize()
@@ -185,9 +186,17 @@ void scene_title::update(float elapsed_time)
 	{
 		if (buttonManager.IsStartRequested())
 		{
+			GameModeManager::Instance().ChangeMode(GameMode::Game);
 			isChangingScene = true;
 			hexTransitionEffect.Start(1.0f);
 			buttonManager.ResetStartRequest(false);
+		}
+		else if (buttonManager.IsFreeBattingRequested())
+		{
+			GameModeManager::Instance().ChangeMode(GameMode::FreeBatting);
+			isChangingScene = true;
+			hexTransitionEffect.Start(1.0f);
+			buttonManager.ResetFreeBattingRequest(false);
 		}
 	}
 	else

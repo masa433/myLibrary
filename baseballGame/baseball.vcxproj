@@ -409,6 +409,7 @@
     <ClInclude Include="Sources\Game\catcher.h" />
     <ClInclude Include="Sources\Game\Combo.h" />
     <ClInclude Include="Sources\Game\FoulSprite.h" />
+    <ClInclude Include="Sources\Game\GameModeManager.h" />
     <ClInclude Include="Sources\Game\GameTimer.h" />
     <ClInclude Include="Sources\Game\game_object.h">
       <DeploymentContent>false</DeploymentContent>

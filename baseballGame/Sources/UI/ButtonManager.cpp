@@ -301,6 +301,13 @@ void ButtonManager::Update(float elapsedTime)
 							buttonClickSound->PlayOneShot();
 						}
 						break;
+					case ButtonType::FreeBatting:
+						isFreeBattingRequested = true;
+						if(buttonClickSound)
+						{
+							buttonClickSound->PlayOneShot();
+						}
+						break;
 
 					default:
 						break;
@@ -549,7 +556,12 @@ void ButtonManager::DrawGUI()
 			ImGui::ColorEdit4(u8"フォント色", &fontColor.x);
 
 			//ボタンタイプを選択
-			const char* buttonTypeItems[] = { "None", "Start", "Settings", "Quit", "Pose", "Return", "OK", "Close" , "Reroll", "Title", "BatterSelect", "Retry", "ShowPitchParam", "Skip", "Next"};
+			const char* buttonTypeItems[] = 
+			{ 
+				"None", "Start", "Settings", "Quit", "Pose", "Return",
+				"OK", "Close" , "Reroll", "Title", "BatterSelect", "Retry", 
+				"ShowPitchParam", "Skip", "Next", "FreeBatting"
+			};
 			int currentTypeIndex = static_cast<int>(btn.buttonType);
 			ImGui::Combo(u8"ボタンタイプ", &currentTypeIndex, buttonTypeItems, IM_ARRAYSIZE(buttonTypeItems));
 			btn.buttonType = static_cast<ButtonManager::ButtonType>(currentTypeIndex);

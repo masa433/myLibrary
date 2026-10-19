@@ -37,6 +37,7 @@ public:
 		ShowPitchParam,//ピッチャーパラメータ表示ボタン
 		Skip,//スキップボタン
 		Next,//次へボタン
+		FreeBatting,//フリーバッティングボタン
 		Count
 	};
 
@@ -86,6 +87,9 @@ public:
 
 	void ResetNextRequest(bool requested) { isNextRequested = requested; }
 	bool IsNextRequested() const { return isNextRequested; }
+
+	void ResetFreeBattingRequest(bool requested) { isFreeBattingRequested = requested; }
+	bool IsFreeBattingRequested() const { return isFreeBattingRequested; }
 
 	//ボタンのタイプを取得する関数
 	ButtonType GetButtonType(ButtonType buttonType) const { return buttonType; }
@@ -196,6 +200,7 @@ private:
 	bool isShowPitchParamRequested = false;
 	bool isSkipRequested = false;
 	bool isNextRequested = false;
+	bool isFreeBattingRequested = false;
 
 	AudioSource* buttonHoverSound = nullptr;
 	AudioSource* buttonClickSound = nullptr;
