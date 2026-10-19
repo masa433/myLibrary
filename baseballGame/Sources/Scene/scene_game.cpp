@@ -1462,6 +1462,12 @@ void scene_game::DrawGUI()
                 inputBuf[0] = '\0';
                 ImGui::SetKeyboardFocusHere(-1);
             }
+
+			//ログが50件を超えたら古いログを削除する
+            if (consoleLog.size() > 50)
+            {
+				consoleLog.erase(consoleLog.begin(), consoleLog.begin() + (consoleLog.size() - 50));
+			}
         }
         ImGui::End();
     }
