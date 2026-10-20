@@ -122,10 +122,25 @@ void RoundManager::Uninitialize()
 {
 	roundFont.Uninitialize();
 	abilityBonusFont.Uninitialize();
+
+	roundSprite.reset();
+	roundSpriteData.reset();
+	abilityBackSprite.reset();
+	abilityBackSpriteData.reset();
+
+	pixel_shader.Reset();
+	vertex_shader.Reset();
+	input_layout.Reset();
+
 	ShopManager::Instance().Uninitialize();
 	delete selectAbilitySound;
 	delete selectAbilityHoverSound;
 	delete closeShopSound;
+	for (auto& mode : speedModes)
+	{
+		mode.speedModeSprite.reset();
+		mode.speedModeSpriteData.reset();
+	}
 	speedModes.clear();
 }
 

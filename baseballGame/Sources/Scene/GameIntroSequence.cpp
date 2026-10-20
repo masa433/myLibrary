@@ -179,6 +179,7 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 
 	introBoardAnimationSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\introBoardAnimation.wav");
 
+	introBoardAnimationSoundPlayed = false;
 }
 
 void GameIntroSequence::Uninitialize()
@@ -202,7 +203,25 @@ void GameIntroSequence::Uninitialize()
         graphSprite[i].reset();
         graphData[i].reset();
 	}
+
+    for(int i = 0; i < static_cast<int>(BallSpeedMode::Count); ++i)
+    {
+        ballModeIconSprite[i].reset();
+	}
+	ballModeIconData.reset();
+	ballModeBackData.reset();
+	ballModeBackSprite.reset();
+    stadiumNameBoardSprite.reset();
+    stadiumNameBoardData.reset();
+    cameraFadeSprite.reset();
+    cameraFadeData.reset();
+    pitchParamSprite.reset();
+    pitchParamData.reset();
+    introBoardSprite.reset();
+	introBoardData.reset();
+	rasterizerState.Reset();
 	pitchParamFont.Uninitialize();
+    ballModeFont.Uninitialize();
 	buttonManager.Uninitialize();
 
     delete introBoardAnimationSound;
@@ -300,10 +319,10 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 	{
 		UpdateIntroBoardAnimation(elapsed_time);
 
-        if (introBoardAnimationSound)
+        if (introBoardAnimationSound && !introBoardAnimationSoundPlayed)
         {
             introBoardAnimationSound->PlayOneShot();
-			introBoardAnimationSound = nullptr; // 再生後にポインタをリセットして二重再生を防ぐ
+            introBoardAnimationSoundPlayed = true;
         }
 	}
 
@@ -883,7 +902,7 @@ void GameIntroSequence::Render()
             {
                 scaledPosition.x - scaledSize.x / 2.0f,
                 scaledPosition.y - scaledSize.y / 2.0f
-			};
+            };
 
             ballModeBackSprite->render(context,
                 scaledCenteredPos.x, scaledCenteredPos.y,
@@ -938,6 +957,27 @@ void GameIntroSequence::Render()
 
 		ballModeFont.DrawTextW(context, ballModeText.c_str(), scaledCenteredPos.x, scaledCenteredPos.y, scaledFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
     }
+
+    else if (introState == GameIntroState::ShowingCountDown)
+    {
+        if (ballModeBackSprite && ballModeBackData)
+        {
+            DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(ballModeBackPosition);
+            DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(ballModeBackSize);
+
+            DirectX::XMFLOAT2 scaledCenteredPos =
+            {
+                scaledPosition.x - scaledSize.x / 2.0f,
+                scaledPosition.y - scaledSize.y / 2.0f
+            };
+
+            ballModeBackSprite->render(context,
+                scaledCenteredPos.x, scaledCenteredPos.y,
+                scaledSize.x, scaledSize.y,
+                ballModeBackData->color.x, ballModeBackData->color.y, ballModeBackData->color.z, ballModeBackData->color.w,
+                ballModeBackData->rotation);
+        }
+        }
 
     //スキップボタンの描画
     if(introState != GameIntroState::ShowingIntroBoard && introState != GameIntroState::ShowingBallMode && introState != GameIntroState::ShowingCountDown && 

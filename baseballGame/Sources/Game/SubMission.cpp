@@ -103,6 +103,8 @@ void SubMission::Uninitialize()
 {
 	missionFont.Uninitialize();
 	progressFont.Uninitialize();
+	missionPool.clear();
+	currentMission.reset();
 }
 
 void SubMission::Update(float elapsedTime)

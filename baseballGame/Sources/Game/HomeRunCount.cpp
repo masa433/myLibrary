@@ -65,6 +65,9 @@ void HomeRunCount::Uninitialize()
 	missionFont.Uninitialize();
 	homeRunCountSprite.reset();
 	homeRunCountSpriteData.reset();
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
 	Combo::Instance().Uninitialize();
 	SubMission::Instance().Uninitialize();
 }

@@ -89,6 +89,21 @@ void LoadingTips::Uninitialize()
 		tipSpriteData[i].reset();
 	}
 
+	loadingBallSpriteData.reset();
+	loadingBallSprite.reset();
+
+	leftArrowData.reset();
+	leftArrowSprite.reset();
+	rightArrowData.reset();
+	rightArrowSprite.reset();
+
+	tipFont.Uninitialize();
+	loadingFont.Uninitialize();
+
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
+
 	delete loadingArrowSound;
 	delete clickArrowSound;
 }

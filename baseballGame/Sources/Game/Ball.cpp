@@ -202,9 +202,15 @@ void Ball::Initialize()
 
 void Ball::Uninitialize()
 {
+	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
+	physx::PxScene* pxScene = Physics::Instance().GetScene();
+	pxScene->removeActor(*collider);
+
 	PX_RELEASE(collider);
 	PX_RELEASE(material);
 	model.reset();
+	ClearBallTrail();
+	ballTrail.clear();
 }
 
 void Ball::Update(float elapsedTime)

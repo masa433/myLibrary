@@ -33,6 +33,9 @@ void FoulSprite::Uninitialize()
 {
 	foulSpriteRenderer.reset();
 	foulSprite.reset();
+	spritePS.Reset();
+	spriteVS.Reset();
+	spriteInputLayout.Reset();
 }
 
 void FoulSprite::Update(float elapsedTime)

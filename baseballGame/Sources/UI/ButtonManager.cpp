@@ -83,6 +83,11 @@ void ButtonManager::Uninitialize()
 		buttonSpriteData.reset();
 	}
 
+	// シェーダー関連の解放
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
+
 	delete buttonHoverSound;
 	delete buttonClickSound;
 	delete buttonBackSound;

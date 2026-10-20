@@ -399,8 +399,23 @@ void SpecialAbility::Uninitialize()
 	// スプライトの解放
 	for (int i = 0; i < ABILITY_COUNT; ++i)
 	{
+		if (abilitySprites[i])
+		{
+			abilitySprites[i]->iconSprite.reset();
+			abilitySprites[i]->descriptionSprite.reset();
+			abilitySprites[i]->spriteData.reset();
+			abilitySprites[i]->descriptionSpriteData.reset();
+		}
 		abilitySprites[i].reset();
 	}
+
+	for (int i = 0; i < BATTER_COUNT; ++i)
+	{
+		batterSprites[i].reset();
+		batterSpriteData[i].reset();
+	}
+
+	fontRenderer.Uninitialize();
 
 	consoleLog = nullptr;
 }

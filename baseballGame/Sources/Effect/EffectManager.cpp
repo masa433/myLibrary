@@ -27,7 +27,8 @@ void EffectManager::Initialize()
 
 void EffectManager::Uninitialize()
 {
-	
+	effekseerManager.Reset();
+	effekseerRenderer.Reset();
 }
 
 void EffectManager::Update(float elapsedTime)

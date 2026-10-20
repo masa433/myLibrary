@@ -53,6 +53,7 @@ void BatSprite::Initialize(ID3D11Device* device)
 
 	isMeetAssistEnabled = false;
 	isAssisting = false;
+	shouldRenderBat = false;
 
 }
 
@@ -61,6 +62,11 @@ void BatSprite::Uninitialize()
 	ClipCursor(nullptr); // 必ず解除してから終了
 	batSprite.reset();
 	batSpriteData.reset();
+	spritePS.Reset();
+	spriteVS.Reset();
+	spriteInputLayout.Reset();
+	batCursorSprite.reset();
+	batCursorSpriteData.reset();
 
 #ifndef _DEBUG
 	ShowCursor(TRUE);

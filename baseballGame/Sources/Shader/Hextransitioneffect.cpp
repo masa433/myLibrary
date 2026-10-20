@@ -95,6 +95,15 @@ void HexTransitionEffect::Reset()
 	timer = 0.0f;
 }
 
+void HexTransitionEffect::Uninitialize()
+{
+	vertexShader.Reset();
+	pixelShader.Reset();
+	constantBuffer.Reset();
+	sceneCopyTexture.Reset();
+	sceneCopySRV.Reset();
+}
+
 void HexTransitionEffect::Update(float elapsedTime)
 {
 	if (!playing) return;

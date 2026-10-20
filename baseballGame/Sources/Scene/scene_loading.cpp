@@ -54,6 +54,10 @@ void scene_loading::uninitialize()
 	loadingBackSpriteData.reset();
 	loadingBackSprite.reset();
 
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
+
 	LoadingTips::Instance().Uninitialize();
 }
 

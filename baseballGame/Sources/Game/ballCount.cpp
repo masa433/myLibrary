@@ -52,6 +52,10 @@ void ballCount::Uninitialize()
 	ballCountSprite.reset();
 	ballCountData.reset();
 	pitchInfoFont.Uninitialize();
+	spritePS.Reset();
+	spriteVS.Reset();
+	spriteInputLayout.Reset();
+	intro = nullptr; // イントロシーケンスへのポインタをリセット
 }
 
 void ballCount::Update(float elapsedTime)

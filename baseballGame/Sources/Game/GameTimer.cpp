@@ -51,6 +51,13 @@ void GameTimer::Uninitialize()
 	timerFont.Uninitialize();
 	timerSprite.reset();
 	timerSpriteData.reset();
+
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
+
+	timerSpriteData.reset();
+	timerSprite.reset();
 }
 
 void GameTimer::Update(float elapsedTime)

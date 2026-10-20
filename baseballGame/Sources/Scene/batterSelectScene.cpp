@@ -659,25 +659,56 @@ void batterSelectScene::render(float elapsedTime)
 
 void batterSelectScene::uninitialize()
 {
-
 	// GPU コマンドをフラッシュしてからリソース破棄
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
-	if (dc) dc->Flush();
-	// スクロールビューの解放
+	if (dc) { dc->ClearState(); dc->Flush(); }
+
+	// スクロールビュー・フォント・エフェクトの解放
+	playerScrollView.reset();
+	fontRenderer.Uninitialize();
+	hexTransitionEffect.Reset();
+	hexTransitionEffect.Uninitialize();
+
+	// 背景関連の解放
+	backGroundSprite.reset();
+	backGroundData.reset();
+
+	// 選択されたピッチャーのパラメータ背景・VSスプライトデータの解放
+	pitcherParamBackGroundSprite.reset();
+	pitcherParamBackGroundData.reset(); 
+	VSSprite.reset();
+	VSSpriteData.reset(); 
+
+	// 21人のピッチャー関連スプライト・データの解放（ループ処理）
+	for (int i = 0; i < PITCHER_COUNT; ++i)
+	{
+		pitcherSprites[i].reset();
+		pitcherSpriteDataArray[i].reset();
+		pitcherNameSprite[i].reset();
+		pitcherNameSpriteData[i].reset();
+	}
+
+	// 4枚のピッチャー画像関連の解放（ループ処理）
+	for (int i = 0; i < PITCHER_IMAGE_COUNT; ++i)
+	{
+		pitcherImageSprites[i].reset();
+		pitcherImageSpriteDataArray[i].reset();
+	}
+
+	// バーストエフェクトのリストをクリア
+	burstList.clear();
+
+	// シェーダー・バッファ関連の解放
 	vertex_shader.Reset();
 	pixel_shader.Reset();
 	input_layout.Reset();
 	burstVertexShader.Reset();
 	burstPixelShader.Reset();
-	burstTransformBuffer.Reset(); 
-	burstColorBuffer.Reset();     
+	burstTransformBuffer.Reset();
+	burstColorBuffer.Reset();
 
-	playerScrollView.reset();
-	VSSprite.reset();
-	pitcherParamBackGroundSprite.reset();
-	backGroundSprite.reset();
+	// ボタンマネージャーの解放
 	buttonManager.Uninitialize();
-
 }
 
 void batterSelectScene::DrawGUI()

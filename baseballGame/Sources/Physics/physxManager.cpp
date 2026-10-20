@@ -162,6 +162,11 @@ void Physics::Finalize()
 	delete clogAndFoulCheerSound;
 	clogAndFoulCheerSound = nullptr;
 
+	//エフェクト
+	hitEffect.reset();
+	hitSmallEffect.reset();
+	hitBigEffect.reset();
+
 	consoleLog = nullptr;
 }
 

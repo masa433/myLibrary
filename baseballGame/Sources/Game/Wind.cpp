@@ -118,9 +118,19 @@ void Wind::Initialize()
 
 void Wind::Uninitialize()
 {
+	windStrengthFont.Uninitialize();
+	windDirectionSprite.reset();
 	windDirectionSpriteRenderer.reset();
+	windGroundSprite.reset();
 	windGroundSpriteRenderer.reset();
-	windStrengthFont.Uninitialize(); // ★変更
+	windBoardSprite.reset();
+	windBoardSpriteRenderer.reset();
+	windLines.clear();
+
+	spritePS.Reset();
+	spriteVS.Reset();
+	spriteInputLayout.Reset();
+
 }
 
 void Wind::Update(float elapsedTime)

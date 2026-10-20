@@ -208,12 +208,12 @@ void Player::Initialize()
 // 解放
 void Player::Uninitialize()
 {
-    PX_RELEASE(pxPlayerCapsuleController);
     physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
     physx::PxScene* pxScene = Physics::Instance().GetScene();
 
     pxScene->removeActor(*pxBatRigidBody);
-
+    PX_RELEASE(pxPlayerCapsuleController);
+	PX_RELEASE(pxBatRigidBody);
     PX_RELEASE(pxBatConvexMesh);
     PX_RELEASE(pxBatMaterial);
 
@@ -228,7 +228,14 @@ void Player::Uninitialize()
     batModel.reset();
     rightBatter.reset();
     leftBatter.reset();
+    spriteVS.Reset();
+    spritePS.Reset();
+    spriteInputLayout.Reset();
+    for (auto& s : swingTimingSprite) s.reset();
+    swingTimingInfo.reset();
     delete swingSound;
+	intro = nullptr;
+	immediate_context.Reset();
 }
 
 void Player::UpdateBatterModel()

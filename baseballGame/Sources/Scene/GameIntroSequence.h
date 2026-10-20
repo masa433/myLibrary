@@ -224,4 +224,5 @@ private:
 	float ballModeFontScale = 1.0f;
 
 	AudioSource* introBoardAnimationSound = nullptr; // イントロボードのアニメーション音声
+	bool introBoardAnimationSoundPlayed = false; // イントロボードのアニメーション音声が再生されたかどうか
 };

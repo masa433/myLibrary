@@ -477,6 +477,28 @@ void ballSprite::Uninitialize()
 	pitchInfoFont.Uninitialize();
 	TrackingData::Instance().Uninitialize();
 	consoleLog = nullptr;
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
+	ballTargetSpriteData.reset();
+
+	straightFlip.sprite.reset();
+	straightFlip.spriteData.reset();
+	forkFlip.sprite.reset();
+	forkFlip.spriteData.reset();
+	leftCurveFlip.sprite.reset();
+	leftCurveFlip.spriteData.reset();
+	rightCurveFlip.sprite.reset();
+	rightCurveFlip.spriteData.reset();
+	sliderFlip.sprite.reset();
+	sliderFlip.spriteData.reset();
+	verticalSliderFlip.sprite.reset();
+	verticalSliderFlip.spriteData.reset();
+	currentSpinFlip = nullptr;
+
+	scissorRasterizerState.Reset();
+	intro = nullptr;
+
 	delete catchSound;
 	delete catchStrongSound;
 	delete strikeSound;

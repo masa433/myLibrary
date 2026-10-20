@@ -126,8 +126,12 @@ framework::~framework()
 	//エフェクトマネージャーの終了処理
 	EffectManager::Instance().Uninitialize();
 
+	release_all_textures();
+
 	//オーディオ終了化
 	Audio::Instance().Finalize();
+
+	Graphics::Instance().Uninitialize();
 
 	//グラフィックス終了処理
 	ReleaseDC(hwnd, hDC);

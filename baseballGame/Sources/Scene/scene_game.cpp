@@ -983,6 +983,10 @@ void scene_game::uninitialize()
     stage::Instance().uninitialize();
     Pitcher::Instance().Uninitialize();
     BallDistance::Instance().Uninitialize();
+	ballSprite::Instance().Uninitialize();
+	BatSprite::Instance().Uninitialize();
+	HomeRunCount::Instance().Uninitialize();
+	Catcher::Instance().Uninitialize();
     Result::Instance().Uninitialize();
 	BallNet::Instance().Uninitialize();
 	Money::Instance().Uninitialize();
@@ -999,7 +1003,7 @@ void scene_game::uninitialize()
 
     // GPU コマンドをフラッシュしてからリソース破棄
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
-    if (dc) dc->Flush();
+    if (dc) { dc->ClearState(); dc->Flush(); }
 
     // scene_game が持つ GPU リソースを明示的にリセットして参照カウントを下げる
     constant_buffer.Reset();
@@ -1013,6 +1017,7 @@ void scene_game::uninitialize()
     sprite_input_layout.Reset();
     sprite_pixel_shader.Reset();
     pipeline_stats_query.Reset();
+	shadow_quality_constant_buffer.Reset();
 	delete cheerSound;
    
 }

@@ -46,6 +46,8 @@ void TrackingData::Initialize(ID3D11Device* device)
 		screenWidth, screenHeight,
 		512, 512,
 		&trackingDataCodepoints);
+
+	showTrackingData = false;
 }
 
 void TrackingData::Uninitialize()
@@ -53,6 +55,9 @@ void TrackingData::Uninitialize()
 	trackingDataFont.Uninitialize();
 	trackingDataSprite.reset();
 	trackingDataSpriteData.reset();
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
 }
 
 void TrackingData::Update(float elapsedTime)

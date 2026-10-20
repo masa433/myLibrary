@@ -45,21 +45,27 @@ void BallNet::Initialize()
 
 void BallNet::Uninitialize()
 {
-	// ネットのモデルを解放
-	for (int i = 0; i < NET_COUNT; ++i)
-	{
-		netModels2[i].reset();
+	physx::PxScene* scene = Physics::Instance().GetScene();
 
-		netCollider[i]->release();
-		netCollider[i] = nullptr;
+	for(int i = 0; i < NET_COUNT; ++i)
+	{
+		if (netCollider[i])
+		{
+			scene->removeActor(*netCollider[i]);
+			netCollider[i]->release();
+			netCollider[i] = nullptr;
+		}
 	}
-	// ネットの物理マテリアルを解放
 	if (netColliderMaterial)
 	{
 		netColliderMaterial->release();
 		netColliderMaterial = nullptr;
 	}
-	
+
+	for(int i = 0; i < NET_COUNT; ++i)
+	{
+		netModels2[i].reset();
+	}
 }
 
 void BallNet::Update(float elapsedTime)

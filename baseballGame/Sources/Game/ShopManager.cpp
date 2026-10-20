@@ -622,16 +622,67 @@ void ShopManager::BuildShopItem()
 
 void ShopManager::Uninitialize()
 {
+	
 	shopBackSprite.reset();
 	shopBackSpriteData.reset();
+	soldOutSprite.reset();
+	coinSprite.reset();
+	nextRoundButtonSprite.reset();
+	nextRoundButtonData.reset();
+
+
+	for (int i = 0; i < BATTER_COUNT; ++i)
+	{
+		batterSprites[i].reset();
+		batterSpriteData[i].reset();
+	}
+
+	
+	for (int i = 0; i < SHOP_ITEM_COUNT; ++i)
+	{
+		shopItemSprites[i].reset();
+		shopItemSpriteObjects[i].reset();
+	}
+
+	// 球種削除用スプライトとフォントの解放
+	for (int i = 0; i < MAX_PITCH_TYPE_CHOICES; ++i)
+	{
+		pitchTypeSprites[i].reset();
+	}
+	pitchTypeFont.Uninitialize();
+
+	// 特殊能力削除用スプライトとフォントの解放
+	for (int i = 0; i < MAX_SPECIAL_ABILITY_CHOICES; ++i)
+	{
+		specialAbilitySprites[i].reset();
+	}
+	specialAbilityFont.Uninitialize();
+
+	// シェーダー関連の解放
 	pixel_shader.Reset();
 	vertex_shader.Reset();
 	input_layout.Reset();
+
+	//  各種フォントの解放
+	moneyFont.Uninitialize();
+	fontRenderer.Uninitialize();
+	priceFont.Uninitialize();
+
+	// オーディオの解放とポインタの無効化
 	delete purchaseSound;
+	purchaseSound = nullptr;
+
 	delete notEnoughMoneySound;
+	notEnoughMoneySound = nullptr;
+
 	delete hoverSound;
+	hoverSound = nullptr;
+
 	delete selectPitchTypeSound;
+	selectPitchTypeSound = nullptr;
+
 	delete selectSpecialAbilitySound;
+	selectSpecialAbilitySound = nullptr;
 }
 
 void ShopManager::Update(float elapsedTime)

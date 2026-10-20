@@ -10,6 +10,7 @@ class HexTransitionEffect
 {
 public:
 	void Initialize();
+	void Uninitialize();
 
 	//遷移アニメーションを開始する
 	void Start(float durationSeconds = 1.0f);

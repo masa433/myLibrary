@@ -123,10 +123,18 @@ void Result::Uninitialize()
 	replayTrackingBoard.reset();
 	replayTrackingSprite.reset();
 	trackingArrow.reset();
+	trackingArrowSprite.reset();
 	replayLogo.reset();
 	replayLogoSprite.reset();
 	hexTransitionEffect.Reset();
+	hexTransitionEffect.Uninitialize();
 	buttonManager.Uninitialize();
+	rasterizerState.Reset();
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
+	replayBoardData.reset();
+	replayBoardSprite.reset();
 }
 
 void Result::Update(float elapsedTime)

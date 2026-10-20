@@ -26,6 +26,8 @@ void Catcher::Initialize()
 void Catcher::Uninitialize()
 {
 	catcherModel.reset();
+	catcherMitt.reset();
+	animatedNodes.clear();
 }
 
 void Catcher::Update(float elapsedTime)

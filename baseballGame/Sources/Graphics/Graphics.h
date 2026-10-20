@@ -27,6 +27,25 @@ public:
 	// レンダーステートの初期化
 	void Initialize(HWND hwnd);
 
+	void Uninitialize()
+	{
+		// リソースの解放
+		if (immediateContext) { immediateContext->ClearState(); immediateContext->Flush(); }
+		modelRenderer.reset(); primitiveRenderer.reset(); shapeRenderer.reset(); renderState.reset();
+		depthStencilView.Reset(); renderTargetView.Reset();
+		if (swapchain) swapchain->SetFullscreenState(FALSE, nullptr);
+		swapchain.Reset();
+		immediateContext.Reset();
+#if defined(_DEBUG)
+		Microsoft::WRL::ComPtr<ID3D11Debug> dbg;
+		if (SUCCEEDED(device.As(&dbg)))
+			dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+#endif
+		device.Reset();
+	}
+
+	void ReportLive(const char* tag);
+
 	//クリア
 	void Clear(float r, float g, float b, float a);
 

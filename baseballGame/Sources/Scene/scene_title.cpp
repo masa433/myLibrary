@@ -416,6 +416,7 @@ void scene_title::uninitialize()
 	shadowRenderer.Uninitialize();
 	bloomRenderer.Uninitialize();
 	hexTransitionEffect.Reset();
+	hexTransitionEffect.Uninitialize();
 
 	Physics::Instance().Finalize();
 

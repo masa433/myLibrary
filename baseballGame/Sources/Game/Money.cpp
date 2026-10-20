@@ -242,6 +242,20 @@ void Money::Uninitialize()
 	moneySprite.reset();
 	moneyData.reset();
 	consoleLog = nullptr;
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
+
+	for(auto& bonusItem : bonusItems)
+	{
+		bonusItem.sprite.reset();
+		bonusItem.data.reset();
+		bonusItem.fontRenderer->Uninitialize();
+		bonusItem.fontRenderer.reset();
+	}
+
+	bonusItems.clear();
+	
 	delete getMoneySound;
 	delete activeBonusSound;
 }

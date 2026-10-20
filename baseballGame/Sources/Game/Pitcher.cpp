@@ -209,8 +209,34 @@ void Pitcher::Uninitialize()
 	// GPUリソース解放
 	rightPitcher.reset();
 	leftPitcher.reset();
+	intro = nullptr;
+
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
+
+	//各種スプライト
+	cursorSprite.reset();
+	cursorData.reset();
+	swingData.reset();
+	swingSprite.reset();
+	infoBackData.reset();
+	infoBackSprite.reset();
+	missShotData.reset();
+	missShotSprite.reset();
+
+	for(int i = 0; i < PITCHER_COUNT; ++i)
+	{
+		ballTypeSprite[i].reset();
+		ballTypeData[i].reset();
+	}
+
+
+	//エフェクト
+	rosinEffect.reset();
 
 	delete foulSound;
+	foulSound = nullptr;
 }
 
 // 更新

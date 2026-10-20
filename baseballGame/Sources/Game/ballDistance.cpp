@@ -54,14 +54,23 @@ void BallDistance::Initialize(ID3D11Device* device)
 
 	ResetMaxDistance();
 
-
+	// 必要に応じて数値フラグのリセット
+	currentDistance = 0.0f;
+	maxDistance = 0.0f;
+	finalDistance = 0.0f;
+	isDistanceLocked = false;
+	hasUpdatedMaxDistance = false;
 }
 
 void BallDistance::Uninitialize()
 {
 	ballDistanceFont.Uninitialize();
+	directionFont.Uninitialize();
 	distanceBackSprite.reset();
 	distanceBackData.reset();
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
 
 }
 
