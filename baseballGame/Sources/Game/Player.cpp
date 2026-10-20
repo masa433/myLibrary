@@ -400,7 +400,9 @@ void Player::Update(float elapsedTime)
     {
         position = isRightBatter ? DirectX::XMFLOAT3(-1.35f, 0.01f, -0.6f) : DirectX::XMFLOAT3(1.35f, 0.01f, -0.6f);
     }
-    else if (intro && (intro->GetIntroState() == GameIntroSequence::GameIntroState::Playing || intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingIntroBoard) && current_state != State::StepIn)
+    else if (intro && (intro->GetIntroState() == GameIntroSequence::GameIntroState::Playing || 
+        intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingIntroBoard ||
+        intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingBallMode || intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingCountDown) && current_state != State::StepIn)
     {
         position = isRightBatter ? DirectX::XMFLOAT3(-0.95f, 0.01f, -0.4f) : DirectX::XMFLOAT3(0.95f, 0.01f, -0.4f);
     }
@@ -859,7 +861,10 @@ void Player::UpdateAnimation(float elapsedTime)
 		}
 
 		//introが終了していたら、ステートをBattingIdleに戻す
-        if (intro && intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingIntroBoard && isPlayedStepInAnimation)
+        if (intro &&
+            (intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingIntroBoard ||
+                intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingBallMode ||
+                intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingCountDown) && isPlayedStepInAnimation)
         {
             ChangeState(State::BattingIdle);
             current_state = State::BattingIdle;

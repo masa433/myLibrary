@@ -252,7 +252,9 @@ void Pitcher::Update(float elapsedTime)
 
 	// 状態に応じた処理
 	if (intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingGround &&
-		intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingStand)
+		intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingStand &&
+		intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingBallMode && 
+		intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingCountDown)
 	{
 		switch (currentState)
 		{

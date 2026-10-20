@@ -322,20 +322,45 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
     if (buttonManager.IsSkipRequested())
     {
 		buttonManager.ResetSkipRequest(false); // スキップボタンのリクエストをリセット
-        introState = GameIntroState::ShowingIntroBoard;
-        introTimer = 0.0f;
-        introStarted = false;
-        introDuration = 3.0f;
-        introAmount = 1.0f; // 進行度を1.0に設定
-        amountTimer = 0.0f; // 進行度のタイマーをリセット
-		graphAmount = 1.0f; // グラフの進行度を1.0に設定
-		graphTimer = 0.0f; // グラフのタイマーをリセット
-		fadeAlpha = 0.0f; // フェードの透明度をリセット
-        showNameBoardTimer = maxShowNameBoardTime; // スタジアム名ボードの表示タイマーを最大値に設定
 
-        introBoardAlpha = 1.0f;
-        introBoardFadeTimer = 0.0f;
-        introBoardFadeDuration = 2.0f;
+        if(GameModeManager::Instance().GetCurrentMode() == GameMode::Game)
+        {
+            // リプレイモードの場合は、リプレイのイントロをスキップしてゲームプレイに遷移
+            introState = GameIntroState::ShowingIntroBoard;
+            introTimer = 0.0f;
+            introStarted = false;
+            introDuration = 3.0f;
+            introAmount = 1.0f; // 進行度を1.0に設定
+            amountTimer = 0.0f; // 進行度のタイマーをリセット
+            graphAmount = 1.0f; // グラフの進行度を1.0に設定
+            graphTimer = 0.0f; // グラフのタイマーをリセット
+            fadeAlpha = 0.0f; // フェードの透明度をリセット
+            showNameBoardTimer = maxShowNameBoardTime; // スタジアム名ボードの表示タイマーを最大値に設定
+
+            introBoardAlpha = 1.0f;
+            introBoardFadeTimer = 0.0f;
+            introBoardFadeDuration = 2.0f;
+            
+		}
+        else if (GameModeManager::Instance().GetCurrentMode() == GameMode::FreeBatting)
+        {
+            introState = GameIntroState::ShowingBallMode;
+            introTimer = 0.0f;
+            introStarted = false;
+            introDuration = 3.0f;
+            introAmount = 1.0f; // 進行度を1.0に設定
+            amountTimer = 0.0f; // 進行度のタイマーをリセット
+            graphAmount = 1.0f; // グラフの進行度を1.0に設定
+            graphTimer = 0.0f; // グラフのタイマーをリセット
+            fadeAlpha = 0.0f; // フェードの透明度をリセット
+            showNameBoardTimer = maxShowNameBoardTime; // スタジアム名ボードの表示タイマーを最大値に設定
+
+            introBoardAlpha = 1.0f;
+            introBoardFadeTimer = 0.0f;
+            introBoardFadeDuration = 2.0f;
+        }
+
+        
 		
         //アクティブカメラをデフォルトのカメラに戻す
         int defaultCameraId = 0; // デフォルトのカメラID
@@ -527,6 +552,21 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 			int index = broadcastCamera.GetCameraIndexById(defaultCameraId);
             broadcastCamera.SetActiveIndex(index);
             broadcastCamera.ResetCameraToPreset(index);
+            broadcastCamera.SetReplayMode(false); // リプレイモードを無効化
+
+            Pitcher& pitcher = Pitcher::Instance();
+            pitcher.SetCurrentState(Pitcher::State::SelectingPitch); // ピッチャーの状態を判定待ちに設定
+            pitcher.SetAnimationTime(0.0f); // ピッチャーのアニメーション時間をリセット
+            pitcher.UpdateAnimation(0.0f); // ピッチャーのアニメーションを更新
+
+            Player& player = Player::Instance();
+            player.ChangeState(Player::State::BattingIdle); // バッターの状態を判定待ちに設定
+            player.SetIsStepIn(false); // ステップイン中フラグをリセット
+            player.SetIsStepInAnimationPlayed(false); // ステップインアニメーション再生済みフラグをリセット
+            //player.SetAnimationTime(0.0f); // バッターのアニメーション時間をリセット
+            //player.UpdateAnimation(0.0f); // バッターのアニメーションを更新
+
+            ballSprite::Instance().ResetStrikeZoneFadeTimer(); // ストライクゾーンのフェードタイマーをリセット
             
         }
         else if (introState == GameIntroState::ShowingIntroBoard)
