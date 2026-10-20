@@ -86,6 +86,7 @@ void ButtonManager::Uninitialize()
 	delete buttonHoverSound;
 	delete buttonClickSound;
 	delete buttonBackSound;
+	delete startButtonSound;
 }
 
 void ButtonManager::Update(float elapsedTime)

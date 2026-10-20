@@ -343,7 +343,8 @@ void scene_title::render(float elapsed_time)
 	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
 
-	buttonManager.Render();
+	buttonManager.Render(1.0f,ButtonManager::ButtonType::Start);
+	buttonManager.Render(1.0f, ButtonManager::ButtonType::FreeBatting);
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
@@ -414,6 +415,7 @@ void scene_title::uninitialize()
 	skyRenderer.Uninitialize();
 	shadowRenderer.Uninitialize();
 	bloomRenderer.Uninitialize();
+	hexTransitionEffect.Reset();
 
 	Physics::Instance().Finalize();
 
@@ -429,9 +431,12 @@ void scene_title::uninitialize()
 	shadow_quality_constant_buffer.Reset();
 	scene_render_target_view.Reset();
 	scene_shader_resource_view.Reset();
+	
 	spriteVS.Reset();
 	spritePS.Reset();
 	spriteInputLayout.Reset();
+	logoSprite.reset();
+	logoSpriteData.reset();
 	buttonManager.Uninitialize();
 }
 
