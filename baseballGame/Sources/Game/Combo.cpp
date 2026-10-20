@@ -15,7 +15,7 @@ void Combo::Initialize(ID3D11Device* device)
 		L".\\resources\\fonts\\Futur12.ttf",
 		150.0f,
 		screenWidth, screenHeight,
-		512, 512,
+		1024, 1024,
 		&comboCodepoints);
 	labelFont.Initialize(device,
 		L".\\resources\\fonts\\Futur12.ttf",

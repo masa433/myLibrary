@@ -196,13 +196,13 @@ void Graphics::OnScreenResolutionChanged(float newWidth, float newHeight)
 	immediateContext->RSSetViewports(1, &viewport);
 }
 
-void Graphics::ReportLive(const char* tag)
-{
-#if defined(_DEBUG)
-	OutputDebugStringA("\n=== "); OutputDebugStringA(tag); OutputDebugStringA(" ===\n");
-	if (immediateContext) { immediateContext->ClearState(); immediateContext->Flush(); }
-	Microsoft::WRL::ComPtr<ID3D11Debug> dbg;
-	if (device && SUCCEEDED(device.As(&dbg)))
-		dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
-#endif
-}
+//void Graphics::ReportLive(const char* tag)
+//{
+//#if defined(_DEBUG)
+//	OutputDebugStringA("\n=== "); OutputDebugStringA(tag); OutputDebugStringA(" ===\n");
+//	if (immediateContext) { immediateContext->ClearState(); immediateContext->Flush(); }
+//	Microsoft::WRL::ComPtr<ID3D11Debug> dbg;
+//	if (device && SUCCEEDED(device.As(&dbg)))
+//		dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+//#endif
+//}

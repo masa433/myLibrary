@@ -24,7 +24,7 @@ void BallDistance::Initialize(ID3D11Device* device)
 		L".\\resources\\fonts\\Futur12.ttf",
 		100.0f,
 		screenWidth, screenHeight,
-		512, 512,
+		1024, 1024,
 		&pitchInfoCodepoints);
 
 	directionFont.Initialize(device,

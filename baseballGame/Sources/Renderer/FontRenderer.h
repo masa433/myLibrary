@@ -109,9 +109,9 @@ private:
 	// コードポイント(Unicode) -> ベイクされたグリフ情報
 	std::unordered_map<int, stbtt_packedchar> glyphs_;
 
-	int   atlasWidth_ = 512;
-	int   atlasHeight_ = 512;
-	float pixelHeight_ = 32.0f;
+	int   atlasWidth_ = 2048;
+	int   atlasHeight_ = 2048;
+	float pixelHeight_ = 64.0f;
 
 	int   screenWidth_ = 1280;
 	int   screenHeight_ = 720;

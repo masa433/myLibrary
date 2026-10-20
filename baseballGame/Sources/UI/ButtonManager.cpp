@@ -46,24 +46,6 @@ void ButtonManager::Initialize()
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
-	
-	std::vector<int> codepoints = FontRenderer::Utf8ToCodepoints(
-		u8" !\"#$%&'()*+,-./0123456789:;<=>?@"
-		u8"ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
-		u8"abcdefghijklmnopqrstuvwxyz{|}~"
-		u8"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょっー"
-		u8"アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンャュョッー"	
-	);
-
-	// 日本語グリフを持つフォントを用意して配置する
-	fontRenderer = std::make_unique<FontRenderer>();
-	fontRenderer->Initialize(device,
-		L".\\resources\\fonts\\GenJyuuGothic-P-Bold.ttf",
-		28.0f,
-		screenWidth, screenHeight,
-		1024, 1024,
-		&codepoints);
-
 	buttonHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
 	buttonClickSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Hit.wav");
 	buttonBackSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Clog.wav");
@@ -72,11 +54,6 @@ void ButtonManager::Initialize()
 
 void ButtonManager::Uninitialize()
 {
-	if (fontRenderer)
-	{
-		fontRenderer->Uninitialize();
-		fontRenderer.reset();
-	}
 	if (buttonSpriteData)
 	{
 		buttonSpriteData->clear();
@@ -403,27 +380,7 @@ void ButtonManager::Render(float alpha, ButtonType buttonType)
 			
 		}
 
-		if (fontRenderer && !button.label.empty())
-		{
-			//中央ぞろえにするヘルパー関数
-			auto centerTextPosition = [&](const std::string& text, float fontSize, float x, float y) -> DirectX::XMFLOAT2
-				{
-					float textWidth = 0.0f;
-					float textHeight = 0.0f;
-					fontRenderer->MeasureText(text.c_str(), fontSize, textWidth, textHeight);
-					return { x - textWidth / 2.0f, y - textHeight / 2.0f };
-				};
-
-			DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(fontPosition);
-
-			// フォントの描画
-			DirectX::XMFLOAT2 fontPos = centerTextPosition(button.labelBuffer, fontSize,
-				scaledPos.x, scaledPos.y
-			);
-
-			fontRenderer->DrawText(context, button.labelBuffer,
-				fontPos.x, fontPos.y, fontSize, fontColor.x, fontColor.y, fontColor.z, fontColor.w * alpha);
-		}
+		
 	}
 
 	context->VSSetShader(nullptr, nullptr, 0);
@@ -556,11 +513,7 @@ void ButtonManager::DrawGUI()
 			{
 				btn.label = btn.labelBuffer; // 入力が変わるたびにlabelへ反映
 			}
-			//フォントの位置、サイズ、色を編集するUI
-			ImGui::DragFloat2(u8"フォント位置", &fontPosition.x, 1.0f);
-			ImGui::DragFloat(u8"フォントサイズ", &fontSize, 0.01f, 0.1f, 10.0f);
-			ImGui::ColorEdit4(u8"フォント色", &fontColor.x);
-
+			
 			//ボタンタイプを選択
 			const char* buttonTypeItems[] = 
 			{ 

@@ -195,8 +195,11 @@ bool FontRenderer::Initialize(
 	if (packResult == 0)
 	{
 		// 0の場合: アトラスに全文字が入りきらなかった可能性が高い(atlasWidth/Heightを大きくする)
-		OutputDebugStringW(L"[FontRenderer] WARNING: not all glyphs fit in the atlas. "
-			L"Increase atlasWidth/atlasHeight or reduce pixelHeight/number of codepoints.\n");
+		wchar_t msg[512];
+		swprintf_s(msg,
+			L"[FontRenderer] WARNING: glyphs do not fit. font=\"%s\" size=%.0f atlas=%dx%d chars=%zu\n",
+			fontPath, pixelHeight_, atlasWidth_, atlasHeight_, codepointList.size());
+		OutputDebugStringW(msg);
 		// 入らなかった文字はx1=x0=0などになるが、それでも描画は継続できるようそのまま進める
 	}
 

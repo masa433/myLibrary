@@ -173,11 +173,7 @@ private:
 	bool prevMouseOverButton = false; // 前フレームでマウスがボタン上にあったか
 
 	std::unique_ptr<std::vector<ButtonSprite>> buttonSpriteData;
-	std::unique_ptr<FontRenderer> fontRenderer;
-
-	DirectX::XMFLOAT2 fontPosition = { 0.0f, 0.0f };
-	float fontSize = 1.0f;
-	DirectX::XMFLOAT4 fontColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	
 
 	// シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>  spriteVS;
