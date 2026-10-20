@@ -44,6 +44,7 @@ void ballCount::Initialize(ID3D11Device* device)
 		&pitchInfoCodepoints);
 
 	remainingBalls = 10; // ‰Šú‚Ìc‚è‹…”‚ğİ’è
+	initialBalls = 10; // ‰Šú‚Ì‹…”‚ğİ’è
 
 }
 

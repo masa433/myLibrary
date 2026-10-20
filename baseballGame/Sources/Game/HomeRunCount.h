@@ -37,6 +37,7 @@ public:
 	{
 		homeRunCount = 0;
 		previousHomeRunCount = 0;
+		totalHomeRunCount = 0;
 		numberDisplayScale = 1.0f; 
 		numberAlpha = 1.0f; 
 	}

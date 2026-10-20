@@ -301,6 +301,7 @@ void GameIntroSequence::UpdateBallSpeedModeSelection()
 
 
                 introState = GameIntroState::ShowingCountDown; // カウントダウン表示に遷移
+				introDuration = 3.0f; // カウントダウンの表示時間を設定
                 return;
             }
             
@@ -563,8 +564,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
             }
 			else
             {
-                introState = GameIntroState::ShowingBallMode;
-				
+                introState = GameIntroState::ShowingBallMode;				
             }
 			//アクティブカメラをデフォルトのカメラに戻す
 			int defaultCameraId = 0; // デフォルトのカメラID
@@ -599,6 +599,10 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
             
             broadcastCamera.SetReplayMode(false); // リプレイモードを無効化
         }
+        else if(introState == GameIntroState::ShowingCountDown)
+        {
+            introState = GameIntroState::Playing;
+		}
     }
 }
 
