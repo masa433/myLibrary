@@ -285,6 +285,11 @@ void GameIntroSequence::UpdateBallSpeedModeSelection()
 				// クリックされた場合、選択されたボールモードを更新
                 if(hoveredBallModeIndex >= 0 && hoveredBallModeIndex < static_cast<int>(BallSpeedMode::Count))
                 {
+					// 選択されたボールモードに応じてPitcherのボールスピードモードを設定
+                    // (デフォルトでストライクゾーンから外れる確率を70%にする)
+
+					Pitcher::Instance().SetStrikeZoneRate(freeBattingAiStrikeRate); // ストライクゾーンから外れる確率を70%に設定
+
                     switch(hoveredBallModeIndex)
                     {
                         case 0:
@@ -294,14 +299,14 @@ void GameIntroSequence::UpdateBallSpeedModeSelection()
                             Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::highSpeed);
                             break;
                         case 2:
-                            Pitcher ::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::realSpeed);
+                            Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::realSpeed);
                             break;
 					}
 				}
 
 
-                introState = GameIntroState::ShowingCountDown; // カウントダウン表示に遷移
-				introDuration = 3.0f; // カウントダウンの表示時間を設定
+				introState = GameIntroState::Playing; // 選択後はゲームプレイに遷移
+				introDuration = 0.0f; // カウントダウンの表示時間を設定
                 return;
             }
             
@@ -599,10 +604,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
             
             broadcastCamera.SetReplayMode(false); // リプレイモードを無効化
         }
-        else if(introState == GameIntroState::ShowingCountDown)
-        {
-            introState = GameIntroState::Playing;
-		}
+       
     }
 }
 

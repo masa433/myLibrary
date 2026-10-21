@@ -178,8 +178,10 @@ void scene_title::update(float elapsed_time)
 	//	シャドウレンダラー更新
 	shadowRenderer.SetDirectionalLight(directional_light_direction, directional_light_color, directional_light_intensity);
 
-
-	buttonManager.Update(elapsed_time);
+	if(!isChangingScene)
+	{
+		buttonManager.Update(elapsed_time);
+	}
 
 
 	if(!isChangingScene)

@@ -10,6 +10,7 @@
 #include "input.h"
 #include "SubMission.h"
 #include "ShopManager.h"
+#include "GameModeManager.h"
 
 void RoundManager::Initialize(ID3D11Device* device)
 {
@@ -217,17 +218,20 @@ void RoundManager::Update(float elapsedTime)
 
 	TriggerSpeedModeActive(currentRound);
 
-	if (currentRound <= 3)
+	if (GameModeManager::Instance().GetCurrentMode() == GameMode::Game)
 	{
-		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::slowSpeed);
-	}
-	else if (currentRound <= 6)
-	{
-		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::highSpeed);
-	}
-	else
-	{
-		Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::realSpeed);
+		if (currentRound <= 3)
+		{
+			Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::slowSpeed);
+		}
+		else if (currentRound <= 6)
+		{
+			Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::highSpeed);
+		}
+		else
+		{
+			Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::realSpeed);
+		}
 	}
 
 

@@ -105,6 +105,9 @@ public:
 		return selectedPitchType == PitchType::Fastball || selectedPitchType == PitchType::CutFastball || selectedPitchType == PitchType::BlazingFastball || selectedPitchType == PitchType::NaturalShoot;
 	}
 
+	//ストライクゾーン率をセットする関数
+	void SetStrikeZoneRate(float rate) { aiStrikeRate = rate; }
+
 public:
 
 	enum class PitchType
