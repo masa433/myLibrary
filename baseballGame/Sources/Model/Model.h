@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include <memory>
-#include <vector>
-#include <DirectXMath.h>
 #include "ModelResource.h"
 
 // モデル

@@ -1,4 +1,5 @@
-﻿#include "scene_title.h"
+﻿#include "pch.h"
+#include "scene_title.h"
 #include "camera.h"
 #include "Graphics.h"
 #include "RenderContext.h"
@@ -6,10 +7,8 @@
 #include "stage.h"
 #include "input.h"
 #include "sceneTransition.h"
-#include <fstream>
-#include <string>
 #include "devmidi.h"
-#include <shader.h>
+#include "shader.h"
 #include "GameModeManager.h"
 
 

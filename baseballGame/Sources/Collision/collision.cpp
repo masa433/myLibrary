@@ -1,4 +1,5 @@
-﻿#include"collision.h"
+﻿#include "pch.h"
+#include"collision.h"
 #include <DirectXCollision.h>
 
 //球と球の交差判定

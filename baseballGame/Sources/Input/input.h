@@ -1,8 +1,4 @@
 ﻿#pragma once
-#include <memory>
-#include <Windows.h>
-
-
 #include "game_pad.h"
 #include "mouse.h"
 

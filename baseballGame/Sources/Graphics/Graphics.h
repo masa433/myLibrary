@@ -1,13 +1,10 @@
 ﻿#pragma once
-#include <wrl.h>
-#include <d3d11.h>
-#include <memory>
+
 #include "RenderState.h"
 #include "shapeRenderer.h"
 #include "PrimitiveRenderer.h"
 #include "Light.h"
 #include "ModelRenderer.h"
-#include <mutex>
 #include "ScreenScaler.h"
 
 class Graphics

@@ -1,4 +1,5 @@
-﻿#include "Graphics.h"
+﻿#include "pch.h"
+#include "Graphics.h"
 #include "Model.h"
 
 // コンストラクタ

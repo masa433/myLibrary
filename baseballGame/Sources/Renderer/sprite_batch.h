@@ -1,9 +1,4 @@
 ﻿#pragma once
-#include <d3d11.h>
-#include <directXmath.h>
-#include <vector>
-#include <wrl.h>
-
 
 class sprite_batch
 {

@@ -1,4 +1,5 @@
-﻿#include"texture.h"
+﻿#include "pch.h"
+#include"texture.h"
 #include <filesystem>
 #include "DDSTextureLoader.h"
 

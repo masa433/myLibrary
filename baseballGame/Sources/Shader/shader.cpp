@@ -1,5 +1,5 @@
-﻿#include "shader.h"
-#include <cstdio>
+﻿#include "pch.h"
+#include "shader.h"
 #include <cassert>
 #include "misc.h"
 

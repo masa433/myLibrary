@@ -1,23 +1,10 @@
 #pragma once
-#include <d3d11.h>
-#include <wrl.h>
-#include <DirectXMath.h>
-#include <memory>
-#include <vector>
-#include <functional>
-#include <map>
 #include "FontRenderer.h"
 #include "Ball.h"
 #include "Pitcher.h"
 #include "ballDistance.h"
-#include <random>
-#include "json.hpp"
-
 
 using json = nlohmann::json;
-
-
-
 
 class SubMission
 {

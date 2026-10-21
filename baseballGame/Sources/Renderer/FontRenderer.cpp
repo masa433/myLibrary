@@ -1,11 +1,6 @@
-﻿// FontRenderer.cpp
+﻿#include "pch.h"
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "FontRenderer.h"
-
-#include <d3dcompiler.h>
-#include <fstream>
-#include <vector>
-#include <algorithm>
 
 #pragma comment(lib, "d3dcompiler.lib")
 

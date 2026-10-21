@@ -1,13 +1,9 @@
 #pragma once
-#include <d3d11.h>
-#include <wrl.h>
-#include <DirectXMath.h>
-#include <memory>
 #include "RenderContext.h"
 #include "ModelRenderer.h"
 #include "game_object.h"
 #include "physxManager.h"
-#include "json.hpp"
+
 
 using json = nlohmann::json;
 

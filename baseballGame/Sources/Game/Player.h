@@ -1,13 +1,11 @@
 ﻿#pragma once
 #include "game_object.h"
 #include "../Model/Model.h"
-#include <DirectXMath.h>
 #include "RenderContext.h"
 #include "physxManager.h"
 #include "Model.h"
 #include "ModelRenderer.h"
 #include "../Model/gltf_model.h"
-#include "json.hpp"
 #include "HitJudge2D.h"
 #include "sprite.h"
 #include "..\Sources\Audio\AudioSource.h"

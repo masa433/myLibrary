@@ -1,4 +1,5 @@
-﻿#include "fullscreen_quad.h"
+﻿#include "pch.h"
+#include "fullscreen_quad.h"
 #include "shader.h"
 #include "misc.h"
 

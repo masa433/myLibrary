@@ -1,7 +1,6 @@
-﻿#include "scene_game.h"
+﻿#include "pch.h"
+#include "scene_game.h"
 #include "camera.h"
-#include <DirectXMath.h>
-#include "imgui.h"
 #include "stage.h"
 #include "player.h"
 #include "Pitcher.h"
@@ -13,20 +12,15 @@
 #include "shader.h"
 #include "texture.h"
 #include "sprite.h"
-#include "json.hpp"
 #include "Wind.h"
 #include "ballSprite.h"
 #include "batSprite.h"
-#include "GameTimer.h"
 #include "HomeRunCount.h"
 #include "FoulSprite.h"
 #include "catcher.h"
 #include "ballDistance.h"
 #include "Result.h"
 #include "Money.h"
-#include <fstream>
-#include <string>
-#include <random>
 #include <ballCount.h>
 #include "RoundManager.h"
 #include "Combo.h"
@@ -151,7 +145,7 @@ void scene_game::initialize()
 
     BatSprite::Instance().Initialize(device);
 
-    //GameTimer::Instance().Initialize(device);
+    
 
     HomeRunCount::Instance().Initialize(device);
 
@@ -445,7 +439,6 @@ void scene_game::update(float elapsed_time)
     // 物理システムの更新
     Physics::Instance().Update(elapsed_time);
 
-    //GameTimer::Instance().Update(elapsed_time);
 	BallDistance::Instance().Update(elapsed_time);
 
     Catcher::Instance().Update(elapsed_time);
@@ -1071,8 +1064,6 @@ void scene_game::DrawGUI()
         ImGui::Separator();
         if (ImGui::CollapsingHeader("Bat Sprite")) { BatSprite::Instance().DrawGUI(); }
         ImGui::Separator();
-        if (ImGui::CollapsingHeader("Timer")) { GameTimer::Instance().DrawGUI(); }
-        ImGui::Separator();
         if (ImGui::CollapsingHeader("Home Run Count")) { HomeRunCount::Instance().DrawGUI(); }
         ImGui::Separator();
         if (ImGui::CollapsingHeader("Catcher")) { Catcher::Instance().DrawGUI(); }
@@ -1583,7 +1574,7 @@ void scene_game::SaveSetting()
     skyRenderer.SaveToJson(j["sky"]);
     ballSprite::Instance().SaveToJson(j["ball_sprite"]);
     stage::Instance().SaveToJson(j["stage"]);
-    //GameTimer::Instance().SaveToJson(j["gameTimer"]);
+    
     HomeRunCount::Instance().SaveToJson(j["homeRunCount"]);
     Catcher::Instance().SaveToJson(j["catcher"]);
 	BallDistance::Instance().SaveToJson(j["ballDistance"]);
@@ -1756,7 +1747,6 @@ void scene_game::LoadSetting()
     //if (j.contains("sky")) skyRenderer.LoadFromJson(j["sky"]);
     if (j.contains("ball_sprite")) ballSprite::Instance().LoadFromJson(j["ball_sprite"]);
     if (j.contains("stage")) stage::Instance().LoadFromJson(j["stage"]);
-    //if (j.contains("gameTimer")) GameTimer::Instance().LoadFromJson(j["gameTimer"]);
     if (j.contains("homeRunCount")) HomeRunCount::Instance().LoadFromJson(j["homeRunCount"]);
     if (j.contains("catcher")) Catcher::Instance().LoadFromJson(j["catcher"]);
 	if (j.contains("ballDistance")) BallDistance::Instance().LoadFromJson(j["ballDistance"]);

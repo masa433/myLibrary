@@ -1,8 +1,6 @@
 ﻿#pragma once
-#include "DirectXMath.h"
 #include "../Model/gltf_model.h"
-#include <vector>
-#include <memory>
+
 class GameObject
 {
 protected:

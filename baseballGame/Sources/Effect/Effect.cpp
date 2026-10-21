@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Effect.h"
 #include "EffectManager.h"
 #include "Graphics.h"

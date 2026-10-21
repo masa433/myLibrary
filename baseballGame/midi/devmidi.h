@@ -1,6 +1,5 @@
 #pragma once
 
-#include "imgui.h" // for ImGuiColorEditFlags
 
 /* Simple API to address my particular dev midi setup. */
 /* Allows binding values to a particular midi controller and ImGui at the same time. */

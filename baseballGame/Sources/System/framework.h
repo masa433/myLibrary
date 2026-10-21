@@ -1,16 +1,9 @@
 ﻿#pragma once
 
-#include <d3d11.h>
-#include <windows.h>
-#include <tchar.h>
-#include <sstream>
-#include <wrl.h>
-
 #include "misc.h"
 #include "high_resolution_timer.h"
 #include "framebuffer.h"
 #include "fullscreen_quad.h"
-#include "../Model/gltf_model.h"
 #include "scene_game.h"
 #include "scene_title.h"
 #include "batterSelectScene.h"

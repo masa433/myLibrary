@@ -1,5 +1,4 @@
-﻿#include <windows.h>
-#include <math.h>
+﻿#include "pch.h"
 #include <Xinput.h>
 #include "game_pad.h"
 

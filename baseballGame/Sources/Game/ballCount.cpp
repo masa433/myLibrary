@@ -1,7 +1,7 @@
+#include "pch.h"
 #include "ballCount.h"
 #include "Graphics.h"
 #include "shader.h"
-#include "imgui.h"
 #include "Pitcher.h"
 
 void ballCount::Initialize(ID3D11Device* device)

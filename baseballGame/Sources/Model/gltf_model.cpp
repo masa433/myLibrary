@@ -1,4 +1,5 @@
-﻿#include "gltf_model.h"
+﻿#include "pch.h"
+#include "gltf_model.h"
 #define TINYGLTF_IMPLEMENTATION
 #include "tiny_gltf.h"
 #include "misc.h"

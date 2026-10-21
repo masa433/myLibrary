@@ -1,6 +1,6 @@
-﻿#include "Wind.h"
+﻿#include "pch.h"
+#include "Wind.h"
 #include "Graphics.h"
-#include <cmath>
 #include "physxManager.h"
 #include "imgui.h"
 #include "Ball.h"

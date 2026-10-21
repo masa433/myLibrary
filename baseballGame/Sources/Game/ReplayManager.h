@@ -1,8 +1,4 @@
 #pragma once
-#include <vector>
-#include <memory>
-#include <DirectXMath.h>
-#include <string>
 #include <Ball.h>
 
 //1フレーム分のリプレイデータを格納する構造体

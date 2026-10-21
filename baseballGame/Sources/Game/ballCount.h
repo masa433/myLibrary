@@ -1,11 +1,6 @@
 #pragma once
-#include <d3d11.h>
-#include <wrl.h>
-#include <DirectXMath.h>
-#include <memory>
 #include "sprite.h"
 #include "RenderContext.h"
-#include "json.hpp"
 #include "FontRenderer.h"
 #include "GameIntroSequence.h"
 

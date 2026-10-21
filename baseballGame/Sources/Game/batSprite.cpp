@@ -1,10 +1,9 @@
-﻿#include "batSprite.h"
+﻿#include "pch.h"
+#include "batSprite.h"
 #include "Graphics.h"
 #include <shader.h>
-#include <imgui.h>
 #include "input.h"
 #include "ballSprite.h"
-#include <algorithm>
 #include "Player.h"
 #include <TrackingData.h>
 #include <GameTimer.h>

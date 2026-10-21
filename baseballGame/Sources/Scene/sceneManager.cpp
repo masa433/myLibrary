@@ -1,4 +1,5 @@
-﻿#include "sceneManager.h"
+﻿#include "pch.h"
+#include "sceneManager.h"
 
 void sceneManager::Update(float elapsedTime)
 {

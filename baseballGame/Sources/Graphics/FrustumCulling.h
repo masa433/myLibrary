@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include <DirectXMath.h>
 
 // フラスタムカリングを行うためのクラス
 class FrustumCulling

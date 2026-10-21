@@ -1,17 +1,10 @@
 ﻿#pragma once
-
-#include <d3d11.h>
-#include <wrl.h>
-#include <DirectXMath.h>
-#include <memory>
-#include <vector>
 #include "../Model/gltf_model.h"
 #include "game_object.h"
 #include "RenderContext.h"
 #include "physxManager.h"
 #include "ModelRenderer.h"
-#include <deque>
-#include "json.hpp"
+
 using json = nlohmann::json;
 
 enum class BallMode

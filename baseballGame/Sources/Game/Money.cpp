@@ -1,12 +1,10 @@
+#include "pch.h"
 #include "Money.h"
 #include "Graphics.h"
 #include "shader.h"
-#include <imgui.h>
 #include "ballDistance.h"
 #include "Ball.h"
 #include "ballSprite.h"
-#include <cstdio>
-#include <string>
 #include "SpecialAbility.h"
 #include "SubMission.h"
 #include <ShopManager.h>

@@ -1,5 +1,5 @@
-﻿#include <filesystem>
-#include <wrl.h>
+﻿#include "pch.h"
+#include <filesystem>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "Misc.h"

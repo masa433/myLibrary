@@ -1,14 +1,9 @@
 #pragma once
 #include "sprite.h"
-#include <vector>
-#include <string>
-#include <DirectXMath.h>
-#include <memory>
 #include "UiEasing.h"
 #include "input.h"
 #include "Player.h"
 #include "FontRenderer.h"
-#include "json.hpp"
 #include "..\Sources\Audio\AudioSource.h"
 #include "..\Sources\Audio\Audio.h"
 

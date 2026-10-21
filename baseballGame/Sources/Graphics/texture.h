@@ -1,13 +1,7 @@
 ﻿#pragma once
 
-#include <d3d11.h>
-#include "WICTextureLoader.h"
-#include <wrl.h>
-#include <map>
-#include <string>
 #include"misc.h"
 
-#include <sstream>
 #include <iomanip>
 
 using namespace DirectX;

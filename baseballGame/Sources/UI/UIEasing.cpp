@@ -1,7 +1,6 @@
-﻿#include "UiEasing.h"
+﻿#include "pch.h"
+#include "UiEasing.h"
 
-#include <algorithm>
-#include <cmath>
 
 namespace
 {

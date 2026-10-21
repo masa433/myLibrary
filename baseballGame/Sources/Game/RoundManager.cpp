@@ -1,12 +1,11 @@
+#include "pch.h"
 #include "RoundManager.h"
 #include "Graphics.h"
-#include "imgui.h"
 #include "shader.h"
 #include "ballCount.h"
 #include "Pitcher.h"
 #include "HomeRunCount.h"
-#include <Combo.h>
-#include <algorithm>	
+#include <Combo.h>	
 #include "input.h"
 #include "SubMission.h"
 #include "ShopManager.h"

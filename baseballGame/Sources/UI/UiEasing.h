@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <DirectXMath.h>
 
 // Easing functions for UI animation.
 

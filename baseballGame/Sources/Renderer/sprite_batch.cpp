@@ -1,6 +1,6 @@
-﻿#include "sprite_batch.h"
+﻿#include "pch.h"
+#include "sprite_batch.h"
 #include "misc.h"
-#include <sstream>
 //#include <WICTextureLoader.h>
 #include "texture.h"
 #include "shader.h"

@@ -1,11 +1,7 @@
-﻿#include "Ball.h"
-
+﻿#include "pch.h"
+#include "Ball.h"
 #include "Graphics.h"
-#include "imgui.h"
-#include <Windows.h>
-#include <algorithm>
-#include <cmath>
-#include <random>
+
 
 namespace
 {

@@ -1,10 +1,7 @@
-﻿#include "Pitcher.h"
-#include "imgui.h"
-#include <Windows.h>
+﻿#include "pch.h"
+#include "Pitcher.h"
 #include "Graphics.h"
-#include <algorithm>
 #include "scene_game.h"
-#include <random>
 #include "PrimitiveRenderer.h"
 #include "camera.h"
 #include "Wind.h"

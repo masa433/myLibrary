@@ -1,9 +1,7 @@
 ﻿#pragma once
 
-#include <vector>
-#include <DirectXMath.h>
+
 #include <PxPhysicsAPI.h>
-#include <string>
 #include "Effect.h"
 #include "..\Sources\Audio\AudioSource.h"
 #include "..\Sources\Audio\Audio.h"

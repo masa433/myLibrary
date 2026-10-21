@@ -1,4 +1,5 @@
-﻿#include "stage.h"
+﻿#include "pch.h"
+#include "stage.h"
 #include "Graphics.h"
 
 // ワールド変換済み頂点でPxTriangleMeshを作り、剛体を生成する

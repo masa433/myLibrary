@@ -1,7 +1,7 @@
-﻿#include "camera_controller.h"
-#include "imgui.h"
+﻿#include "pch.h"
+#include "camera_controller.h"
 #include "Ball.h"
-#include <cmath>
+
 
 //ラープ関数
 DirectX::XMFLOAT3 CameraController::Lerp3(const DirectX::XMFLOAT3& a,

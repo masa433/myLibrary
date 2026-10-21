@@ -1,7 +1,7 @@
+#include "pch.h"
 #include "BloomRenderer.h"
 #include "shader.h"
 #include "misc.h"
-#include <imgui.h>
 
 void BloomRenderer::Initialize(ID3D11Device* device, ID3D11ShaderResourceView* sceneColorSRV,
     UINT screenWidth, UINT screenHeight)

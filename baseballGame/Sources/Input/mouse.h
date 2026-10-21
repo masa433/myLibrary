@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <Windows.h>
-
 using MouseButton = unsigned int;
 
 // マウス

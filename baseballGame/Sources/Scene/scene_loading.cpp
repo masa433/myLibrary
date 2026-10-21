@@ -1,4 +1,5 @@
-﻿#include "Graphics.h"
+﻿#include "pch.h"
+#include "Graphics.h"
 #include "input.h"
 #include "scene_loading.h"
 #include "sceneManager.h"

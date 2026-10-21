@@ -1,8 +1,6 @@
 ﻿#pragma once
 #define NOMINMAX
-#include <d3d11.h>
-#include <wrl.h>
-#include <DirectXMath.h>
+
 #define TINYGLTF_NO_EXTERNAL_IMAGE
 #define TINYGLTF_NO_STB_IMAGE
 #define TINYGLTF_NO_STB_IMAGE_WRITE

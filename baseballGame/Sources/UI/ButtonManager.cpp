@@ -1,10 +1,7 @@
+#include "pch.h"
 #include "ButtonManager.h"
 #include "Graphics.h"
 #include "shader.h"
-#include "imgui.h"
-#include <Windows.h>
-#include <commdlg.h>
-#include <WICTextureLoader.h>
 #include "input.h"
 #include "scene_game.h"
 #include "scene_loading.h"

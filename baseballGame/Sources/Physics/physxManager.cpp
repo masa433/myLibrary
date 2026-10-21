@@ -1,13 +1,10 @@
-﻿#include <algorithm>
+﻿#include "pch.h"
 #include "Misc.h"
 #include "Graphics.h"
 #include "physxManager.h"
 #include "Pitcher.h"
-#include <queue>
-#include <mutex>
 #include <functional>
 #include "Player.h"
-#include <random>
 #include "stage.h"
 #include "Wind.h"
 #include "Ball.h"

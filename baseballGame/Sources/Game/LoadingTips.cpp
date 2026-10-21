@@ -1,6 +1,6 @@
+#include "pch.h"
 #include "LoadingTips.h"
 #include "Graphics.h"
-#include "imgui.h"
 #include "input.h"
 
 void LoadingTips::Initialize(ID3D11Device* device)

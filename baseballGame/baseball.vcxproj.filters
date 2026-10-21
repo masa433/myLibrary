@@ -250,6 +250,7 @@
     <ClCompile Include="Sources\Game\ReplayManager.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -531,6 +532,7 @@
     <ClInclude Include="Sources\Game\GameModeManager.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Basic.hlsli">

@@ -1,10 +1,5 @@
 ﻿#pragma once
 
-#include <vector>
-#include <wrl.h>
-#include <d3d11.h>
-#include <DirectXMath.h>
-
 class ShapeRenderer
 {
 public:

@@ -1,12 +1,5 @@
 ﻿#pragma once
-#include <d3d11.h>
-#include <directXmath.h>
-#include <memory>
-#include <wrl.h>
-#include <deque>
-#include <array>
 #include "sprite.h"
-#include "json.hpp"
 #include "Pitcher.h"
 #include "FontRenderer.h"
 #include "..\Sources\Audio\AudioSource.h"

@@ -1,8 +1,7 @@
+#include "pch.h"
 #include "Hextransitioneffect.h"
 #include "Graphics.h"
 #include "misc.h"
-#include <d3dcompiler.h>
-#include <algorithm>
 #include "shader.h"
 
 using namespace DirectX;

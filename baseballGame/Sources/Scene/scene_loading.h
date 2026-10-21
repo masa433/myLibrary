@@ -1,10 +1,5 @@
 ﻿#pragma once
 #include "scene.h"
-#include <thread>
-#include <memory>
-#include <d3d11.h>
-#include <wrl.h>
-#include <DirectXMath.h>
 #include "sprite.h"
 #include "shader.h"
 

@@ -1,10 +1,6 @@
 ﻿#pragma once
 
-#include <memory>
-#include <vector>
-#include <wrl.h>
-#include <d3d11.h>
-#include <DirectXMath.h>
+
 #include "../Model/Model.h"
 #include "Light.h"
 #include "../Model/ModelResource.h"

@@ -1,6 +1,6 @@
-﻿#include "FreeCameraController.h"
-#include "imgui.h"
-#include <cmath>
+﻿#include "pch.h"
+#include "FreeCameraController.h"
+
 
 void FreeCameraController::SyncCameraToController(const Camera& camera)
 {

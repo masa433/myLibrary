@@ -1,35 +1,5 @@
-﻿// FontRenderer.h
-// stb_truetype.h を使って TTF/OTF フォントを直接読み込み、
-// D3D11でビットマップフォントとして描画するためのクラス。
-//
-// ★日本語(Unicode)対応版★
-//   ASCIIだけでなく任意のUnicodeコードポイント(ひらがな/カタカナ/漢字含む)を
-//   指定してベイクできる。文字列描画時はUTF-8をデコードして1文字ずつ処理する。
-//   ※フォントファイル自体に該当グリフが含まれている必要がある
-//     (例: 欧文専用フォントでは日本語は表示できない)。
-//
-// 使い方:
-//   // 1) 必要な文字だけをベイクする(全角含む場合はメモリ節約のため)
-//   std::vector<int> codepoints = FontRenderer::Utf8ToCodepoints(u8"0123456789km/h");
-//   auto jpCodepoints = FontRenderer::Utf8ToCodepoints(u8"ストレートスライダーカーブ...");
-//   codepoints.insert(codepoints.end(), jpCodepoints.begin(), jpCodepoints.end());
-//
-//   FontRenderer font;
-//   font.Initialize(device, L".\\resources\\fonts\\NotoSansJP-Regular.ttf",
-//                    32.0f, 1280, 720, 512, 512, &codepoints);
-//   ...
-//   font.DrawText(dc, u8"ストレート", 100.0f, 100.0f, 1.0f, 1,1,1,1);
-//   ...
-//   font.Uninitialize();
-//
-#pragma once
+﻿#pragma once
 
-#include <d3d11.h>
-#include <wrl/client.h>
-#include <DirectXMath.h>
-#include <string>
-#include <vector>
-#include <unordered_map>
 
 // stb_truetype.h はヘッダオンリーライブラリ。
 // 実装は FontRenderer.cpp 側で1回だけ STB_TRUETYPE_IMPLEMENTATION を定義してincludeする。

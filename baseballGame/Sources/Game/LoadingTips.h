@@ -1,10 +1,4 @@
 #pragma once
-#include <d3d11.h>
-#include <vector>
-#include <string>
-#include <random>
-#include <DirectXMath.h>
-#include <memory>
 #include "sprite.h"
 #include "shader.h"
 #include "FontRenderer.h"

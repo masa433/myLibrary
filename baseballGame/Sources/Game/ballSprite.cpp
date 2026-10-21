@@ -1,15 +1,13 @@
-﻿#include "ballSprite.h"
+﻿#include "pch.h"
+#include "ballSprite.h"
 #include "Graphics.h"
 #include <shader.h>
-#include <imgui.h>
 #include "Pitcher.h"
 #include "Ball.h"
 #include "TrackingData.h"
 #include "ballCount.h"
 #include "Money.h"
 #include "Player.h"
-#include <algorithm>
-#include <cmath>
 #include "Combo.h"
 
 namespace

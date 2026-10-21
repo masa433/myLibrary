@@ -1,9 +1,6 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <DirectXMath.h>
 #include <camera_controller.h>
-#include "json.hpp"
+
 
 using json = nlohmann::json;
 

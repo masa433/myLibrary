@@ -1,16 +1,7 @@
 #pragma once
-#include <d3d11.h>
-#include <wrl.h>
-#include <DirectXMath.h>
-#include <memory>
-#include <vector>
-#include <functional>
-#include <map>
 #include "FontRenderer.h"
 #include "sprite.h"
 #include "Player.h"
-#include "json.hpp"
-#include <random>
 
 #define ABILITY_COUNT 17
 #define BATTER_COUNT 24

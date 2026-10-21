@@ -1,13 +1,8 @@
 ﻿#pragma once
-#include <d3d11.h>
-#include <wrl.h>
-#include <DirectXMath.h>
-#include <memory>
-#include <vector>
 #include "sprite.h"
 #include "RenderContext.h"
 #include "FontRenderer.h"
-#include "json.hpp"
+
 using json = nlohmann::json;
 
 class Wind

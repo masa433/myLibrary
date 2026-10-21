@@ -1,4 +1,5 @@
-﻿#include "input.h"
+﻿#include "pch.h"
+#include "input.h"
 
 // 初期化
 void Input::Initialize(HWND hWnd)

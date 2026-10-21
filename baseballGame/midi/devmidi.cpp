@@ -1,6 +1,6 @@
+#include "pch.h"
 #include "devmidi.h"
 #include "midi_wrap.h"
-#include "imgui.h"
 #include <stdio.h> // for sprintf_s
 #include <corecrt_math.h>
 #include <stdlib.h>

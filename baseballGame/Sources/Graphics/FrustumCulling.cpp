@@ -1,4 +1,5 @@
-﻿#include "FrustumCulling.h"
+﻿#include "pch.h"
+#include "FrustumCulling.h"
 
 void FrustumCulling::Construct(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection)
 {

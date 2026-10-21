@@ -1,4 +1,5 @@
-﻿#include "ShadowRenderer.h"
+﻿#include "pch.h"
+#include "ShadowRenderer.h"
 #include "misc.h"
 #include "shader.h"
 #include "Graphics.h"

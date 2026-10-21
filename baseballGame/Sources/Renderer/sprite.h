@@ -1,8 +1,4 @@
 ﻿#pragma once
-#include <d3d11.h>
-#include <directXmath.h>
-#include <string>
-#include <wrl.h>
 
 class sprite 
 {

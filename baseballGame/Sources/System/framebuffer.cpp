@@ -1,4 +1,5 @@
-﻿#include "framebuffer.h"
+﻿#include "pch.h"
+#include "framebuffer.h"
 #include "misc.h"
 
 framebuffer::framebuffer(ID3D11Device* device, uint32_t width, uint32_t height) 

@@ -1,9 +1,5 @@
 ﻿#pragma once
 
-#include <d3d11.h>
-#include <DirectXMath.h>
-#include <wrl.h>
-#include "json.hpp"
 using json = nlohmann::json;
 
 class SkyRenderer

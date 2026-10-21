@@ -1,4 +1,5 @@
-﻿#include "Misc.h"
+﻿#include "pch.h"
+#include "Misc.h"
 #include "texture.h"
 #include "shader.h"
 #include "PrimitiveRenderer.h"

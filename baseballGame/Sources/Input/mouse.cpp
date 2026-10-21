@@ -1,4 +1,5 @@
-﻿#include "mouse.h"
+﻿#include "pch.h"
+#include "mouse.h"
 
 static const int KeyMap[] =
 {

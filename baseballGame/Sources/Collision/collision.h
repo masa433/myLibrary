@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <vector>
-#include <DirectXMath.h>
 #include "../Model/gltf_model.h"
 #include "RenderContext.h"
 

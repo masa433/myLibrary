@@ -1,12 +1,8 @@
 #pragma once
-#include <d3d11.h>
-#include <wrl.h>
-#include <DirectXMath.h>
-#include <memory>
+
 #include "BroadcastCamera.h"
 #include "sprite.h"
 #include "FontRenderer.h"
-#include "json.hpp"
 #include "ButtonManager.h"
 #include "..\Sources\Audio\AudioSource.h"
 #include "..\Sources\Audio\Audio.h"

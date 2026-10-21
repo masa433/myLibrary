@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <vector>
 #include <xaudio2.h>
 #include <xaudio2fx.h>// ƒŠƒo[ƒu
 #include "AudioResource.h"

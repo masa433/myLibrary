@@ -1,8 +1,4 @@
 ﻿#pragma once
-#include <d3d11.h>
-#include <wrl.h>
-#include <DirectXMath.h>
-#include <vector>
 #include "Player.h"
 #include "Pitcher.h"
 #include "stage.h"

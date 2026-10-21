@@ -1,4 +1,5 @@
-﻿#include "game_object.h"
+﻿#include "pch.h"
+#include "game_object.h"
 
 void GameObject::UpdateTransform()
 {

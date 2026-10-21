@@ -1,7 +1,4 @@
 #pragma once
-#include <d3d11.h>
-#include <wrl/client.h>
-#include <DirectXMath.h>
 
 // ヘックス遷移エフェクト
 //半透明の黒色の六角形が対角線状に広がるエフェクト

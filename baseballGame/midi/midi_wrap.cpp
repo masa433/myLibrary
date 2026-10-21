@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "midi_wrap.h"
 
 // order dependent :(
@@ -5,9 +6,7 @@
 #include <mmeapi.h>  //second, for midi
 #pragma comment(lib,"winmm.lib") // for midi
 
-#include <vector>
-#include <mutex>
-#include <cstdio>
+
 
 
 /* Define to something like printf in order to log status messages (found devices, errors, etc.) */

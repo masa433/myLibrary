@@ -1,8 +1,8 @@
-﻿#include "SkyRenderer.h"
+﻿#include "pch.h"
+#include "SkyRenderer.h"
 #include "shader.h"
 #include "misc.h"
-#include "imgui.h"
-#include <cmath>
+
 
 using namespace DirectX;
 

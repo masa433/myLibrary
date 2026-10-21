@@ -1,4 +1,5 @@
-﻿#include "Misc.h"
+﻿#include "pch.h"
+#include "Misc.h"
 #include "Graphics.h"
 
 // 初期化

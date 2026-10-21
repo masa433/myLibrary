@@ -1,11 +1,6 @@
 ﻿#pragma once
-#include <d3d11.h>
-#include <directXmath.h>
-#include <memory>
-#include <wrl.h>
-#include <deque>
 #include "sprite.h"
-#include "json.hpp"
+
 
 
 using json = nlohmann::json;

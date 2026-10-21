@@ -1,9 +1,7 @@
-﻿#include "Player.h"
-#include "imgui.h"
-#include <Windows.h>
+﻿#include "pch.h"
+#include "Player.h"
 #include "Graphics.h"
 #include "Pitcher.h"
-#include <algorithm>
 #include <stdexcept>
 #include "stage.h"
 #include "collision.h"

@@ -1,10 +1,9 @@
+#include "pch.h"
 #include "batterSelectScene.h"
 #include "Graphics.h"
-#include "imgui.h"
 #include "shader.h"
-#include <random>
 #include "sceneTransition.h"
-#include <fstream>
+
 
 void batterSelectScene::SelectRandomPitcher()
 {

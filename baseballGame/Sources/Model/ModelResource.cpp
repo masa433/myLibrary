@@ -1,6 +1,5 @@
-﻿#include <stdlib.h>
-#include <fstream>
-#include <functional>
+﻿#include "pch.h"
+
 #include <cereal/cereal.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/string.hpp>

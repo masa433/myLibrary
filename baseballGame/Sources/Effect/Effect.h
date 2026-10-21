@@ -1,6 +1,5 @@
 #pragma once
-#include <DirectXMath.h>
-#include <Effekseer.h>
+
 
 class Effect
 {

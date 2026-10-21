@@ -1,6 +1,6 @@
-﻿#include "GameTimer.h"
+﻿#include "pch.h"
+#include "GameTimer.h"
 #include "Graphics.h"
-#include <imgui.h>
 #include <Ball.h>
 #include <Pitcher.h>
 

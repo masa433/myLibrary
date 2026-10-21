@@ -1,11 +1,6 @@
 ﻿#pragma once
 #include "scene.h"
 #include "camera_controller.h"
-#include <DirectXMath.h>
-#include <memory>
-#include <wrl.h>
-#include <d3d11.h>
-#include <vector>
 #include "../Model/gltf_model.h"
 #include "RenderContext.h"
 #include "sprite.h"
@@ -17,7 +12,6 @@
 #include "BroadcastCamera.h"
 #include "BloomRenderer.h"
 #include "BallNet.h"
-#include "json.hpp"
 #include "GameIntroSequence.h"
 #include "..\Sources\Audio\AudioSource.h"
 #include "..\Sources\Audio\Audio.h"

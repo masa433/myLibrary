@@ -1,17 +1,11 @@
 #pragma once
 #include "scene.h"
-#include <array>
-#include <string>
-#include <vector>
-#include <memory>
-#include "imgui.h"
 #include "Player.h"
 #include "ScrollView.h"
 #include "ButtonManager.h"
 #include "FontRenderer.h"
 #include "sprite.h"
 #include "Pitcher.h"
-#include "json.hpp"
 #include "Hextransitioneffect.h"
 
 #define PITCHER_IMAGE_COUNT 4 // ピッチャー画像の数
