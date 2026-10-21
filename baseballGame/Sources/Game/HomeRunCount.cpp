@@ -57,6 +57,7 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 	SubMission::Instance().Initialize(device);
 
 	ResetCount(); // ホームラン数を初期化
+	totalHomeRunCount = 0; // 累計ホームラン数を初期化
 }
 
 void HomeRunCount::Uninitialize()
