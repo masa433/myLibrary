@@ -223,4 +223,8 @@ private:
 
 	AudioSource* introBoardAnimationSound = nullptr; // イントロボードのアニメーション音声
 	bool introBoardAnimationSoundPlayed = false; // イントロボードのアニメーション音声が再生されたかどうか
+
+	AudioSource* ballModeHoverSound = nullptr; // ボールモードのホバー音声
+	AudioSource* ballModeSelectSound = nullptr; // ボールモードの選択音声
+	AudioSource* playBallSound = nullptr; // ボールを投げる音声
 };
