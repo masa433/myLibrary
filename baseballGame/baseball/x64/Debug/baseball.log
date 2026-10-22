@@ -1,8 +1,1 @@
-﻿  GameIntroSequence.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\GameIntroSequence.cpp(256,114): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-  (ソース ファイル '/Sources/Scene/GameIntroSequence.cpp' をコンパイルしています)
-  
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\GameIntroSequence.cpp(256,81): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
-  (ソース ファイル '/Sources/Scene/GameIntroSequence.cpp' をコンパイルしています)
-  
-  baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe
+﻿  baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

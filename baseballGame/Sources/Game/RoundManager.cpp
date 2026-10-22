@@ -146,25 +146,30 @@ void RoundManager::Uninitialize()
 
 void RoundManager::TriggerSpeedModeActive(int currentRound)
 {
-	for (auto& speedMode : speedModes)
+	// 現在のゲームモードがGameの場合のスピードモードの更新処理
+	if(GameModeManager::Instance().GetCurrentMode() == GameMode::Game)
 	{
-		speedMode.isActive = false; // すべてのスピードモードを一旦非アクティブにする
-		if (speedMode.name == "slowSpeed" && currentRound <= 3)
+		for (auto& speedMode : speedModes)
 		{
-			speedMode.isActive = true;
-			break;
-		}
-		else if (speedMode.name == "highSpeed" && currentRound > 3 && currentRound <= 6)
-		{
-			speedMode.isActive = true;
-			break;
-		}
-		else if (speedMode.name == "realSpeed" && currentRound > 6)
-		{
-			speedMode.isActive = true;
-			break;
+			speedMode.isActive = false; // すべてのスピードモードを一旦非アクティブにする
+			if (speedMode.name == "slowSpeed" && currentRound <= 3)
+			{
+				speedMode.isActive = true;
+				break;
+			}
+			else if (speedMode.name == "highSpeed" && currentRound > 3 && currentRound <= 6)
+			{
+				speedMode.isActive = true;
+				break;
+			}
+			else if (speedMode.name == "realSpeed" && currentRound > 6)
+			{
+				speedMode.isActive = true;
+				break;
+			}
 		}
 	}
+	
 }
 
 void RoundManager::Update(float elapsedTime)
@@ -186,7 +191,7 @@ void RoundManager::Update(float elapsedTime)
 		return;
 	}
 	
-	if (isPitchFinished)
+	if (isPitchFinished && GameModeManager::Instance().GetCurrentMode() == GameMode::Game)
 	{
 		bool targetReached = HomeRunCount::Instance().IsHomeRunCountExceeded(GetCurrentTarget());
 		if (targetReached)
@@ -213,9 +218,16 @@ void RoundManager::Update(float elapsedTime)
 		{
 			isGameOver = true;
 		}
+
+		
+	}
+	//フリーバッティングでは、ラウンドの進行は行わない
+	if (isPitchFinished && GameModeManager::Instance().GetCurrentMode() == GameMode::FreeBatting)
+	{
+		isGameClear = true;
 	}
 
-	TriggerSpeedModeActive(currentRound);
+	if(GameModeManager::Instance().GetCurrentMode() == GameMode::Game)TriggerSpeedModeActive(currentRound);
 
 	if (GameModeManager::Instance().GetCurrentMode() == GameMode::Game)
 	{
@@ -232,7 +244,29 @@ void RoundManager::Update(float elapsedTime)
 			Pitcher::Instance().SetBallSpeedMode(Pitcher::BallSpeedMode::realSpeed);
 		}
 	}
-
+	else if (GameModeManager::Instance().GetCurrentMode() == GameMode::FreeBatting)
+	{
+		// フリーバッティングモードでは、スピードモードを非アクティブにする
+		for (auto& speedMode : speedModes)
+		{
+			if (speedMode.name == "slowSpeed" && Pitcher::Instance().GetBallSpeedMode() == Pitcher::BallSpeedMode::slowSpeed)
+			{
+				speedMode.isActive = true;
+				break;
+			}
+			else if (speedMode.name == "highSpeed" && Pitcher::Instance().GetBallSpeedMode() == Pitcher::BallSpeedMode::highSpeed)
+			{
+				speedMode.isActive = true;
+				break;
+			}
+			else if (speedMode.name == "realSpeed" && Pitcher::Instance().GetBallSpeedMode() == Pitcher::BallSpeedMode::realSpeed)
+			{
+				speedMode.isActive = true;
+				break;
+			}
+			
+		}
+	}
 
 }
 
