@@ -394,7 +394,62 @@ public:
 		Power power = Power::C;
 	};
 
+	struct RealPitcherData
+	{
+		std::string name; // 投手の名前
+		bool isRightPitcher; // 右投げかどうか
+		int rank; // 投手のランク（1～5）
+		int id; // 投手のID
+		std::vector<RealArsenalEntry> arsenal; // 投手の持ち球リスト
+	};
 	
+	//球種の文字列をPitchType列挙型に変換する関数
+	static PitchType StringToPitchType(const std::string& pitchTypeStr)
+	{
+		if(pitchTypeStr == "Fastball") return PitchType::Fastball;
+		else if(pitchTypeStr == "Slider") return PitchType::Slider;
+		else if(pitchTypeStr == "Curveball") return PitchType::Curveball;
+		else if(pitchTypeStr == "Changeup") return PitchType::Changeup;
+		else if(pitchTypeStr == "Forkball") return PitchType::Forkball;
+		else if(pitchTypeStr == "TwoSeam") return PitchType::TwoSeam;
+		else if(pitchTypeStr == "Cutter") return PitchType::Cutter;
+		else if(pitchTypeStr == "Sinker") return PitchType::Sinker;
+		else if(pitchTypeStr == "VerticalSlider") return PitchType::VerticalSlider;
+		else if(pitchTypeStr == "Splitter") return PitchType::Splitter;
+		else if(pitchTypeStr == "SlowCurve") return PitchType::SlowCurve;
+		else if(pitchTypeStr == "Shooter") return PitchType::Shooter;
+		else if(pitchTypeStr == "Knuckleball") return PitchType::Knuckleball;
+		else if(pitchTypeStr == "SlowBall") return PitchType::SlowBall;
+		else if(pitchTypeStr == "Sweeper") return PitchType::Sweeper;
+		else if(pitchTypeStr == "Palm") return PitchType::Palm;
+		else if(pitchTypeStr == "NaturalShoot") return PitchType::NaturalShoot;
+		else if(pitchTypeStr == "CutFastball") return PitchType::CutFastball;
+		else if (pitchTypeStr == "BlazingFastball") return PitchType::BlazingFastball;
+	}
+
+	//変化量の文字列をBreakGrade列挙型に変換する関数
+	static BreakGrade StringToBreakGrade(const std::string& breakGradeStr)
+	{
+		if (breakGradeStr == "F") return BreakGrade::F;
+		else if (breakGradeStr == "E") return BreakGrade::E;
+		else if (breakGradeStr == "D") return BreakGrade::D;
+		else if (breakGradeStr == "C") return BreakGrade::C;
+		else if (breakGradeStr == "B") return BreakGrade::B;
+		else if (breakGradeStr == "A") return BreakGrade::A;
+		else if (breakGradeStr == "S") return BreakGrade::S;
+	}
+
+	//威力の文字列をPower列挙型に変換する関数
+	static Power StringToPower(const std::string& powerStr)
+	{
+		if (powerStr == "F") return Power::F;
+		else if (powerStr == "E") return Power::E;
+		else if (powerStr == "D") return Power::D;
+		else if (powerStr == "C") return Power::C;
+		else if (powerStr == "B") return Power::B;
+		else if (powerStr == "A") return Power::A;
+		else if (powerStr == "S") return Power::S;
+	}
 
 	// 実在投手プリセットを選択する。球種別球速をpitchParametersへ反映し、
 	// 配球AI（ChooseAIPitchType）が実測の投球割合に基づいて球種を選ぶようになる。

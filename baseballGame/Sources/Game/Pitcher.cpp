@@ -17,6 +17,52 @@
 #include "ReplayManager.h"
 #include "Result.h"
 
+namespace
+{
+	// JSONファイルを読み込む関数（staticでキャッシュして寿命を安全に保つ）
+	const std::unordered_map<Pitcher::RealPitcher, Pitcher::RealPitcherData>& GetRealPitcherDataMap()
+	{
+		static std::unordered_map<Pitcher::RealPitcher, Pitcher::RealPitcherData> dataMap;
+		if (dataMap.empty())
+		{
+			std::ifstream file(".\\resources\\paramJson\\RealPitcherData.json");
+			if (!file.is_open())
+			{
+				throw std::runtime_error("Failed to open RealPitcherData.json");
+			}
+
+			json j;
+			file >> j;
+
+			for (const auto& item : j)
+			{
+				int id = item.at("id").get<int>();
+				Pitcher::RealPitcher pitcherEnum = static_cast<Pitcher::RealPitcher>(id);
+				Pitcher::RealPitcherData& pitcherData = dataMap[pitcherEnum];
+
+				if (pitcherData.arsenal.empty())
+				{
+					pitcherData.id = id;
+					pitcherData.isRightPitcher = item.at("isRightPitcher").get<bool>();
+					pitcherData.name = item.at("name").get<std::string>();
+					pitcherData.rank = item.at("rank").get<int>();
+				}
+
+				Pitcher::RealArsenalEntry arsenalEntry;
+				arsenalEntry.pitchType = Pitcher::StringToPitchType(item.at("pitchType").get<std::string>());
+				arsenalEntry.weightPercent = item.at("weightPercent").get<float>();
+				arsenalEntry.speedKmh = item.at("speedKmh").get<float>();
+				arsenalEntry.breakGrade = Pitcher::StringToBreakGrade(item.at("breakGrade").get<std::string>());
+				arsenalEntry.power = Pitcher::StringToPower(item.at("power").get<std::string>());
+
+				pitcherData.arsenal.push_back(arsenalEntry);
+			}
+		}
+		return dataMap;
+	}
+}
+
+
 // ランダムな浮動小数点数を生成する関数
 float GenerateRandomFloat(float min, float max)
 {
@@ -1665,295 +1711,19 @@ bool Pitcher::GetRealPitcherArsenalData(RealPitcher rp, std::vector<RealArsenalE
 	outName = "";
 	pitcherRank = std::clamp(pitcherRank, 1, 5); //ランクを1～5に制限
 
-	switch (rp)
+	const auto& json = GetRealPitcherDataMap();
+	auto it = json.find(rp);
+	if(it == json.end())
 	{
-	case RealPitcher::Nakagawa:
-		outName = u8"中川";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Fastball,			 53.2f, 146.7f, BreakGrade::C , Power::C },
-			{ PitchType::Forkball,			 24.9f, 134.4f, BreakGrade::A , Power::B },
-			{ PitchType::VerticalSlider,     16.3f, 130.9f, BreakGrade::B , Power::B },
-			{ PitchType::Curveball,			  5.3f, 124.9f, BreakGrade::D , Power::E },
-			{ PitchType::Cutter,			  0.3f, 138.0f, BreakGrade::C , Power::D },
-		};
-		pitcherRank = 2;
-		return true;
-
-	case RealPitcher::Mukai:
-		outName = u8"向井";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Fastball,   51.4f, 151.0f, BreakGrade::C , Power::A },
-			{ PitchType::Forkball,   23.3f, 133.6f, BreakGrade::A , Power::A },
-			{ PitchType::Slider,     16.9f, 132.4f, BreakGrade::B , Power::B },
-			{ PitchType::Curveball,   8.9f, 116.6f, BreakGrade::D , Power::D },
-		};
-		pitcherRank = 2;
-		return true;
-
-	case RealPitcher::Abe: 
-		outName = u8"阿部";
-		outIsRight = false;
-		outArsenal = {
-			{ PitchType::Fastball,   26.2f, 143.0f, BreakGrade::C , Power::B },
-			{ PitchType::Slider,     23.5f, 126.8f, BreakGrade::B , Power::B },
-			{ PitchType::Changeup,   21.7f, 124.8f, BreakGrade::A , Power::B },
-			{ PitchType::TwoSeam,    19.2f, 142.7f, BreakGrade::E , Power::C },
-			{ PitchType::Cutter,      4.6f, 135.3f, BreakGrade::C , Power::C },
-			{ PitchType::Curveball,   3.6f, 109.2f, BreakGrade::D , Power::D },
-			{ PitchType::Shooter,     1.3f, 141.8f, BreakGrade::C , Power::C },
-		};
-		pitcherRank = 3;
-		return true;
-
-	case RealPitcher::Morita:
-		outName = u8"森田";
-		outIsRight = false;
-		outArsenal = {
-			{ PitchType::Fastball,   42.7f, 147.4f, BreakGrade::C , Power::A },
-			{ PitchType::Slider,     30.1f, 130.7f, BreakGrade::A , Power::A },
-			{ PitchType::Splitter,   18.9f, 137.4f, BreakGrade::C , Power::B },
-			{ PitchType::Changeup,    4.2f, 126.3f, BreakGrade::C , Power::C },
-			{ PitchType::Curveball,   4.2f, 102.2f, BreakGrade::C , Power::D },
-			{ PitchType::SlowCurve,   4.2f,  92.5f, BreakGrade::D , Power::C },
-		};
-		pitcherRank = 4;
-		return true;
-
-	case RealPitcher::Ito:
-		outName = u8"伊藤";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Fastball,   35.4f, 148.0f, BreakGrade::C , Power::A },
-			{ PitchType::Slider,     13.2f, 134.5f, BreakGrade::B , Power::B },
-			{ PitchType::Splitter,   12.7f, 140.4f, BreakGrade::C , Power::B },
-			{ PitchType::TwoSeam,     9.4f, 146.3f, BreakGrade::E , Power::E },
-			{ PitchType::Cutter,      7.0f, 144.9f, BreakGrade::C , Power::B },
-			{ PitchType::Curveball,   5.5f, 121.6f, BreakGrade::D , Power::D },
-			{ PitchType::Changeup,    3.4f, 134.5f, BreakGrade::C , Power::D },
-			{ PitchType::SlowBall,	  1.6f,  90.0f, BreakGrade::F , Power::E },
-		};
-		pitcherRank = 4;
-		return true;
-
-	case RealPitcher::Fukuhara:
-		outName = u8"福原";
-		outIsRight = false;
-		outArsenal = {
-			{ PitchType::CutFastball,30.1f, 143.1f, BreakGrade::C , Power::B },
-			{ PitchType::Cutter,     19.4f, 136.3f, BreakGrade::C , Power::B },
-			{ PitchType::TwoSeam,    17.6f, 135.9f, BreakGrade::D , Power::C },
-			{ PitchType::Slider,     15.8f, 125.3f, BreakGrade::D , Power::D },
-			{ PitchType::Changeup,    8.7f, 126.0f, BreakGrade::C , Power::D },
-			{ PitchType::Curveball,   5.9f, 118.0f, BreakGrade::D , Power::D },
-			{ PitchType::Palm,        2.4f, 112.8f, BreakGrade::D , Power::D },
-		};
-		pitcherRank = 2;
-		return true;
-
-	case RealPitcher::Ishikawa:
-		outName = u8"石川";
-		outIsRight = false;
-		outArsenal = {
-			{ PitchType::Fastball,   27.2f, 129.0f, BreakGrade::C , Power::E },
-			{ PitchType::Sinker,     19.3f, 119.0f, BreakGrade::C , Power::B }, //左投げなので表示はスクリュー
-			{ PitchType::Slider,     17.4f, 118.2f, BreakGrade::C , Power::C },
-			{ PitchType::Cutter,     14.7f, 126.2f, BreakGrade::C , Power::C },
-			{ PitchType::Shooter,    10.8f, 128.0f, BreakGrade::D , Power::D },
-			{ PitchType::Curveball,   6.2f, 105.0f, BreakGrade::D , Power::D }, 
-			{ PitchType::Changeup,    4.4f, 110.2f, BreakGrade::E , Power::D },
-		};
-		pitcherRank = 1;
-		return true;
-
-	case RealPitcher::Takaoka:
-		outName = u8"高岡";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Changeup,    27.5f, 126.9f, BreakGrade::C , Power::D },
-			{ PitchType::Shooter,     20.7f, 140.1f, BreakGrade::E , Power::C },
-			{ PitchType::Slider,      19.9f, 122.1f, BreakGrade::B , Power::C },
-			{ PitchType::Sinker,      13.2f, 129.7f, BreakGrade::D , Power::B },
-			{ PitchType::Fastball,    10.1f, 142.0f, BreakGrade::C , Power::D },
-			{ PitchType::Cutter,       6.5f, 133.0f, BreakGrade::C , Power::C },
-			{ PitchType::Curveball,    1.5f, 114.0f, BreakGrade::D , Power::D },
-			{ PitchType::Knuckleball,  0.4f, 109.0f, BreakGrade::E , Power::D },
-		};
-		pitcherRank = 3;
-		return true;
-
-	case RealPitcher::Oda:
-		outName = u8"織田";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Fastball,     45.3f, 157.7f, BreakGrade::C , Power::B },
-			{ PitchType::Sweeper,      29.5f, 136.7f, BreakGrade::A , Power::S },
-			{ PitchType::Curveball,    10.4f, 121.0f, BreakGrade::C , Power::D },
-			{ PitchType::Splitter,      8.8f, 143.2f, BreakGrade::B , Power::B },
-			{ PitchType::TwoSeam,       4.1f, 155.2f, BreakGrade::F , Power::D },
-			{ PitchType::VerticalSlider,1.2f, 141.6f, BreakGrade::B , Power::C },
-			{ PitchType::Cutter,        0.7f, 148.7f, BreakGrade::D , Power::E },
-		};
-		pitcherRank = 5;
-		return true;
-
-	case RealPitcher::Kondo:
-		outName = u8"近藤";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Fastball,   27.1f, 154.5f, BreakGrade::C , Power::A },
-			{ PitchType::Splitter,   26.3f, 147.1f, BreakGrade::A , Power::A },
-			{ PitchType::Cutter,     13.5f, 147.0f, BreakGrade::C , Power::C },
-			{ PitchType::Curveball,  13.5f, 124.0f, BreakGrade::A , Power::A },
-			{ PitchType::Sinker,     12.7f, 153.5f, BreakGrade::C , Power::B },
-			{ PitchType::Slider,      6.9f, 140.5f, BreakGrade::C , Power::B },
-		};
-		pitcherRank = 5;
-		return true;
-
-	case RealPitcher::Nishi:
-		outName = u8"西";
-		outIsRight = false;
-		outArsenal = {
-			{ PitchType::Fastball,   43.5f, 147.8f, BreakGrade::C , Power::B },
-			{ PitchType::Changeup,   33.2f, 134.0f, BreakGrade::B , Power::B },
-			{ PitchType::Slider,     13.8f, 131.1f, BreakGrade::B , Power::B },
-			{ PitchType::Cutter,      6.5f, 141.3f, BreakGrade::C , Power::D },
-			{ PitchType::Curveball,   3.0f, 119.6f, BreakGrade::C , Power::C },
-		};
-		pitcherRank = 4;
-		return true;
-
-	case RealPitcher::Kikuchi:
-		outName = u8"菊池";
-		outIsRight = false;
-		outArsenal = {
-			{ PitchType::Fastball,   28.3f, 153.5f, BreakGrade::C , Power::C },
-			{ PitchType::Splitter,   21.9f, 139.7f, BreakGrade::A , Power::A },
-			{ PitchType::Slider,     20.8f, 138.3f, BreakGrade::B , Power::D },
-			{ PitchType::Cutter,     18.3f, 145.2f, BreakGrade::C , Power::B },
-			{ PitchType::Curveball,   9.7f, 126.8f, BreakGrade::D , Power::C },
-			{ PitchType::Sinker,      1.0f, 154.8f, BreakGrade::D , Power::D },
-		};
-		pitcherRank = 3;
-		return true;
-
-	case RealPitcher::Okubo:
-		outName = u8"大久保";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Fastball,   37.7f, 154.6f, BreakGrade::C , Power::C },
-			{ PitchType::Cutter,     23.8f, 143.9f, BreakGrade::C , Power::B },
-			{ PitchType::Forkball,   21.0f, 133.6f, BreakGrade::S , Power::S },
-			{ PitchType::Slider,      4.6f, 138.3f, BreakGrade::D , Power::D },
-			{ PitchType::Sinker,      4.0f, 143.1f, BreakGrade::C , Power::E },
-			{ PitchType::Curveball,   0.4f, 105.5f, BreakGrade::E , Power::F },
-		};
-		pitcherRank = 5;
-		return true;
-
-	case RealPitcher::Mizuno:
-		outName = u8"水野";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::NaturalShoot,60.2f, 153.1f, BreakGrade::C , Power::B },
-			{ PitchType::Forkball,    38.4f, 138.3f, BreakGrade::A , Power::A },			
-			{ PitchType::Slider,       1.4f, 126.0f, BreakGrade::B , Power::B },
-		};
-		pitcherRank = 1;
-		return true;
-
-	case RealPitcher::Fujikawa:
-		outName = u8"藤川";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::BlazingFastball,   65.3f, 150.0f, BreakGrade::C , Power::S },
-			{ PitchType::Splitter,          20.0f, 138.3f, BreakGrade::B , Power::C },
-			{ PitchType::TwoSeam,			10.0f, 147.0f, BreakGrade::E , Power::D },
-			{ PitchType::Curveball,			 5.0f, 116.0f, BreakGrade::C , Power::D },
-		};
-		pitcherRank = 4;
-		return true;
-
-	case RealPitcher::Watanabe:
-		outName = u8"渡邊";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Fastball,     65.3f, 153.7f, BreakGrade::C , Power::A },
-			{ PitchType::Splitter,     21.9f, 145.0f, BreakGrade::A , Power::A },
-			{ PitchType::TwoSeam,       5.2f, 152.6f, BreakGrade::D , Power::D },
-			{ PitchType::VerticalSlider,4.6f, 141.1f, BreakGrade::E , Power::C },
-			{ PitchType::Curveball,     3.0f, 130.3f, BreakGrade::C , Power::C },
-		};
-		pitcherRank = 4;
-		return true;
-
-	case RealPitcher::Ishi: 
-		outName = u8"石井";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Fastball,      59.8f, 149.2f, BreakGrade::C , Power::A },
-			{ PitchType::VerticalSlider,17.8f, 133.3f, BreakGrade::B , Power::C },
-			{ PitchType::Sinker,        12.4f, 134.6f, BreakGrade::C , Power::B },
-			{ PitchType::Forkball,       5.2f, 134.6f, BreakGrade::B , Power::B },
-			{ PitchType::Curveball,      4.8f, 123.0f, BreakGrade::D , Power::D },
-		};
-		pitcherRank = 2;
-		return true;
-
-	case RealPitcher::Kinoshita:
-		outName = u8"木下";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Fastball,      69.5f, 162.0f, BreakGrade::C , Power::B },
-			{ PitchType::VerticalSlider,20.1f, 139.7f, BreakGrade::A , Power::A },
-			{ PitchType::TwoSeam,        7.3f, 156.2f, BreakGrade::F , Power::C },
-			{ PitchType::Splitter,       1.5f, 148.3f, BreakGrade::E , Power::F },
-		};
-		pitcherRank = 4;
-		return true;
-
-	case RealPitcher::Masuda:
-		outName = u8"増田";
-		outIsRight = false;
-		outArsenal = {
-			{ PitchType::Slider,        58.6f, 126.5f, BreakGrade::S , Power::B },
-			{ PitchType::Shooter,       31.0f, 141.4f, BreakGrade::D , Power::C },
-			{ PitchType::Fastball,      10.3f, 142.7f, BreakGrade::C , Power::B },
-		};
-		pitcherRank = 1;
-		return true;
-
-	case RealPitcher::Matsuyama: //松山
-		outName = u8"松山";
-		outIsRight = true;
-		outArsenal = {
-			{ PitchType::Fastball,      58.8f, 153.9f, BreakGrade::C , Power::B },
-			{ PitchType::Forkball,      40.6f, 141.2f, BreakGrade::B , Power::A },
-			{ PitchType::Cutter,         0.6f, 146.0f, BreakGrade::E , Power::D },
-		};
-		pitcherRank = 1;
-		return true;
-
-	case RealPitcher::Inoue:
-		outName = u8"井上";
-		outIsRight = false;
-		outArsenal = {
-			{ PitchType::Fastball,      39.1f, 137.5f, BreakGrade::C , Power::C },
-			{ PitchType::Changeup,      25.6f, 116.4f, BreakGrade::B , Power::B },
-			{ PitchType::Cutter,		13.3f, 131.3f, BreakGrade::C , Power::B },
-			{ PitchType::TwoSeam,        8.8f, 131.1f, BreakGrade::E , Power::E },
-			{ PitchType::Slider,         8.1f, 117.4f, BreakGrade::C , Power::D },
-			{ PitchType::SlowBall,       2.3f,  85.0f, BreakGrade::F , Power::D },
-			{ PitchType::Curveball,      2.0f, 105.5f, BreakGrade::D , Power::D },
-		};
-		pitcherRank = 2;
-		return true;
-
-	default:
-		return false;
+		return false; //データが見つからない場合
 	}
+
+	outName = it->second.name.c_str();
+	outIsRight = it->second.isRightPitcher;
+	outArsenal = it->second.arsenal;
+	pitcherRank = it->second.rank;
+
+	return true;
 	
 }
 
@@ -2049,9 +1819,9 @@ void Pitcher::SelectRealPitcher(RealPitcher rp)
 
 	if (consoleLog)
 	{
-		char msg[128];
-		snprintf(msg, sizeof(msg), u8"[Info] 実在投手プリセット選択: %s\n", name);
-		consoleLog->push_back(msg);
+		consoleLog->push_back(u8"[Info] 実在投手プリセットを適用しました: ");
+		consoleLog->push_back(name);
+		consoleLog->push_back(u8"\n");
 	}
 }
 
