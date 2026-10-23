@@ -289,8 +289,7 @@ public:
 
 	void SelectRealBatter(RealBatter batter);
 	RealBatter GetSelectedRealBatter() const { return selectedRealBatter; }
-	static const char* GetRealBatterName(RealBatter batter);
-
+	
     int GetSelectedRealBatterPower() const
     {
         if (realBatterInfo.empty()) return 70;
@@ -322,38 +321,19 @@ private:
 public:
     static bool GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo>& outArsenal, bool& outIsRight, const char*& outName);
 
-    inline static const std::unordered_map<RealBatter, int> batterToSpriteIndexTable =
-    {
-        { RealBatter::Ishiyama, 0 },
-        { RealBatter::Sato, 1 },
-        { RealBatter::Okamura, 2 },
-        { RealBatter::Sakamoto, 3 },
-        { RealBatter::Odakura, 4 },
-        { RealBatter::Kawano, 5 },
-        { RealBatter::Murakami, 6 },
-        { RealBatter::Yamada, 7 },
-        { RealBatter::Suzuki, 8 },
-        { RealBatter::Asano, 9 },
-        { RealBatter::Kimura, 10 },
-        { RealBatter::Matsuda, 11 },
-        { RealBatter::Murai, 12 },
-        { RealBatter::Sasaki, 13 },
-        { RealBatter::Takeda, 14 },
-        { RealBatter::Hasegawa, 15 },
-        { RealBatter::Nishimura, 16 },
-        { RealBatter::Kojima, 17 },
-        { RealBatter::Nishino, 18 },
-        { RealBatter::Tamura, 19 },
-        { RealBatter::Shimizu, 20 },
-        { RealBatter::Yamashita, 21 },
-        { RealBatter::Nakamura, 22 },
-        { RealBatter::Ueda, 23 },
-
-    };
-
+   
 	void SetShowSwingTimingSprite(bool show) { showSwingTimingSprite = show; }
 	bool GetShowSwingTimingSprite() const { return showSwingTimingSprite; }
 	void ResetSwingTiming() { currentSwingTiming = SwingTiming::None; remainingTime = 0.0f; }
+
+    struct RealBatterData
+    {
+        std::string name;
+        int power;
+        int contact;
+        bool isRightBatter;
+		int id;
+	};
 
 private:
 

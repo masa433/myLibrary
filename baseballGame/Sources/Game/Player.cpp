@@ -16,7 +16,44 @@
 #include "ReplayManager.h"
 #include "Result.h"
 
+namespace
+{
+	//JSONファイルからリアル打者のデータを読み込む関数
+    const std::unordered_map<Player::RealBatter,Player::RealBatterData>& GetRealBatterDataMap()
+    {
+        static std::unordered_map<Player::RealBatter, Player::RealBatterData> realBatterDataMap;
+        if (realBatterDataMap.empty())
+        {
+            // JSONファイルを読み込む
+            std::ifstream file(".\\resources\\paramJson\\RealBatterData.json");
+            if (!file.is_open())
+            {
+                throw std::runtime_error("Failed to open RealBatterData.json");
+            }
+            json j;
+            file >> j;
+            // JSONデータをマップに格納する
+            for (const auto& item : j.items())
+            {
+                
+                Player::RealBatterData data;
+                
 
+                data.name = item.value().at("name").get<std::string>();
+                data.power = item.value().at("power").get<int>();
+                data.contact = item.value().at("contact").get<int>();
+                data.isRightBatter = item.value().at("isRightBatter").get<bool>();
+				data.id = item.value().at("id").get<int>();
+                if(data.id <= 0 || data.id >= static_cast<int>(Player::RealBatter::Count))
+                {
+                    throw std::runtime_error("Invalid id value in RealBatterData.json");
+				}
+                realBatterDataMap[static_cast<Player::RealBatter>(data.id)] = data;
+            }
+        }
+        return realBatterDataMap;
+	}
+}
 
 // 初期化
 void Player::Initialize()
@@ -1240,248 +1277,25 @@ void Player::UpdateChildrenRecursive(int nodeIndex)
     }
 }
 
+
 bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo>& outArsenal, bool& outIsRight, const char*& outName)
 {
     outArsenal.clear();
     outIsRight = true;
     outName = "";
 
-    switch (rb)
-    {
-    case RealBatter::Ishiyama:
-        outName = u8"石山";
-		outIsRight = true;
-        outArsenal =
-        {
-            { 52 , 44 } // power（威力）, contact（ミート）
+    //JSONデータの読み込み
+	const auto& json = GetRealBatterDataMap();// JSONデータのマップを取得
+    auto it = json.find(rb);
+    if (it == json.end()) return false;   // 未知の打者 or 読み込み失敗
 
-        };
-        return true;
+	//JSONデータから情報を取得
+	outName = it->second.name.c_str();//バッターの名前を取得
+	outIsRight = it->second.isRightBatter;//バッターの利き手情報を取得
+	outArsenal = { { it->second.power, it->second.contact} };//バッターのパワーとミートを取得
+    return true;
 
-    case RealBatter::Sato:
-		outName = u8"佐藤";
-        outIsRight = false;
-        outArsenal =
-        {
-            { 57 , 52 } // power（威力）, contact（ミート）
-		};
-		return true;
-
-    case RealBatter::Okamura:
-		outName = u8"岡村";
-		outIsRight = true;
-        outArsenal =
-        {
-            { 57 , 51 } // power（威力）, contact（ミート）
-		};
-        return true;
-
-    case RealBatter::Sakamoto:
-		outName = u8"坂本";
-		outIsRight = true;
-        outArsenal =
-        {
-            { 49 , 48 } // power（威力）, contact（ミート）
-        };
-		return true;
-
-    case RealBatter::Odakura:
-		outName = u8"小田倉";
-        outIsRight = true;
-        outArsenal =
-        {
-            { 53 , 45 } // power（威力）, contact（ミート）
-		};
-		return true;
-
-    case RealBatter::Kawano:
-		outName = u8"川野";
-		outIsRight = false;
-        outArsenal =
-        {
-            { 52 , 36 } // power（威力）, contact（ミート）
-        };
-		return true;
-
-    case RealBatter::Murakami:
-		outName = u8"村上";
-        outIsRight = false;
-        outArsenal =
-        {
-            { 60 , 48 } // power（威力）, contact（ミート）
-		};
-		return true;
-
-    case RealBatter::Yamada:
-		outName = u8"山田";
-        outIsRight = true;
-        outArsenal =
-        {
-            { 51 , 43 } // power（威力）, contact（ミート）
-        };
-		return true;
-
-    case RealBatter::Suzuki:
-        outName =  u8"鈴木";
-        outIsRight = true;
-        outArsenal =
-        {
-			{ 58 , 55 } // power（威力）, contact（ミート）
-        };
-		return true;
-
-    case RealBatter::Asano:
-        outName = u8"浅野";
-        outIsRight = false;
-        outArsenal =
-        {
-            { 46 , 49 } // power（威力）, contact（ミート）
-        };
-		return true;
-
-    case RealBatter::Kimura:
-        outName = u8"木村";
-        outIsRight = true;
-        outArsenal =
-        {
-            { 57 , 42 } // power（威力）, contact（ミート）
-		};
-		return true;
-
-    case RealBatter::Matsuda:
-        outName = u8"松田";
-        outIsRight = false;
-        outArsenal =
-        {
-            { 46 , 47 } // power（威力）, contact（ミート）
-		};
-        return true;
-
-    case RealBatter::Murai:
-        outName = u8"村井";
-        outIsRight = false;
-        outArsenal =
-        {
-            { 53 , 48 } // power（威力）, contact（ミート）
-        };
-		return true;
-
-    case RealBatter::Sasaki:
-        outName = u8"佐々木";
-        outIsRight = true;
-        outArsenal =
-        {
-            { 56 , 34 } // power（威力）, contact（ミート）
-		};
-		return true;
-
-    case RealBatter::Takeda:
-        outName = u8"武田";
-        outIsRight = false;
-        outArsenal =
-        {
-            { 63 , 55 } // power（威力）, contact（ミート）
-		};
-        return true;
-
-    case RealBatter::Hasegawa:
-        outName = u8"長谷川";
-        outIsRight = true;
-        outArsenal =
-        {
-           { 55 , 41 } // power（威力）, contact（ミート）
-        };
-		return true;
-
-    case RealBatter::Nishimura:
-        outName = u8"西村";
-        outIsRight = false;
-        outArsenal =
-        {
-            { 50 , 50 } // power（威力）, contact（ミート）
-		};
-        return true;
-
-    case RealBatter::Kojima:
-        outName = u8"小島";
-        outIsRight = true;
-        outArsenal =
-        {
-            { 55 , 51 } // power（威力）, contact（ミート）
-        };
-		return true;
-
-    case RealBatter::Nishino:
-        outName = u8"西野";
-        outIsRight = true;
-        outArsenal =
-        {
-            { 51 , 40 } // power（威力）, contact（ミート）
-		};
-        return true;
-
-    case RealBatter::Tamura:
-        outName = u8"田村";
-        outIsRight = false;
-        outArsenal =
-        {
-			{ 51 , 39 } // power（威力）, contact（ミート）
-		};
-		return true;
-
-    case RealBatter::Shimizu:
-        outName = u8"清水";
-        outIsRight = true;
-        outArsenal =
-        {
-            { 52 , 37 } // power（威力）, contact（ミート）
-		};
-        return true;
-
-    case RealBatter::Yamashita:
-        outName = u8"山下";
-        outIsRight = false;
-        outArsenal =
-        {
-			{ 53 , 47 } // power（威力）, contact（ミート）
-        };
-		return true;
-
-    case RealBatter::Nakamura:
-        outName = u8"中村";
-		outIsRight = true;
-        outArsenal =
-        {
-            { 46 , 37 } // power（威力）, contact（ミート）
-		};
-        return true;
-
-    case RealBatter::Ueda:
-        outName = u8"上田";
-        outIsRight = true;
-        outArsenal =
-        {
-			{ 50 , 50 } // power（威力）, contact（ミート）
-		};
-        return true;
-
-    default:
-	    return false; // 未知の打者
-    }
-
-}
-
-
-const char* Player::GetRealBatterName(RealBatter rb)
-{
-    std::vector<RealArsenalInfo> arsenal;
-    bool isRight;
-    const char* name;
-    if (GetRealBatterArsenalData(rb, arsenal, isRight, name))
-    {
-        return name;
-    }
-    return "Unknown";
+ 
 }
 
 void Player::SelectRealBatter(RealBatter rb)
