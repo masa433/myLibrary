@@ -130,11 +130,38 @@ void BatSprite::Update(float elapsedTime)
 			DirectX::XMFLOAT2 ballFinalPos = bs.GetFinalScreenPos();
 
 			// バットカーソルの中心・芯に合わせるためのオフセット調整
-			float offsetY = batCursorSpriteData->size.y * 0.3f;
+			float offsetY = batCursorSpriteData->size.y * offsetYScalingFactor;
 
+			if ((batCursorSpriteData->size.x >= cursorSizeThreshold) && (batCursorSpriteData->size.y >= cursorSizeThreshold))
+			{
+				offsetYScalingFactor = 0.2f;
+			}
+			else if((batCursorSpriteData->size.x >= finalCursorSizeThreshold) && (batCursorSpriteData->size.y >= finalCursorSizeThreshold))
+			{
+				offsetYScalingFactor = 0.15f;
+			}
+
+			//ミートカーソルが大きくなるごとに、オフセットの倍率を調整する
+			
 			float actualFinalY = bs.GetStartScreenPos().y + (ballFinalPos.y - bs.GetStartScreenPos().y) * yMoveScale;
 
-			DirectX::XMFLOAT2 scaledTarget = screenScaler.Scale({ ballFinalPos.x, actualFinalY + offsetY });
+			DirectX::XMFLOAT2 target = { ballFinalPos.x, actualFinalY + offsetY };
+			//ストライクゾーンの範囲内に制限する
+			DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
+			bs.GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
+			DirectX::XMFLOAT2 zoneCenter = { (zoneTopLeft.x + zoneBottomRight.x) * 0.5f, (zoneTopLeft.y + zoneBottomRight.y) * 0.5f };
+
+			//アシストの目標位置に対して、感度を逆算して生マウス位置にする
+			cursorSensitivity = Input::Instance().GetMouse().GetMouseSensitivity();
+
+			if (cursorSensitivity <= 0.5f) {
+				assistDuration = 0.3f; // 感度が低い場合はアシスト時間を短くする
+			}
+
+			target.x = zoneCenter.x + (target.x - zoneCenter.x) / cursorSensitivity;// 感度を逆算して生マウス位置にする
+			target.y = zoneCenter.y + (target.y - zoneCenter.y) / cursorSensitivity;
+
+			DirectX::XMFLOAT2 scaledTarget = screenScaler.Scale({ target.x, target.y });
 
 			POINT targetPt = {
 				static_cast<LONG>(scaledTarget.x),
@@ -182,8 +209,24 @@ void BatSprite::Update(float elapsedTime)
 	DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
 	ballSprite::Instance().GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
 
+	//バットカーソルの動く速度の感度調整
+	//ストライクゾーンの中心座標を取得
+	DirectX::XMFLOAT2 zoneCenter;
+	zoneCenter.x = (zoneTopLeft.x + zoneBottomRight.x) * 0.5f;
+	zoneCenter.y = (zoneTopLeft.y + zoneBottomRight.y) * 0.5f;
+
+	Input& input = Input::Instance();
+
+	cursorSensitivity = input.GetMouse().GetMouseSensitivity();
+
+	// 中心からマウス位置までの「ズレ（オフセット）」に感度を掛ける
+	mouseX = zoneCenter.x + (mouseX - zoneCenter.x) * cursorSensitivity;
+	mouseY = zoneCenter.y + (mouseY - zoneCenter.y) * cursorSensitivity;
+
 	mouseX = (std::max)(zoneTopLeft.x, (std::min)(zoneBottomRight.x, mouseX));
 	mouseY = (std::max)(zoneTopLeft.y, (std::min)(zoneBottomRight.y, mouseY));
+
+	effectiveCursorPosition = { mouseX, mouseY };
 
 	// トラッキングデータが表示されている場合はバットスプライトを描画しない
 	if (TrackingData::Instance().IsTrackingDataVisible()) return;

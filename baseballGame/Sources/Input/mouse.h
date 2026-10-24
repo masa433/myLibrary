@@ -58,6 +58,12 @@ public:
 	// スクリーン高さ取得
 	int GetScreenHeight() const { return screenHeight; }
 
+	// マウス感度の設定
+	void SetMouseSensitivity(float sensitivity) { mouseSensitivity = sensitivity; }
+
+	// マウス感度の取得
+	float GetMouseSensitivity() const { return mouseSensitivity; }
+
 private:
 	MouseButton		buttonState[2] = { 0 };
 	MouseButton		buttonDown = 0;
@@ -68,4 +74,7 @@ private:
 	int				screenWidth = 0;
 	int				screenHeight = 0;
 	HWND			hWnd = nullptr;
+
+	//マウス感度調整用の変数
+	float mouseSensitivity = 1.0f; // デフォルトの感度は1.0f
 };

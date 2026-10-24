@@ -1,22 +1,24 @@
-﻿  Pitcher.cpp
+﻿  BroadcastCamera.cpp
+  HomeRunCount.cpp
+  scene_game.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(102,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル '/Sources/Game/Pitcher.cpp' をコンパイルしています)
+  (ソース ファイル '/Sources/Scene/scene_game.cpp' をコンパイルしています)
   
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(103,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
-  (ソース ファイル '/Sources/Game/Pitcher.cpp' をコンパイルしています)
+  (ソース ファイル '/Sources/Scene/scene_game.cpp' をコンパイルしています)
   
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.h(440,1): warning C4715: 'Pitcher::StringToBreakGrade': 値を返さないコントロール パスがあります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.h(452,1): warning C4715: 'Pitcher::StringToPower': 値を返さないコントロール パスがあります。
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.h(428,1): warning C4715: 'Pitcher::StringToPitchType': 値を返さないコントロール パスがあります。
-  ライブラリを検索しています。
-      C:\Program Files (x86)\Windows Kits\10\lib\10.0.26100.0\um\x64\d3d11.lib を検索中:
-  ライブラリの検索が終了しました。
-Effekseerd.lib(Effekseer.ResourceManager.obj) : warning LNK4099: PDB 'Effekseerd.pdb' が 'Effekseerd.lib(Effekseer.ResourceManager.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\Effekseerd.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
-EffekseerRendererDX11d.lib(EffekseerRendererDX11.GpuTimer.obj) : warning LNK4099: PDB 'EffekseerRendererDX11d.pdb' が 'EffekseerRendererDX11d.lib(EffekseerRendererDX11.GpuTimer.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\EffekseerRendererDX11d.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
-EffekseerRendererDX11d.lib(EffekseerRendererDX11.MaterialLoader.obj) : warning LNK4099: PDB 'EffekseerRendererDX11d.pdb' が 'EffekseerRendererDX11d.lib(EffekseerRendererDX11.MaterialLoader.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\EffekseerRendererDX11d.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
-EffekseerRendererDX11d.lib(EffekseerMaterialCompilerDX11.obj) : warning LNK4099: PDB 'EffekseerRendererDX11d.pdb' が 'EffekseerRendererDX11d.lib(EffekseerMaterialCompilerDX11.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\EffekseerRendererDX11d.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
-EffekseerRendererDX11d.lib(ShaderGenerator.obj) : warning LNK4099: PDB 'EffekseerRendererDX11d.pdb' が 'EffekseerRendererDX11d.lib(ShaderGenerator.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\EffekseerRendererDX11d.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
-EffekseerRendererDX11d.lib(ShaderGeneratorCommon.obj) : warning LNK4099: PDB 'EffekseerRendererDX11d.pdb' が 'EffekseerRendererDX11d.lib(ShaderGeneratorCommon.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\EffekseerRendererDX11d.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
-EffekseerRendererCommond.lib(EffekseerRenderer.GpuParticles.obj) : warning LNK4099: PDB 'EffekseerRendererCommond.pdb' が 'EffekseerRendererCommond.lib(EffekseerRenderer.GpuParticles.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\EffekseerRendererCommond.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
-EffekseerRendererCommond.lib(EffekseerRenderer.Renderer_Impl.obj) : warning LNK4099: PDB 'EffekseerRendererCommond.pdb' が 'EffekseerRendererCommond.lib(EffekseerRenderer.Renderer_Impl.obj)' で、または 'C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\EffekseerRendererCommond.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(337,147): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/scene_game.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(337,107): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/scene_game.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(700,199): warning C4305: '引数': 'double' から 'float' へ切り詰めます。
+  (ソース ファイル '/Sources/Scene/scene_game.cpp' をコンパイルしています)
+  
+  ScrollView.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\UI\ScrollView.cpp(528,13): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/UI/ScrollView.cpp' をコンパイルしています)
+  
+  コードを生成中...
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

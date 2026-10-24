@@ -57,8 +57,13 @@ void Mouse::Update()
 	UINT viewportH = screenHeight;
 
 	// 画面補正
-	positionX[1] = positionX[0];
-	positionY[1] = positionY[0];
-	positionX[0] = (LONG)(cursor.x / static_cast<float>(viewportW) * static_cast<float>(screenW));
-	positionY[0] = (LONG)(cursor.y / static_cast<float>(viewportH) * static_cast<float>(screenH));
+	positionX[1] = positionX[0];// 前回の座標を保存
+	positionY[1] = positionY[0];// 前回の座標を保存
+
+	float rawX = (LONG)(cursor.x / static_cast<float>(viewportW) * static_cast<float>(screenW));
+	float rawY = (LONG)(cursor.y / static_cast<float>(viewportH) * static_cast<float>(screenH));
+
+	//前回の座標と現在の座標の差にマウス感度を掛けて、現在の座標を更新
+	positionX[0] = positionX[1] + static_cast<LONG>((rawX - positionX[1]) * mouseSensitivity);
+	positionY[0] = positionY[1] + static_cast<LONG>((rawY - positionY[1]) * mouseSensitivity);
 }

@@ -32,6 +32,16 @@ public:
 	//バットカーソルのサイズとポジションのゲッター
 	DirectX::XMFLOAT2 GetBatCursorSpriteSize() const { return batCursorSpriteData->size; }
 	DirectX::XMFLOAT2 GetBatCursorSpritePosition() const { return batCursorSpriteData->position; }
+
+public:
+	// 感度補正済みのカーソル位置を取得する関数
+	DirectX::XMFLOAT2 GetCorrectedCursorPosition() const { return { cursorDrawX + batCursorSpriteData->size.x * 0.5f, cursorDrawY + batCursorSpriteData->size.y * 0.5f }; }
+
+	//バットの角度を取得する関数
+	float GetBatRotation() const { return batSpriteData->rotation; }
+
+	const DirectX::XMFLOAT2& GetEffectiveCursorPosition() const { return effectiveCursorPosition; }
+
 private:
 	//スプライトデータ
 	struct Sprite
@@ -72,6 +82,18 @@ private:
 	float cursorDrawY = 0.0f; //補助線描画開始Y座標
 
 	bool shouldRenderBat = false; //補助線描画フラグ
+
+	float offsetYScalingFactor = 0.3f; // Y軸の補間スピードを調整するための係数
+
+	//ScalingFactorの値が変わる基準のカーソルサイズ
+	float cursorSizeThreshold = 32.0f; // カーソルサイズの閾値
+
+	float finalCursorSizeThreshold = 38.0f; // 最終的なカーソルサイズの閾値
+
+	//カーソルの感度調整用変数
+	float cursorSensitivity = 1.0f; // X軸の感度
+
+	DirectX::XMFLOAT2 effectiveCursorPosition = { 0.0f, 0.0f }; // 感度補正済みのカーソル位置
 
 public:
 	void UpdateCursorSizeByContact(int contact);

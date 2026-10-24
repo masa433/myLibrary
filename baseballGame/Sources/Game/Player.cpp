@@ -313,11 +313,9 @@ void Player::Update(float elapsedTime)
         float ballRadius = ballSprSize.x * 0.5f;
         HitJudge2D::Instance().SetBallRadiusPx(ballRadius);
 
-        POINT pt;
-        GetCursorPos(&pt);
-        ScreenToClient(GetForegroundWindow(), &pt);
-        float mouseX = static_cast<float>(pt.x) / screenScaler.GetScaleX();// スクリーン座標をスケーリングしてクライアント座標に変換
-        float mouseY = static_cast<float>(pt.y) / screenScaler.GetScaleY();
+        
+		float mouseX = BatSprite::Instance().GetEffectiveCursorPosition().x;
+        float mouseY = BatSprite::Instance().GetEffectiveCursorPosition().y;
         DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
         bs.GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
         mouseX = std::max(zoneTopLeft.x, std::min(zoneBottomRight.x, mouseX));
@@ -1050,9 +1048,9 @@ void Player::UpdateAnimation(float elapsedTime)
 			ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
             // マウスカーソル位置を取得
-            Mouse& mouse = Input::Instance().GetMouse();
-            float mouseY = static_cast<float>(mouse.GetPositionY()) / screenScaler.GetScaleY();
-            float mouseX = static_cast<float>(mouse.GetPositionX()) / screenScaler.GetScaleX();
+            //Mouse& mouse = Input::Instance().GetMouse();
+            float mouseY = BatSprite::Instance().GetEffectiveCursorPosition().y;
+            float mouseX = BatSprite::Instance().GetEffectiveCursorPosition().x;
 
             // ストライクゾーンのスクリーン境界を取得（コース判定に使用）
             DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
