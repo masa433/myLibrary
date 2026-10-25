@@ -182,7 +182,7 @@ void Pitcher::Initialize()
 
 	rosinEffect = std::make_unique<Effect>(".\\resources\\effects\\smoke.efk");
 
-	foulSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Foul.wav");
+	foulSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Foul.wav",SoundType::SE);
 
 	foulSpriteTriggered = false; // ファウルスプライトのトリガーフラグをリセット
 	aiStrikeRate = 1.0f; // AIのストライク率を初期化
@@ -489,6 +489,7 @@ void Pitcher::Update(float elapsedTime)
 		Ball::Instance().SetIsFoulConfirmed(true);
 		if(foulSound && !isPlayedFoulSound)
 		{
+			foulSound->Update();
 			foulSound->PlayOneShot();
 			isPlayedFoulSound = true;
 		}
@@ -545,6 +546,7 @@ void Pitcher::Update(float elapsedTime)
 
 						if(foulSound && !isPlayedFoulSound)
 						{
+							foulSound->Update();
 							foulSound->PlayOneShot();
 							isPlayedFoulSound = true;
 						}

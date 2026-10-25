@@ -346,10 +346,10 @@ void ballSprite::Initialize(ID3D11Device* device)
 		512, 512,
 		&pitchInfoCodepoints);
 
-	catchSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Catch.wav");
-	catchStrongSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CatchStrong.wav");
-	strikeSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\StrikeCall.wav");
-	ballSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\BallCall.wav");
+	catchSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Catch.wav",SoundType::SE);
+	catchStrongSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CatchStrong.wav",SoundType::SE);
+	strikeSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\StrikeCall.wav",SoundType::SE);
+	ballSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\BallCall.wav",SoundType::SE);
 
 	currentFadeTime = 0.0f;
 	strikeZoneFadeTime = 1.2f;
@@ -843,16 +843,25 @@ void ballSprite::Update(float elapsedTime)
 	if(wp.z < -1.5f && wp.z > -2.0f && !Ball::Instance().GetHasCollidedWithBat() && intro && intro->IsPlaying())
 	{
 		
+		
 		if (!isCatchSoundPlayed)
 		{
 			if (Pitcher::Instance().IsFastball())
 			{
-				if (catchStrongSound) catchStrongSound->Play(false);
+				if (catchStrongSound)
+				{
+					catchStrongSound->Update();
+					catchStrongSound->PlayOneShot();
+				}
 			}
 			else
 			{
 				// 変化球またはその他の球種は通常のキャッチ音
-				if (catchSound) catchSound->Play(false);
+				if (catchSound)
+				{
+					catchSound->Update();
+					catchSound->PlayOneShot();
+				}
 			}
 
 			// いずれかの分岐を通ったら必ずフラグを立てて2度鳴りを防ぐ
@@ -882,7 +891,11 @@ void ballSprite::Update(float elapsedTime)
 		{
 			ballCount::Instance().DecreaseRemainingBalls(1);	
 			Combo::Instance().ResetCombo();// ストライク判定時はコンボをリセット
-			if (strikeSound && !Ball::Instance().GetHasCollidedWithBat() && !Player::Instance().HasSwungThisPitch() && intro && intro->IsPlaying()) strikeSound->PlayOneShot(2.0f);
+			if (strikeSound && !Ball::Instance().GetHasCollidedWithBat() && !Player::Instance().HasSwungThisPitch() && intro && intro->IsPlaying())
+			{
+				strikeSound->Update();
+				strikeSound->PlayOneShot();
+			}
 
 		}
 		else
@@ -898,7 +911,11 @@ void ballSprite::Update(float elapsedTime)
 			{
 				isBall = true;
 				pendingBallZoneBonus = true;
-				if (ballSound && !Ball::Instance().GetHasCollidedWithBat() && intro && intro->IsPlaying()) ballSound->PlayOneShot(2.0f);
+				if (ballSound && !Ball::Instance().GetHasCollidedWithBat() && intro && intro->IsPlaying()) 
+				{
+					ballSound->Update();
+					ballSound->PlayOneShot();
+				}
 			}
 		}
 
@@ -1161,6 +1178,7 @@ void ballSprite::Render()
 
 void ballSprite::DrawGUI()
 {
+	
 	// GUI drawing logic for ball sprite if needed
 	if (ImGui::CollapsingHeader(u8"2D スプライト"))
 	{

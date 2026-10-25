@@ -4,11 +4,19 @@
 #include <xaudio2fx.h>// リバーブ
 #include "AudioResource.h"
 
+enum SoundType
+{
+	None,
+	SE,
+	BGM,
+};
+
+
 // オーディオソース
 class AudioSource
 {
 public:
-	AudioSource(IXAudio2* xaudio, std::shared_ptr<AudioResource>& resource);
+	AudioSource(IXAudio2* xaudio, std::shared_ptr<AudioResource>& resource, SoundType type);
 	~AudioSource();
 
 	// 再生
@@ -23,7 +31,7 @@ public:
 	//重ねて鳴らす
 	void PlayOneShot(float volume = 1.0f);
 
-	void PlayOneShotReverb(float volume = 1.0f, float wetDryMix = 50.0f);
+	void PlayOneShotReverb(float volume = 1.0f, float wetDryMix = 30.0f);
 
 	void Update();
 
@@ -32,7 +40,6 @@ public:
 	void UpdateFadeOut(float elapsedTime);
 
 	void StartFadeIn(float duration,bool loop);
-
 	void UpdateFadeIn(float elapsedTime);
 	
 	//リバーブ関数
@@ -44,7 +51,7 @@ public:
 	void StartFadeOutOneShot(float duration, float volume = 1.0f);
 
 	void UpdateFadeOutOneShot(float elapsedTime);
-	
+
 private:
 	IXAudio2SourceVoice* sourceVoice = nullptr;
 	std::shared_ptr<AudioResource>	resource;
@@ -64,4 +71,9 @@ private:
 	float oneShotFadeOutTime = 0.0f;
 	float oneShotFadeDuration = 0.0f;
 	float oneShotFadeStartVol = 1.0f;
+
+	float baseVolume = 1.0f; // 基本音量（SE、BGMなどのカテゴリごとの音量を考慮しない値）
+
+	SoundType soundType = SoundType::None;
+	
 };

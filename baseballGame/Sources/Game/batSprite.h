@@ -86,7 +86,7 @@ private:
 	float offsetYScalingFactor = 0.3f; // Y軸の補間スピードを調整するための係数
 
 	//ScalingFactorの値が変わる基準のカーソルサイズ
-	float cursorSizeThreshold = 32.0f; // カーソルサイズの閾値
+	float cursorSizeThreshold = 28.0f; // カーソルサイズの閾値
 
 	float finalCursorSizeThreshold = 38.0f; // 最終的なカーソルサイズの閾値
 

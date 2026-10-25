@@ -1,10 +1,11 @@
 #include "pch.h"
 #include "Misc.h"
 #include "AudioSource.h"
+#include "Audio.h"
 
 // コンストラクタ
-AudioSource::AudioSource(IXAudio2* xaudio, std::shared_ptr<AudioResource>& resource)
-	: resource(resource), xaudio(xaudio)
+AudioSource::AudioSource(IXAudio2* xaudio, std::shared_ptr<AudioResource>& resource, SoundType type)
+	: resource(resource), xaudio(xaudio), soundType(type)
 {
 	HRESULT hr;
 
@@ -75,9 +76,10 @@ void AudioSource::Stop()
 // 音量設定
 void AudioSource::SetVolume(float volume)
 {
-	sourceVoice->SetVolume(volume);
+	baseVolume = volume;
+	sourceVoice->SetVolume(volume * Audio::Instance().GetCategoryVolume(soundType));
 }
-
+	
 void AudioSource::PlayOneShot(float volume)
 {
 	if (!sourceVoice || !resource) return;
@@ -97,7 +99,7 @@ void AudioSource::PlayOneShot(float volume)
 	hr = oneShotVoice->SubmitSourceBuffer(&buffer);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	oneShotVoice->SetVolume(volume);
+	oneShotVoice->SetVolume(volume * Audio::Instance().GetCategoryVolume(soundType));
 	hr = oneShotVoice->Start();
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
@@ -120,7 +122,7 @@ void AudioSource::PlayOneShotReverb(float volume, float wetDryMix)
 	buffer.Flags = XAUDIO2_END_OF_STREAM;
 	hr = oneShotVoice->SubmitSourceBuffer(&buffer);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	oneShotVoice->SetVolume(volume);
+	oneShotVoice->SetVolume(volume * Audio::Instance().GetCategoryVolume(soundType));
 
 	// リバーブエフェクトを追加
 	IUnknown* reverbEffect = nullptr;
@@ -157,6 +159,12 @@ void AudioSource::PlayOneShotReverb(float volume, float wetDryMix)
 // 再生し終わったワンショットボイスを片付ける（毎フレーム呼ぶ）
 void AudioSource::Update()
 {
+	//現在の音の音量を毎フレーム更新する
+	if(sourceVoice)
+	{
+		sourceVoice->SetVolume(baseVolume * Audio::Instance().GetCategoryVolume(soundType));
+	}
+
 	for (auto it = oneShotVoices.begin(); it != oneShotVoices.end(); )
 	{
 		XAUDIO2_VOICE_STATE state;
@@ -170,7 +178,10 @@ void AudioSource::Update()
 		}
 		else
 		{
+			//oneShotの音量を毎フレーム更新する
+			(*it)->SetVolume(baseVolume * Audio::Instance().GetCategoryVolume(soundType));
 			++it;
+
 		}
 	}
 }
@@ -227,7 +238,7 @@ void AudioSource::StartFadeIn(float duration, bool loop)
 	HRESULT hr = sourceVoice->SubmitSourceBuffer(&buffer);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	sourceVoice->SetVolume(1.0f);
+	sourceVoice->SetVolume(baseVolume);
 	hr = sourceVoice->Start();
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 }
@@ -303,7 +314,7 @@ void AudioSource::StartFadeOutOneShot(float duration, float volume)
 		if (voice != nullptr)
 		{
 			// フェードアウトのために音量を設定
-			voice->SetVolume(volume);
+			voice->SetVolume(volume * Audio::Instance().GetCategoryVolume(soundType));
 		}
 	}
 	oneShotFadeDuration = duration;
@@ -321,7 +332,7 @@ void AudioSource::UpdateFadeOutOneShot(float elapsedTime)
 	{
 		if (voice != nullptr)
 		{
-			voice->SetVolume(newVolume);
+			voice->SetVolume(newVolume * Audio::Instance().GetCategoryVolume(soundType));
 		}
 	}
 
@@ -331,3 +342,4 @@ void AudioSource::UpdateFadeOutOneShot(float elapsedTime)
 		oneShotFadeDuration = 0.0f; // フェードアウト完了
 	}
 }
+

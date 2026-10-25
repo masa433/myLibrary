@@ -23,6 +23,8 @@ void Audio::Initialize()
 	// マスタリングボイス生成
 	hr = xaudio->CreateMasteringVoice(&masteringVoice);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	masteringVoice->SetVolume(masterVolume); // マスターボリュームを設定
 }
 
 // 終了化
@@ -47,8 +49,22 @@ void Audio::Finalize()
 }
 
 // オーディオソース読み込み
-AudioSource* Audio::LoadAudioSource(const char* filename)
+AudioSource* Audio::LoadAudioSource(const char* filename, SoundType type)
 {
 	std::shared_ptr<AudioResource> resource = std::make_shared<AudioResource>(filename);
-	return new AudioSource(xaudio, resource);
+	return new AudioSource(xaudio, resource, type);
+}
+
+
+void Audio::DrawGUI()
+{
+	ImGui::Begin("Audio Settings");
+	ImGui::SliderFloat("SE Volume", &seVolume, 0.0f, 1.0f);
+	ImGui::SliderFloat("BGM Volume", &bgmVolume, 0.0f, 1.0f);
+	float master = masterVolume;
+	if (ImGui::SliderFloat("Master Volume", &master, 0.0f, 1.0f))
+	{
+		SetMasterVolume(master);   // マスタリングボイスにも反映
+	}
+	ImGui::End();
 }

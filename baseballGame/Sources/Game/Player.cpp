@@ -224,7 +224,7 @@ void Player::Initialize()
         );
     }
 
-	swingSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Swing.wav");
+	swingSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Swing.wav",SoundType::SE);
 
 	isPlayedStepInAnimation = false;
     showSwingTimingSprite = false;
@@ -515,7 +515,8 @@ void Player::HandleInput(float elapsedTime)
             
             if(!Ball::Instance().GetHasCollidedWithBat())
             {
-                if (swingSound) swingSound->Play(false);
+                if (swingSound) swingSound->Update();
+                if (swingSound) swingSound->PlayOneShot();
                 ChangeState(State::Swinging);
             }
              if (Pitcher::Instance().GetIsBallThrown())

@@ -77,8 +77,8 @@ void LoadingTips::Initialize(ID3D11Device* device)
 
 	SelectRandomTip();
 
-	loadingArrowSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
-	clickArrowSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav");
+	loadingArrowSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
+	clickArrowSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav",SoundType::SE);
 }
 
 void LoadingTips::Uninitialize()
@@ -159,6 +159,7 @@ void LoadingTips::Update(float elapsedTime)
 			
 			if(loadingArrowSound)
 			{
+				loadingArrowSound->Update();
 				loadingArrowSound->PlayOneShot();
 				isArrowHovered = true;
 			}
@@ -169,6 +170,7 @@ void LoadingTips::Update(float elapsedTime)
 			
 			if(loadingArrowSound)
 			{
+				loadingArrowSound->Update();
 				loadingArrowSound->PlayOneShot();
 				isArrowHovered = true;
 			}
@@ -180,6 +182,7 @@ void LoadingTips::Update(float elapsedTime)
 			ShowNextTip();
 			if(clickArrowSound)
 			{
+				clickArrowSound->Update();
 				clickArrowSound->PlayOneShot();
 			}
 		}
@@ -188,6 +191,7 @@ void LoadingTips::Update(float elapsedTime)
 			ShowPreviousTip();
 			if(clickArrowSound)
 			{
+				clickArrowSound->Update();
 				clickArrowSound->PlayOneShot();
 			}
 		}

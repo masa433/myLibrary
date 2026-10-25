@@ -184,8 +184,8 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	contactRankFontData.scale = 1.0f;
 	contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-	clickNameButton = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav");
-	hoverArrow = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
+	clickNameButton = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav",SoundType::SE);
+	hoverArrow = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
 }
 
 ScrollView::~ScrollView()
@@ -579,6 +579,7 @@ void ScrollView::Update(float elapsedTime)
 		topArrowData.size = topPressed ? originalArrowSize : (topHovered ? targetArrowSize : originalArrowSize);
 		if (topHovered && !topPressed && hoverArrow && !hoverSoundPlayed)
 		{
+			hoverArrow->Update();
 			hoverArrow->PlayOneShot();
 			hoverSoundPlayed = true;
 		}
@@ -589,6 +590,7 @@ void ScrollView::Update(float elapsedTime)
 		bottomArrowData.size = bottomPressed ? originalArrowSize : (bottomHovered ? targetArrowSize : originalArrowSize);
 		if (bottomHovered && !bottomPressed && hoverArrow && !hoverSoundPlayed)
 		{
+			hoverArrow->Update();
 			hoverArrow->PlayOneShot();
 			hoverSoundPlayed = true;
 		}
@@ -617,6 +619,7 @@ void ScrollView::Update(float elapsedTime)
 			//Œø‰Ê‰¹Ä¶
 			if (hoverArrow)
 			{
+				hoverArrow->Update();
 				hoverArrow->PlayOneShot();
 			}
 		}
@@ -634,6 +637,7 @@ void ScrollView::Update(float elapsedTime)
 			arrowClicked = true;
 			if(hoverArrow)
 			{
+				hoverArrow->Update();
 				hoverArrow->PlayOneShot();
 			}
 		}
@@ -697,6 +701,7 @@ void ScrollView::Update(float elapsedTime)
 
 				if (clickNameButton)
 				{
+					clickNameButton->Update();
 					clickNameButton->PlayOneShot();
 				}
 			}

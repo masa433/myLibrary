@@ -113,9 +113,9 @@ void RoundManager::Initialize(ID3D11Device* device)
 	currentState = RoundState::Playing; // ‰Šúó‘Ô‚ðPlaying‚ÉÝ’è
 
 	
-	selectAbilitySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\GetAbility.wav");
-	selectAbilityHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
-	closeShopSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CloseShop.wav");
+	selectAbilitySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\GetAbility.wav",SoundType::SE);
+	selectAbilityHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
+	closeShopSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CloseShop.wav",SoundType::SE);
 }
 
 void RoundManager::Uninitialize()
@@ -315,6 +315,7 @@ void RoundManager::UpdateShopState()
 	{
 		if(closeShopSound)
 		{
+			closeShopSound->Update();
 			closeShopSound->PlayOneShot();
 		}
 
@@ -358,14 +359,15 @@ void RoundManager::UpdateSelectAbilityState()
 
 			if(selectAbilityHoverSound && previousHoveredIndex != i)
 			{
+				selectAbilityHoverSound->Update();
 				selectAbilityHoverSound->PlayOneShot();
-				
 			}
 
 			if (clicked)
 			{
 				if(selectAbilitySound)
 				{
+					selectAbilitySound->Update();
 					selectAbilitySound->PlayOneShot();
 				}
 

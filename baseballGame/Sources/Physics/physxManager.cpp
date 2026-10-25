@@ -99,18 +99,18 @@ void Physics::Initialize()
 	hitSmallEffect = std::make_unique<Effect>("resources/effects/hitSmall.efk");
 	hitBigEffect = std::make_unique<Effect>("resources/effects/hitBig.efk");
 
-	hitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Hit.wav");	
-	homeRunSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRun.wav");
-	hitClogSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Clog.wav");
-	longHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/LongHit.wav");
-	foulWhistleSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/FoulWhistle.wav");
-	foulSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Foul.wav");
-	boundSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/BallBound.wav");
-	poleHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Pole.wav");
-	homeRunCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRunCheer.wav");
-	standInSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/StandInCheer.wav");
-	hitCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HitCheer.wav");
-	clogAndFoulCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/ClogAndFoul.wav");
+	hitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Hit.wav",SoundType::SE);	
+	homeRunSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRun.wav",SoundType::SE);
+	hitClogSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Clog.wav",SoundType::SE);
+	longHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/LongHit.wav",SoundType::SE);
+	foulWhistleSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/FoulWhistle.wav",SoundType::SE);
+	foulSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Foul.wav",SoundType::SE);
+	boundSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/BallBound.wav",SoundType::SE);
+	poleHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Pole.wav",SoundType::SE);
+	homeRunCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRunCheer.wav",SoundType::SE);
+	standInSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/StandInCheer.wav",SoundType::SE);
+	hitCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HitCheer.wav",SoundType::SE);
+	clogAndFoulCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/ClogAndFoul.wav",SoundType::SE);
 }
 
 // 終了化
@@ -183,9 +183,20 @@ void Physics::Update(float elapsedTime)
 		}
 	}
 
+	// 音声更新
+	hitSound->Update();
+	homeRunSound->Update();
+	hitClogSound->Update();
+	longHitSound->Update();
 	foulWhistleSound->Update();
-	boundSound->Update();
 	foulSound->Update();
+	boundSound->Update();
+	poleHitSound->Update();
+	homeRunCheerSound->Update();
+	standInSound->Update();
+	hitCheerSound->Update();
+	clogAndFoulCheerSound->Update();
+
 }
 
 // 描画
@@ -660,7 +671,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 
 				HomeRunCount::Instance().IncrementCount();
 
-				if (standInSound) standInSound->PlayOneShot(1.5f);
+				if (standInSound) standInSound->PlayOneShot();
 
 			
 				OutputDebugStringA("ホームラン！：ポールに衝突");
@@ -770,7 +781,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					//ホームランカウントを１増やす
 					HomeRunCount::Instance().IncrementCount();
 
-					if (standInSound) standInSound->PlayOneShot(1.5f);
+					if (standInSound) standInSound->PlayOneShot();
 					
 					//グラウンドなら実測飛距離、スタンドなら総飛距離を保存
 					if(isGround)
@@ -1503,7 +1514,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			if(speedKmh >= 160.0f && speedKmh < 170.0f && launchAngleDeg >= 15.0f && launchAngleDeg <= 40.0f)
 			{
 				if (hitEffect) hitEffect->Play(DirectX::XMFLOAT3(ballCollider->getGlobalPose().p.x, ballCollider->getGlobalPose().p.y, ballCollider->getGlobalPose().p.z));
-				if (homeRunCheerSound) homeRunCheerSound->PlayOneShot(1.5f);
+				if (homeRunCheerSound) homeRunCheerSound->PlayOneShot();
 			}
 			else if (speedKmh >= 170.0f && launchAngleDeg >= 15.0f && launchAngleDeg <= 40.0f)
 			{
@@ -1523,9 +1534,9 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				// 170km/h以上 且つ 角度15度以上：本塁打音
 				if (homeRunSound)
 				{
-					homeRunSound->PlayOneShotReverb(1.5f, 50.0f);
+					homeRunSound->PlayOneShotReverb();
 				}
-				if (homeRunCheerSound) homeRunCheerSound->PlayOneShot(1.5f);
+				if (homeRunCheerSound) homeRunCheerSound->PlayOneShot();
 			}
 			else if (speedKmh >= 150.0f)
 			{
@@ -1533,10 +1544,10 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				if (longHitSound)
 				{
 					
-					longHitSound->PlayOneShotReverb(1.5f, 50.0f);
+					longHitSound->PlayOneShotReverb();
 				}
 
-				if (hitCheerSound) hitCheerSound->PlayOneShot(1.5f);
+				if (hitCheerSound) hitCheerSound->PlayOneShot();
 			}
 			else if (speedKmh >= 100.0f)
 			{
@@ -1544,10 +1555,10 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				if (hitSound)
 				{
 					
-					hitSound->PlayOneShotReverb(1.0f, 30.0f);
+					hitSound->PlayOneShotReverb();
 				}
 
-				if (hitCheerSound) hitCheerSound->PlayOneShot(1.5f);
+				if (hitCheerSound) hitCheerSound->PlayOneShot();
 			}
 			else
 			{
@@ -1555,7 +1566,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				if (hitClogSound)
 				{
 					
-					hitClogSound->PlayOneShotReverb(1.0f, 30.0f);
+					hitClogSound->PlayOneShotReverb();
 				}
 				
 			}

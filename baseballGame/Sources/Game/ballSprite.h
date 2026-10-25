@@ -451,4 +451,5 @@ private:
 
 	const GameIntroSequence* intro = nullptr; // ゲームイントロシーケンスへのポインタ
 
+	
 };

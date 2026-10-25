@@ -177,10 +177,10 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 
     buttonManager.Initialize();
 
-	introBoardAnimationSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\introBoardAnimation.wav");
-	ballModeHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
-	ballModeSelectSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Hit.wav");
-	playBallSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\PlayBall.wav");
+	introBoardAnimationSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\introBoardAnimation.wav",SoundType::SE);
+	ballModeHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
+	ballModeSelectSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Hit.wav",SoundType::SE);
+	playBallSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\PlayBall.wav",SoundType::SE);
 
 	introBoardAnimationSoundPlayed = false;
 }
@@ -289,7 +289,8 @@ void GameIntroSequence::UpdateBallSpeedModeSelection()
 
             if(ballModeHoverSound && previousSelectedMode != i)
             {
-                ballModeHoverSound->PlayOneShot(); // ホバー音を再生
+                ballModeHoverSound->Update();
+                ballModeHoverSound->PlayOneShot(); // ホバー音を再生   
 			}
 
             if(clicked)
@@ -302,7 +303,9 @@ void GameIntroSequence::UpdateBallSpeedModeSelection()
 
                     if (ballModeSelectSound && playBallSound)
                     {
-                        ballModeSelectSound->PlayOneShot(0.7f); // 選択音を再生
+                        ballModeSelectSound->Update();
+                        ballModeSelectSound->PlayOneShot(); // 選択音を再生
+						playBallSound->Update();
 						playBallSound->PlayOneShot(); // PlayBall音を再生
                     }
 
@@ -345,6 +348,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 
         if (introBoardAnimationSound && !introBoardAnimationSoundPlayed)
         {
+            introBoardAnimationSound->Update();
             introBoardAnimationSound->PlayOneShot();
             introBoardAnimationSoundPlayed = true;
         }

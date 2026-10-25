@@ -262,12 +262,11 @@ void ShopManager::Initialize(ID3D11Device* device)
 	contactRankFontData.scale = 1.5f;
 	contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-	purchaseSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Purchase.wav");
-	notEnoughMoneySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CoinShortage.wav");
-	hoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
-	selectPitchTypeSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav");
-	selectSpecialAbilitySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ActiveRateUp.wav");
-
+	purchaseSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Purchase.wav",SoundType::SE);
+	notEnoughMoneySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\CoinShortage.wav",SoundType::SE);
+	hoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
+	selectPitchTypeSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav",SoundType::SE);
+	selectSpecialAbilitySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ActiveRateUp.wav",SoundType::SE);
 	InitializeShopButtonSprites(device, context);
 	CloseShop(); // ショップを閉じる状態で初期化
 
@@ -715,6 +714,7 @@ void ShopManager::Update(float elapsedTime)
 			nextRoundButtonScale = isButtonPressed ? 0.9f : 1.1f;
 			if(!wasNextRoundHovered && !isNextRoundPressed && hoverSound)
 			{
+				hoverSound->Update();
 				hoverSound->PlayOneShot();
 			}
 		}
@@ -797,6 +797,7 @@ void ShopManager::UpdateShopItem()
 		{
 			if (!slotHover[i] && hoverSound)
 			{
+				hoverSound->Update();
 				hoverSound->PlayOneShot();
 			}
 
@@ -807,6 +808,7 @@ void ShopManager::UpdateShopItem()
 				if(Money::Instance().GetCurrentMoney() >= item.price && !slotPurchased[i])
 				{
 					Money::Instance().DecreaseMoney(item.price);
+					purchaseSound->Update();
 					purchaseSound->PlayOneShot();
 
 					if(isHalfPriceApplied || isFreePriceApplied)
@@ -835,6 +837,7 @@ void ShopManager::UpdateShopItem()
 				}
 				else if (Money::Instance().GetCurrentMoney() < item.price || slotPurchased[i])// お金が足りない場合、またはすでに購入済みの場合
 				{
+					notEnoughMoneySound->Update();
 					notEnoughMoneySound->PlayOneShot();
 				}
 			}
@@ -951,6 +954,7 @@ void ShopManager::UpdateSelectPitchTypeState()
 			// 前回と異なる要素の上にカーソルが乗った瞬間だけ再生
 			if (prevHovered != i && hoverSound)
 			{
+				hoverSound->Update();
 				hoverSound->PlayOneShot();
 			}
 
@@ -960,6 +964,7 @@ void ShopManager::UpdateSelectPitchTypeState()
 
 				if(selectPitchTypeSound)
 				{
+					selectPitchTypeSound->Update();
 					selectPitchTypeSound->PlayOneShot();
 				}
 				// 選択された球種を無効化する
@@ -1074,6 +1079,7 @@ void ShopManager::UpdateSelectSpecialAbilityState()
 
 			if(prevHovered != i && hoverSound)
 			{
+				hoverSound->Update();
 				hoverSound->PlayOneShot();
 			}
 
@@ -1082,6 +1088,7 @@ void ShopManager::UpdateSelectSpecialAbilityState()
 			{
 				if(selectSpecialAbilitySound)
 				{
+					selectSpecialAbilitySound->Update();
 					selectSpecialAbilitySound->PlayOneShot();
 				}
 				SpecialAbility::AbilityID selectedID = specialAbilityChoices[i];

@@ -43,10 +43,10 @@ void ButtonManager::Initialize()
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
-	buttonHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav");
-	buttonClickSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Hit.wav");
-	buttonBackSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Clog.wav");
-	startButtonSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\StartButtonClick.wav");
+	buttonHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
+	buttonClickSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Hit.wav",SoundType::SE);
+	buttonBackSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Clog.wav",SoundType::SE);
+	startButtonSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\StartButtonClick.wav",SoundType::SE);
 }
 
 void ButtonManager::Uninitialize()
@@ -106,6 +106,7 @@ void ButtonManager::Update(float elapsedTime)
 			{
 				if (buttonHoverSound)
 				{
+					buttonHoverSound->Update();
 					buttonHoverSound->PlayOneShot();
 				}
 			}
@@ -124,6 +125,7 @@ void ButtonManager::Update(float elapsedTime)
 
 			if(buttonHoverSound && prevMouseOverButton)
 			{
+				buttonHoverSound->Update();
 				buttonHoverSound->PlayOneShot();
 			}
 		}
@@ -190,6 +192,7 @@ void ButtonManager::Update(float elapsedTime)
 						isStartRequested = true;
 						if (startButtonSound)
 						{
+							startButtonSound->Update();
 							startButtonSound->PlayOneShot();
 						}
 						
@@ -207,6 +210,7 @@ void ButtonManager::Update(float elapsedTime)
 						isReturnRequested = true;
 						if(buttonBackSound)
 						{
+							buttonBackSound->Update();
 							buttonBackSound->PlayOneShot();
 						}
 						OutputDebugStringA("Return button clicked!\n");
@@ -215,6 +219,7 @@ void ButtonManager::Update(float elapsedTime)
 						isOKRequested = true;
 						if(buttonClickSound)
 						{
+							buttonClickSound->Update();
 							buttonClickSound->PlayOneShot();
 						}
 						OutputDebugStringA("OK button clicked!\n");
@@ -223,6 +228,7 @@ void ButtonManager::Update(float elapsedTime)
 						isCloseRequested = true;
 						if(buttonBackSound)
 						{
+							buttonBackSound->Update();
 							buttonBackSound->PlayOneShot();
 						}
 						OutputDebugStringA("Close button clicked!\n");
@@ -231,6 +237,7 @@ void ButtonManager::Update(float elapsedTime)
 						isRerollRequested = true;
 						if (buttonClickSound)
 						{
+							buttonClickSound->Update();
 							buttonClickSound->PlayOneShot();
 						}
 						OutputDebugStringA("Reroll button clicked!\n");
@@ -239,6 +246,7 @@ void ButtonManager::Update(float elapsedTime)
 						isTitleRequested = true;
 						if(buttonClickSound)
 						{
+							buttonClickSound->Update();
 							buttonClickSound->PlayOneShot();
 						}
 						OutputDebugStringA("Title button clicked!\n");
@@ -246,6 +254,7 @@ void ButtonManager::Update(float elapsedTime)
 					case ButtonType::BatterSelect:
 						if(buttonClickSound)
 						{
+							buttonClickSound->Update();
 							buttonClickSound->PlayOneShot();
 						}
 						isBatterSelectRequested = true;
@@ -255,6 +264,7 @@ void ButtonManager::Update(float elapsedTime)
 						isRetryRequested = true;
 						if(buttonClickSound)
 						{
+							buttonClickSound->Update();
 							buttonClickSound->PlayOneShot();
 						}
 						OutputDebugStringA("Retry button clicked!\n");
@@ -263,6 +273,7 @@ void ButtonManager::Update(float elapsedTime)
 						isShowPitchParamRequested = true;
 						if(buttonBackSound)
 						{
+							buttonBackSound->Update();
 							buttonBackSound->PlayOneShot();
 						}
 						OutputDebugStringA("ShowPitchParam button clicked!\n");
@@ -271,6 +282,7 @@ void ButtonManager::Update(float elapsedTime)
 						isSkipRequested = true;
 						if(buttonBackSound)
 						{
+							buttonBackSound->Update();
 							buttonBackSound->PlayOneShot();
 						}
 						break;
@@ -278,6 +290,7 @@ void ButtonManager::Update(float elapsedTime)
 						isNextRequested = true;
 						if(buttonClickSound)
 						{
+							buttonClickSound->Update();
 							buttonClickSound->PlayOneShot();
 						}
 						break;
@@ -285,6 +298,7 @@ void ButtonManager::Update(float elapsedTime)
 						isFreeBattingRequested = true;
 						if(buttonClickSound)
 						{
+							buttonClickSound->Update();
 							buttonClickSound->PlayOneShot();
 						}
 						break;

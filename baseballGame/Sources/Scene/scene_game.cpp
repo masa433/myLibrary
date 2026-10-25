@@ -344,7 +344,7 @@ void scene_game::initialize()
     broadcastCamera.SetReplayMode(false);
 	broadcastCamera.ResetReplayCamera();
 
-    cheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Cheer.wav");
+    cheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Cheer.wav",SoundType::BGM);
 	isCheerSoundPlaying = false;
 	isOneShotFadeStarted = false;
 
@@ -469,13 +469,14 @@ void scene_game::update(float elapsed_time)
         if (cheerSound && !isCheerSoundPlaying)
         {
             cheerSound->StartFadeIn(1.0f, true);
-            cheerSound->SetVolume(0.5f);
+            //cheerSound->SetVolume(0.5f);
             isCheerSoundPlaying = true;
         }
     }
 
     if (cheerSound)
     {
+		cheerSound->Update();
         cheerSound->UpdateFadeOut(elapsed_time);
 		cheerSound->UpdateFadeIn(elapsed_time);
         
@@ -1083,6 +1084,8 @@ void scene_game::DrawGUI()
 		if (ImGui::CollapsingHeader("Replay Manager")) { ReplayManager::Instance().DrawGUI(); }
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Game Intro Sequence")) { gameIntroSequence.DrawGUI(); }
+		ImGui::Separator();
+        if(ImGui::CollapsingHeader("Audio")) { Audio::Instance().DrawGUI(); }
 
         ImGui::End();
 

@@ -154,7 +154,7 @@ void BatSprite::Update(float elapsedTime)
 			//アシストの目標位置に対して、感度を逆算して生マウス位置にする
 			cursorSensitivity = Input::Instance().GetMouse().GetMouseSensitivity();
 
-			if (cursorSensitivity <= 0.5f) {
+			if (cursorSensitivity <= 0.7f) {
 				assistDuration = 0.3f; // 感度が低い場合はアシスト時間を短くする
 			}
 

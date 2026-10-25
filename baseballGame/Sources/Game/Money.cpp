@@ -230,8 +230,8 @@ void Money::Initialize(ID3D11Device* device)
 	jackpotBonus = 0.0f;
 
 
-	getMoneySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\GetMoney.wav");
-	activeBonusSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ActiveBonusBoard.wav");
+	getMoneySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\GetMoney.wav",SoundType::SE);
+	activeBonusSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ActiveBonusBoard.wav",SoundType::SE);
 }
 
 void Money::Uninitialize()
@@ -379,6 +379,7 @@ void Money::Update(float elapsedTime)
 		
 		if (getMoneySound)
 		{
+			getMoneySound->Update();
 			getMoneySound->PlayOneShot();
 		}
 
@@ -431,6 +432,7 @@ void Money::Update(float elapsedTime)
 
 			if(!item.hasPlayingSound && activeBonusSound && showBonusItemTimer >= showBonusItemDelay)
 			{
+				activeBonusSound->Update();
 				activeBonusSound->PlayOneShot();
 				item.hasPlayingSound = true; // ƒTƒEƒ“ƒhÄ¶Ï‚İ‚É‚·‚é
 			}

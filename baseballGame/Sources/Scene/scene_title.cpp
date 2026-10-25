@@ -346,6 +346,7 @@ void scene_title::render(float elapsed_time)
 
 	buttonManager.Render(1.0f,ButtonManager::ButtonType::Start);
 	buttonManager.Render(1.0f, ButtonManager::ButtonType::FreeBatting);
+	buttonManager.Render(1.0f, ButtonManager::ButtonType::Settings);
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
