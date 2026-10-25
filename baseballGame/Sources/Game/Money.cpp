@@ -260,6 +260,10 @@ void Money::Uninitialize()
 
 void Money::Update(float elapsedTime)
 {
+	//効果音更新処理
+	if (getMoneySound) getMoneySound->Update();
+	if (activeBonusSound) activeBonusSound->Update();
+
 	bool isLocked = BallDistance::Instance().GetDistanceLock();
 
 	//ファールの時は、お金が増えないようにする
@@ -379,7 +383,6 @@ void Money::Update(float elapsedTime)
 		
 		if (getMoneySound)
 		{
-			getMoneySound->Update();
 			getMoneySound->PlayOneShot();
 		}
 
@@ -432,7 +435,6 @@ void Money::Update(float elapsedTime)
 
 			if(!item.hasPlayingSound && activeBonusSound && showBonusItemTimer >= showBonusItemDelay)
 			{
-				activeBonusSound->Update();
 				activeBonusSound->PlayOneShot();
 				item.hasPlayingSound = true; // サウンド再生済みにする
 			}

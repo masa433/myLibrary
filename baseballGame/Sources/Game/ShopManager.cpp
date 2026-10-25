@@ -686,6 +686,12 @@ void ShopManager::Uninitialize()
 
 void ShopManager::Update(float elapsedTime)
 {
+	if (purchaseSound) purchaseSound->Update();
+	if (notEnoughMoneySound) notEnoughMoneySound->Update();
+	if (hoverSound) hoverSound->Update();
+	if (selectPitchTypeSound) selectPitchTypeSound->Update();
+	if (selectSpecialAbilitySound) selectSpecialAbilitySound->Update();
+
 	
 	if (currentShopState == ShopState::SelectPitchType)
 	{
@@ -714,7 +720,6 @@ void ShopManager::Update(float elapsedTime)
 			nextRoundButtonScale = isButtonPressed ? 0.9f : 1.1f;
 			if(!wasNextRoundHovered && !isNextRoundPressed && hoverSound)
 			{
-				hoverSound->Update();
 				hoverSound->PlayOneShot();
 			}
 		}
@@ -797,7 +802,6 @@ void ShopManager::UpdateShopItem()
 		{
 			if (!slotHover[i] && hoverSound)
 			{
-				hoverSound->Update();
 				hoverSound->PlayOneShot();
 			}
 
@@ -808,7 +812,6 @@ void ShopManager::UpdateShopItem()
 				if(Money::Instance().GetCurrentMoney() >= item.price && !slotPurchased[i])
 				{
 					Money::Instance().DecreaseMoney(item.price);
-					purchaseSound->Update();
 					purchaseSound->PlayOneShot();
 
 					if(isHalfPriceApplied || isFreePriceApplied)
@@ -837,7 +840,6 @@ void ShopManager::UpdateShopItem()
 				}
 				else if (Money::Instance().GetCurrentMoney() < item.price || slotPurchased[i])// お金が足りない場合、またはすでに購入済みの場合
 				{
-					notEnoughMoneySound->Update();
 					notEnoughMoneySound->PlayOneShot();
 				}
 			}
@@ -954,7 +956,6 @@ void ShopManager::UpdateSelectPitchTypeState()
 			// 前回と異なる要素の上にカーソルが乗った瞬間だけ再生
 			if (prevHovered != i && hoverSound)
 			{
-				hoverSound->Update();
 				hoverSound->PlayOneShot();
 			}
 
@@ -964,7 +965,6 @@ void ShopManager::UpdateSelectPitchTypeState()
 
 				if(selectPitchTypeSound)
 				{
-					selectPitchTypeSound->Update();
 					selectPitchTypeSound->PlayOneShot();
 				}
 				// 選択された球種を無効化する
@@ -1079,7 +1079,6 @@ void ShopManager::UpdateSelectSpecialAbilityState()
 
 			if(prevHovered != i && hoverSound)
 			{
-				hoverSound->Update();
 				hoverSound->PlayOneShot();
 			}
 
@@ -1088,7 +1087,6 @@ void ShopManager::UpdateSelectSpecialAbilityState()
 			{
 				if(selectSpecialAbilitySound)
 				{
-					selectSpecialAbilitySound->Update();
 					selectSpecialAbilitySound->PlayOneShot();
 				}
 				SpecialAbility::AbilityID selectedID = specialAbilityChoices[i];

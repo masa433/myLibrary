@@ -174,6 +174,11 @@ void RoundManager::TriggerSpeedModeActive(int currentRound)
 
 void RoundManager::Update(float elapsedTime)
 {
+	if (closeShopSound) closeShopSound->Update();
+	if (selectAbilityHoverSound) selectAbilityHoverSound->Update();
+	if (selectAbilitySound) selectAbilitySound->Update();
+
+
 	bool isPitchFinished = (ballCount::Instance().GetRemainingBalls() <= 0 &&
 		Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch);
 
@@ -293,6 +298,9 @@ void RoundManager::EnterShopState()
 
 void RoundManager::UpdateShopState()
 {
+	
+
+
 	if(ShopManager::Instance().IsClosing())
 	{
 		return; // ショップが閉じるアニメーション中は何もしない
@@ -315,7 +323,7 @@ void RoundManager::UpdateShopState()
 	{
 		if(closeShopSound)
 		{
-			closeShopSound->Update();
+			
 			closeShopSound->PlayOneShot();
 		}
 
@@ -359,7 +367,6 @@ void RoundManager::UpdateSelectAbilityState()
 
 			if(selectAbilityHoverSound && previousHoveredIndex != i)
 			{
-				selectAbilityHoverSound->Update();
 				selectAbilityHoverSound->PlayOneShot();
 			}
 
@@ -367,7 +374,6 @@ void RoundManager::UpdateSelectAbilityState()
 			{
 				if(selectAbilitySound)
 				{
-					selectAbilitySound->Update();
 					selectAbilitySound->PlayOneShot();
 				}
 

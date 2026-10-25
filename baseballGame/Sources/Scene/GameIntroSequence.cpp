@@ -248,6 +248,12 @@ void GameIntroSequence::UpdateIntroBoardAnimation(float elapsedTime)
 
 void GameIntroSequence::UpdateBallSpeedModeSelection()
 {
+
+    //効果音更新処理
+	if (ballModeHoverSound) ballModeHoverSound->Update();
+	if (ballModeSelectSound) ballModeSelectSound->Update();
+	if (playBallSound) playBallSound->Update();
+
     Input& input = Input::Instance();
     ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
@@ -289,7 +295,7 @@ void GameIntroSequence::UpdateBallSpeedModeSelection()
 
             if(ballModeHoverSound && previousSelectedMode != i)
             {
-                ballModeHoverSound->Update();
+ 
                 ballModeHoverSound->PlayOneShot(); // ホバー音を再生   
 			}
 
@@ -303,9 +309,7 @@ void GameIntroSequence::UpdateBallSpeedModeSelection()
 
                     if (ballModeSelectSound && playBallSound)
                     {
-                        ballModeSelectSound->Update();
                         ballModeSelectSound->PlayOneShot(); // 選択音を再生
-						playBallSound->Update();
 						playBallSound->PlayOneShot(); // PlayBall音を再生
                     }
 
@@ -340,6 +344,8 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 	//ステートをintとして扱うための変数
 	int introStateIndex = static_cast<int>(introState);
 
+	//効果音更新処理
+	if (introBoardAnimationSound) introBoardAnimationSound->Update();
 
     //showingboardのアニメーション更新関数
 	if(introState == GameIntroState::ShowingIntroBoard)
@@ -348,8 +354,7 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 
         if (introBoardAnimationSound && !introBoardAnimationSoundPlayed)
         {
-            introBoardAnimationSound->Update();
-            introBoardAnimationSound->PlayOneShot();
+			introBoardAnimationSound->PlayOneShot(); // イントロボードのアニメーション音を再生
             introBoardAnimationSoundPlayed = true;
         }
 	}

@@ -511,6 +511,10 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 
 void ScrollView::Update(float elapsedTime)
 {
+	//Œø‰Ê‰¹XVˆ—
+	if (hoverArrow) hoverArrow->Update();
+	if (clickNameButton) clickNameButton->Update();
+
 
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 	DirectX::XMFLOAT2 scaledScrollBackgroundPos = screenScaler.Scale(scrollBackgroundSpriteData[0].position);
@@ -701,7 +705,7 @@ void ScrollView::Update(float elapsedTime)
 
 				if (clickNameButton)
 				{
-					clickNameButton->Update();
+					
 					clickNameButton->PlayOneShot();
 				}
 			}

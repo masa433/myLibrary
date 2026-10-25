@@ -505,7 +505,11 @@ void ballSprite::Uninitialize()
 
 void ballSprite::Update(float elapsedTime)
 {
-	
+	//効果音更新処理
+	if (catchSound) catchSound->Update();
+	if (catchStrongSound) catchStrongSound->Update();
+	if (strikeSound) strikeSound->Update();
+	if (ballSound) ballSound->Update();
 
 	//実在投手の切り替えを検知し、その投手の球種に応じた変化量を設定する
 	SyncRealPitcherBreaks();
@@ -850,7 +854,6 @@ void ballSprite::Update(float elapsedTime)
 			{
 				if (catchStrongSound)
 				{
-					catchStrongSound->Update();
 					catchStrongSound->PlayOneShot();
 				}
 			}
@@ -859,7 +862,6 @@ void ballSprite::Update(float elapsedTime)
 				// 変化球またはその他の球種は通常のキャッチ音
 				if (catchSound)
 				{
-					catchSound->Update();
 					catchSound->PlayOneShot();
 				}
 			}
@@ -893,7 +895,7 @@ void ballSprite::Update(float elapsedTime)
 			Combo::Instance().ResetCombo();// ストライク判定時はコンボをリセット
 			if (strikeSound && !Ball::Instance().GetHasCollidedWithBat() && !Player::Instance().HasSwungThisPitch() && intro && intro->IsPlaying())
 			{
-				strikeSound->Update();
+				
 				strikeSound->PlayOneShot();
 			}
 
@@ -913,7 +915,7 @@ void ballSprite::Update(float elapsedTime)
 				pendingBallZoneBonus = true;
 				if (ballSound && !Ball::Instance().GetHasCollidedWithBat() && intro && intro->IsPlaying()) 
 				{
-					ballSound->Update();
+					
 					ballSound->PlayOneShot();
 				}
 			}

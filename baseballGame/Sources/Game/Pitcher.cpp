@@ -317,7 +317,7 @@ void Pitcher::Update(float elapsedTime)
 		return; // タイマーが0以下の場合、更新をスキップ
 	}
 
-	foulSound->Update();
+	if (foulSound) foulSound->Update();
 
 	// 状態に応じた処理
 	if (intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingGround &&
@@ -489,7 +489,6 @@ void Pitcher::Update(float elapsedTime)
 		Ball::Instance().SetIsFoulConfirmed(true);
 		if(foulSound && !isPlayedFoulSound)
 		{
-			foulSound->Update();
 			foulSound->PlayOneShot();
 			isPlayedFoulSound = true;
 		}
@@ -546,7 +545,6 @@ void Pitcher::Update(float elapsedTime)
 
 						if(foulSound && !isPlayedFoulSound)
 						{
-							foulSound->Update();
 							foulSound->PlayOneShot();
 							isPlayedFoulSound = true;
 						}

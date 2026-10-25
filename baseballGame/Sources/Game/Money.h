@@ -58,7 +58,6 @@ public:
 		TriggerBallZoneBonusAnimation();
 		if (getMoneySound)
 		{
-			getMoneySound->Update();
 			getMoneySound->PlayOneShot();
 		}
 

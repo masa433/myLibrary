@@ -110,6 +110,11 @@ void LoadingTips::Uninitialize()
 
 void LoadingTips::Update(float elapsedTime)
 {
+	//Œø‰Ê‰¹XVˆ—
+	if (loadingArrowSound) loadingArrowSound->Update();
+	if (clickArrowSound) clickArrowSound->Update();
+
+
 	Input& input = Input::Instance();
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
@@ -159,7 +164,6 @@ void LoadingTips::Update(float elapsedTime)
 			
 			if(loadingArrowSound)
 			{
-				loadingArrowSound->Update();
 				loadingArrowSound->PlayOneShot();
 				isArrowHovered = true;
 			}
@@ -170,7 +174,6 @@ void LoadingTips::Update(float elapsedTime)
 			
 			if(loadingArrowSound)
 			{
-				loadingArrowSound->Update();
 				loadingArrowSound->PlayOneShot();
 				isArrowHovered = true;
 			}
@@ -182,7 +185,6 @@ void LoadingTips::Update(float elapsedTime)
 			ShowNextTip();
 			if(clickArrowSound)
 			{
-				clickArrowSound->Update();
 				clickArrowSound->PlayOneShot();
 			}
 		}
@@ -191,7 +193,6 @@ void LoadingTips::Update(float elapsedTime)
 			ShowPreviousTip();
 			if(clickArrowSound)
 			{
-				clickArrowSound->Update();
 				clickArrowSound->PlayOneShot();
 			}
 		}

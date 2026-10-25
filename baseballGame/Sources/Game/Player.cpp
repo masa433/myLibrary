@@ -475,6 +475,8 @@ void Player::Update(float elapsedTime)
 // キー入力処理
 void Player::HandleInput(float elapsedTime)
 {
+    if (swingSound) swingSound->Update();
+
     //if(GameTimer::Instance().GetRemainingTime() <= 0.0f && !Ball::Instance().GetHasCollidedWithBat() && !(Pitcher::Instance().GetCurrentState() == Pitcher::State::Throwing)) return;
 	if (ballCount::Instance().GetRemainingBalls() <= 0 || (intro && intro->GetIntroState() != GameIntroSequence::GameIntroState::Playing)) return;
 
@@ -515,7 +517,7 @@ void Player::HandleInput(float elapsedTime)
             
             if(!Ball::Instance().GetHasCollidedWithBat())
             {
-                if (swingSound) swingSound->Update();
+                
                 if (swingSound) swingSound->PlayOneShot();
                 ChangeState(State::Swinging);
             }
