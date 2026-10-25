@@ -251,6 +251,12 @@
       <Filter>Sources\Game</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Sources\Setting\SettingPanel.cpp">
+      <Filter>Sources\Setting</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Setting\SettingManager.cpp">
+      <Filter>Sources\Setting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -533,6 +539,12 @@
       <Filter>Sources\Game</Filter>
     </ClInclude>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Sources\Setting\SettingPanel.h">
+      <Filter>Sources\Setting</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Setting\SettingManager.h">
+      <Filter>Sources\Setting</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Basic.hlsli">
@@ -763,6 +775,9 @@
     </Filter>
     <Filter Include="Sources\Audio">
       <UniqueIdentifier>{4f59b8d2-0fc8-488f-a139-de9f791d5089}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Setting">
+      <UniqueIdentifier>{233bd232-b6e0-4d01-a5ea-5d2fca2b41c3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

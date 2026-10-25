@@ -84,6 +84,9 @@ public:
 	void ResetFreeBattingRequest(bool requested) { isFreeBattingRequested = requested; }
 	bool IsFreeBattingRequested() const { return isFreeBattingRequested; }
 
+	void ResetSettingsRequest(bool requested) { isSettingsRequested = requested; }
+	bool IsSettingsRequested() const { return isSettingsRequested; }
+
 	//ボタンのタイプを取得する関数
 	ButtonType GetButtonType(ButtonType buttonType) const { return buttonType; }
 
@@ -190,6 +193,7 @@ private:
 	bool isSkipRequested = false;
 	bool isNextRequested = false;
 	bool isFreeBattingRequested = false;
+	bool isSettingsRequested = false;
 
 	AudioSource* buttonHoverSound = nullptr;
 	AudioSource* buttonClickSound = nullptr;

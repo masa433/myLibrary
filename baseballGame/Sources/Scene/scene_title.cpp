@@ -10,6 +10,7 @@
 #include "devmidi.h"
 #include "shader.h"
 #include "GameModeManager.h"
+#include "SettingManager.h"
 
 
 void scene_title::initialize()
@@ -138,6 +139,8 @@ void scene_title::initialize()
 
 	buttonManager.Initialize();
 
+	SettingManager::Instance().Initialize(device, context);
+	
 	devmidiInit();
 
 	LoadSetting();
@@ -169,6 +172,11 @@ void scene_title::update(float elapsed_time)
 
 	stage::Instance().update(elapsed_time);
 
+	if(SettingManager::Instance().IsOpen())
+	{
+		SettingManager::Instance().Update(elapsed_time);
+	}
+
 	//	スカイレンダラー更新
 	skyRenderer.Update(elapsed_time);
 	//	太陽光の方向を取得してライト定数バッファに反映
@@ -177,7 +185,7 @@ void scene_title::update(float elapsed_time)
 	//	シャドウレンダラー更新
 	shadowRenderer.SetDirectionalLight(directional_light_direction, directional_light_color, directional_light_intensity);
 
-	if(!isChangingScene)
+	if(!isChangingScene && !SettingManager::Instance().IsOpen())
 	{
 		buttonManager.Update(elapsed_time);
 	}
@@ -198,6 +206,11 @@ void scene_title::update(float elapsed_time)
 			isChangingScene = true;
 			hexTransitionEffect.Start(1.0f);
 			buttonManager.ResetFreeBattingRequest(false);
+		}
+		else if(buttonManager.IsSettingsRequested())
+		{
+			SettingManager::Instance().Open();
+			buttonManager.ResetSettingsRequest(false);
 		}
 	}
 	else
@@ -354,6 +367,8 @@ void scene_title::render(float elapsed_time)
 
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+	
 	
 	ScreenScaler& scaler = Graphics::Instance().GetScreenScaler();
 
@@ -368,6 +383,11 @@ void scene_title::render(float elapsed_time)
 			scaledSize.x, scaledSize.y,
 			logoColor.x, logoColor.y, logoColor.z, logoColor.w,
 			logoSpriteData->rotation);
+	}
+
+	if(SettingManager::Instance().IsOpen())
+	{
+		SettingManager::Instance().Render();
 	}
 
 	dc->VSSetShader(nullptr, nullptr, 0);
@@ -419,6 +439,7 @@ void scene_title::uninitialize()
 	bloomRenderer.Uninitialize();
 	hexTransitionEffect.Reset();
 	hexTransitionEffect.Uninitialize();
+	SettingManager::Instance().Uninitialize();
 
 	Physics::Instance().Finalize();
 
@@ -462,7 +483,15 @@ void scene_title::DrawGUI()
 	drawMidiKeyboard("main_kb");
 	ImGui::End();
 
-	buttonManager.DrawGUI();
+	if(ImGui::CollapsingHeader("TitleButton"))
+	{
+		buttonManager.DrawGUI();
+	}
+
+	if(ImGui::CollapsingHeader("SettingButton"))
+	{
+		SettingManager::Instance().DrawGUI();
+	}
 
 	if(ImGui::CollapsingHeader("Logo Sprite"))
 	{
@@ -500,6 +529,8 @@ void scene_title::SaveSetting()
 	};
 
 	bloomRenderer.SaveToJson(j);
+
+	SettingManager::Instance().SaveToJson(j);
 	
 	// ファイルに保存
 	std::ofstream file("resources\\setting\\titleSettings.json");
@@ -541,4 +572,6 @@ void scene_title::LoadSetting()
 	}
 
 	bloomRenderer.LoadFromJson(j);
+
+	SettingManager::Instance().LoadFromJson(j);
 }

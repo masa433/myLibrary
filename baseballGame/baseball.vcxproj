@@ -122,7 +122,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\Sources\Effect;.\resources\shader;.\Sources\Audio;.\midi;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\Sources\Effect;.\resources\shader;.\Sources\Audio;.\Sources\Setting;.\midi;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -180,7 +180,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\Sources\Effect;.\resources\shader;.\Sources\Audio;.\midi;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\Sources\Effect;.\resources\shader;.\Sources\Audio;.\Sources\Setting;.\midi;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -361,6 +361,8 @@
     </ClCompile>
     <ClCompile Include="Sources\Scene\scene_loading.cpp" />
     <ClCompile Include="Sources\Scene\scene_title.cpp" />
+    <ClCompile Include="Sources\Setting\SettingManager.cpp" />
+    <ClCompile Include="Sources\Setting\SettingPanel.cpp" />
     <ClCompile Include="Sources\Shader\BasicShader.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -540,6 +542,8 @@
     </ClInclude>
     <ClInclude Include="Sources\Scene\scene_loading.h" />
     <ClInclude Include="Sources\Scene\scene_title.h" />
+    <ClInclude Include="Sources\Setting\SettingManager.h" />
+    <ClInclude Include="Sources\Setting\SettingPanel.h" />
     <ClInclude Include="Sources\Shader\BasicShader.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

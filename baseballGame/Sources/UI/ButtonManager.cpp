@@ -200,6 +200,11 @@ void ButtonManager::Update(float elapsedTime)
 						
 						break;
 					case ButtonType::Settings:
+						isSettingsRequested = true;
+						if (buttonClickSound)
+						{
+							buttonClickSound->PlayOneShot();
+						}
 						OutputDebugStringA("Settings button clicked!\n");
 						break;
 					case ButtonType::Quit:
