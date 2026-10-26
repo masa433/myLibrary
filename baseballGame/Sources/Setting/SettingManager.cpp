@@ -43,8 +43,9 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 	settingBackgroundData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	settingBackgroundSprite = std::make_unique<sprite>(device, context, settingBackgroundData->texturePath.c_str());
 
-	//タブボタンの初期化
+	
 
+	//タブボタンの初期化
 	//オーディオタブボタン
 	{
 		TabButtonData audioTabButton;
@@ -86,6 +87,18 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 		gameSpeedTabButton.panelIndex = 2; // ゲームスピードパネルのインデックス
 		tabButtons.push_back(std::move(gameSpeedTabButton));
 	}
+
+	//アンダーバーの初期化
+	underBarData = std::make_unique<SpriteData>();
+	underBarData->texturePath = L".\\resources\\textures\\pitchTypeButton.png";
+	//アンダーバーの初期位置は最初のタブボタンの位置に設定
+	underBarData->position = { tabButtons[0].tabButtonData->position.x, tabButtons[0].tabButtonData->position.y + underBarOffsetY };
+	underBarData->size = { 330.0f, 5.0f };
+	underBarData->rotation = 0.0f;
+	underBarData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	underBarSprite = std::make_unique<sprite>(device, context, underBarData->texturePath.c_str());
+
+
 
 	hoveredTabButtonIndex = -1; // 初期化
 
@@ -150,12 +163,21 @@ void SettingManager::UpdateSelectedTabButton()
 			mousePos.y <= iconY + iconHeight);
 
 
+		bool isPressed = isHovered && (input.GetMouse().GetButton() & input.GetMouse().BTN_LEFT);// 左クリックが押されているかどうか
+		
+		//押されている時のサイズとマウスオーバー時のサイズを変更
+		tabButton.tabButtonData->size = isPressed ? originalTabButtonSize : (isHovered ? targetTabButtonSize : originalTabButtonSize); // ボタンのサイズを変更
+
 		if (isHovered)
 		{
 			hoveredTabButtonIndex = tabButton.panelIndex; // マウスオーバーしているタブボタンのインデックスを保存
 			if (clicked)
 			{
 				currentActivePanel = panels[tabButton.panelIndex].get(); // 対応するパネルをアクティブにする
+
+				//アンダーバーの位置を更新
+				underBarData->position = { tabButton.tabButtonData->position.x, tabButton.tabButtonData->position.y + underBarOffsetY };
+
 			}
 			break; // マウスオーバーしているボタンが見つかったらループを抜ける
 		}
@@ -220,14 +242,6 @@ void SettingManager::Render()
 			DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(tabButton.tabButtonData->position);
 			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(tabButton.tabButtonData->size);
 
-			if(hoveredTabButtonIndex == tabButton.panelIndex)
-			{
-				scaledSize.x *= 1.1f; // マウスオーバー時にサイズを10%拡大
-				scaledSize.y *= 1.1f;
-			}
-			
-
-
 			DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
 			tabButton.tabButtonSprite->render(dc,
 				scaledCenterPos.x, scaledCenterPos.y,
@@ -237,6 +251,18 @@ void SettingManager::Render()
 		}
 	}
 
+	// アンダーバーの描画
+	if (underBarData && underBarSprite)
+	{
+		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(underBarData->position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(underBarData->size);
+		DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+		underBarSprite->render(dc,
+			scaledCenterPos.x, scaledCenterPos.y,
+			scaledSize.x, scaledSize.y,
+			underBarData->color.x, underBarData->color.y, underBarData->color.z, underBarData->color.w,
+			underBarData->rotation);
+	}
 
 
 	if (currentActivePanel && isOpen)

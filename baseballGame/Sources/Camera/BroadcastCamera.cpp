@@ -64,12 +64,12 @@ void BroadcastCamera::SetupDefaultCameras()
 
 		if(Player::Instance().IsRightBatter())
 		{
-			preset.eye = { 0.1f, 1.0f, -3.5f };
+			preset.eye = { 0.1f, 1.1f, -3.5f };
 			preset.focus = { 0.0f, 0.0f, 14.0f };
 		}
 		else
 		{
-			preset.eye = { -0.1f, 1.0f, -3.5f };
+			preset.eye = { -0.1f, 1.1f, -3.5f };
 			preset.focus = { 0.0f, 0.0f, 14.0f };
 		}
 		preset.fov = DirectX::XMConvertToRadians(45.0f);
@@ -1035,8 +1035,8 @@ void BroadcastCamera::LoadFromJson(const nlohmann::json& j)
 	{
 		// 打者（左右）に応じた最新の eye を反映させる場合
 		defaultPreset.eye = Player::Instance().IsRightBatter()
-			? DirectX::XMFLOAT3{ 0.1f, 1.0f, -3.5f }
-		: DirectX::XMFLOAT3{ -0.1f, 1.0f, -3.5f };
+			? DirectX::XMFLOAT3{ 0.1f, 1.1f, -3.5f }
+		: DirectX::XMFLOAT3{ -0.1f, 1.1f, -3.5f };
 
 		AddCameraPreset(defaultPreset);
 	}

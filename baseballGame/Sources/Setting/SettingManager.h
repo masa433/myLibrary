@@ -63,9 +63,19 @@ private:
 		std::unique_ptr<SpriteData> tabButtonData;
         std::unique_ptr<sprite> tabButtonSprite;
 		int panelIndex; // このタブボタンに対応するパネルのインデックス
+
     };
     std::vector<TabButtonData> tabButtons;
 
+    DirectX::XMFLOAT2 originalTabButtonSize = { 300.0f, 100.0f };
+	DirectX::XMFLOAT2 targetTabButtonSize = { originalTabButtonSize.x * 1.1f, originalTabButtonSize.y * 1.1f };
+
 	int hoveredTabButtonIndex = -1; // 現在マウスオーバーしているタブボタンのインデックス
+
+    //アンダーバー
+	std::unique_ptr<SpriteData> underBarData;
+	std::unique_ptr<sprite> underBarSprite;
+
+	float underBarOffsetY = 50.0f; // アンダーバーのY方向のオフセット
 
 };
