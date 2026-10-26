@@ -33,6 +33,15 @@ protected:
 		float rotation;
 		DirectX::XMFLOAT4 color;
 	};
+
+	FontRenderer fontRenderer;
+
+	struct FontData
+	{
+		DirectX::XMFLOAT2 position;
+		float size;
+	};
+
 };
 
 class AudioSettingPanel : public SettingPanel
@@ -44,8 +53,10 @@ public:
 	void Render() override;
 
 private:
-	std::unique_ptr<SpriteData> audioPanelBackgroundData;
-	std::unique_ptr<sprite> audioPanelBackgroundSprite;
+
+	FontData masterVolumeFontData = { { 960.0f, 540.0f }, 0.5f };//マスターボリュームの表示
+	FontData bgmVolumeFontData = { { 960.0f, 540.0f }, 0.5f };//bgmボリュームの表示
+	FontData seVolumeFontData = { { 960.0f, 540.0f }, 0.5f };//seボリュームの表示
 
 };
 
@@ -58,12 +69,12 @@ public:
 	void Render() override;
 
 private:
-	std::unique_ptr<SpriteData> cursorPanelBackgroundData;
-	std::unique_ptr<sprite> cursorPanelBackgroundSprite;
+	
+	FontData cursorFontData = { { 960.0f, 540.0f }, 0.5f };//カーソル感度の表示
 
 };
 
-class GameSpeedSettingPanel : public SettingPanel
+class OtherSettingPanel : public SettingPanel
 {
 public:
 	void Initialize(ID3D11Device* device, ID3D11DeviceContext* context) override;
@@ -72,7 +83,8 @@ public:
 	void Render() override;
 
 private:
-	std::unique_ptr<SpriteData> gameSpeedPanelBackgroundData;
-	std::unique_ptr<sprite> gameSpeedPanelBackgroundSprite;
+	
+	FontData showOperationFontData = { { 960.0f, 540.0f }, 0.5f };//操作方法の表示
+	FontData gameSpeedFontData = { { 960.0f, 540.0f }, 0.5f };//ゲームスピードの表示
 
 };

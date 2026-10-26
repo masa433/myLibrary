@@ -67,7 +67,7 @@ private:
     };
     std::vector<TabButtonData> tabButtons;
 
-    DirectX::XMFLOAT2 originalTabButtonSize = { 300.0f, 100.0f };
+    DirectX::XMFLOAT2 originalTabButtonSize = { 200.0f, 75.0f };
 	DirectX::XMFLOAT2 targetTabButtonSize = { originalTabButtonSize.x * 1.1f, originalTabButtonSize.y * 1.1f };
 
 	int hoveredTabButtonIndex = -1; // 現在マウスオーバーしているタブボタンのインデックス

@@ -9,7 +9,7 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 	// ここで各パネルを初期化し、panelsベクターに追加する
 	panels.push_back(std::make_unique<AudioSettingPanel>());
 	panels.push_back(std::make_unique<CursorSettingPanel>());
-	panels.push_back(std::make_unique<GameSpeedSettingPanel>());
+	panels.push_back(std::make_unique<OtherSettingPanel>());
 	for (auto& panel : panels)
 	{
 		panel->Initialize(device, context);
@@ -51,8 +51,8 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 		TabButtonData audioTabButton;
 		audioTabButton.tabButtonData = std::make_unique<SpriteData>();
 		audioTabButton.tabButtonData->texturePath = L".\\resources\\textures\\audioTabButton.png";
-		audioTabButton.tabButtonData->position = { 600.0f, 300.0f };
-		audioTabButton.tabButtonData->size = { 300.0f, 100.0f };
+		audioTabButton.tabButtonData->position = { 600.0f, 350.0f };
+		audioTabButton.tabButtonData->size = { originalTabButtonSize.x, originalTabButtonSize.y };
 		audioTabButton.tabButtonData->rotation = 0.0f;
 		audioTabButton.tabButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		audioTabButton.tabButtonSprite = std::make_unique<sprite>(device, context, audioTabButton.tabButtonData->texturePath.c_str());
@@ -65,8 +65,8 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 		TabButtonData cursorTabButton;
 		cursorTabButton.tabButtonData = std::make_unique<SpriteData>();
 		cursorTabButton.tabButtonData->texturePath = L".\\resources\\textures\\cursorTabButton.png";
-		cursorTabButton.tabButtonData->position = { 960.0f, 300.0f };
-		cursorTabButton.tabButtonData->size = { 300.0f, 120.0f };
+		cursorTabButton.tabButtonData->position = { 960.0f, 350.0f };
+		cursorTabButton.tabButtonData->size = { originalTabButtonSize.x, originalTabButtonSize.y };
 		cursorTabButton.tabButtonData->rotation = 0.0f;
 		cursorTabButton.tabButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		cursorTabButton.tabButtonSprite = std::make_unique<sprite>(device, context, cursorTabButton.tabButtonData->texturePath.c_str());
@@ -74,18 +74,18 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 		tabButtons.push_back(std::move(cursorTabButton));
 	}
 
-	//ゲームスピードタブボタン
+	//その他タブボタン
 	{
-		TabButtonData gameSpeedTabButton;
-		gameSpeedTabButton.tabButtonData = std::make_unique<SpriteData>();
-		gameSpeedTabButton.tabButtonData->texturePath = L".\\resources\\textures\\gameSpeedTabButton.png";
-		gameSpeedTabButton.tabButtonData->position = { 1320.0f, 300.0f };
-		gameSpeedTabButton.tabButtonData->size = { 300.0f, 100.0f };
-		gameSpeedTabButton.tabButtonData->rotation = 0.0f;
-		gameSpeedTabButton.tabButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		gameSpeedTabButton.tabButtonSprite = std::make_unique<sprite>(device, context, gameSpeedTabButton.tabButtonData->texturePath.c_str());
-		gameSpeedTabButton.panelIndex = 2; // ゲームスピードパネルのインデックス
-		tabButtons.push_back(std::move(gameSpeedTabButton));
+		TabButtonData otherTabButton;
+		otherTabButton.tabButtonData = std::make_unique<SpriteData>();
+		otherTabButton.tabButtonData->texturePath = L".\\resources\\textures\\otherTabButton.png";
+		otherTabButton.tabButtonData->position = { 1320.0f, 350.0f };
+		otherTabButton.tabButtonData->size = { originalTabButtonSize.x, originalTabButtonSize.y };
+		otherTabButton.tabButtonData->rotation = 0.0f;
+		otherTabButton.tabButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		otherTabButton.tabButtonSprite = std::make_unique<sprite>(device, context, otherTabButton.tabButtonData->texturePath.c_str());
+		otherTabButton.panelIndex = 2; // その他パネルのインデックス
+		tabButtons.push_back(std::move(otherTabButton));
 	}
 
 	//アンダーバーの初期化
@@ -93,7 +93,7 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 	underBarData->texturePath = L".\\resources\\textures\\pitchTypeButton.png";
 	//アンダーバーの初期位置は最初のタブボタンの位置に設定
 	underBarData->position = { tabButtons[0].tabButtonData->position.x, tabButtons[0].tabButtonData->position.y + underBarOffsetY };
-	underBarData->size = { 330.0f, 5.0f };
+	underBarData->size = { 200.0f, 5.0f };
 	underBarData->rotation = 0.0f;
 	underBarData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	underBarSprite = std::make_unique<sprite>(device, context, underBarData->texturePath.c_str());

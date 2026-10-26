@@ -6,16 +6,7 @@
 
 void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
-	//テクスチャの読み込み
-	audioPanelBackgroundData = std::make_unique<SpriteData>();
-	audioPanelBackgroundData->texturePath = L".\\resources\\textures\\ball.png";
-	audioPanelBackgroundData->position = { 960.0f, 540.0f };
-	audioPanelBackgroundData->size = { 100.0f, 100.0f };
-	audioPanelBackgroundData->rotation = 0.0f;
-	audioPanelBackgroundData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	audioPanelBackgroundSprite = std::make_unique<sprite>(device, context, audioPanelBackgroundData->texturePath.c_str());
-
-
+	
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
@@ -26,7 +17,33 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
-	
+	// フォントレンダラーの初期化
+	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+
+	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints
+	(
+		u8"全体BGMSE"
+		u8"カーソル感度"
+		u8"打撃後のゲーム速度操作方法表示"
+	);
+
+	// フォントレンダラーの初期化
+	fontRenderer.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		100.0f,
+		screenWidth, screenHeight,
+		1024, 1024,
+		&trackingDataCodepoints);
+
+	masterVolumeFontData.position = { 600.0f, 550.0f };
+	masterVolumeFontData.size = 0.5f;
+
+	bgmVolumeFontData.position = { 600.0f, 680.0f };
+	bgmVolumeFontData.size = 0.5f;
+
+	seVolumeFontData.position = { 600.0f, 810.0f };
+	bgmVolumeFontData.size = 0.5f;
 }
 
 void AudioSettingPanel::Uninitialize()
@@ -35,8 +52,10 @@ void AudioSettingPanel::Uninitialize()
 	spriteVS.Reset();
 	spritePS.Reset();
 	spriteInputLayout.Reset();
-	audioPanelBackgroundData.reset();
-	audioPanelBackgroundSprite.reset();
+	fontRenderer.Uninitialize();
+	masterVolumeFontData = {};
+	bgmVolumeFontData = {};
+	seVolumeFontData = {};
 }
 
 void AudioSettingPanel::Update(float elapsedTime)
@@ -57,20 +76,43 @@ void AudioSettingPanel::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	if(audioPanelBackgroundData && audioPanelBackgroundSprite)
-	{
-		// スケーリングを適用して描画
-		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(audioPanelBackgroundData->position);
-		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(audioPanelBackgroundData->size);
+	// フォントの描画
+	//マスターボリュームの表示
+	DirectX::XMFLOAT2 scaledFontPos = screenScaler.Scale(masterVolumeFontData.position);
+	const float scaledFontScale = masterVolumeFontData.size * screenScaler.GetUniformScale();
 
-		DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+	float textWidth, textHeight;
+	const char* text = u8"全体";
+	fontRenderer.MeasureText(text,scaledFontScale, textWidth, textHeight);
+	float drawPosX = scaledFontPos.x - textWidth / 2.0f;
+	float drawPosY = scaledFontPos.y - textHeight / 2.0f;
 
-		audioPanelBackgroundSprite->render(dc,
-			scaledCenterPos.x, scaledCenterPos.y,
-			scaledSize.x, scaledSize.y,
-			audioPanelBackgroundData->color.x, audioPanelBackgroundData->color.y, audioPanelBackgroundData->color.z, audioPanelBackgroundData->color.w,
-			audioPanelBackgroundData->rotation);
-	}
+	fontRenderer.DrawTextW(dc, text, drawPosX, drawPosY, scaledFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	//BGMボリュームの表示
+	DirectX::XMFLOAT2 scaledBgmFontPos = screenScaler.Scale(bgmVolumeFontData.position);
+	const float scaledBgmFontScale = bgmVolumeFontData.size * screenScaler.GetUniformScale();
+
+	float bgmTextWidth, bgmTextHeight;
+	const char* bgmText = u8"BGM";
+	fontRenderer.MeasureText(bgmText, scaledBgmFontScale, bgmTextWidth, bgmTextHeight);
+	float bgmDrawPosX = scaledBgmFontPos.x - bgmTextWidth / 2.0f;
+	float bgmDrawPosY = scaledBgmFontPos.y - bgmTextHeight / 2.0f;
+
+	fontRenderer.DrawTextW(dc, bgmText, bgmDrawPosX, bgmDrawPosY, scaledBgmFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	//SEボリュームの表示
+	DirectX::XMFLOAT2 scaledSeFontPos = screenScaler.Scale(seVolumeFontData.position);
+	const float scaledSeFontScale = seVolumeFontData.size * screenScaler.GetUniformScale();
+
+	float seTextWidth, seTextHeight;
+	const char* seText = u8"SE";
+	fontRenderer.MeasureText(seText, scaledSeFontScale, seTextWidth, seTextHeight);
+	float seDrawPosX = scaledSeFontPos.x - seTextWidth / 2.0f;
+	float seDrawPosY = scaledSeFontPos.y - seTextHeight / 2.0f;
+
+	fontRenderer.DrawTextW(dc, seText, seDrawPosX, seDrawPosY, scaledSeFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
 
 	// 描画後の状態をリセット
 	dc->VSSetShader(nullptr, nullptr, 0);
@@ -93,14 +135,28 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
-	// テクスチャの読み込み
-	cursorPanelBackgroundData = std::make_unique<SpriteData>();
-	cursorPanelBackgroundData->texturePath = L".\\resources\\textures\\coin.png";
-	cursorPanelBackgroundData->position = { 960.0f, 540.0f };
-	cursorPanelBackgroundData->size = { 100.0f, 100.0f };
-	cursorPanelBackgroundData->rotation = 0.0f;
-	cursorPanelBackgroundData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	cursorPanelBackgroundSprite = std::make_unique<sprite>(device, context, cursorPanelBackgroundData->texturePath.c_str());
+
+	// フォントレンダラーの初期化
+	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+
+	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints
+	(
+		u8"バットカーソル感度"
+		u8"打撃後のゲーム速度操作方法表示"
+	);
+
+	// フォントレンダラーの初期化
+	fontRenderer.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		100.0f,
+		screenWidth, screenHeight,
+		1024, 1024,
+		&trackingDataCodepoints);
+
+	// フォントデータの設定
+	cursorFontData.position = { 600.0f, 550.0f };
+	cursorFontData.size = 0.3f;
 }
 
 void CursorSettingPanel::Uninitialize()
@@ -109,8 +165,8 @@ void CursorSettingPanel::Uninitialize()
 	spriteVS.Reset();
 	spritePS.Reset();
 	spriteInputLayout.Reset();
-	cursorPanelBackgroundData.reset();
-	cursorPanelBackgroundSprite.reset();
+	fontRenderer.Uninitialize();
+	cursorFontData = {};
 }
 
 void CursorSettingPanel::Update(float elapsedTime)
@@ -131,19 +187,19 @@ void CursorSettingPanel::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	if (cursorPanelBackgroundData && cursorPanelBackgroundSprite)
-	{
-		// スケーリングを適用して描画
-		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(cursorPanelBackgroundData->position);
-		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(cursorPanelBackgroundData->size);
-		DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+	
+	// フォントの描画
+	//カーソル感度の表示
+	DirectX::XMFLOAT2 scaledFontPos = screenScaler.Scale(cursorFontData.position);
+	const float scaledFontScale = cursorFontData.size * screenScaler.GetUniformScale();
 
-		cursorPanelBackgroundSprite->render(dc,
-			scaledCenterPos.x, scaledCenterPos.y,
-			scaledSize.x, scaledSize.y,
-			cursorPanelBackgroundData->color.x, cursorPanelBackgroundData->color.y, cursorPanelBackgroundData->color.z, cursorPanelBackgroundData->color.w,
-			cursorPanelBackgroundData->rotation);
-	}
+	float textWidth, textHeight;
+	const char* text = u8"バットカーソル感度";
+	fontRenderer.MeasureText(text, scaledFontScale, textWidth, textHeight);
+	float drawPosX = scaledFontPos.x - textWidth / 2.0f;
+	float drawPosY = scaledFontPos.y - textHeight / 2.0f;
+
+	fontRenderer.DrawTextW(dc, text, drawPosX, drawPosY, scaledFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	// 描画後の状態をリセット
 	dc->VSSetShader(nullptr, nullptr, 0);
@@ -154,7 +210,7 @@ void CursorSettingPanel::Render()
 		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 }
 
-void GameSpeedSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
+void OtherSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -166,32 +222,49 @@ void GameSpeedSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
-	// テクスチャの読み込み
-	gameSpeedPanelBackgroundData = std::make_unique<SpriteData>();
-	gameSpeedPanelBackgroundData->texturePath = L".\\resources\\textures\\soldOut.png";
-	gameSpeedPanelBackgroundData->position = { 960.0f, 540.0f };
-	gameSpeedPanelBackgroundData->size = { 100.0f, 100.0f };
-	gameSpeedPanelBackgroundData->rotation = 0.0f;
-	gameSpeedPanelBackgroundData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	gameSpeedPanelBackgroundSprite = std::make_unique<sprite>(device, context, gameSpeedPanelBackgroundData->texturePath.c_str());
+	
+	// フォントレンダラーの初期化
+	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+
+	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints
+	(
+		u8"打撃後のゲーム速度操作方法表示"
+	);
+
+	// フォントレンダラーの初期化
+	fontRenderer.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		100.0f,
+		screenWidth, screenHeight,
+		1024, 1024,
+		&trackingDataCodepoints);
+
+	// フォントデータの設定
+	showOperationFontData.position = { 600.0f, 550.0f };
+	showOperationFontData.size = 0.3f;
+
+	gameSpeedFontData.position = { 600.0f, 680.0f };
+	gameSpeedFontData.size = 0.3f;
 }
 
-void GameSpeedSettingPanel::Uninitialize()
+void OtherSettingPanel::Uninitialize()
 {
 	// リソースの解放
 	spriteVS.Reset();
 	spritePS.Reset();
 	spriteInputLayout.Reset();
-	gameSpeedPanelBackgroundData.reset();
-	gameSpeedPanelBackgroundSprite.reset();
+	fontRenderer.Uninitialize();
+	showOperationFontData = {};
+	gameSpeedFontData = {};
 }
 
-void GameSpeedSettingPanel::Update(float elapsedTime)
+void OtherSettingPanel::Update(float elapsedTime)
 {
 	// 設定パネルの更新処理
 }
 
-void GameSpeedSettingPanel::Render()
+void OtherSettingPanel::Render()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
@@ -204,20 +277,30 @@ void GameSpeedSettingPanel::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	if (gameSpeedPanelBackgroundData && gameSpeedPanelBackgroundSprite)
-	{
-		// スケーリングを適用して描画
-		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(gameSpeedPanelBackgroundData->position);
-		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(gameSpeedPanelBackgroundData->size);
-		DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+	// フォントの描画
+	//操作方法の表示
+	DirectX::XMFLOAT2 scaledFontPos = screenScaler.Scale(showOperationFontData.position);
+	const float scaledFontScale = showOperationFontData.size * screenScaler.GetUniformScale();
 
-		gameSpeedPanelBackgroundSprite->render(dc,
-			scaledCenterPos.x, scaledCenterPos.y,
-			scaledSize.x, scaledSize.y,
-			gameSpeedPanelBackgroundData->color.x, gameSpeedPanelBackgroundData->color.y, gameSpeedPanelBackgroundData->color.z, gameSpeedPanelBackgroundData->color.w,
-			gameSpeedPanelBackgroundData->rotation);
-	}
+	float textWidth, textHeight;
+	const char* text = u8"操作方法表示";
+	fontRenderer.MeasureText(text, scaledFontScale, textWidth, textHeight);
+	float drawPosX = scaledFontPos.x - textWidth / 2.0f;
+	float drawPosY = scaledFontPos.y - textHeight / 2.0f;
 
+	fontRenderer.DrawTextW(dc, text, drawPosX, drawPosY, scaledFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	//ゲームスピードの表示
+	DirectX::XMFLOAT2 scaledGameSpeedFontPos = screenScaler.Scale(gameSpeedFontData.position);
+	const float scaledGameSpeedFontScale = gameSpeedFontData.size * screenScaler.GetUniformScale();
+
+	float gameSpeedTextWidth, gameSpeedTextHeight;
+	const char* gameSpeedText = u8"打撃後のゲーム速度";
+	fontRenderer.MeasureText(gameSpeedText, scaledGameSpeedFontScale, gameSpeedTextWidth, gameSpeedTextHeight);
+	float gameSpeedDrawPosX = scaledGameSpeedFontPos.x - gameSpeedTextWidth / 2.0f;
+	float gameSpeedDrawPosY = scaledGameSpeedFontPos.y - gameSpeedTextHeight / 2.0f;
+
+	fontRenderer.DrawTextW(dc, gameSpeedText, gameSpeedDrawPosX, gameSpeedDrawPosY, scaledGameSpeedFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
 	// 描画後の状態をリセット
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);

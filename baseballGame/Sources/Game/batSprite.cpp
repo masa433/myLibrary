@@ -236,8 +236,8 @@ void BatSprite::Update(float elapsedTime)
 
 	//ストライクゾーン内でカーソルの位置によってバットの角度を変える
 	float zoneHeight = zoneBottomRight.y - zoneTopLeft.y;
-	float normalizedY = (mouseY - zoneTopLeft.y) / zoneHeight; // 0.0f ~ 1.0f
-	normalizedY = (std::max)(0.0f, (std::min)(1.0f, normalizedY)); // Clamp to [0, 1]
+	float normalizedY = (mouseY - zoneTopLeft.y) / zoneHeight; // 0.0～1.0の範囲に正規化
+	normalizedY = (std::max)(0.0f, (std::min)(1.0f, normalizedY)); // 正規化された値を0.0～1.0の範囲に制限
 
 	float highAngle = -5.0f; // 高めの角度
 	float lowAngle = 45.0f;  // 低めの角度
