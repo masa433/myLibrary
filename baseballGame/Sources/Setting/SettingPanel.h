@@ -43,9 +43,6 @@ public:
 	void Update(float elapsedTime) override;
 	void Render() override;
 
-private:
-	std::unique_ptr<SpriteData> audioPanelBackgroundData;
-	std::unique_ptr<sprite> audioPanelBackgroundSprite;
 
 };
 

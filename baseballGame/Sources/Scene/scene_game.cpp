@@ -676,7 +676,10 @@ void scene_game::render(float elapsedTime)
     if (enableShadows)
     {
         if (shadowRenderer.use_cascade_shadow_map)
+        {
             shadowRenderer.RenderCascadeShadowMap(elapsedTime);
+			shadowRenderer.SetEnableGameSceneShadow(true);
+        }
        /* else if (!shadowRenderer.use_cascade_shadow_map)
         {
 			shadowRenderer.RenderShadowMap(elapsedTime);    

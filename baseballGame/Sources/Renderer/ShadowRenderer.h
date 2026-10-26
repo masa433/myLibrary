@@ -96,6 +96,9 @@ public:
 	void BindShadowResources(ID3D11DeviceContext* dc) const;
 	void UnbindShadowResources(ID3D11DeviceContext* dc) const;
 
+	bool GetEnableGameSceneShadow() const { return enableGameSceneShadow; }
+	void SetEnableGameSceneShadow(bool enable) { enableGameSceneShadow = enable; }
+
     //ImGui/SaveSetting用のゲッター
     ID3D11ShaderResourceView* GetShadowmapSRV() const;
 	ID3D11ShaderResourceView* GetCascadeShadowmapSRV(int index) const;
@@ -140,4 +143,6 @@ private:
         DirectX::XMFLOAT3         cameraPosition{};
         std::vector<point_lights> pointLights;
         std::vector<spot_lights>  spotLights;
+
+		bool enableGameSceneShadow = false; // ゲームシーンでのシャドウ描画を有効にするかどうか
 };

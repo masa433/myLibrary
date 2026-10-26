@@ -32,6 +32,17 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
+
+	//テクスチャの読み込み
+	settingBackgroundData = std::make_unique<SpriteData>();
+	settingBackgroundData->texturePath = L".\\resources\\textures\\settingBoard.png";
+	settingBackgroundData->position = { settingBackgroundPosition.x, settingBackgroundPosition.y };
+	settingBackgroundData->size = { settingBackgroundSize.x, settingBackgroundSize.y };
+	settingBackgroundData->rotation = 0.0f;
+	settingBackgroundData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	settingBackgroundSprite = std::make_unique<sprite>(device, context, settingBackgroundData->texturePath.c_str());
+
+
 	closeButton.Initialize();
 
 }
@@ -44,6 +55,9 @@ void SettingManager::Uninitialize()
 	}
 	panels.clear();
 	currentActivePanel = nullptr;
+
+	settingBackgroundData.reset();
+	settingBackgroundSprite.reset();
 
 	closeButton.Uninitialize();
 }
@@ -79,6 +93,20 @@ void SettingManager::Render()
 
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+	if (settingBackgroundData && settingBackgroundSprite)
+	{
+		// スケーリングを適用して描画
+		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(settingBackgroundPosition);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(settingBackgroundSize);
+		DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+
+		settingBackgroundSprite->render(dc,
+			scaledCenterPos.x, scaledCenterPos.y,
+			scaledSize.x, scaledSize.y,
+			settingBackgroundData->color.x, settingBackgroundData->color.y, settingBackgroundData->color.z, settingBackgroundData->color.w,
+			settingBackgroundData->rotation);
+	}
 
 
 	if (currentActivePanel && isOpen)

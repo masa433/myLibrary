@@ -44,4 +44,20 @@ private:
     Microsoft::WRL::ComPtr<ID3D11PixelShader> spritePS;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> spriteInputLayout;
 
+    struct SpriteData
+    {
+        std::wstring texturePath;
+        DirectX::XMFLOAT2 position;
+        DirectX::XMFLOAT2 size;
+        float rotation;
+        DirectX::XMFLOAT4 color;
+    };
+
+	std::unique_ptr<SpriteData> settingBackgroundData;
+	std::unique_ptr<sprite> settingBackgroundSprite;
+
+	DirectX::XMFLOAT2 settingBackgroundPosition = { 960.0f, 540.0f };
+	DirectX::XMFLOAT2 settingBackgroundSize = { 1200.0f, 700.0f };
+
+
 };

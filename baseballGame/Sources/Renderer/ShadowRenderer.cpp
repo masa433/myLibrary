@@ -618,14 +618,17 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
         stage::Instance().render(rc, modelRenderer);
         // プレイヤー・ピッチャーの描画(カリングなしで両面描画)
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
-        // ピッチャーの描画
-        Pitcher::Instance().Render(rc, modelRenderer, true);
-        // プレイヤーの描画
-        Player::Instance().Render(rc, modelRenderer);
+        
+        if(enableGameSceneShadow)
+        {
+            Pitcher::Instance().Render(rc, modelRenderer, true);
+           
+            Player::Instance().Render(rc, modelRenderer);
 
-		Catcher::Instance().Render(rc, modelRenderer, nullptr);
+            Catcher::Instance().Render(rc, modelRenderer, nullptr);
 
-		BallNet::Instance().Render(rc, modelRenderer);
+            BallNet::Instance().Render(rc, modelRenderer);
+        }
     }
 }
 

@@ -6,15 +6,6 @@
 
 void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
-	//テクスチャの読み込み
-	audioPanelBackgroundData = std::make_unique<SpriteData>();
-	audioPanelBackgroundData->texturePath = L".\\resources\\textures\\ball.png";
-	audioPanelBackgroundData->position = { 960.0f, 540.0f };
-	audioPanelBackgroundData->size = { 100.0f, 100.0f };
-	audioPanelBackgroundData->rotation = 0.0f;
-	audioPanelBackgroundData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	audioPanelBackgroundSprite = std::make_unique<sprite>(device, context, audioPanelBackgroundData->texturePath.c_str());
-
 
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -35,8 +26,6 @@ void AudioSettingPanel::Uninitialize()
 	spriteVS.Reset();
 	spritePS.Reset();
 	spriteInputLayout.Reset();
-	audioPanelBackgroundData.reset();
-	audioPanelBackgroundSprite.reset();
 }
 
 void AudioSettingPanel::Update(float elapsedTime)
@@ -57,20 +46,7 @@ void AudioSettingPanel::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	if(audioPanelBackgroundData && audioPanelBackgroundSprite)
-	{
-		// スケーリングを適用して描画
-		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(audioPanelBackgroundData->position);
-		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(audioPanelBackgroundData->size);
-
-		DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
-
-		audioPanelBackgroundSprite->render(dc,
-			scaledCenterPos.x, scaledCenterPos.y,
-			scaledSize.x, scaledSize.y,
-			audioPanelBackgroundData->color.x, audioPanelBackgroundData->color.y, audioPanelBackgroundData->color.z, audioPanelBackgroundData->color.w,
-			audioPanelBackgroundData->rotation);
-	}
+	
 
 	// 描画後の状態をリセット
 	dc->VSSetShader(nullptr, nullptr, 0);
