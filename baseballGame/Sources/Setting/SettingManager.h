@@ -22,12 +22,11 @@ public:
 	void SaveToJson(nlohmann::json& j);
 	void LoadFromJson(const nlohmann::json& j);
 
-    // 特定のパネルを開く関数など
-    void OpenPanel(int index);
-
     void Open() { isOpen = true; }
     void Close() { isOpen = false; }
     bool IsOpen() const { return isOpen; }
+
+	void UpdateSelectedTabButton();
 
 private:
     bool isOpen = false;
@@ -59,5 +58,14 @@ private:
 	DirectX::XMFLOAT2 settingBackgroundPosition = { 960.0f, 540.0f };
 	DirectX::XMFLOAT2 settingBackgroundSize = { 1200.0f, 700.0f };
 
+    struct TabButtonData
+    {
+		std::unique_ptr<SpriteData> tabButtonData;
+        std::unique_ptr<sprite> tabButtonSprite;
+		int panelIndex; // このタブボタンに対応するパネルのインデックス
+    };
+    std::vector<TabButtonData> tabButtons;
+
+	int hoveredTabButtonIndex = -1; // 現在マウスオーバーしているタブボタンのインデックス
 
 };

@@ -2,6 +2,7 @@
 #include "SettingManager.h"
 #include "shader.h"
 #include "Graphics.h"
+#include "input.h"
 
 void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
@@ -42,6 +43,51 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 	settingBackgroundData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	settingBackgroundSprite = std::make_unique<sprite>(device, context, settingBackgroundData->texturePath.c_str());
 
+	//タブボタンの初期化
+
+	//オーディオタブボタン
+	{
+		TabButtonData audioTabButton;
+		audioTabButton.tabButtonData = std::make_unique<SpriteData>();
+		audioTabButton.tabButtonData->texturePath = L".\\resources\\textures\\audioTabButton.png";
+		audioTabButton.tabButtonData->position = { 600.0f, 300.0f };
+		audioTabButton.tabButtonData->size = { 300.0f, 100.0f };
+		audioTabButton.tabButtonData->rotation = 0.0f;
+		audioTabButton.tabButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		audioTabButton.tabButtonSprite = std::make_unique<sprite>(device, context, audioTabButton.tabButtonData->texturePath.c_str());
+		audioTabButton.panelIndex = 0; // オーディオパネルのインデックス
+		tabButtons.push_back(std::move(audioTabButton));
+	}
+
+	//カーソルタブボタン
+	{
+		TabButtonData cursorTabButton;
+		cursorTabButton.tabButtonData = std::make_unique<SpriteData>();
+		cursorTabButton.tabButtonData->texturePath = L".\\resources\\textures\\cursorTabButton.png";
+		cursorTabButton.tabButtonData->position = { 960.0f, 300.0f };
+		cursorTabButton.tabButtonData->size = { 300.0f, 120.0f };
+		cursorTabButton.tabButtonData->rotation = 0.0f;
+		cursorTabButton.tabButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		cursorTabButton.tabButtonSprite = std::make_unique<sprite>(device, context, cursorTabButton.tabButtonData->texturePath.c_str());
+		cursorTabButton.panelIndex = 1; // カーソルパネルのインデックス
+		tabButtons.push_back(std::move(cursorTabButton));
+	}
+
+	//ゲームスピードタブボタン
+	{
+		TabButtonData gameSpeedTabButton;
+		gameSpeedTabButton.tabButtonData = std::make_unique<SpriteData>();
+		gameSpeedTabButton.tabButtonData->texturePath = L".\\resources\\textures\\gameSpeedTabButton.png";
+		gameSpeedTabButton.tabButtonData->position = { 1320.0f, 300.0f };
+		gameSpeedTabButton.tabButtonData->size = { 300.0f, 100.0f };
+		gameSpeedTabButton.tabButtonData->rotation = 0.0f;
+		gameSpeedTabButton.tabButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		gameSpeedTabButton.tabButtonSprite = std::make_unique<sprite>(device, context, gameSpeedTabButton.tabButtonData->texturePath.c_str());
+		gameSpeedTabButton.panelIndex = 2; // ゲームスピードパネルのインデックス
+		tabButtons.push_back(std::move(gameSpeedTabButton));
+	}
+
+	hoveredTabButtonIndex = -1; // 初期化
 
 	closeButton.Initialize();
 
@@ -60,13 +106,71 @@ void SettingManager::Uninitialize()
 	settingBackgroundSprite.reset();
 
 	closeButton.Uninitialize();
+
+	//シェーダーの解放
+	spritePS.Reset();
+	spriteVS.Reset();
+	spriteInputLayout.Reset();
+
+	//タブボタンの解放
+	for(auto& tabButton : tabButtons)
+	{
+		tabButton.tabButtonData.reset();
+		tabButton.tabButtonSprite.reset();
+	}
+}
+
+void SettingManager::UpdateSelectedTabButton()
+{
+	Input& input = Input::Instance();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
+	//マウスの位置を取得
+	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
+	bool clicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;//左クリックが押されたかどうか
+
+	int previousHoveredIndex = hoveredTabButtonIndex;// 前回のマウスオーバーしていたタブボタンのインデックスを保存
+	hoveredTabButtonIndex = -1; // 初期化
+
+	//タブボタンのアイコン範囲をチェック
+	for(auto& tabButton : tabButtons)
+	{
+		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(tabButton.tabButtonData->position);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(tabButton.tabButtonData->size);
+		DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+
+		float iconX = scaledCenterPos.x;
+		float iconY = scaledCenterPos.y;
+		float iconWidth = scaledSize.x;
+		float iconHeight = scaledSize.y;
+
+		bool isHovered = (mousePos.x >= iconX &&
+			mousePos.x <= iconX + iconWidth &&
+			mousePos.y >= iconY &&
+			mousePos.y <= iconY + iconHeight);
+
+
+		if (isHovered)
+		{
+			hoveredTabButtonIndex = tabButton.panelIndex; // マウスオーバーしているタブボタンのインデックスを保存
+			if (clicked)
+			{
+				currentActivePanel = panels[tabButton.panelIndex].get(); // 対応するパネルをアクティブにする
+			}
+			break; // マウスオーバーしているボタンが見つかったらループを抜ける
+		}
+	}
+
 }
 
 void SettingManager::Update(float elapsedTime)
 {
+	UpdateSelectedTabButton();
+
 	if (currentActivePanel && isOpen)
 	{
 		currentActivePanel->Update(elapsedTime);
+		
 	}
 
 	if(isOpen)
@@ -107,6 +211,32 @@ void SettingManager::Render()
 			settingBackgroundData->color.x, settingBackgroundData->color.y, settingBackgroundData->color.z, settingBackgroundData->color.w,
 			settingBackgroundData->rotation);
 	}
+
+	// タブボタンの描画
+	for(auto& tabButton : tabButtons)
+	{
+		if (tabButton.tabButtonData && tabButton.tabButtonSprite)
+		{
+			DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(tabButton.tabButtonData->position);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(tabButton.tabButtonData->size);
+
+			if(hoveredTabButtonIndex == tabButton.panelIndex)
+			{
+				scaledSize.x *= 1.1f; // マウスオーバー時にサイズを10%拡大
+				scaledSize.y *= 1.1f;
+			}
+			
+
+
+			DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+			tabButton.tabButtonSprite->render(dc,
+				scaledCenterPos.x, scaledCenterPos.y,
+				scaledSize.x, scaledSize.y,
+				tabButton.tabButtonData->color.x, tabButton.tabButtonData->color.y, tabButton.tabButtonData->color.z, tabButton.tabButtonData->color.w,
+				tabButton.tabButtonData->rotation);
+		}
+	}
+
 
 
 	if (currentActivePanel && isOpen)
