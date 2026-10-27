@@ -1,20 +1,20 @@
 ﻿  SettingPanel.cpp
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(232,112): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(233,112): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
   (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
   
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(232,79): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(233,79): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
   (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
   
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(525,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(526,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
   (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
   
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(525,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(526,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
   (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
   
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(566,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(567,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
   (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
   
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(566,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(567,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
   (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
   
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe

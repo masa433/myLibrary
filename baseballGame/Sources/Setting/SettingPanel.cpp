@@ -204,7 +204,8 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 	cursorFontData.position = { 600.0f, 600.0f };
 	cursorFontData.size = 0.3f;
 
-	currentSliderButtonIndex = static_cast<int>(currentSliderPosition);
+	//保存されているスライダーボタンのインデックスに応じて現在のスライダーの位置を設定
+	currentSliderPosition = static_cast<SliderPosition>(currentSliderButtonIndex);
 }
 
 void CursorSettingPanel::Uninitialize()
@@ -289,8 +290,8 @@ void CursorSettingPanel::Update(float elapsedTime)
 			if(std::abs(sliderButtonPosition.x - pointX) <= harfSegmentSize)
 			{
 				sliderButtonPosition.x = pointX;// スナップさせる
-				currentSliderPosition = static_cast<SliderPosition>(i);
-				currentSliderButtonIndex = i;
+				currentSliderPosition = static_cast<SliderPosition>(i);// スライダーボタンの位置に応じて現在のスライダーの位置を更新
+				currentSliderButtonIndex = i;// スライダーボタンのインデックスを更新
 				break;// 近い分割の中心点にスナップさせたらループを抜ける
 			}
 
@@ -308,7 +309,7 @@ void CursorSettingPanel::Update(float elapsedTime)
 			}
 			case SliderPosition::Medium:
 			{
-				//カーソル感度を1.0に設定
+				//カーソル感度を0.75に設定
 				input.GetMouse().SetMouseSensitivity(0.75f);
 				break;
 			}
@@ -320,13 +321,13 @@ void CursorSettingPanel::Update(float elapsedTime)
 			}
 			case SliderPosition::MediumHigh:
 			{
-				//カーソル感度を1.5に設定
+				//カーソル感度を1.25に設定
 				input.GetMouse().SetMouseSensitivity(1.25f);
 				break;
 			}
 			case SliderPosition::High:
 			{
-				//カーソル感度を2.0に設定
+				//カーソル感度を1.5に設定
 				input.GetMouse().SetMouseSensitivity(1.5f);
 				break;
 			}
