@@ -261,9 +261,13 @@ public:
 	bool GetIsThrowingFromCenter() const { return isThrowingFromCenter; } // ボールを投げる位置が真ん中かどうかを取得
 	void SetIsThrowingFromCenter(bool isCenter) { isThrowingFromCenter = isCenter; } // ボールを投げる位置が真ん中かどうかを設定
 
+	bool GetShowOperationGuide() const { return showOperationGuide; } // 操作ガイドを表示するかどうかを取得
+	void SetShowOperationGuide(bool show) { showOperationGuide = show; } // 操作ガイドを表示するかどうかを設定
+
 private:
 	//bool hasBeenJudged = false; // 判定済みフラグ
 
+	bool showOperationGuide = true; // 操作ガイドを表示するかどうか
 
 	float throwCounter = 0.0f; // 投球カウンター
 	bool hasReachedZero = false; // z = 0.0f に到達したかどうか

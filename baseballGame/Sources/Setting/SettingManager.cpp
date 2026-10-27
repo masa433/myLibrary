@@ -283,10 +283,10 @@ void SettingManager::Render()
 
 void SettingManager::DrawGUI()
 {
-	/*if (currentActivePanel && isOpen)
+	if (currentActivePanel && isOpen)
 	{
 		currentActivePanel->DrawGUI();
-	}*/
+	}
 
 	closeButton.DrawGUI();
 }
