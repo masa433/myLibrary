@@ -23,6 +23,8 @@ void ScrollView::MatchSelectedButtonAndBatter()
 		OutputDebugStringA(buffer);
 	}
 
+	Player::Instance().SelectRealBatter(selectedBatter); // Playerクラスに選択されたバッターを設定
+
 	if(Player::Instance().IsRightBatter())
 	{
 		randomBatterImageIndex = 3 + rand() % 3; // 右打者の場合は3か4か5
@@ -32,7 +34,6 @@ void ScrollView::MatchSelectedButtonAndBatter()
 		randomBatterImageIndex = rand() % 3; // 左打者の場合は0か1か2
 	}
 
-	Player::Instance().SelectRealBatter(selectedBatter); // Playerクラスに選択されたバッターを設定
 }
 
 ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width, float height)
