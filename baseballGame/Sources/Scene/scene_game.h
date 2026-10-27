@@ -181,8 +181,6 @@ private:
     post_effect_constants            post_effect_constant;
     Microsoft::WRL::ComPtr<ID3D11Buffer> post_effect_constant_buffer;
 
-    float timeScale = 1.0f;
-
 	bool showPhysxDebug = true;
 	bool physxRenderSimpleShapesOnly = true;
 	bool physxSkipSleepingActors = true;

@@ -313,7 +313,7 @@ void GameIntroSequence::UpdateBallSpeedModeSelection()
 						playBallSound->PlayOneShot(); // PlayBall音を再生
                     }
 
-					Pitcher::Instance().SetStrikeZoneRate(freeBattingAiStrikeRate); // ストライクゾーンから外れる確率を70%に設定
+					Pitcher::Instance().SetStrikeZoneRate(freeBattingAiStrikeRate); // ストライクゾーンから外れる確率を80%に設定
 
                     switch(hoveredBallModeIndex)
                     {

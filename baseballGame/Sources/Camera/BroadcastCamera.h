@@ -154,9 +154,13 @@ private:
 	int activeCameraIndex = 0;
 
 	bool isReplayMode = false; // リプレイモードかどうかのフラグ
+	bool enableGameSpeedMode = false; // ゲームスピードモードを適用するかどうかのフラグ
 
 public:
 
 	void SetReplayMode(bool replayMode) { isReplayMode = replayMode; }
 	bool IsReplayMode() const { return isReplayMode; }
+
+	void SetGameSpeedModeEnable(bool enabled) { enableGameSpeedMode = enabled; }
+	bool IsGameSpeedModeEnable() const { return enableGameSpeedMode; }
 };

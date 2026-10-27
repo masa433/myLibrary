@@ -378,9 +378,15 @@ void scene_game::update(float elapsed_time)
 	}
 	prevHomePressed = homePressed;
 
-    elapsed_time *= timeScale;
 
-    
+    if(broadcastCamera.IsGameSpeedModeEnable())
+    {
+        elapsed_time *= GameModeManager::Instance().GetTimeScale();
+    }
+    else
+    {
+		elapsed_time *= 1.0f; // 通常速度
+    }
 
     if(ReplayManager::Instance().IsPlaying() && Result::Instance().IsReplayLogoMovedHalf())
     {
@@ -388,7 +394,7 @@ void scene_game::update(float elapsed_time)
 
 		broadcastCamera.SetReplayMode(true);
         broadcastCamera.UpdateReplayCamera(elapsed_time, frame.hasCollidedWithBat);
-	 
+	    broadcastCamera.SetGameSpeedModeEnable(false);
 	}
     else
     {
@@ -503,8 +509,14 @@ void scene_game::update(float elapsed_time)
 	}
 
     // スカイレンダラーの更新
-    skyRenderer.Update(elapsed_time * timeScale);
-
+    if(broadcastCamera.IsGameSpeedModeEnable())
+    {
+        skyRenderer.Update(elapsed_time * GameModeManager::Instance().GetTimeScale());
+    }
+    else
+    {
+        skyRenderer.Update(elapsed_time);
+	}
 
     //太陽方向をライト方向と同期
     directional_light_direction = skyRenderer.GetSunDirectionToLight();
@@ -1178,10 +1190,12 @@ void scene_game::DrawGUI()
         // ── Time Scale ──
         if (ImGui::CollapsingHeader("Time Control"))
         {
+            float timeScale = GameModeManager::Instance().GetTimeScale();
             ImGui::SliderFloat("Time Scale", &timeScale, 0.0f, 2.0f);
             if (ImGui::Button(u8"一時停止"))  timeScale = 0.0f;
             ImGui::SameLine();
             if (ImGui::Button(u8"通常速度"))  timeScale = 1.0f;
+            GameModeManager::Instance().SetTimeScale(timeScale);
         }
 
         // ── Light ──
@@ -1421,7 +1435,7 @@ void scene_game::DrawGUI()
             ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "[Info]  Scene running...");
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f), "[Info]  PhysX : %s",
                 showPhysxDebug ? "Visible" : "Hidden");
-            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "[Info]  TimeScale : %.2f", timeScale);
+            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "[Info]  TimeScale : %.2f", GameModeManager::Instance().GetTimeScale());
 
             for (const auto& line : consoleLog)
             {
@@ -1493,9 +1507,6 @@ void scene_game::SaveSetting()
     j["camera"]["far_z"] = camera_far_z;
 
     broadcastCamera.SaveToJson(j["broadcast_camera"]);
-
-    //タイムコントロールの保存
-    j["time"]["time_scale"] = timeScale;
 
     // ライト設定の保存
     j["light"]["ambient"] = { ambient_color.x, ambient_color.y, ambient_color.z, ambient_color.w };
@@ -1623,12 +1634,6 @@ void scene_game::LoadSetting()
     // 中継カメラの読み込み（保存されていれば、デフォルト4台を全て置き換える）
     broadcastCamera.LoadFromJson(j["broadcast_camera"]);
     // 保存データが無ければ initialize() の SetupDefaultCameras() で設定済みのデフォルト4台のまま
-
-    //タイムコントロールの読み込み
-    if (j.contains("time"))
-    {
-        timeScale = j["time"]["time_scale"];
-    }
 
     // ライト設定の読み込み
     if (j.contains("light"))

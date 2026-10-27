@@ -130,7 +130,7 @@ private:
 
 	int hoveredBallModeIndex = -1; // ホバー中のボールモードのインデックス(-1はホバーなし)
 
-	float freeBattingAiStrikeRate = 0.7f; // AIのストライク率
+	float freeBattingAiStrikeRate = 0.8f; // AIのストライク率
 
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
 

@@ -40,6 +40,7 @@ protected:
 	{
 		DirectX::XMFLOAT2 position;
 		float size;
+		DirectX::XMFLOAT4 color;
 	};
 
 };
@@ -89,12 +90,21 @@ public:
 	void UpdateShowOperationCheckbox();	
 
 	//ゲームスピードの表示更新処理
-	//void UpdateGameSpeedDisplay();
+	void UpdateGameSpeedDisplay();
 
 private:
 	
+	static const int numGameSpeedTypes = 3; // ゲームスピードの種類の数
+
 	FontData showOperationFontData = { { 960.0f, 540.0f }, 0.5f };//操作方法の表示
 	FontData gameSpeedFontData = { { 960.0f, 540.0f }, 0.5f };//ゲームスピードの表示
+
+	FontData gameSpeedTypeFontData[numGameSpeedTypes] = {{{960.0f, 540.0f}, 0.5f}, {{960.0f, 540.0f}, 0.5f}, {{960.0f, 540.0f}, 0.5f}};//ゲームスピードの種類の表示 
+	float gameSpeedOffsetX[numGameSpeedTypes] = { 300.0f, 500.0f, 700.0f };//ゲームスピードの種類の表示位置のオフセット
+	float gameSpeedOffsetY = -15.0f;//ゲームスピードの種類の表示位置のオフセット
+
+	float gameSpeedTypeOriginalSize[numGameSpeedTypes] = { 0.5f, 0.5f, 0.5f };//ゲームスピードの種類の表示サイズ
+	float gameSpeedTypeHoverSize[numGameSpeedTypes] = { 0.55f, 0.55f, 0.55f };//ゲームスピードの種類の表示サイズ(マウスオーバー時)
 
 	std::unique_ptr<SpriteData> showOperationCheckboxData;
 	std::unique_ptr<sprite> showOperationCheckboxSprite;
@@ -116,4 +126,8 @@ private:
 
 	bool showCheckIcon = false;
 
+	int hoveredCheckboxIndex = -1; // マウスオーバーしているチェックボックスのインデックス(-1はどのチェックボックスにもマウスオーバーしていない状態)
+
+	//クリックされたインデックスを保存する変数
+	int clickedCheckboxIndex = 0; // 0にして、通常速度が初期値になるようにする
 };

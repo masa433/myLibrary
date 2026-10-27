@@ -5,6 +5,7 @@
 #include "ScreenScaler.h"
 #include "input.h"
 #include "Pitcher.h"
+#include "GameModeManager.h"
 
 void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
@@ -45,7 +46,7 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	bgmVolumeFontData.size = 0.5f;
 
 	seVolumeFontData.position = { 600.0f, 810.0f };
-	bgmVolumeFontData.size = 0.5f;
+	seVolumeFontData.size = 0.5f;
 }
 
 void AudioSettingPanel::Uninitialize()
@@ -287,6 +288,7 @@ void OtherSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints
 	(
 		u8"打撃後のゲーム速度操作方法表示"
+		u8"通常中速高速"
 	);
 
 	// フォントレンダラーの初期化
@@ -304,6 +306,18 @@ void OtherSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	showOperationFontData.position = { 600.0f, 700.0f };
 	showOperationFontData.size = 0.3f;
 
+	for (int i = 0; i < numGameSpeedTypes; ++i)
+	{
+		gameSpeedTypeFontData[i].position = { gameSpeedFontData.position.x + gameSpeedOffsetX[i], gameSpeedFontData.position.y - gameSpeedOffsetY };
+		gameSpeedTypeFontData[i].size = 0.7f;
+		gameSpeedTypeFontData[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	}
+
+	// 初期状態では、クリックされたチェックボックスはないため、clickedCheckboxIndexを-1に設定
+
+	//クリックされたときの色を設定
+	gameSpeedTypeFontData[clickedCheckboxIndex].color = { 1.0f, 1.0f, 0.0f, 1.0f };
+
 	// チェックボックスの位置をフォントの右側に配置するためのオフセットを計算
 	checkboxPosition = { showOperationFontData.position.x + offsetX, showOperationFontData.position.y + offsetY };
 	checkIconPosition = { checkboxPosition.x, checkboxPosition.y };
@@ -318,6 +332,10 @@ void OtherSettingPanel::Uninitialize()
 	fontRenderer.Uninitialize();
 	showOperationFontData = {};
 	gameSpeedFontData = {};
+	for(int i = 0; i < numGameSpeedTypes; ++i)
+	{
+		gameSpeedTypeFontData[i] = {};
+	}
 
 	// チェックボックスとチェックアイコンの解放
 	showOperationCheckboxData.reset();
@@ -331,6 +349,8 @@ void OtherSettingPanel::Update(float elapsedTime)
 {
 	// 設定パネルの更新処理
 	UpdateShowOperationCheckbox();
+
+	UpdateGameSpeedDisplay();
 }
 
 void OtherSettingPanel::UpdateShowOperationCheckbox()
@@ -371,6 +391,86 @@ void OtherSettingPanel::UpdateShowOperationCheckbox()
 		}
 	}
 
+}
+
+void OtherSettingPanel::UpdateGameSpeedDisplay()
+{
+	// ゲームスピードの表示更新処理
+	Input& input = Input::Instance();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
+	//マウスの位置を取得
+	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
+
+	bool isClicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
+
+	int prevHoveredCheckboxIndex = hoveredCheckboxIndex;
+	hoveredCheckboxIndex = -1; // 初期化
+
+	//チェックボックスの位置とサイズをスケーリング
+	for (int i = 0; i < numGameSpeedTypes; ++i)
+	{
+		DirectX::XMFLOAT2 scaledSpeedTypePos = screenScaler.Scale(gameSpeedTypeFontData[i].position);
+		const float scaledSpeedTypeFontScale = gameSpeedTypeFontData[i].size * screenScaler.GetUniformScale();
+		float textWidth, textHeight;
+		fontRenderer.MeasureText(i == 0 ? u8"通常" : (i == 1 ? u8"中速" : u8"高速"), scaledSpeedTypeFontScale, textWidth, textHeight);
+		
+		float speedTypeX = scaledSpeedTypePos.x - textWidth / 2.0f;
+		float speedTypeY = scaledSpeedTypePos.y - textHeight / 2.0f;
+		
+
+		//左下基準でマウスが重なっているか
+		bool isHovered = (mousePos.x >= speedTypeX && mousePos.x <= speedTypeX + textWidth &&
+			mousePos.y >= speedTypeY - textHeight && mousePos.y <= speedTypeY);
+		bool isPressed = isHovered && (input.GetMouse().GetButton() & input.GetMouse().BTN_LEFT);// 左クリックが押されているかどうか
+
+		gameSpeedTypeFontData[i].size = isPressed ? gameSpeedTypeOriginalSize[i] : (isHovered ? gameSpeedTypeHoverSize[i] : gameSpeedTypeOriginalSize[i]);
+
+		if (isHovered)
+		{
+			hoveredCheckboxIndex = i; // マウスオーバーしているチェックボックスのインデックスを更新
+
+			if (isClicked)
+			{
+				// クリックされたチェックボックスのインデックスを保存
+				clickedCheckboxIndex = i;
+
+				// ゲームスピードの変更処理
+				if(hoveredCheckboxIndex >= 0 && hoveredCheckboxIndex < numGameSpeedTypes)
+				{
+					switch (hoveredCheckboxIndex)
+					{
+						case 0:
+						//GameModeManager::Instance().SetTimeScale(1.0f);
+						GameModeManager::Instance().ChangeTimeScaleMode(TimeScaleMode::Normal);
+						break;
+						case 1:
+						//GameModeManager::Instance().SetTimeScale(1.5f);
+						GameModeManager::Instance().ChangeTimeScaleMode(TimeScaleMode::Medium);
+						break;
+						case 2:
+						//GameModeManager::Instance().SetTimeScale(2.0f);
+						GameModeManager::Instance().ChangeTimeScaleMode(TimeScaleMode::Fast);
+						break;
+					}
+				}
+
+				//選ばれたボタンはフォントの色をきいろにする
+				for(int j = 0; j < numGameSpeedTypes; ++j)
+				{
+					if(j == hoveredCheckboxIndex)
+					{
+						gameSpeedTypeFontData[j].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 選択されたボタンの色を黄色に設定
+					}
+					else
+					{
+						gameSpeedTypeFontData[j].color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 選択されていないボタンの色を白に設定
+					}
+				}
+				
+			}
+		}
+	}
 }
 
 
@@ -415,6 +515,42 @@ void OtherSettingPanel::Render()
 			checkIconData->color.x, checkIconData->color.y, checkIconData->color.z, checkIconData->color.w,
 			checkIconData->rotation);
 
+	}
+
+	//ゲームスピードタイプの描画
+	if (gameSpeedTypeFontData)
+	{
+		for (int i = 0; i < numGameSpeedTypes; ++i)
+		{
+			DirectX::XMFLOAT2 scaledGameSpeedTypeFontPos = screenScaler.Scale(gameSpeedTypeFontData[i].position);
+			const float scaledGameSpeedTypeFontScale = gameSpeedTypeFontData[i].size * screenScaler.GetUniformScale();
+			float gameSpeedTypeTextWidth, gameSpeedTypeTextHeight;
+			const char* gameSpeedTypeText = nullptr;
+			switch (i)
+			{
+			case 0:
+				gameSpeedTypeText = u8"通常";
+				break;
+			case 1:
+				gameSpeedTypeText = u8"中速";
+				break;
+			case 2:
+				gameSpeedTypeText = u8"高速";
+				break;
+			default:
+				gameSpeedTypeText = u8"";
+				break;
+			}
+			fontRenderer.MeasureText(gameSpeedTypeText, scaledGameSpeedTypeFontScale, gameSpeedTypeTextWidth, gameSpeedTypeTextHeight);
+			float gameSpeedTypeDrawPosX = scaledGameSpeedTypeFontPos.x - gameSpeedTypeTextWidth / 2.0f;
+			float gameSpeedTypeDrawPosY = scaledGameSpeedTypeFontPos.y - gameSpeedTypeTextHeight / 2.0f;
+			fontRenderer.DrawTextW(dc, 
+				gameSpeedTypeText, 
+				gameSpeedTypeDrawPosX,gameSpeedTypeDrawPosY, 
+				scaledGameSpeedTypeFontScale, 
+				gameSpeedTypeFontData[i].color.x, gameSpeedTypeFontData[i].color.y, 
+				gameSpeedTypeFontData[i].color.z, gameSpeedTypeFontData[i].color.w);
+		}
 	}
 
 

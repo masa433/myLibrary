@@ -78,4 +78,6 @@ private:
 
 	float underBarOffsetY = 50.0f; // アンダーバーのY方向のオフセット
 
+	DirectX::XMFLOAT2 firstTabButtonPosition = { 0.0f, 0.0f }; // 最初のタブボタンの位置
+
 };

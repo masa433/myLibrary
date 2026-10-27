@@ -57,6 +57,10 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 		audioTabButton.tabButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		audioTabButton.tabButtonSprite = std::make_unique<sprite>(device, context, audioTabButton.tabButtonData->texturePath.c_str());
 		audioTabButton.panelIndex = 0; // オーディオパネルのインデックス
+
+		//最初のタブボタンの位置を保存
+		firstTabButtonPosition = audioTabButton.tabButtonData->position;
+
 		tabButtons.push_back(std::move(audioTabButton));
 	}
 
@@ -92,7 +96,7 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 	underBarData = std::make_unique<SpriteData>();
 	underBarData->texturePath = L".\\resources\\textures\\pitchTypeButton.png";
 	//アンダーバーの初期位置は最初のタブボタンの位置に設定
-	underBarData->position = { tabButtons[0].tabButtonData->position.x, tabButtons[0].tabButtonData->position.y + underBarOffsetY };
+	underBarData->position = { firstTabButtonPosition.x, firstTabButtonPosition.y + underBarOffsetY };
 	underBarData->size = { 200.0f, 5.0f };
 	underBarData->rotation = 0.0f;
 	underBarData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -112,11 +116,13 @@ void SettingManager::Uninitialize()
 	{
 		panel->Uninitialize();
 	}
-	panels.clear();
+	//panels.clear();
 	currentActivePanel = nullptr;
 
 	settingBackgroundData.reset();
 	settingBackgroundSprite.reset();
+	underBarData.reset();
+	underBarSprite.reset();
 
 	closeButton.Uninitialize();
 
@@ -126,11 +132,7 @@ void SettingManager::Uninitialize()
 	spriteInputLayout.Reset();
 
 	//タブボタンの解放
-	for(auto& tabButton : tabButtons)
-	{
-		tabButton.tabButtonData.reset();
-		tabButton.tabButtonSprite.reset();
-	}
+	tabButtons.clear();
 }
 
 void SettingManager::UpdateSelectedTabButton()

@@ -411,6 +411,8 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 	//確信ホームランの状態でトラッキングデータが表示された瞬間にhitCameraに切り替える
 	if(nowIsHomeRun && nowShowTrackingData && !prevHasShowTrackingData)
 	{
+		enableGameSpeedMode = true;
+
 		CameraPreset& preset = cameraPresets[activeCameraIndex];
 		if(preset.type != CameraType::HitCamera)
 		{
@@ -476,6 +478,7 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 	{
 		if (nowShowTrackingData && !prevHasShowTrackingData)
 		{
+			enableGameSpeedMode = true;
 			
 			CameraPreset& preset = cameraPresets[activeCameraIndex];
 			if (preset.type != CameraType::HitCamera)
@@ -564,6 +567,7 @@ void BroadcastCamera::Update(float elapsed_time, bool ballHasCollidedWithBat)
 		nowIsHomeRun = false;
 		passedHomeRun = false;
 		hitGroundOrStand = false;
+		enableGameSpeedMode = false;
 
 		StopAllTracking();
 	}
