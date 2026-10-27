@@ -75,6 +75,44 @@ private:
 	
 	FontData cursorFontData = { { 960.0f, 540.0f }, 0.5f };//カーソル感度の表示
 
+	//スライダー背景のスプライトデータ
+	std::unique_ptr<SpriteData> sliderBackgroundData;
+	std::unique_ptr<sprite> sliderBackgroundSprite;
+
+	DirectX::XMFLOAT2 sliderBackgroundPosition = { cursorFontData.position.x, cursorFontData.position.y };
+
+	float offsetX = 150.0f;
+	float offsetY = 35.0f;
+
+	//スライダーのボタンのスプライトデータ
+	std::unique_ptr<SpriteData> sliderButtonData;
+	std::unique_ptr<sprite> sliderButtonSprite;
+
+	DirectX::XMFLOAT2 sliderButtonPosition = { sliderBackgroundPosition.x, sliderBackgroundPosition.y };
+	DirectX::XMFLOAT2 sliderButtonSize = { 30.0f, 30.0f };
+	DirectX::XMFLOAT2 sliderButtonOriginalSize = { sliderButtonSize.x, sliderButtonSize.y };
+	DirectX::XMFLOAT2 sliderButtonHoverSize = { sliderButtonOriginalSize.x * 1.1f, sliderButtonOriginalSize.y * 1.1f };
+
+	//スライダーの区切る位置の数
+	int numSliderPositions = 4;
+
+	enum class SliderPosition
+	{
+		Low = 0,
+		Medium = 1,
+		Normal = 2,
+		MediumHigh = 3,
+		High = 4
+	};
+
+	SliderPosition currentSliderPosition = SliderPosition::Normal; //現在のスライダーの位置
+
+	
+
+	bool isDragging = false; //スライダーをドラッグしているかどうかのフラグ
+
+	int currentSliderButtonIndex = 2; //現在のスライダーのボタンのインデックス(保存用)
+
 };
 
 class OtherSettingPanel : public SettingPanel
@@ -124,7 +162,7 @@ private:
 	float offsetX = 500.0f;
 	float offsetY = -30.0f;
 
-	bool showCheckIcon = false;
+	bool showCheckIcon = true;
 
 	int hoveredCheckboxIndex = -1; // マウスオーバーしているチェックボックスのインデックス(-1はどのチェックボックスにもマウスオーバーしていない状態)
 

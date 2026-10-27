@@ -164,6 +164,23 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
+	//テクスチャの読み込み
+	sliderBackgroundData = std::make_unique<SpriteData>();
+	sliderBackgroundData->texturePath = L".\\resources\\textures\\scrollViewBack.png";
+	sliderBackgroundData->position = { sliderBackgroundPosition.x, sliderBackgroundPosition.y };
+	sliderBackgroundData->size = { 500.0f, 20.0f };
+	sliderBackgroundData->color = { 0.0f, 0.0f, 0.0f, 1.0f };
+	sliderBackgroundData->rotation = 0.0f;
+	sliderBackgroundSprite = std::make_unique<sprite>(device, context, sliderBackgroundData->texturePath.c_str());
+
+	sliderButtonData = std::make_unique<SpriteData>();
+	sliderButtonData->texturePath = L".\\resources\\textures\\Ball.png";
+	sliderButtonData->position = { sliderButtonPosition.x, sliderButtonPosition.y };
+	sliderButtonData->size = { sliderButtonSize.x, sliderButtonSize.y };
+	sliderButtonData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	sliderButtonData->rotation = 0.0f;
+	sliderButtonSprite = std::make_unique<sprite>(device, context, sliderButtonData->texturePath.c_str());
+
 
 	// フォントレンダラーの初期化
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
@@ -184,8 +201,10 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 		&trackingDataCodepoints);
 
 	// フォントデータの設定
-	cursorFontData.position = { 600.0f, 550.0f };
+	cursorFontData.position = { 600.0f, 600.0f };
 	cursorFontData.size = 0.3f;
+
+	currentSliderButtonIndex = static_cast<int>(currentSliderPosition);
 }
 
 void CursorSettingPanel::Uninitialize()
@@ -196,11 +215,124 @@ void CursorSettingPanel::Uninitialize()
 	spriteInputLayout.Reset();
 	fontRenderer.Uninitialize();
 	cursorFontData = {};
+	sliderBackgroundData.reset();
+	sliderBackgroundSprite.reset();
+	sliderButtonData.reset();
+	sliderButtonSprite.reset();
 }
 
 void CursorSettingPanel::Update(float elapsedTime)
 {
 	// 設定パネルの更新処理
+	//スライダーボタンをマウスでドラッグして動かす処理
+	// マウスの位置を取得
+	Input& input = Input::Instance();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
+	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2( input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY() );
+
+
+	//スライダーボタンのスケーリング
+	DirectX::XMFLOAT2 scaledButtonPos = screenScaler.Scale(sliderButtonPosition);
+	DirectX::XMFLOAT2 scaledButtonSize = screenScaler.ScaleSize(sliderButtonSize);
+	DirectX::XMFLOAT2 scaledCenterPos = { scaledButtonPos.x - scaledButtonSize.x / 2.0f, scaledButtonPos.y - scaledButtonSize.y / 2.0f };
+
+	// スライダーボタンの矩形範囲を計算
+	float buttonX = scaledCenterPos.x + offsetX;
+	float buttonY = scaledCenterPos.y + offsetY;
+	float buttonWidth = scaledButtonSize.x;
+	float buttonHeight = scaledButtonSize.y;
+
+	// マウスがスライダーボタンの範囲内にあるかどうかを判定
+	bool isHover = (mousePos.x >= buttonX && mousePos.x <= buttonX + buttonWidth &&
+		mousePos.y >= buttonY && mousePos.y <= buttonY + buttonHeight);
+	bool isPressed = (input.GetMouse().GetButton() & Mouse::BTN_LEFT);// 左クリックが押されているかどうか
+	
+	sliderButtonSize = isPressed ? sliderButtonOriginalSize : (isHover ? sliderButtonHoverSize : sliderButtonOriginalSize);
+
+
+	//スライダーボタンがクリックされた瞬間にドラッグ状態を開始
+	if(!isPressed)
+	{
+		isDragging = false;
+	}
+	
+	else if(isHover && isPressed)
+	{
+		isDragging = true;
+	}
+	//長押し中はホバーしていなくても動かせるようにする
+	if (isDragging)
+	{
+		// スライダーボタンのX座標をマウスのX座標に合わせる
+		sliderButtonPosition.x = mousePos.x - offsetX;
+		// スライダーボタンの位置をスライダー背景の範囲内に制限
+		float minX = sliderBackgroundPosition.x - sliderBackgroundData->size.x / 2.0f;
+		float maxX = sliderBackgroundPosition.x + sliderBackgroundData->size.x / 2.0f;
+		// スライダーボタンの位置を制限(スライダーの背景の左端から右端までの範囲内に収める)
+		//右端を超えたら右端に固定、左端を超えたら左端に固定
+		sliderButtonPosition.x = std::max(minX, std::min(maxX, sliderButtonPosition.x));
+		
+		//5分割して、スライダーボタンの位置を制限する
+		int segments = numSliderPositions; // ステップ数に応じた分割数(今回は4箇所)
+		float segmentSize = sliderBackgroundData->size.x / segments; // 各分割の幅
+
+		
+		// スライダーボタンの位置を分割の中心にスナップさせる
+		for(int i = 0; i <= segments; ++i)
+		{
+			
+			float pointX = minX + (segmentSize * i);// 分割の中心点のX座標
+			float harfSegmentSize = segmentSize / 2.0f;// 分割の半分の幅
+
+			// スライダーボタンの位置が分割の中心点に近い場合、スナップさせる
+			if(std::abs(sliderButtonPosition.x - pointX) <= harfSegmentSize)
+			{
+				sliderButtonPosition.x = pointX;// スナップさせる
+				currentSliderPosition = static_cast<SliderPosition>(i);
+				currentSliderButtonIndex = i;
+				break;// 近い分割の中心点にスナップさせたらループを抜ける
+			}
+
+		}
+
+		//スライダーボタンの位置に応じてカーソル感度を設定する
+
+		switch (currentSliderPosition)
+		{
+			case SliderPosition::Low:
+			{
+				//カーソル感度を0.5に設定
+				input.GetMouse().SetMouseSensitivity(0.5f);
+				break;
+			}
+			case SliderPosition::Medium:
+			{
+				//カーソル感度を1.0に設定
+				input.GetMouse().SetMouseSensitivity(0.75f);
+				break;
+			}
+			case SliderPosition::Normal:
+			{
+				//カーソル感度を1.0に設定
+				input.GetMouse().SetMouseSensitivity(1.0f);
+				break;
+			}
+			case SliderPosition::MediumHigh:
+			{
+				//カーソル感度を1.5に設定
+				input.GetMouse().SetMouseSensitivity(1.25f);
+				break;
+			}
+			case SliderPosition::High:
+			{
+				//カーソル感度を2.0に設定
+				input.GetMouse().SetMouseSensitivity(1.5f);
+				break;
+			}
+		}
+		
+	}
 }
 
 void CursorSettingPanel::Render()
@@ -215,6 +347,33 @@ void CursorSettingPanel::Render()
 
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+	// スライダー背景の描画
+	if(sliderBackgroundData && sliderBackgroundSprite)
+	{
+		DirectX::XMFLOAT2 scaledSliderPos = screenScaler.Scale(sliderBackgroundPosition);
+		DirectX::XMFLOAT2 scaledSliderSize = screenScaler.ScaleSize(sliderBackgroundData->size);
+		DirectX::XMFLOAT2 scaledCenterPos = { scaledSliderPos.x - scaledSliderSize.x / 2.0f, scaledSliderPos.y - scaledSliderSize.y / 2.0f };
+
+		sliderBackgroundSprite->render(dc,
+			scaledCenterPos.x + offsetX, scaledCenterPos.y + offsetY,
+			scaledSliderSize.x, scaledSliderSize.y,
+			sliderBackgroundData->color.x, sliderBackgroundData->color.y, sliderBackgroundData->color.z, sliderBackgroundData->color.w,
+			sliderBackgroundData->rotation);
+	}
+
+	// スライダーボタンの描画
+	if(sliderButtonData && sliderButtonSprite)
+	{
+		DirectX::XMFLOAT2 scaledButtonPos = screenScaler.Scale(sliderButtonPosition);
+		DirectX::XMFLOAT2 scaledButtonSize = screenScaler.ScaleSize(sliderButtonSize);
+		DirectX::XMFLOAT2 scaledCenterPos = { scaledButtonPos.x - scaledButtonSize.x / 2.0f, scaledButtonPos.y - scaledButtonSize.y / 2.0f };
+		sliderButtonSprite->render(dc,
+			scaledCenterPos.x + offsetX, scaledCenterPos.y + offsetY,
+			scaledButtonSize.x, scaledButtonSize.y,
+			sliderButtonData->color.x, sliderButtonData->color.y, sliderButtonData->color.z, sliderButtonData->color.w,
+			sliderButtonData->rotation);
+	}
 
 	
 	// フォントの描画
@@ -249,6 +408,10 @@ void CursorSettingPanel::DrawGUI()
 	{
 		// カーソル感度の変更処理
 	}
+
+	ImGui::DragFloat("offsetX", &offsetX, 1.0f, -100.0f, 100.0f);
+	ImGui::DragFloat("offsetY", &offsetY, 1.0f, -100.0f, 100.0f);
+
 	ImGui::End();
 }
 
