@@ -547,6 +547,13 @@ private:
 	std::unique_ptr<InfoData> swingData;
 	std::unique_ptr<sprite> swingSprite;
 
+	std::unique_ptr<InfoData> pauseData;
+	std::unique_ptr<sprite> pauseSprite;
+
+	DirectX::XMFLOAT2 pausePosition = { 0.0f, 0.0f };
+	DirectX::XMFLOAT2 pauseSize = { 0.0f, 0.0f };
+	DirectX::XMFLOAT4 pauseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 	DirectX::XMFLOAT2 infoBackPosition = { 0.0f, 0.0f };
 	DirectX::XMFLOAT2 infoBackSize = { 0.0f, 0.0f };
 	DirectX::XMFLOAT4 infoBackColor = { 0.0f, 0.0f, 0.0f, 0.7f };

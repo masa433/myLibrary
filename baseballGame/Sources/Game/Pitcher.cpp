@@ -153,6 +153,15 @@ void Pitcher::Initialize()
 	swingData->color = { swingColor.x, swingColor.y, swingColor.z, swingColor.w };
 	swingSprite = std::make_unique<sprite>(device, context, swingData->texturePath.c_str());
 
+	pauseData = std::make_unique<InfoData>();
+	pauseData->texturePath = L".\\resources\\textures\\pauseInfo.png";
+	pauseData->position = { pausePosition.x, pausePosition.y };
+	pauseData->size = { pauseSize.x, pauseSize.y };
+	pauseData->rotation = 0.0f;
+	pauseData->color = { pauseColor.x, pauseColor.y, pauseColor.z, pauseColor.w };
+	pauseSprite = std::make_unique<sprite>(device, context, pauseData->texturePath.c_str());
+
+
 	infoBackData = std::make_unique<InfoData>();
 	infoBackData->texturePath = L".\\resources\\textures\\scrollViewBack.png";
 	infoBackData->position = { infoBackPosition.x, infoBackPosition.y };
@@ -263,6 +272,8 @@ void Pitcher::Uninitialize()
 	cursorData.reset();
 	swingData.reset();
 	swingSprite.reset();
+	pauseData.reset();
+	pauseSprite.reset();
 	infoBackData.reset();
 	infoBackSprite.reset();
 	missShotData.reset();
@@ -645,7 +656,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 		if (infoBackData && infoBackSprite)
 		{
 			DirectX::XMFLOAT2 scaledInfoBackPos = screenScaler.Scale(infoBackPosition);
-			DirectX::XMFLOAT2 scaledInfoBackSize = screenScaler.Scale(infoBackSize);
+			DirectX::XMFLOAT2 scaledInfoBackSize = screenScaler.ScaleSize(infoBackSize);
 
 			infoBackSprite->render(dc,
 				scaledInfoBackPos.x, scaledInfoBackPos.y,
@@ -657,7 +668,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 		if (cursorData && cursorSprite)
 		{
 			DirectX::XMFLOAT2 scaledCursorPos = screenScaler.Scale(cursorPosition);
-			DirectX::XMFLOAT2 scaledCursorSize = screenScaler.Scale(cursorSize);
+			DirectX::XMFLOAT2 scaledCursorSize = screenScaler.ScaleSize(cursorSize);
 
 			cursorSprite->render(dc,
 				scaledCursorPos.x, scaledCursorPos.y,
@@ -669,13 +680,24 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 		if (swingData && swingSprite)
 		{
 			DirectX::XMFLOAT2 scaledSwingPos = screenScaler.Scale(swingPosition);
-			DirectX::XMFLOAT2 scaledSwingSize = screenScaler.Scale(swingSize);
+			DirectX::XMFLOAT2 scaledSwingSize = screenScaler.ScaleSize(swingSize);
 
 			swingSprite->render(dc,
 				scaledSwingPos.x, scaledSwingPos.y,
 				scaledSwingSize.x, scaledSwingSize.y,
 				swingColor.x, swingColor.y, swingColor.z, swingColor.w,
 				swingData->rotation);
+		}
+
+		if(pauseData && pauseSprite)
+		{
+			DirectX::XMFLOAT2 scaledPausePos = screenScaler.Scale(pausePosition);
+			DirectX::XMFLOAT2 scaledPauseSize = screenScaler.ScaleSize(pauseSize);
+			pauseSprite->render(dc,
+				scaledPausePos.x, scaledPausePos.y,
+				scaledPauseSize.x, scaledPauseSize.y,
+				pauseColor.x, pauseColor.y, pauseColor.z, pauseColor.w,
+				pauseData->rotation);
 		}
 
 		
@@ -1321,6 +1343,9 @@ void Pitcher::DrawGUI()
 
 		ImGui::DragFloat2("swingPosition", &swingPosition.x, 0.1f, 0.0f, 1080.0f);
 		ImGui::DragFloat2("swingSize", &swingSize.x, 0.1f, 0.1f, 1000.0f);
+
+		ImGui::DragFloat2("pausePosition", &pausePosition.x, 0.1f, 0.0f, 1080.0f);
+		ImGui::DragFloat2("pauseSize", &pauseSize.x, 0.1f, 0.1f, 1000.0f);
 
 		ImGui::DragFloat2("backPosition", &infoBackPosition.x, 0.1f, 0.0f, 1080.0f);
 		ImGui::DragFloat2("backSize", &infoBackSize.x, 0.1f, 0.1f, 1000.0f);
@@ -2080,6 +2105,8 @@ void Pitcher::SaveToJson(json& j)
 	spriteData["cursorSize"] = { cursorSize.x, cursorSize.y };
 	spriteData["swingPosition"] = { swingPosition.x, swingPosition.y };
 	spriteData["swingSize"] = { swingSize.x, swingSize.y };
+	spriteData["pausePosition"] = { pausePosition.x, pausePosition.y }; 
+	spriteData["pauseSize"] = { pauseSize.x, pauseSize.y };
 	spriteData["infoBackPosition"] = { infoBackPosition.x, infoBackPosition.y };
 	spriteData["infoBackSize"] = { infoBackSize.x, infoBackSize.y };
 	spriteData["ballTypePosition"] = { ballTypePosition.x, ballTypePosition.y };
@@ -2167,6 +2194,10 @@ void Pitcher::LoadFromJson(const json& j)
 			swingPosition = { spriteData["swingPosition"][0], spriteData["swingPosition"][1] };
 		if (spriteData.contains("swingSize"))
 			swingSize = { spriteData["swingSize"][0], spriteData["swingSize"][1] };
+		if (spriteData.contains("pausePosition"))
+			pausePosition = { spriteData["pausePosition"][0], spriteData["pausePosition"][1] };
+		if (spriteData.contains("pauseSize"))
+			pauseSize = { spriteData["pauseSize"][0], spriteData["pauseSize"][1] };
 		if (spriteData.contains("infoBackPosition"))
 			infoBackPosition = { spriteData["infoBackPosition"][0], spriteData["infoBackPosition"][1] };
 		if (spriteData.contains("infoBackSize"))

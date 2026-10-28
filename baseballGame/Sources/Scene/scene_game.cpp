@@ -344,7 +344,7 @@ void scene_game::initialize()
     broadcastCamera.SetReplayMode(false);
 	broadcastCamera.ResetReplayCamera();
 
-    cheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Cheer.wav",SoundType::BGM);
+    cheerSound = Audio::Instance().LoadAudioSource("resources/sounds/BGM/Cheer.wav",SoundType::BGM);
 	isCheerSoundPlaying = false;
 	isOneShotFadeStarted = false;
 

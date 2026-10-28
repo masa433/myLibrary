@@ -152,7 +152,7 @@ void AudioSettingPanel::Update(float elapsedTime)
 			volumeSliderButtonPosition[i].x = std::clamp(volumeSliderButtonPosition[i].x, minX, maxX);
 
 			// ボリュームの値を計算
-			float volumeValue = (volumeSliderButtonPosition[i].x - minX) / (maxX - minX);
+			float volumeValue = (volumeSliderButtonPosition[i].x - minX) / (maxX - minX);//最小値から最大値までの範囲で正規化された値を計算
 
 			volumeValue /= 1.0f; // 0.0fから1.0fの範囲に正規化
 
