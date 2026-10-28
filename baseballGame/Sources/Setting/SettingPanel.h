@@ -60,6 +60,30 @@ private:
 	FontData bgmVolumeFontData = { { 960.0f, 540.0f }, 0.5f };//bgmボリュームの表示
 	FontData seVolumeFontData = { { 960.0f, 540.0f }, 0.5f };//seボリュームの表示
 
+	static const int numVolumeTypes = 3; // ボリュームの種類の数
+
+	std::unique_ptr<SpriteData> volumeSliderBackgroundData[numVolumeTypes];
+	std::unique_ptr<sprite> volumeSliderBackgroundSprite[numVolumeTypes];
+
+	DirectX::XMFLOAT2 volumeSliderBackgroundPosition[numVolumeTypes] = { masterVolumeFontData.position,bgmVolumeFontData.position,seVolumeFontData.position };
+
+	DirectX::XMFLOAT2 volumeSliderOffset = { 70.0f, -35.0f };
+
+	std::unique_ptr<SpriteData> volumeSliderButtonData[numVolumeTypes];
+	std::unique_ptr<sprite> volumeSliderButtonSprite[numVolumeTypes];
+
+	DirectX::XMFLOAT2 volumeSliderButtonPosition[numVolumeTypes] = 
+	{ {volumeSliderBackgroundPosition[0].x , volumeSliderBackgroundPosition[0].y },
+	  {volumeSliderBackgroundPosition[1].x , volumeSliderBackgroundPosition[1].y },
+	  {volumeSliderBackgroundPosition[2].x , volumeSliderBackgroundPosition[2].y }
+	};
+
+	DirectX::XMFLOAT2 volumeSliderButtonOffset = { 70.0f, -35.0f };
+
+	bool isDragging = false; //スライダーをドラッグしているかどうかのフラグ
+
+	int hoveredButtonIndex = -1; //現在マウスオーバーしているスライダーのボタンのインデックス
+
 };
 
 class CursorSettingPanel : public SettingPanel
@@ -74,6 +98,9 @@ public:
 private:
 	
 	FontData cursorFontData = { { 960.0f, 540.0f }, 0.5f };//カーソル感度の表示
+	FontData cursorValueFontData = { { 960.0f, 540.0f }, 0.5f };//カーソル感度の値の表示
+
+	DirectX::XMFLOAT2 cursorValueOffset = { 850.0f,15.0f };
 
 	//スライダー背景のスプライトデータ
 	std::unique_ptr<SpriteData> sliderBackgroundData;
@@ -89,7 +116,7 @@ private:
 	std::unique_ptr<sprite> sliderButtonSprite;
 
 	DirectX::XMFLOAT2 sliderButtonPosition = { sliderBackgroundPosition.x, sliderBackgroundPosition.y };
-	DirectX::XMFLOAT2 sliderButtonSize = { 30.0f, 30.0f };
+	DirectX::XMFLOAT2 sliderButtonSize = { 50.0f, 50.0f };
 	DirectX::XMFLOAT2 sliderButtonOriginalSize = { sliderButtonSize.x, sliderButtonSize.y };
 	DirectX::XMFLOAT2 sliderButtonHoverSize = { sliderButtonOriginalSize.x * 1.1f, sliderButtonOriginalSize.y * 1.1f };
 
@@ -107,7 +134,7 @@ private:
 
 	SliderPosition currentSliderPosition = SliderPosition::Normal; //現在のスライダーの位置
 
-	
+	int pointX = 0; //スライダーのボタンの位置を決めるための変数
 
 	bool isDragging = false; //スライダーをドラッグしているかどうかのフラグ
 

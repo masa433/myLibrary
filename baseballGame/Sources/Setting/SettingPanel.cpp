@@ -20,6 +20,35 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
+	//テクスチャの読み込み
+	for (int i = 0; i < numVolumeTypes; ++i)
+	{
+		volumeSliderBackgroundData[i] = std::make_unique<SpriteData>();
+		volumeSliderBackgroundData[i]->texturePath = L".\\resources\\textures\\scrollViewBack.png";
+		volumeSliderBackgroundData[i]->position = { volumeSliderBackgroundPosition[i].x, volumeSliderBackgroundPosition[i].y };
+		volumeSliderBackgroundData[i]->size = { 500.0f, 20.0f };
+		volumeSliderBackgroundData[i]->rotation = 0.0f;
+		volumeSliderBackgroundData[i]->color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		volumeSliderBackgroundSprite[i] = std::make_unique<sprite>(device, context, volumeSliderBackgroundData[i]->texturePath.c_str());
+	}
+
+	//スライダーボタンのテクスチャの読み込み
+	for (int i = 0; i < numVolumeTypes; ++i)
+	{
+		volumeSliderButtonData[i] = std::make_unique<SpriteData>();
+		volumeSliderButtonData[i]->texturePath = L".\\resources\\textures\\Ball.png";
+		//ボタンの初期位置をスライダーの右端に設定
+		volumeSliderButtonData[i]->position = { volumeSliderButtonPosition[i].x, volumeSliderButtonPosition[i].y};
+		volumeSliderButtonData[i]->size = { 50.0f, 50.0f };
+		volumeSliderButtonData[i]->rotation = 0.0f;
+		volumeSliderButtonData[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		volumeSliderButtonSprite[i] = std::make_unique<sprite>(device, context, volumeSliderButtonData[i]->texturePath.c_str());
+
+		volumeSliderButtonPosition[i].x = volumeSliderBackgroundPosition[i].x + volumeSliderBackgroundData[i]->size.x / 2.0f;
+	}
+
+
+
 	// フォントレンダラーの初期化
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
@@ -27,8 +56,6 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints
 	(
 		u8"全体BGMSE"
-		u8"カーソル感度"
-		u8"打撃後のゲーム速度操作方法表示"
 	);
 
 	// フォントレンダラーの初期化
@@ -47,6 +74,8 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 
 	seVolumeFontData.position = { 600.0f, 810.0f };
 	seVolumeFontData.size = 0.5f;
+
+	
 }
 
 void AudioSettingPanel::Uninitialize()
@@ -59,11 +88,81 @@ void AudioSettingPanel::Uninitialize()
 	masterVolumeFontData = {};
 	bgmVolumeFontData = {};
 	seVolumeFontData = {};
+	for (int i = 0; i < 3; ++i)
+	{
+		volumeSliderBackgroundData[i].reset();
+		volumeSliderBackgroundSprite[i].reset();
+		volumeSliderButtonData[i].reset();
+		volumeSliderButtonSprite[i].reset();
+	}
 }
-
 void AudioSettingPanel::Update(float elapsedTime)
 {
-	// 設定パネルの更新処理
+	Input& input = Input::Instance();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
+	// スライダーのドラッグ処理
+	// マウスの位置を取得
+	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
+
+	for (int i = 0; i < numVolumeTypes; ++i)
+	{
+		// スライダーのボタンの位置を取得
+		DirectX::XMFLOAT2 scaledButtonPos = screenScaler.Scale(volumeSliderButtonPosition[i]);
+		DirectX::XMFLOAT2 scaledButtonSize = screenScaler.ScaleSize(volumeSliderButtonData[i]->size);
+		DirectX::XMFLOAT2 scaledButtonCenterPos = { scaledButtonPos.x - scaledButtonSize.x / 2.0f, scaledButtonPos.y - scaledButtonSize.y / 2.0f };
+
+		// 間隔調整の変数
+		float sliderSpacing = 130.0f * screenScaler.GetUniformScale();
+
+		float offsetX = scaledButtonCenterPos.x + volumeSliderButtonOffset.x;
+		float offsetY = scaledButtonCenterPos.y + i * sliderSpacing + volumeSliderButtonOffset.y;
+		float buttonWidth = scaledButtonSize.x;
+		float buttonHeight = scaledButtonSize.y;
+
+		bool isHovered = (mousePos.x >= offsetX && mousePos.x <= offsetX + buttonWidth &&
+			mousePos.y >= offsetY && mousePos.y <= offsetY + buttonHeight);
+
+		bool isPressed = (input.GetMouse().GetButton() & Mouse::BTN_LEFT);// 左クリックが押されているかどうか
+
+		if(!isPressed)
+		{
+			isDragging = false;
+		}
+		else if(isHovered && isPressed)
+		{
+			isDragging = true;
+			hoveredButtonIndex = i;
+		}
+		if(isDragging && hoveredButtonIndex == i)
+		{
+			volumeSliderButtonPosition[i].x = mousePos.x - volumeSliderButtonOffset.x;
+
+			float minX = volumeSliderBackgroundPosition[i].x - volumeSliderBackgroundData[i]->size.x / 2.0f;
+			float maxX = volumeSliderBackgroundPosition[i].x + volumeSliderBackgroundData[i]->size.x / 2.0f;
+
+			volumeSliderButtonPosition[i].x = std::clamp(volumeSliderButtonPosition[i].x, minX, maxX);
+
+			// ボリュームの値を計算
+			float volumeValue = (volumeSliderButtonPosition[i].x - minX) / (maxX - minX);
+
+			volumeValue /= 1.0f; // 0.0fから1.0fの範囲に正規化
+
+			switch(i)
+			{
+			case 0:
+				Audio::Instance().SetMasterVolume(volumeValue);
+				break;
+			case 1:
+				Audio::Instance().SetBGMVolume(volumeValue);
+				break;
+			case 2:
+				Audio::Instance().SetSEVolume(volumeValue);
+				break;
+			}
+
+		}
+	}
 }
 
 void AudioSettingPanel::Render()
@@ -78,6 +177,59 @@ void AudioSettingPanel::Render()
 
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+	// テクスチャの描画
+	if(volumeSliderBackgroundSprite && volumeSliderBackgroundData)
+	{
+		for(int i  = 0; i < numVolumeTypes; ++i)
+		{
+			DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(volumeSliderBackgroundPosition[i]);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(volumeSliderBackgroundData[i]->size);
+
+			DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+
+			//間隔調整の変数
+			float sliderSpacing = 130.0f * screenScaler.GetUniformScale();
+
+			//3回描画することで、マスターボリューム、BGMボリューム、SEボリュームのスライダー背景を描画
+			DirectX::XMFLOAT2 offsetPos = { scaledCenterPos.x + volumeSliderOffset.x, scaledCenterPos.y + i * sliderSpacing + volumeSliderOffset.y };
+
+			volumeSliderBackgroundSprite[i]->render(dc,
+				offsetPos.x, offsetPos.y,
+				scaledSize.x, scaledSize.y,
+				volumeSliderBackgroundData[i]->color.x,
+				volumeSliderBackgroundData[i]->color.y,
+				volumeSliderBackgroundData[i]->color.z,
+				volumeSliderBackgroundData[i]->color.w,
+				volumeSliderBackgroundData[i]->rotation);
+		}
+
+	}
+
+	// スライダーボタンの描画
+	if(volumeSliderButtonSprite && volumeSliderButtonData)
+	{
+		for(int i = 0; i < numVolumeTypes; ++i)
+		{
+			DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(volumeSliderButtonPosition[i]);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(volumeSliderButtonData[i]->size);
+			DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+			//間隔調整の変数
+			float sliderSpacing = 130.0f * screenScaler.GetUniformScale();
+
+			DirectX::XMFLOAT2 offsetPos = { scaledCenterPos.x + volumeSliderButtonOffset.x, scaledCenterPos.y + i * sliderSpacing + volumeSliderButtonOffset.y };
+
+			volumeSliderButtonSprite[i]->render(dc,
+				offsetPos.x, offsetPos.y,
+				scaledSize.x, scaledSize.y,
+				volumeSliderButtonData[i]->color.x,
+				volumeSliderButtonData[i]->color.y,
+				volumeSliderButtonData[i]->color.z,
+				volumeSliderButtonData[i]->color.w,
+				volumeSliderButtonData[i]->rotation);
+		}
+		
+	}
 
 	// フォントの描画
 	//マスターボリュームの表示
@@ -130,24 +282,7 @@ void AudioSettingPanel::DrawGUI()
 {
 	// ImGuiを使ったGUI描画処理
 	ImGui::Begin("Audio Settings");
-	// マスターボリュームのスライダー
-	static float masterVolume = 1.0f;
-	if (ImGui::SliderFloat("Master Volume", &masterVolume, 0.0f, 1.0f))
-	{
-		// マスターボリュームの変更処理
-	}
-	// BGMボリュームのスライダー
-	static float bgmVolume = 1.0f;
-	if (ImGui::SliderFloat("BGM Volume", &bgmVolume, 0.0f, 1.0f))
-	{
-		// BGMボリュームの変更処理
-	}
-	// SEボリュームのスライダー
-	static float seVolume = 1.0f;
-	if (ImGui::SliderFloat("SE Volume", &seVolume, 0.0f, 1.0f))
-	{
-		// SEボリュームの変更処理
-	}
+	ImGui::DragFloat2("slider back offset", &volumeSliderOffset.x, 1.0f, -1000.0f, 1000.0f);
 	ImGui::End();
 }
 
@@ -190,6 +325,7 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 	(
 		u8"バットカーソル感度"
 		u8"打撃後のゲーム速度操作方法表示"
+		u8"1234567890"
 	);
 
 	// フォントレンダラーの初期化
@@ -204,6 +340,9 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 	cursorFontData.position = { 600.0f, 600.0f };
 	cursorFontData.size = 0.3f;
 
+	cursorValueFontData.position = {cursorFontData.position.x, cursorFontData.position.y};
+	cursorValueFontData.size = 0.5f;
+
 	//保存されているスライダーボタンのインデックスに応じて現在のスライダーの位置を設定
 	currentSliderPosition = static_cast<SliderPosition>(currentSliderButtonIndex);
 }
@@ -216,6 +355,7 @@ void CursorSettingPanel::Uninitialize()
 	spriteInputLayout.Reset();
 	fontRenderer.Uninitialize();
 	cursorFontData = {};
+	cursorValueFontData = {};
 	sliderBackgroundData.reset();
 	sliderBackgroundSprite.reset();
 	sliderButtonData.reset();
@@ -276,15 +416,15 @@ void CursorSettingPanel::Update(float elapsedTime)
 		
 		//5分割して、スライダーボタンの位置を制限する
 		int segments = numSliderPositions; // ステップ数に応じた分割数(今回は4箇所)
-		float segmentSize = sliderBackgroundData->size.x / segments; // 各分割の幅
+		int segmentSize = sliderBackgroundData->size.x / segments; // 各分割の幅
 
 		
 		// スライダーボタンの位置を分割の中心にスナップさせる
 		for(int i = 0; i <= segments; ++i)
 		{
 			
-			float pointX = minX + (segmentSize * i);// 分割の中心点のX座標
-			float harfSegmentSize = segmentSize / 2.0f;// 分割の半分の幅
+			pointX = minX + (segmentSize * i);// 分割の中心点のX座標
+			int harfSegmentSize = segmentSize / 2;// 分割の半分の幅
 
 			// スライダーボタンの位置が分割の中心点に近い場合、スナップさせる
 			if(std::abs(sliderButtonPosition.x - pointX) <= harfSegmentSize)
@@ -390,6 +530,40 @@ void CursorSettingPanel::Render()
 
 	fontRenderer.DrawTextW(dc, text, drawPosX, drawPosY, scaledFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
 
+	//カーソル感度の値の表示
+	DirectX::XMFLOAT2 scaledValueFontPos = screenScaler.Scale(cursorValueFontData.position);
+	const float scaledValueFontScale = cursorValueFontData.size * screenScaler.GetUniformScale();
+
+	float valueTextWidth, valueTextHeight;
+	const char* valueText = nullptr;
+
+	switch(currentSliderPosition)
+	{
+		case SliderPosition::Low:
+			valueText = u8"1";
+			break;
+		case SliderPosition::Medium:
+			valueText = u8"2";
+			break;
+		case SliderPosition::Normal:
+			valueText = u8"3";
+			break;
+		case SliderPosition::MediumHigh:
+			valueText = u8"4";
+			break;
+		case SliderPosition::High:
+			valueText = u8"5";
+			break;
+	}
+
+	fontRenderer.MeasureText(valueText, scaledValueFontScale, valueTextWidth, valueTextHeight);
+	float valueDrawPosX = scaledValueFontPos.x - valueTextWidth / 2.0f;
+	float valueDrawPosY = scaledValueFontPos.y - valueTextHeight / 2.0f;
+
+	fontRenderer.DrawTextW(dc, valueText, 
+		valueDrawPosX + cursorValueOffset.x, valueDrawPosY + cursorValueOffset.y,
+		scaledValueFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
 	// 描画後の状態をリセット
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -412,6 +586,7 @@ void CursorSettingPanel::DrawGUI()
 
 	ImGui::DragFloat("offsetX", &offsetX, 1.0f, -100.0f, 100.0f);
 	ImGui::DragFloat("offsetY", &offsetY, 1.0f, -100.0f, 100.0f);
+	ImGui::DragFloat2("valueOffset", &cursorValueOffset.x, 1.0f, 100.0f, 1000.0f);
 
 	ImGui::End();
 }
