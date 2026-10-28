@@ -55,12 +55,17 @@ public:
 	void DrawGUI() override;
 
 private:
+	static const int numVolumeTypes = 3; // ボリュームの種類の数
 
 	FontData masterVolumeFontData = { { 960.0f, 540.0f }, 0.5f };//マスターボリュームの表示
 	FontData bgmVolumeFontData = { { 960.0f, 540.0f }, 0.5f };//bgmボリュームの表示
 	FontData seVolumeFontData = { { 960.0f, 540.0f }, 0.5f };//seボリュームの表示
+	FontData volumeValueFontData[numVolumeTypes] = 
+	{
+		{{960.0f, 540.0f}, 0.5f}, {{960.0f, 540.0f}, 0.5f}, {{960.0f, 540.0f}, 0.5f}
+	};//ボリュームの値の表示
 
-	static const int numVolumeTypes = 3; // ボリュームの種類の数
+	DirectX::XMFLOAT2 volumeValueOffset[numVolumeTypes] = { {800.0f,-5.0f}, {800.0f,-5.0f}, {800.0f,-5.0f} };
 
 	std::unique_ptr<SpriteData> volumeSliderBackgroundData[numVolumeTypes];
 	std::unique_ptr<sprite> volumeSliderBackgroundSprite[numVolumeTypes];
@@ -77,6 +82,12 @@ private:
 	  {volumeSliderBackgroundPosition[1].x , volumeSliderBackgroundPosition[1].y },
 	  {volumeSliderBackgroundPosition[2].x , volumeSliderBackgroundPosition[2].y }
 	};
+
+	DirectX::XMFLOAT2 sliderButtonSize[numVolumeTypes] = { {50.0f, 50.0f}, {50.0f, 50.0f}, {50.0f, 50.0f} };
+	DirectX::XMFLOAT2 sliderButtonOriginalSize[numVolumeTypes] = {sliderButtonSize[0], sliderButtonSize[1], sliderButtonSize[2]};
+	DirectX::XMFLOAT2 sliderButtonHoverSize[numVolumeTypes] = { { sliderButtonOriginalSize[0].x * 1.1f, sliderButtonOriginalSize[0].y * 1.1f },
+																{ sliderButtonOriginalSize[1].x * 1.1f, sliderButtonOriginalSize[1].y * 1.1f },
+																{ sliderButtonOriginalSize[2].x * 1.1f, sliderButtonOriginalSize[2].y * 1.1f } };
 
 	DirectX::XMFLOAT2 volumeSliderButtonOffset = { 70.0f, -35.0f };
 

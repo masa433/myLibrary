@@ -39,7 +39,7 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 		volumeSliderButtonData[i]->texturePath = L".\\resources\\textures\\Ball.png";
 		//ボタンの初期位置をスライダーの右端に設定
 		volumeSliderButtonData[i]->position = { volumeSliderButtonPosition[i].x, volumeSliderButtonPosition[i].y};
-		volumeSliderButtonData[i]->size = { 50.0f, 50.0f };
+		volumeSliderButtonData[i]->size = { sliderButtonSize[i].x, sliderButtonSize[i].y };
 		volumeSliderButtonData[i]->rotation = 0.0f;
 		volumeSliderButtonData[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		volumeSliderButtonSprite[i] = std::make_unique<sprite>(device, context, volumeSliderButtonData[i]->texturePath.c_str());
@@ -56,6 +56,7 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints
 	(
 		u8"全体BGMSE"
+		u8"0123456789"
 	);
 
 	// フォントレンダラーの初期化
@@ -75,6 +76,11 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	seVolumeFontData.position = { 600.0f, 810.0f };
 	seVolumeFontData.size = 0.5f;
 
+	for(int i = 0; i < numVolumeTypes; ++i)
+	{
+		volumeValueFontData[i].position = { masterVolumeFontData.position.x, masterVolumeFontData.position.y + i * 130.0f };
+		volumeValueFontData[i].size = 0.5f;
+	}
 	
 }
 
@@ -109,7 +115,7 @@ void AudioSettingPanel::Update(float elapsedTime)
 	{
 		// スライダーのボタンの位置を取得
 		DirectX::XMFLOAT2 scaledButtonPos = screenScaler.Scale(volumeSliderButtonPosition[i]);
-		DirectX::XMFLOAT2 scaledButtonSize = screenScaler.ScaleSize(volumeSliderButtonData[i]->size);
+		DirectX::XMFLOAT2 scaledButtonSize = screenScaler.ScaleSize(sliderButtonSize[i]);
 		DirectX::XMFLOAT2 scaledButtonCenterPos = { scaledButtonPos.x - scaledButtonSize.x / 2.0f, scaledButtonPos.y - scaledButtonSize.y / 2.0f };
 
 		// 間隔調整の変数
@@ -124,6 +130,8 @@ void AudioSettingPanel::Update(float elapsedTime)
 			mousePos.y >= offsetY && mousePos.y <= offsetY + buttonHeight);
 
 		bool isPressed = (input.GetMouse().GetButton() & Mouse::BTN_LEFT);// 左クリックが押されているかどうか
+
+		sliderButtonSize[i] = isPressed ? sliderButtonOriginalSize[i] : (isHovered ? sliderButtonHoverSize[i] : sliderButtonOriginalSize[i]	);
 
 		if(!isPressed)
 		{
@@ -212,7 +220,7 @@ void AudioSettingPanel::Render()
 		for(int i = 0; i < numVolumeTypes; ++i)
 		{
 			DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(volumeSliderButtonPosition[i]);
-			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(volumeSliderButtonData[i]->size);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(sliderButtonSize[i]);
 			DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
 			//間隔調整の変数
 			float sliderSpacing = 130.0f * screenScaler.GetUniformScale();
@@ -267,6 +275,33 @@ void AudioSettingPanel::Render()
 	float seDrawPosY = scaledSeFontPos.y - seTextHeight / 2.0f;
 
 	fontRenderer.DrawTextW(dc, seText, seDrawPosX, seDrawPosY, scaledSeFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	// ボリューム値の表示
+	for(int i = 0; i < numVolumeTypes; ++i)
+	{
+		DirectX::XMFLOAT2 scaledVolumeFontPos = screenScaler.Scale(volumeValueFontData[i].position);
+		const float scaledVolumeFontScale = volumeValueFontData[i].size * screenScaler.GetUniformScale();
+		float volumeValue = 0.0f;
+		switch(i)
+		{
+		case 0:
+			volumeValue = Audio::Instance().GetMasterVolume();
+			break;
+		case 1:
+			volumeValue = Audio::Instance().GetBGMVolume();
+			break;
+		case 2:
+			volumeValue = Audio::Instance().GetSEVolume();
+			break;
+		}
+		char volumeText[16];
+		sprintf_s(volumeText, "%.f", volumeValue * 100.0f);
+		float volumeTextWidth, volumeTextHeight;
+		fontRenderer.MeasureText(volumeText, scaledVolumeFontScale, volumeTextWidth, volumeTextHeight);
+		float volumeDrawPosX = scaledVolumeFontPos.x - volumeTextWidth / 2.0f;
+		float volumeDrawPosY = scaledVolumeFontPos.y - volumeTextHeight / 2.0f;
+		fontRenderer.DrawTextW(dc, volumeText, volumeDrawPosX + volumeValueOffset[i].x, volumeDrawPosY + volumeValueOffset[i].y, scaledVolumeFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+	}
 
 
 	// 描画後の状態をリセット
