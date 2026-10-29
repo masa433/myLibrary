@@ -153,8 +153,8 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", vertex_shader.ReleaseAndGetAddressOf(), input_layout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
 
-	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
-	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789"

@@ -15,8 +15,8 @@ void RoundManager::Initialize(ID3D11Device* device)
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
-	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
-	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789/"

@@ -29,8 +29,8 @@ void TrackingData::Initialize(ID3D11Device* device)
 	trackingDataSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	trackingDataSprite = std::make_unique<sprite>(device, context, trackingDataSpriteData->texturePath.c_str());
 
-	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
-	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789.km/h-"

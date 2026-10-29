@@ -147,8 +147,8 @@ std::wstring ShopManager::GetSpecialAbilityIconPath(SpecialAbility::AbilityID id
 void ShopManager::Initialize(ID3D11Device* device)
 {
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
-	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
-	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{

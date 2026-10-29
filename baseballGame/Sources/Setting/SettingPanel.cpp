@@ -50,8 +50,8 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 
 
 	// フォントレンダラーの初期化
-	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
-	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints
 	(
@@ -353,8 +353,8 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 
 
 	// フォントレンダラーの初期化
-	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
-	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints
 	(
@@ -656,8 +656,8 @@ void OtherSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	checkIconSprite = std::make_unique<sprite>(device, context, checkIconData->texturePath.c_str());
 	
 	// フォントレンダラーの初期化
-	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
-	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
+	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
+	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints
 	(
