@@ -168,7 +168,7 @@ void Player::Initialize()
         _ASSERT_EXPR(pxBatRigidBody != nullptr, "Failed to create PxRigidDynamic for bat");
 
         // キネマティックモードに設定
-        pxBatRigidBody->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+        //pxBatRigidBody->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
         // CCDを有効化
         pxBatRigidBody->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
         //形状を生成して剛体にアタッチ（スケールを適用）

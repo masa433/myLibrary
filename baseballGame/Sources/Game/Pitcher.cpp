@@ -331,10 +331,7 @@ void Pitcher::Update(float elapsedTime)
 	if (foulSound) foulSound->Update();
 
 	// 状態に応じた処理
-	if (intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingGround &&
-		intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingStand &&
-		intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingBallMode && 
-		intro->GetIntroState() != GameIntroSequence::GameIntroState::ShowingCountDown)
+	if (intro->GetIntroState() == GameIntroSequence::GameIntroState::ShowingPitcher || intro->GetIntroState() == GameIntroSequence::GameIntroState::Playing)
 	{
 		switch (currentState)
 		{

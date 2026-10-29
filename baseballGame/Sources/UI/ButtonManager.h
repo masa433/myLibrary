@@ -31,6 +31,7 @@ public:
 		Skip,//スキップボタン
 		Next,//次へボタン
 		FreeBatting,//フリーバッティングボタン
+		Restart,//リスタートボタン
 		Count
 	};
 
@@ -86,6 +87,9 @@ public:
 
 	void ResetSettingsRequest(bool requested) { isSettingsRequested = requested; }
 	bool IsSettingsRequested() const { return isSettingsRequested; }
+
+	void ResetRestartRequest(bool requested) { isRestartRequested = requested; }
+	bool IsRestartRequested() const { return isRestartRequested; }
 
 	//ボタンのタイプを取得する関数
 	ButtonType GetButtonType(ButtonType buttonType) const { return buttonType; }
@@ -194,6 +198,7 @@ private:
 	bool isNextRequested = false;
 	bool isFreeBattingRequested = false;
 	bool isSettingsRequested = false;
+	bool isRestartRequested = false;
 
 	AudioSource* buttonHoverSound = nullptr;
 	AudioSource* buttonClickSound = nullptr;

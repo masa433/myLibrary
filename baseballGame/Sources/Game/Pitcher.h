@@ -299,7 +299,7 @@ public:
 	State currentState = State::SelectingPitch;
 	float stateTime = 0.0f; // 現在の状態に入ってからの経過時間
 	const State GetCurrentState() const { return currentState; }
-	void SetCurrentState(State newState) { currentState = newState; stateTime = 0.0f; }
+	void ChangeState(State newState) { currentState = newState; stateTime = 0.0f; isBallThrown = false; }
 
 
 

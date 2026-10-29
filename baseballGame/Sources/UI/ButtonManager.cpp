@@ -299,6 +299,13 @@ void ButtonManager::Update(float elapsedTime)
 							buttonClickSound->PlayOneShot();
 						}
 						break;
+					case ButtonType::Restart:
+						isRestartRequested = true;
+						if(buttonClickSound)
+						{
+							buttonClickSound->PlayOneShot();
+						}
+						break;
 
 					default:
 						break;
@@ -527,7 +534,7 @@ void ButtonManager::DrawGUI()
 			{ 
 				"None", "Start", "Settings", "Quit", "Pose", "Return",
 				"OK", "Close" , "Reroll", "Title", "BatterSelect", "Retry", 
-				"ShowPitchParam", "Skip", "Next", "FreeBatting"
+				"ShowPitchParam", "Skip", "Next", "FreeBatting", "Restart"
 			};
 			int currentTypeIndex = static_cast<int>(btn.buttonType);
 			ImGui::Combo(u8"ボタンタイプ", &currentTypeIndex, buttonTypeItems, IM_ARRAYSIZE(buttonTypeItems));

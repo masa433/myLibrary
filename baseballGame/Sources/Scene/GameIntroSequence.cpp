@@ -424,9 +424,29 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 		Pitcher& pitcher = Pitcher::Instance();
 
 
-		pitcher.SetCurrentState(Pitcher::State::SelectingPitch); // ピッチャーの状態を判定待ちに設定
+		pitcher.ChangeState(Pitcher::State::SelectingPitch); // ピッチャーの状態を判定待ちに設定
 		pitcher.SetAnimationTime(0.0f); // ピッチャーのアニメーション時間をリセット
 		pitcher.UpdateAnimation(0.0f); // ピッチャーのアニメーションを更新
+		pitcher.SetIsBallThrown(false); // ボールが投げられたかどうかのフラグをリセット
+
+        Ball& ball = Ball::Instance();
+        ball.CancelBezier(); // ベジェ飛行中であれば強制キャンセルする
+        ball.SetHasCollidedWithBat(false);    // 衝突フラグをリセット
+        ball.SetIsFoulConfirmed(false);       // ファウル状態をリセット
+        ball.ClearBallTrail();                // トレイル（軌跡）をクリア
+		ball.SetVelocity({ 0.0f, 0.0f, 0.0f }); // ボールの速度をリセット
+		ball.ResetMotion(); // ボールの物理挙動をリセット
+
+        physx::PxRigidDynamic* ballCollider = ball.GetBallCollider();
+        if (ballCollider)
+        {
+            ballCollider->setLinearVelocity(physx::PxVec3(0, 0, 0));  // 速度をゼロに
+            ballCollider->setAngularVelocity(physx::PxVec3(0, 0, 0)); // 角速度をゼロに
+
+            // ピッチャーの現在位置などを基準に手元へ戻す（必要に応じてオフセットを調整してください）
+            DirectX::XMFLOAT3 pitcherPos = pitcher.GetPosition();
+            ballCollider->setGlobalPose(physx::PxTransform(physx::PxVec3(pitcherPos.x, pitcherPos.y + 1.0f, pitcherPos.z)));
+        }
 
 		Player& player = Player::Instance();
 		player.ChangeState(Player::State::BattingIdle); // バッターの状態を判定待ちに設定
@@ -606,9 +626,28 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
             broadcastCamera.SetReplayMode(false); // リプレイモードを無効化
 
             Pitcher& pitcher = Pitcher::Instance();
-            pitcher.SetCurrentState(Pitcher::State::SelectingPitch); // ピッチャーの状態を判定待ちに設定
+            pitcher.ChangeState(Pitcher::State::SelectingPitch); // ピッチャーの状態を判定待ちに設定
             pitcher.SetAnimationTime(0.0f); // ピッチャーのアニメーション時間をリセット
             pitcher.UpdateAnimation(0.0f); // ピッチャーのアニメーションを更新
+
+            Ball& ball = Ball::Instance();
+            ball.CancelBezier(); // ベジェ飛行中であれば強制キャンセルする
+            ball.SetHasCollidedWithBat(false);    // 衝突フラグをリセット
+            ball.SetIsFoulConfirmed(false);       // ファウル状態をリセット
+            ball.ClearBallTrail();                // トレイル（軌跡）をクリア
+            ball.SetVelocity({ 0.0f, 0.0f, 0.0f }); // ボールの速度をリセット
+            ball.ResetMotion(); // ボールの物理挙動をリセット
+
+            physx::PxRigidDynamic* ballCollider = ball.GetBallCollider();
+            if (ballCollider)
+            {
+                ballCollider->setLinearVelocity(physx::PxVec3(0, 0, 0));  // 速度をゼロに
+                ballCollider->setAngularVelocity(physx::PxVec3(0, 0, 0)); // 角速度をゼロに
+
+                // ピッチャーの現在位置などを基準に手元へ戻す（必要に応じてオフセットを調整してください）
+                DirectX::XMFLOAT3 pitcherPos = pitcher.GetPosition();
+                ballCollider->setGlobalPose(physx::PxTransform(physx::PxVec3(pitcherPos.x, pitcherPos.y + 1.0f, pitcherPos.z)));
+            }
 
             Player& player = Player::Instance();
             player.ChangeState(Player::State::BattingIdle); // バッターの状態を判定待ちに設定

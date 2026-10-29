@@ -205,7 +205,7 @@ void AudioSource::UpdateFadeOut(float elapsedTime)
 	float t = (std::min)(fadeOutTime / fadeDuration, 1.0f);
 
 	float newVolume = fadeStartVol * (1.0f - t);
-	SetVolume(newVolume);
+	SetVolume(newVolume * Audio::Instance().GetCategoryVolume(soundType));
 
 	if (t >= 1.0f)
 	{
@@ -222,7 +222,7 @@ void AudioSource::StartFadeIn(float duration, bool loop)
 	if (duration <= 0.0f) { SetVolume(0.0f); return; }
 	if (fadeInDuration > 0.0f) return;          // すでにフェード中なら何もしない
 	fadeInStartVol = 0.0f;                     // フェードインは0から始める
-	SetVolume(fadeInStartVol);
+	SetVolume(fadeInStartVol * Audio::Instance().GetCategoryVolume(soundType));
 	fadeInTime = 0.0f;
 	fadeInDuration = duration;
 
@@ -238,7 +238,7 @@ void AudioSource::StartFadeIn(float duration, bool loop)
 	HRESULT hr = sourceVoice->SubmitSourceBuffer(&buffer);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	sourceVoice->SetVolume(baseVolume);
+	sourceVoice->SetVolume(baseVolume * Audio::Instance().GetCategoryVolume(soundType));
 	hr = sourceVoice->Start();
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 }
@@ -251,7 +251,7 @@ void AudioSource::UpdateFadeIn(float elapsedTime)
 	float t = (std::min)(fadeInTime / fadeInDuration, 1.0f);
 
 	float newVolume = fadeInStartVol + (1.0f - fadeInStartVol) * t;
-	SetVolume(newVolume);
+	SetVolume(newVolume * Audio::Instance().GetCategoryVolume(soundType));
 
 	if (t >= 1.0f)
 	{

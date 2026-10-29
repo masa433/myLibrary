@@ -365,18 +365,6 @@ void scene_game::initialize()
 void scene_game::update(float elapsed_time)
 {
 
-    //仮でPキーを押したらポーズ画面に移行
-    if (GetAsyncKeyState('P') & 0x8000)
-    {
-        Pause::Instance().OpenPauseScreen();
-    }
-    
-    if(Pause::Instance().IsPauseScreenOpen())
-    {
-        Pause::Instance().Update(elapsed_time);
-        return; // ポーズ中はゲームの更新をスキップ
-	}
-
     // Ctrl + S で設定保存
     ImGuiIO& io = ImGui::GetIO();
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S))
@@ -385,14 +373,65 @@ void scene_game::update(float elapsed_time)
     }
 
     //HOMEキーを押したらIMGUIの表示・非表示を切り替える
-	static bool prevHomePressed = false;
-	bool homePressed = (GetKeyState(VK_HOME) & 0x8000) != 0;
-	if (homePressed && !prevHomePressed)
-	{
-		showGUI = !showGUI;
-	}
-	prevHomePressed = homePressed;
+    static bool prevHomePressed = false;
+    bool homePressed = (GetKeyState(VK_HOME) & 0x8000) != 0;
+    if (homePressed && !prevHomePressed)
+    {
+        showGUI = !showGUI;
+    }
+    prevHomePressed = homePressed;
 
+    bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
+
+    if (gameIntroSequence.IsPlaying() && !isGameFinished && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
+    {
+        if (cheerSound && !isCheerSoundPlaying)
+        {
+            cheerSound->StartFadeIn(1.0f, true);
+            //cheerSound->SetVolume(0.5f);
+            isCheerSoundPlaying = true;
+        }
+    }
+
+    if (cheerSound)
+    {
+        cheerSound->Update();
+        cheerSound->UpdateFadeOut(elapsed_time);
+        cheerSound->UpdateFadeIn(elapsed_time);
+
+    }
+
+    Physics::Instance().UpdateFadeOut(elapsed_time); //効果音をフェードアウトして止める
+
+    if (isGameFinished)
+    {
+        Result::Instance().Update(elapsed_time);
+
+        if (cheerSound && isCheerSoundPlaying)
+        {
+            cheerSound->StartFadeOut(1.0f); // フェードアウトの時間を指定
+            isCheerSoundPlaying = false;
+        }
+
+        if (!isOneShotFadeStarted)
+        {
+            Physics::Instance().StartFadeOut(1.0f);//効果音をフェードアウトを開始
+            isOneShotFadeStarted = true;
+        }
+
+    }
+
+    //仮でPキーを押したらポーズ画面に移行
+    if (GetAsyncKeyState('P') & 0x8000)
+    {
+        Pause::Instance().OpenPauseScreen();
+    }
+    
+    if(Pause::Instance().IsPauseScreenOpen() || Pause::Instance().IsSceneChanging())
+    {
+        Pause::Instance().Update(elapsed_time);
+        return; // ポーズ中はゲームの更新をスキップ
+	}
 
     if(broadcastCamera.IsGameSpeedModeEnable())
     {
@@ -456,7 +495,14 @@ void scene_game::update(float elapsed_time)
     {
         Pitcher::Instance().Update(elapsed_time);
     }
-   
+
+   /* if(gameIntroSequence.GetIntroState() == GameIntroSequence::GameIntroState::ShowingIntroBoard)
+    {
+		Pitcher::Instance().SetIsBallThrown(false);
+		Pitcher::Instance().ResetPitchFlags();
+        Ball::Instance().
+	}
+   */
     // 物理システムの更新
     Physics::Instance().Update(elapsed_time);
 
@@ -481,45 +527,7 @@ void scene_game::update(float elapsed_time)
         
     }
 
-	bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
-
-    if (gameIntroSequence.IsPlaying() && !isGameFinished && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
-    {
-        if (cheerSound && !isCheerSoundPlaying)
-        {
-            cheerSound->StartFadeIn(1.0f, true);
-            //cheerSound->SetVolume(0.5f);
-            isCheerSoundPlaying = true;
-        }
-    }
-
-    if (cheerSound)
-    {
-		cheerSound->Update();
-        cheerSound->UpdateFadeOut(elapsed_time);
-		cheerSound->UpdateFadeIn(elapsed_time);
-        
-    }
-
-    Physics::Instance().UpdateFadeOut(elapsed_time); //効果音をフェードアウトして止める
-
-    if(isGameFinished)
-    {
-        Result::Instance().Update(elapsed_time);
-       
-        if(cheerSound && isCheerSoundPlaying)
-        {
-            cheerSound->StartFadeOut(1.0f); // フェードアウトの時間を指定
-            isCheerSoundPlaying = false;
-		}
-
-        if(!isOneShotFadeStarted)
-        {
-            Physics::Instance().StartFadeOut(1.0f);//効果音をフェードアウトを開始
-            isOneShotFadeStarted = true;
-        }
-		
-	}
+	
 
     // スカイレンダラーの更新
     if(broadcastCamera.IsGameSpeedModeEnable())
@@ -940,10 +948,7 @@ void scene_game::render(float elapsedTime)
 
     gameIntroSequence.Render();
 
-    if(Pause::Instance().IsPauseScreenOpen())
-    {
-        Pause::Instance().Render();
-	}
+    
 
     // ShapeRenderer の描画実行
 
@@ -998,6 +1003,11 @@ void scene_game::render(float elapsedTime)
     {
         //リザルトを表示する
         Result::Instance().Render();
+    }
+
+    if (Pause::Instance().IsPauseScreenOpen() || Pause::Instance().IsSceneChanging() && !(RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver()))
+    {
+        Pause::Instance().Render();
     }
 
     //計測終了
@@ -1121,6 +1131,8 @@ void scene_game::DrawGUI()
 		if (ImGui::CollapsingHeader("Game Intro Sequence")) { gameIntroSequence.DrawGUI(); }
 		ImGui::Separator();
         if(ImGui::CollapsingHeader("Audio")) { Audio::Instance().DrawGUI(); }
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Pause")) { Pause::Instance().DrawGUI(); }
 
         ImGui::End();
 
@@ -1620,6 +1632,7 @@ void scene_game::SaveSetting()
 	Money::Instance().SaveToJson(j["money"]);
 	RoundManager::Instance().SaveToJson(j["roundManager"]);
 	gameIntroSequence.SaveToJson(j["gameIntroSequence"]);
+	Pause::Instance().SaveToJson(j["pause"]);
 
     // ファイルに保存
     std::ofstream file("resources\\setting\\settings.json");
@@ -1786,5 +1799,6 @@ void scene_game::LoadSetting()
 	if (j.contains("money")) Money::Instance().LoadFromJson(j["money"]);
 	if (j.contains("roundManager")) RoundManager::Instance().LoadFromJson(j["roundManager"]);
 	if (j.contains("gameIntroSequence")) gameIntroSequence.LoadFromJson(j["gameIntroSequence"]);
+	if (j.contains("pause")) Pause::Instance().LoadFromJson(j["pause"]);
     consoleLog.push_back("[Info] Settings loaded.");
 }

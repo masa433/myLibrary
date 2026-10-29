@@ -1,5 +1,9 @@
 #pragma once
 #include "sprite.h"
+#include "ButtonManager.h"
+#include "Hextransitioneffect.h"
+
+using json = nlohmann::json;
 
 //ポーズ画面の管理クラス
 class Pause
@@ -14,10 +18,15 @@ public:
 	void Uninitialize();
 	void Update(float elapsedTime);
 	void Render();
+	void DrawGUI();
+	void SaveToJson(json& j);
+	void LoadFromJson(const json& j);
+
 
 	void OpenPauseScreen() { isPauseOpen = true; }
 	void ClosePauseScreen() { isPauseOpen = false; }
 	bool IsPauseScreenOpen() const { return isPauseOpen; }
+	bool IsSceneChanging() const { return isChangingScene; }
 
 private:
 	bool isPauseOpen = false; // ポーズ画面が開いているかどうかのフラグ
@@ -43,5 +52,11 @@ private:
 
 	DirectX::XMFLOAT2 pauseBackGroundPosition = { 960.0f, 540.0f };
 	DirectX::XMFLOAT2 pauseBackGroundSize = { 1000.0f, 700.0f };
+
+	ButtonManager buttonManager; // ボタン管理クラスのインスタンス
+
+	HexTransitionEffect hexTransitionEffect; // 六角形のトランジションエフェクトのインスタンス
+
+	bool isChangingScene = false; // シーン遷移中かどうかのフラグ
 
 };
