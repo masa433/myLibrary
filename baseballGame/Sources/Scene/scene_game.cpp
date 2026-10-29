@@ -28,6 +28,7 @@
 #include "SpecialAbility.h"
 #include "ReplayManager.h"
 #include "GameModeManager.h"
+#include "Pause.h"
 
 using json = nlohmann::json;
 
@@ -165,6 +166,8 @@ void scene_game::initialize()
 	SpecialAbility::Instance().Initialize(device);
 
 	ReplayManager::Instance().Initialize();
+
+    Pause::Instance().Initialize(device, Graphics::Instance().GetDeviceContext());
 
     shadowRenderer.Initialize();
 
@@ -361,7 +364,19 @@ void scene_game::initialize()
 
 void scene_game::update(float elapsed_time)
 {
+
+    //仮でPキーを押したらポーズ画面に移行
+    if (GetAsyncKeyState('P') & 0x8000)
+    {
+        Pause::Instance().OpenPauseScreen();
+    }
     
+    if(Pause::Instance().IsPauseScreenOpen())
+    {
+        Pause::Instance().Update(elapsed_time);
+        return; // ポーズ中はゲームの更新をスキップ
+	}
+
     // Ctrl + S で設定保存
     ImGuiIO& io = ImGui::GetIO();
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S))
@@ -466,8 +481,6 @@ void scene_game::update(float elapsed_time)
         
     }
 
-    
-
 	bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
 
     if (gameIntroSequence.IsPlaying() && !isGameFinished && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
@@ -555,6 +568,7 @@ void scene_game::update(float elapsed_time)
         directional_light_intensity
     );
 
+    
 
     if (!gameIntroSequence.IsPlaying())
     {
@@ -926,6 +940,11 @@ void scene_game::render(float elapsedTime)
 
     gameIntroSequence.Render();
 
+    if(Pause::Instance().IsPauseScreenOpen())
+    {
+        Pause::Instance().Render();
+	}
+
     // ShapeRenderer の描画実行
 
     if (showPhysxDebug)
@@ -1002,6 +1021,7 @@ void scene_game::uninitialize()
 	RoundManager::Instance().Uninitialize();
 	SpecialAbility::Instance().Uninitialize();
     ReplayManager::Instance().Uninitialize();
+	Pause::Instance().Uninitialize();
     skyRenderer.Uninitialize();
 	shadowRenderer.Uninitialize();
 	bloomRenderer.Uninitialize();
