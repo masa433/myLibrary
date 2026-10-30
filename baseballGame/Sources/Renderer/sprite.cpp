@@ -36,7 +36,24 @@ sprite::sprite(ID3D11Device* device,ID3D11DeviceContext* immediate_context, cons
 	if (FAILED(hr) || !vertex_buffer) return;
 
 	
-	load_texture_from_file(device, immediate_context, filename, shader_resource_view.GetAddressOf(), &texture2d_desc);
+	hr = load_texture_from_file(device, immediate_context, filename, shader_resource_view.GetAddressOf(), &texture2d_desc);
+	if (FAILED(hr) || !shader_resource_view || texture2d_desc.Width == 0 || texture2d_desc.Height == 0)
+	{
+		shader_resource_view.Reset();
+		vertex_buffer.Reset();
+		if (filename)
+		{
+			OutputDebugStringW(L"Sprite texture load failed: ");
+			OutputDebugStringW(filename);
+			OutputDebugStringW(L"\n");
+
+			wchar_t error_msg[512];
+			swprintf_s(error_msg, L"スプライトのテクスチャ読み込みに失敗しました:\n%s", filename);
+			MessageBoxW(nullptr, error_msg, L"ファイル読み込みエラー", MB_OK | MB_ICONERROR);
+
+		}
+		return;
+	}
 }
 
 sprite::sprite(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shader_resource_view)

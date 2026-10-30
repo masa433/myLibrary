@@ -10,8 +10,14 @@
 
 void ButtonManager::Initialize()
 {
+	initialized = false;
 	HRESULT hr = S_OK;
 	ID3D11Device* device = Graphics::Instance().GetDevice();
+	if (!device)
+	{
+		OutputDebugStringA("ButtonManager initialization failed: D3D11 device is null.\n");
+		return;
+	}
 	
 
 	buttonSpriteData = std::make_unique<std::vector<ButtonSprite>>();
@@ -38,6 +44,11 @@ void ButtonManager::Initialize()
 	// シェーダーの読み込み
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), inputElementDesc, _countof(inputElementDesc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
+	if (!spriteVS || !spritePS || !spriteInputLayout)
+	{
+		OutputDebugStringA("ButtonManager shader initialization failed.\n");
+		return;
+	}
 
 
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
@@ -47,10 +58,12 @@ void ButtonManager::Initialize()
 	buttonClickSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Hit.wav",SoundType::SE);
 	buttonBackSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Clog.wav",SoundType::SE);
 	startButtonSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\StartButtonClick.wav",SoundType::SE);
+	initialized = true;
 }
 
 void ButtonManager::Uninitialize()
 {
+	initialized = false;
 	if (buttonSpriteData)
 	{
 		buttonSpriteData->clear();
@@ -66,10 +79,12 @@ void ButtonManager::Uninitialize()
 	delete buttonClickSound;
 	delete buttonBackSound;
 	delete startButtonSound;
+	buttonHoverSound = buttonClickSound = buttonBackSound = startButtonSound = nullptr;
 }
 
 void ButtonManager::Update(float elapsedTime)
 {
+	if (!initialized || !buttonSpriteData) return;
 	//効果音更新処理
 	if (buttonHoverSound) buttonHoverSound->Update();
 	if (buttonClickSound) buttonClickSound->Update();
@@ -336,11 +351,13 @@ bool ButtonManager::IsMouseOverButton(const DirectX::XMFLOAT2& mousePos, const D
 
 void ButtonManager::Render(float alpha, ButtonType buttonType)
 {
+	if (!initialized || !buttonSpriteData || !spriteVS || !spritePS || !spriteInputLayout) return;
 	
 	//ボタンの描画処理
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 	
+	if (!context || !renderState) return;
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	for (auto& button : *buttonSpriteData)
@@ -430,25 +447,34 @@ std::wstring ButtonManager::OpenTextureFileDialog()
 //ボタンのテクスチャをロードする
 void ButtonManager::LoadButtonTexture(ButtonSprite& button, const std::wstring& path)
 {
+	if (path.empty()) return;
 	HRESULT hr = S_OK;
 	ID3D11Device* device = Graphics::Instance().GetDevice();
+	if (!device)
+	{
+		OutputDebugStringA("Button texture load skipped: D3D11 device is null.\n");
+		return;
+	}
 	// 既存のSRVを解放
 	button.textureSRV.Reset();
 	button.spriteObj.reset();
 
 	// WICTextureLoaderを使用してテクスチャをロード
 	hr = DirectX::CreateWICTextureFromFile(device, path.c_str(), nullptr, button.textureSRV.GetAddressOf());
-	if (FAILED(hr))
+	if (FAILED(hr) || !button.textureSRV)
 	{
 		// ロード失敗時の処理（例: デフォルトテクスチャに置き換えるなど）
 		OutputDebugStringA("Failed to load texture: ");
 		OutputDebugStringW(path.c_str());
 		OutputDebugStringA("\n");
+		button.textureSRV.Reset();
+		button.spriteObj.reset();
 	}
 	else
 	{
 		button.texturePath = path;
 		button.spriteObj = std::make_unique<sprite>(device, button.textureSRV);
+		if (!button.spriteObj || !button.spriteObj->IsValid()) button.spriteObj.reset();
 	}
 }
 
@@ -465,6 +491,7 @@ std::string ButtonManager::WideToUtf8(const std::wstring& wide)
 //ボタンの色を変える関数
 void ButtonManager::ChangeColor(DirectX::XMFLOAT4 color,ButtonType buttonType)
 {
+	if (!buttonSpriteData) return;
 	//指定されたボタンタイプのボタンの色を変更する
 	if(buttonType == ButtonType::None)
 	{
@@ -585,10 +612,11 @@ void ButtonManager::SaveToJson(nlohmann::json& j)
 
 void ButtonManager::LoadFromJson(const nlohmann::json& j)
 {
-	if (!buttonSpriteData) return;
+	if (!initialized || !buttonSpriteData || !j.is_object() || !j.contains("buttons") || !j["buttons"].is_array()) return;
 	buttonSpriteData->clear();
 	for (const auto& buttonJson : j["buttons"])
 	{
+		if (!buttonJson.is_object() || !buttonJson.contains("position") || !buttonJson["position"].is_array() || buttonJson["position"].size() < 2 || !buttonJson.contains("size") || !buttonJson["size"].is_array() || buttonJson["size"].size() < 2 || !buttonJson.contains("color") || !buttonJson["color"].is_array() || buttonJson["color"].size() < 4) continue;
 		ButtonSprite button;
 		std::string texturePathUtf8 = buttonJson.value("texturePath", "");
 		button.texturePath = std::wstring(texturePathUtf8.begin(), texturePathUtf8.end());

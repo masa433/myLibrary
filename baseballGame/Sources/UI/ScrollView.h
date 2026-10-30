@@ -156,6 +156,7 @@ private:
 	float buttonSpacing = 10.0f; // プレイヤーボタンの間隔
 	float scrollOffsetY = 0.0f; // スクロールのオフセットY
 
+	bool initialized = false;
 	int selectedIndex = -1; // 選択されたボタンのインデックス
 
 	Player::RealBatter selectedBatter = Player::RealBatter::None; // 選択されたバッターの種類

@@ -164,5 +164,6 @@ private:
 	int maxChangePitcherCount = 3;
 
 	int currentPitcherIndex = 0; // 現在のピッチャーのインデックスを保持する変数
+	bool initializationFailed = false;
 	int previousPitcherIndex = -1; // 前回のピッチャーのインデックスを保持する変数
 };

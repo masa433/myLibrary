@@ -47,9 +47,12 @@ void batterSelectScene::SelectRandomPitcher()
 
 void batterSelectScene::initialize()
 {
+	initializationFailed = false;
+	ID3D11Device* device = Graphics::Instance().GetDevice();
+	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+	if (!device || !context) { initializationFailed = true; OutputDebugStringA("batterSelectScene initialization failed: D3D device/context is null\n"); return; }
 
 	// スクロールビューの初期化
-	ID3D11Device* device = Graphics::Instance().GetDevice();
 	playerScrollView = std::make_unique<ScrollView>(device, 550.0f, 600.0f, 500.0f, 600.0f);
 
 	buttonManager.Initialize();
@@ -71,7 +74,6 @@ void batterSelectScene::initialize()
 		&pitchInfoCodepoints
 	);
 
-	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
@@ -82,6 +84,7 @@ void batterSelectScene::initialize()
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", vertex_shader.ReleaseAndGetAddressOf(), input_layout.ReleaseAndGetAddressOf(),
 		input_element_desc, _countof(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
+	if (!vertex_shader || !pixel_shader || !input_layout) { initializationFailed = true; OutputDebugStringA("batterSelectScene initialization failed: sprite shader unavailable\n"); return; }
 
 	//背景のスプライトデータを初期化
 	backGroundData = std::make_unique<BatterSelectSpriteData>();
@@ -187,6 +190,7 @@ void batterSelectScene::initialize()
 
 void batterSelectScene::update(float elapsed_time)
 {
+	if (initializationFailed) return;
 	ImGuiIO& io = ImGui::GetIO();
 	if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S))
 	{
@@ -214,7 +218,7 @@ void batterSelectScene::update(float elapsed_time)
 				effect.alpha = 0.0f; // 選択中はエフェクトを非表示
 			}
 
-			playerScrollView->Update(elapsed_time);
+			if (playerScrollView) playerScrollView->Update(elapsed_time);
 
 			if (buttonManager.IsOKRequested())
 			{
@@ -404,8 +408,10 @@ void batterSelectScene::update(float elapsed_time)
 
 void batterSelectScene::render(float elapsedTime)
 {
+	if (initializationFailed) return;
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	if (!dc || !renderState || !vertex_shader || !pixel_shader || !input_layout) return;
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
@@ -437,6 +443,8 @@ void batterSelectScene::render(float elapsedTime)
 	buttonManager.Render(uiAlpha, ButtonManager::ButtonType::OK);
 	buttonManager.Render(uiAlpha, ButtonManager::ButtonType::Title);
 
+	if (burstVertexShader && burstPixelShader && burstTransformBuffer && burstColorBuffer)
+	{
 	dc->VSSetShader(burstVertexShader.Get(), nullptr, 0);
 	dc->PSSetShader(burstPixelShader.Get(), nullptr, 0);
 	dc->IASetInputLayout(nullptr); // 頂点バッファ不使用なのでレイアウトも不要
@@ -487,6 +495,7 @@ void batterSelectScene::render(float elapsedTime)
 	dc->PSSetShader(pixel_shader.Get(), nullptr, 0);
 	dc->IASetInputLayout(input_layout.Get());
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	}
 
 
 	if(VSSpriteData && VSSprite)
@@ -501,11 +510,11 @@ void batterSelectScene::render(float elapsedTime)
 
 	if(batterImageAlpha > 0.001f)
 	{
-		playerScrollView->RenderBatterImage(dc, batterImageAlpha); // この中でVS/PS/InputLayoutがnullptrに戻る
+		if (playerScrollView) playerScrollView->RenderBatterImage(dc, batterImageAlpha); // この中でVS/PS/InputLayoutがnullptrに戻る
 	}
 
 	//ピッチャーの利き手が右投げならimage3か4、左投げならimage1か2を描画する
-	if (randomPitcherImageIndex >= 0)
+	if (randomPitcherImageIndex >= 0 && randomPitcherImageIndex < PITCHER_IMAGE_COUNT && pitcherImageSprites[randomPitcherImageIndex] && pitcherImageSpriteDataArray[randomPitcherImageIndex])
 	{
 		DirectX::XMFLOAT2 scaledPitcherPos = screenScaler.Scale(pitcherImageSpriteDataArray[randomPitcherImageIndex]->position);
 		DirectX::XMFLOAT2 scaledPitcherSize = screenScaler.Scale(pitcherImageSpriteDataArray[randomPitcherImageIndex]->size);
@@ -788,10 +797,11 @@ void batterSelectScene::DrawGUI()
 
 void batterSelectScene::SaveSetting()
 {
+	if (initializationFailed) return;
 	// 設定を保存する処理を実装
 	json j;
 	buttonManager.SaveToJson(j);
-	playerScrollView->SaveToJson(j);
+	if (playerScrollView) playerScrollView->SaveToJson(j);
 	// JSONをファイルに保存する処理を追加
 	
 	//BurstEffectの設定も保存
@@ -835,7 +845,7 @@ void batterSelectScene::LoadSetting()
 	file >> j;
 	// JSONファイルから読み込む処理を追加
 	buttonManager.LoadFromJson(j);
-	playerScrollView->LoadFromJson(j);
+	if (playerScrollView) playerScrollView->LoadFromJson(j);
 
 	if (j.contains("burstEffect") && j["burstEffect"].is_array())
 	{

@@ -29,12 +29,25 @@ HRESULT load_texture_from_file(ID3D11Device* device, ID3D11DeviceContext* immedi
 		if (std::filesystem::exists(dds_filename.c_str()))
 		{
 			hr = CreateDDSTextureFromFile(device, dds_filename.c_str(), resource.GetAddressOf(), shader_resource_view);
-			if (FAILED(hr)) return hr;
+			if (FAILED(hr))
+			{
+				wchar_t error_msg[512];
+				swprintf_s(error_msg, L"DDSテクスチャの読み込みに失敗しました:\n%s", filename);
+				MessageBoxW(nullptr, error_msg, L"ファイル読み込みエラー", MB_OK | MB_ICONERROR);
+				return hr;
+			}
 		}
 		else
 		{
 			hr = CreateWICTextureFromFile(device, immediate_context, filename, resource.GetAddressOf(), shader_resource_view);
-			if (FAILED(hr)) return hr;
+			if (FAILED(hr))
+			{
+				wchar_t error_msg[512];
+				swprintf_s(error_msg, L"WICテクスチャの読み込みに失敗しました:\n%s", filename);
+				MessageBoxW(nullptr, error_msg, L"ファイル読み込みエラー", MB_OK | MB_ICONERROR);
+				return hr;
+			}
+
 		}
 		if (!resource || !*shader_resource_view) return E_FAIL;
 		resources.insert(make_pair(filename, *shader_resource_view));

@@ -38,7 +38,9 @@ void ScrollView::MatchSelectedButtonAndBatter()
 
 ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width, float height)
 {
+	initialized = false;
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+	if (!device || !context) return;
 	// スクロール背景スプライトの初期化
 	scrollBackgroundSpriteData.push_back(ScrollBackData());
 	scrollBackgroundSpriteData[0].texturePath = L".\\resources\\textures\\scrollViewBack.png"; // スクロール背景のテクスチャパス
@@ -187,6 +189,7 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 
 	clickNameButton = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav",SoundType::SE);
 	hoverArrow = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
+	initialized = vertex_shader && pixel_shader && input_layout;
 }
 
 ScrollView::~ScrollView()
@@ -197,8 +200,10 @@ ScrollView::~ScrollView()
 
 void ScrollView::Render(float alpha)
 {
+	if (!initialized) return;
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	if (!dc || !renderState || !vertex_shader || !pixel_shader || !input_layout) return;
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
@@ -224,7 +229,7 @@ void ScrollView::Render(float alpha)
 	}
 
 
-	if (!scrollBackgroundSprite.empty() && scrollBackgroundSprite[0])
+	if (!scrollBackgroundSprite.empty() && !scrollBackgroundSpriteData.empty() && scrollBackgroundSprite[0])
 	{
 		ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(scrollBackgroundSpriteData[0].position);
@@ -240,10 +245,10 @@ void ScrollView::Render(float alpha)
 			scrollBackgroundSpriteData[0].rotation);
 	}
 
-	if(playerButtonDataList.size() > 0)
+	if (!playerButtonDataList.empty())
 	{
-
-		for (size_t i = 0; i < playerButtonDataList.size(); ++i)
+		const size_t drawableButtonCount = (std::min)(playerButtonDataList.size(), playerButtonSprites.size());
+		for (size_t i = 0; i < drawableButtonCount; ++i)
 		{
 		
 			float drawY = (startPosY + i * (buttonHeight + buttonSpacing)) - scrollOffsetY;
@@ -279,7 +284,7 @@ void ScrollView::Render(float alpha)
 	}
 
 	// 選択中の選手のパラメータ画像だけを描画する
-	if (selectedIndex >= 0 && selectedIndex < (int)batterParamDataList.size())
+	if (selectedIndex >= 0 && selectedIndex < static_cast<int>((std::min)(batterParamDataList.size(), batterParamSprites.size())))
 	{
 		if (batterParamSprites[selectedIndex])
 		{
@@ -474,11 +479,12 @@ void ScrollView::Render(float alpha)
 
 void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 {
+	if (!initialized || !dc) return;
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	if (randomBatterImageIndex >= 0 && randomBatterImageIndex < BATTER_IMAGE_COUNT)
 	{
-		if (imageData[randomBatterImageIndex])
+		if (imageData[randomBatterImageIndex] && imageDataArray[randomBatterImageIndex])
 		{
 			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(imageDataArray[randomBatterImageIndex]->position);
 			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(imageDataArray[randomBatterImageIndex]->size);
@@ -495,7 +501,7 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 
 	if (selectedIndex >= 0 && selectedIndex < BATTER_COUNT)
 	{
-		if (batterNameTagSprite[selectedIndex])
+		if (batterNameTagSprite[selectedIndex] && batterNameTagData[selectedIndex])
 		{
 			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(batterNameTagPosition);
 			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(batterNameTagSize);
@@ -512,6 +518,7 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 
 void ScrollView::Update(float elapsedTime)
 {
+	if (!initialized) return;
 	//効果音更新処理
 	if (hoverArrow) hoverArrow->Update();
 	if (clickNameButton) clickNameButton->Update();
@@ -929,6 +936,7 @@ void ScrollView::SaveToJson(nlohmann::json& json)
 
 void ScrollView::LoadFromJson(const nlohmann::json& json)
 {
+	if (!json.is_object()) return;
 	// JSONからスクロールビューの設定を読み込む
 	if (json.contains("ScrollView"))
 	{

@@ -15,8 +15,11 @@
 
 void scene_title::initialize()
 {
+	initializationFailed = false;
 	HRESULT hr = S_OK;
 	ID3D11Device* device = Graphics::Instance().GetDevice();
+	ID3D11DeviceContext* startupContext = Graphics::Instance().GetDeviceContext();
+	if (!device || !startupContext) { initializationFailed = true; OutputDebugStringA("scene_title initialization failed: D3D device/context is null\n"); return; }
 
     // カメラ設定をここに移動
     float screenWidth = Graphics::Instance().GetScreenWidth();
@@ -121,6 +124,7 @@ void scene_title::initialize()
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(),
 		input_element_desc, _countof(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
+	if (!spriteVS || !spritePS || !spriteInputLayout) { initializationFailed = true; OutputDebugStringA("scene_title initialization failed: sprite shader unavailable\n"); return; }
 
 	logoSpriteData = std::make_unique<SpriteData>();
 	logoSpriteData->texturePath = L".\\resources\\textures\\titleLogo.png";
@@ -129,6 +133,21 @@ void scene_title::initialize()
 	logoSpriteData->rotation = 0.0f;
 	logoSpriteData->color = logoColor;
 	logoSprite = std::make_unique<sprite>(device, context, logoSpriteData->texturePath.c_str());
+
+	// ロゴ画像が見つからない場合はロゴだけを省略し、タイトル UI の初期化は続行する。
+	if (!logoSprite || !logoSprite->IsValid())
+	{
+		OutputDebugStringW(L"scene_title: titleLogo texture unavailable; continuing without logo\n");
+
+		// リリース時などに、ポップアップでエラーを明確に知らせてから落とす（または安全に処理する）
+		MessageBoxW(nullptr, L"タイトルロゴのテクスチャが見つからないか、読み込みに失敗しました。\nresourcesフォルダを確認してください。", L"エラー", MB_OK | MB_ICONERROR);
+
+		logoSprite.reset();
+	}
+	else
+	{
+		OutputDebugStringA("scene_title: titleLogo texture loaded successfully\n");
+	}
 
 	//	ステージ初期化
 	if (!Physics::Instance().Initialize()) { initializationFailed = true; return; }
@@ -236,6 +255,7 @@ void scene_title::render(float elapsed_time)
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 	ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
+	if (!dc || !renderState || !modelRenderer || !scene_render_target_view || !scene_shader_resource_view) return;
 
 	RenderContext rc;
 	rc.deviceContext = dc;

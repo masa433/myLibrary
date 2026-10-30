@@ -54,5 +54,6 @@ private:
 	float fadeIndelayTime = 1.0f; // フェードインの遅延時間
 	
 	bool isFadingOut = false; // フェードアウト中かどうかのフラグ
+	bool initializationFailed = false;
 
 };

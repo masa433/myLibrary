@@ -39,6 +39,7 @@ public:
 	ButtonManager() {};
 	~ButtonManager() {};
 	void Initialize();
+	bool IsInitialized() const { return initialized; }
 	void Uninitialize();
 	void Update(float elapsedTime);
 	void Render(float alpha = 1.0f, ButtonType buttonType = ButtonType::None);
@@ -97,6 +98,7 @@ public:
 	//ボタンのアルファを0にする関数
 	void ResetButtonAlpha(ButtonType buttonType = ButtonType::None)
 	{
+		if (!buttonSpriteData) return;
 		if (buttonType == ButtonType::None)
 		{
 			for (auto& button : *buttonSpriteData)
@@ -120,6 +122,7 @@ public:
 	//ボタンのアルファが0かどうかを判定する関数
 	bool IsButtonAlphaZero(ButtonType buttonType = ButtonType::None)
 	{
+		if (!buttonSpriteData) return true;
 		if (buttonType == ButtonType::None)
 		{
 			for (auto& button : *buttonSpriteData)
@@ -200,6 +203,7 @@ private:
 	bool isSettingsRequested = false;
 	bool isRestartRequested = false;
 
+	bool initialized = false;
 	AudioSource* buttonHoverSound = nullptr;
 	AudioSource* buttonClickSound = nullptr;
 	AudioSource* buttonBackSound = nullptr;

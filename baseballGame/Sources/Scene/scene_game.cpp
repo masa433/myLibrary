@@ -687,6 +687,7 @@ void scene_game::render(float elapsedTime)
     RenderState* renderState = Graphics::Instance().GetRenderState();
     ShapeRenderer* shapeRenderer = Graphics::Instance().GetShapeRenderer();
     ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
+    if (!dc || !renderState || !shapeRenderer || !modelRenderer) return;
 
     RenderContext rc;
     rc.deviceContext = dc;

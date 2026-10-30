@@ -82,6 +82,12 @@ void Pitcher::Initialize()
 
 	rightPitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\rightPitcher.glb");
 	leftPitcher = std::make_unique<gltf_model>(device, ".\\resources\\pitcher\\leftPitcher.glb");
+
+	if (!device || !rightPitcher || !rightPitcher->IsInitialized() || !leftPitcher || !leftPitcher->IsInitialized())
+	{
+		MessageBoxW(nullptr, L"投手モデルを読み込めませんでした。resources フォルダーを確認してください。", L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
+		return;
+	}
 		
 	position = { 0.0f,0.22f,18.15f };
 	scale = { 1.0f,1.0f,1.0f };

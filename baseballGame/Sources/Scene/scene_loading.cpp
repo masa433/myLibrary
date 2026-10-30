@@ -8,12 +8,10 @@
 void scene_loading::initialize()
 {
 	// ロード画面の初期化処理
-
-	//スレッド開始
-	thread = std::make_unique<std::thread>(LoadingThread, this);
-
+	initializationFailed = false;
 	ID3D11Device* device = Graphics::Instance().GetDevice();
 	ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+	if (!device || !deviceContext) { initializationFailed = true; OutputDebugStringA("scene_loading initialization failed: D3D device/context is null\n"); return; }
 
 	//シェーダー
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -25,6 +23,7 @@ void scene_loading::initialize()
 
 	create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", spriteVS.ReleaseAndGetAddressOf(), spriteInputLayout.ReleaseAndGetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
+	if (!spriteVS || !spritePS || !spriteInputLayout) { initializationFailed = true; OutputDebugStringA("scene_loading initialization failed: sprite shader unavailable\n"); return; }
 
 	alpha = 0.0f; // 初期透明度を設定
 	alphaSpeed = 1.0f; // 透明度の変化速度を設定
@@ -39,6 +38,7 @@ void scene_loading::initialize()
 	loadingBackSprite = std::make_unique<sprite>(device, deviceContext, loadingBackSpriteData->texturePath.c_str());
 
 	LoadingTips::Instance().Initialize(device);
+	thread = std::make_unique<std::thread>(LoadingThread, this);
 
 }
 
@@ -46,11 +46,11 @@ void scene_loading::uninitialize()
 {
 	// ロード画面の終了処理
 
-	if (thread != nullptr)
+	if (thread && thread->joinable())
 	{
 		thread->join(); // スレッドの終了を待機
-		thread = nullptr;
 	}
+	thread.reset();
 
 	loadingBackSpriteData.reset();
 	loadingBackSprite.reset();
@@ -64,6 +64,7 @@ void scene_loading::uninitialize()
 
 void scene_loading::update(float elapsed_time)
 {
+	if (initializationFailed) return;
 	Input& input = Input::Instance();
 	
 	if (nextScene != nullptr && nextScene->IsReady() && !isFadingOut)
@@ -106,15 +107,18 @@ void scene_loading::update(float elapsed_time)
 void scene_loading::render(float elapsed_time)
 {
 	// ロード画面の描画処理
+	if (initializationFailed) return;
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
+	ID3D11DepthStencilView* depthStencilView = Graphics::Instance().GetDepthStencilView();
+	if (!dc || !renderState || !backBufferRTV || !depthStencilView || !spriteVS || !spritePS || !spriteInputLayout) return;
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	float clear_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
 	dc->ClearRenderTargetView(backBufferRTV, clear_color);
-	dc->ClearDepthStencilView(Graphics::Instance().GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	dc->OMSetRenderTargets(1, &backBufferRTV, Graphics::Instance().GetDepthStencilView());
+	dc->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	dc->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
 
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
