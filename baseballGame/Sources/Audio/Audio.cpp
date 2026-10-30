@@ -47,8 +47,6 @@ void Audio::Finalize()
 // オーディオソース読み込み
 AudioSource* Audio::LoadAudioSource(const char* filename, SoundType type)
 {
-	if (FAILED(XAudio2CreateReverb(&reverbEffect)) || !reverbEffect) return;
-
 	std::shared_ptr<AudioResource> resource = std::make_shared<AudioResource>(filename);
 	return new AudioSource(xaudio, resource, type);
 }
