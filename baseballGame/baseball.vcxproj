@@ -239,7 +239,6 @@
     <ClCompile Include="midi\midi_wrap.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="Pause.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
@@ -280,6 +279,7 @@
     <ClCompile Include="Sources\Game\HomeRunCount.cpp" />
     <ClCompile Include="Sources\Game\LoadingTips.cpp" />
     <ClCompile Include="Sources\Game\Money.cpp" />
+    <ClCompile Include="Sources\Game\Pause.cpp" />
     <ClCompile Include="Sources\Game\Pitcher.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -414,7 +414,6 @@
     <ClInclude Include="midi\midi_wrap.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="Pause.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Sources\Audio\Audio.h" />
     <ClInclude Include="Sources\Audio\AudioResource.h" />
@@ -452,6 +451,7 @@
     <ClInclude Include="Sources\Game\HomeRunCount.h" />
     <ClInclude Include="Sources\Game\LoadingTips.h" />
     <ClInclude Include="Sources\Game\Money.h" />
+    <ClInclude Include="Sources\Game\Pause.h" />
     <ClInclude Include="Sources\Game\Pitcher.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

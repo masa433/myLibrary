@@ -257,7 +257,7 @@
     <ClCompile Include="Sources\Setting\SettingManager.cpp">
       <Filter>Sources\Setting</Filter>
     </ClCompile>
-    <ClCompile Include="Pause.cpp">
+    <ClCompile Include="Sources\Game\Pause.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -548,7 +548,7 @@
     <ClInclude Include="Sources\Setting\SettingManager.h">
       <Filter>Sources\Setting</Filter>
     </ClInclude>
-    <ClInclude Include="Pause.h">
+    <ClInclude Include="Sources\Game\Pause.h">
       <Filter>Sources\Game</Filter>
     </ClInclude>
   </ItemGroup>

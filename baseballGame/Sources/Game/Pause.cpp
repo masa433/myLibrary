@@ -53,12 +53,12 @@ void Pause::Uninitialize()
 void Pause::Update(float elapsedTime)
 {
 	// ポーズ画面の更新処理が必要な場合はここに記述
-	if(isPauseOpen && !SettingManager::Instance().IsOpen() && !isChangingScene)
+	if (isPauseOpen && !SettingManager::Instance().IsOpen() && !isChangingScene)
 	{
 		buttonManager.Update(elapsedTime);
 	}
 
-	if(!isChangingScene)
+	if (!isChangingScene)
 	{
 		//ボタンが押されたときの処理
 		if (buttonManager.IsRestartRequested())
@@ -92,7 +92,7 @@ void Pause::Update(float elapsedTime)
 	}
 
 
-	if(SettingManager::Instance().IsOpen() && !isChangingScene)
+	if (SettingManager::Instance().IsOpen() && !isChangingScene)
 	{
 		SettingManager::Instance().Update(elapsedTime);
 	}
@@ -124,14 +124,14 @@ void Pause::Render()
 			pauseBackGroundData->rotation);
 	}
 
-	if(isPauseOpen && !SettingManager::Instance().IsOpen())
+	if (isPauseOpen && !SettingManager::Instance().IsOpen())
 	{
 		buttonManager.Render(1.0f, ButtonManager::ButtonType::Restart);
 		buttonManager.Render(1.0f, ButtonManager::ButtonType::Settings);
 		buttonManager.Render(1.0f, ButtonManager::ButtonType::Title);
 	}
 
-	if(SettingManager::Instance().IsOpen())
+	if (SettingManager::Instance().IsOpen())
 	{
 		SettingManager::Instance().Render();
 	}
@@ -151,7 +151,7 @@ void Pause::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 
-	
+
 }
 
 void Pause::DrawGUI()
@@ -164,12 +164,12 @@ void Pause::DrawGUI()
 	{
 		SettingManager::Instance().DrawGUI();
 	}
-	
+
 }
 
 void Pause::SaveToJson(json& j)
 {
-	
+
 	buttonManager.SaveToJson(j);
 
 	SettingManager::Instance().SaveToJson(j);
@@ -177,7 +177,7 @@ void Pause::SaveToJson(json& j)
 
 void Pause::LoadFromJson(const json& j)
 {
-	
+
 	buttonManager.LoadFromJson(j);
 
 	SettingManager::Instance().LoadFromJson(j);

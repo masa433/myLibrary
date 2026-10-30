@@ -14,7 +14,7 @@ public:
 		static Pause instance;
 		return instance;
 	}
-	void Initialize(ID3D11Device* device,ID3D11DeviceContext* context);
+	void Initialize(ID3D11Device* device, ID3D11DeviceContext* context);
 	void Uninitialize();
 	void Update(float elapsedTime);
 	void Render();
