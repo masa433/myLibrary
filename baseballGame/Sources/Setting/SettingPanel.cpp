@@ -38,13 +38,39 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 		volumeSliderButtonData[i] = std::make_unique<SpriteData>();
 		volumeSliderButtonData[i]->texturePath = L".\\resources\\textures\\Ball.png";
 		//ボタンの初期位置をスライダーの右端に設定
-		volumeSliderButtonData[i]->position = { volumeSliderButtonPosition[i].x, volumeSliderButtonPosition[i].y};
+		
 		volumeSliderButtonData[i]->size = { sliderButtonSize[i].x, sliderButtonSize[i].y };
 		volumeSliderButtonData[i]->rotation = 0.0f;
 		volumeSliderButtonData[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		volumeSliderButtonSprite[i] = std::make_unique<sprite>(device, context, volumeSliderButtonData[i]->texturePath.c_str());
 
-		volumeSliderButtonPosition[i].x = volumeSliderBackgroundPosition[i].x + volumeSliderBackgroundData[i]->size.x / 2.0f;
+		float minX = volumeSliderBackgroundPosition[i].x - volumeSliderBackgroundData[i]->size.x / 2.0f;
+		float maxX = volumeSliderBackgroundPosition[i].x + volumeSliderBackgroundData[i]->size.x / 2.0f;
+
+		// スライダーのボタンの初期位置を設定
+		float volumeValue = 1.0f; // 初期ボリューム値を1.0fに設定
+
+		switch (i)
+		{
+			case 0:
+				volumeValue = Audio::Instance().GetMasterVolume();
+				break;
+			case 1:
+				volumeValue = Audio::Instance().GetBGMVolume();
+				break;
+			case 2:
+				volumeValue = Audio::Instance().GetSEVolume();
+				break;
+			default:
+				break;
+		}
+
+		// スライダーのボタンの初期位置を計算
+		savedButtonPosX[i] = std::clamp(minX + volumeValue * (maxX - minX), minX, maxX);
+		volumeSliderButtonPosition[i].x = savedButtonPosX[i];
+
+		volumeSliderButtonData[i]->position = { volumeSliderButtonPosition[i].x, volumeSliderBackgroundPosition[i].y };
+		
 	}
 
 
@@ -150,6 +176,8 @@ void AudioSettingPanel::Update(float elapsedTime)
 			float maxX = volumeSliderBackgroundPosition[i].x + volumeSliderBackgroundData[i]->size.x / 2.0f;
 
 			volumeSliderButtonPosition[i].x = std::clamp(volumeSliderButtonPosition[i].x, minX, maxX);
+
+			savedButtonPosX[i] = volumeSliderButtonPosition[i].x;
 
 			// ボリュームの値を計算
 			float volumeValue = (volumeSliderButtonPosition[i].x - minX) / (maxX - minX);//最小値から最大値までの範囲で正規化された値を計算
