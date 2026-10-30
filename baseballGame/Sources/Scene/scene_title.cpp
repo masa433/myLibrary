@@ -131,8 +131,9 @@ void scene_title::initialize()
 	logoSprite = std::make_unique<sprite>(device, context, logoSpriteData->texturePath.c_str());
 
 	//	ステージ初期化
-	Physics::Instance().Initialize();
+	if (!Physics::Instance().Initialize()) { initializationFailed = true; return; }
 	stage::Instance().initialize();
+	if (!stage::Instance().IsInitialized()) { initializationFailed = true; return; }
 
 	hexTransitionEffect.Initialize();
 	isChangingScene = false;
@@ -148,6 +149,7 @@ void scene_title::initialize()
 
 void scene_title::update(float elapsed_time)
 {
+	if (initializationFailed) return;
 	// Ctrl + S で設定保存
 	ImGuiIO& io = ImGui::GetIO();
 	if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S))
@@ -228,6 +230,7 @@ void scene_title::update(float elapsed_time)
 
 void scene_title::render(float elapsed_time)
 {
+	if (initializationFailed) return;
 	using namespace DirectX;
 
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();

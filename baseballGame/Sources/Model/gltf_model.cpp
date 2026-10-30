@@ -19,6 +19,7 @@ bool null_load_image_data(tinygltf::Image*, const int, std::string*, std::string
 
 gltf_model::gltf_model(ID3D11Device* device, const std::string& filename) : filename(filename)
 {
+	if (!device || filename.empty()) return;
 	tinygltf::TinyGLTF tiny_gltf;
 	tiny_gltf.SetImageLoader(null_load_image_data, nullptr);
 
@@ -34,9 +35,12 @@ gltf_model::gltf_model(ID3D11Device* device, const std::string& filename) : file
 		succeeded = tiny_gltf.LoadASCIIFromFile(&gltf_model, &error, &warning, filename.c_str());
 	}
 
-	_ASSERT_EXPR_A(warning.empty(), warning.c_str());
-	_ASSERT_EXPR_A(error.empty(), error.c_str());
-	_ASSERT_EXPR_A(succeeded, L"Failed to load glTF file");
+	if (!succeeded)
+	{
+		const std::string message = "Failed to load model: " + filename + (error.empty() ? std::string{} : "\n" + error);
+		MessageBoxA(nullptr, message.c_str(), "BASEBALL model loading error", MB_OK | MB_ICONERROR);
+		return;
+	}
 
 	for (std::vector<tinygltf::Scene>::const_reference gltf_scene : gltf_model.scenes)
 	{
@@ -66,8 +70,10 @@ gltf_model::gltf_model(ID3D11Device* device, const std::string& filename) : file
 		{ "JOINTS", 0, DXGI_FORMAT_R16G16B16A16_UINT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "WEIGHTS", 0,DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	create_vs_from_cso(device, ".\\resources\\shader\\gltf_model_vs.cso", vertex_shader.ReleaseAndGetAddressOf(), input_layout.ReleaseAndGetAddressOf(), input_element_desc, _countof(input_element_desc));
-	create_ps_from_cso(device, ".\\resources\\shader\\gltf_model_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
+	HRESULT hr = create_vs_from_cso(device, ".\\resources\\shader\\gltf_model_vs.cso", vertex_shader.ReleaseAndGetAddressOf(), input_layout.ReleaseAndGetAddressOf(), input_element_desc, _countof(input_element_desc));
+	if (FAILED(hr) || !vertex_shader || !input_layout) return;
+	hr = create_ps_from_cso(device, ".\\resources\\shader\\gltf_model_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
+	if (FAILED(hr) || !pixel_shader) return;
 
 	D3D11_INPUT_ELEMENT_DESC instanced_input_element_desc[]
 	{
@@ -85,7 +91,8 @@ gltf_model::gltf_model(ID3D11Device* device, const std::string& filename) : file
 		{"INSTANCE_WORLD",3, DXGI_FORMAT_R32G32B32A32_FLOAT, 6, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1},
 	};
 
-	create_vs_from_cso(device, ".\\resources\\shader\\gltf_model_vs_instanced.cso", instanced_vertex_shader.ReleaseAndGetAddressOf(), instanced_input_layout.ReleaseAndGetAddressOf(), instanced_input_element_desc, _countof(instanced_input_element_desc));
+	hr = create_vs_from_cso(device, ".\\resources\\shader\\gltf_model_vs_instanced.cso", instanced_vertex_shader.ReleaseAndGetAddressOf(), instanced_input_layout.ReleaseAndGetAddressOf(), instanced_input_element_desc, _countof(instanced_input_element_desc));
+	if (FAILED(hr) || !instanced_vertex_shader || !instanced_input_layout) return;
 
 	//UNIT.37
 	//ボーン行列の定数バッファを生成する
@@ -93,17 +100,17 @@ gltf_model::gltf_model(ID3D11Device* device, const std::string& filename) : file
 	buffer_desc.ByteWidth = sizeof(primitive_constants);
 	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
 	buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	HRESULT hr;
 	hr = device->CreateBuffer(&buffer_desc, nullptr, primitive_cbuffer.ReleaseAndGetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !primitive_cbuffer) return;
 
 	buffer_desc.ByteWidth = sizeof(primitive_joint_constants);
 	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
 	buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	hr = device->CreateBuffer(&buffer_desc, NULL, primitive_joint_cbuffer.ReleaseAndGetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !primitive_joint_cbuffer) return;
 
 	CalculateBounds();
+	initialized = true;
 
 }
 //find関数の戻り値が「検索した文字列が見つからなかった場合」だから
@@ -412,6 +419,7 @@ void gltf_model::fetch_meshes(ID3D11Device* device, const tinygltf::Model& gltf_
 //UNIT.34
 void gltf_model::render(ID3D11DeviceContext* immediate_context, const DirectX::XMFLOAT4X4& world, const std::vector<node>& animated_nodes)
 {
+	if (!initialized || !immediate_context || !vertex_shader || !pixel_shader || !input_layout || !material_resource_view) return;
 	using namespace DirectX;
 
 	const std::vector<node>& nodes{ animated_nodes.size() > 0 ? animated_nodes : gltf_model::nodes };
@@ -888,6 +896,7 @@ int gltf_model::GetNodeIndex(const char* name) const
 
 void gltf_model::build_static_batches(ID3D11Device* device)
 {
+	if (!initialized || !device) return;
 	using namespace DirectX;
 
 	//マテリアルIDごとに頂点データを集約するための構造体
@@ -1039,6 +1048,7 @@ void gltf_model::build_static_batches(ID3D11Device* device)
 void gltf_model::render_batched(ID3D11DeviceContext* immediate_context,
     const DirectX::XMFLOAT4X4& world, const std::vector<node>& animated_nodes)
 {
+    if (!initialized || !immediate_context) return;
     using namespace DirectX;
 
     const std::vector<node>& nodes{
@@ -1358,7 +1368,7 @@ void gltf_model::render_batched_instanced(
 	ID3D11DeviceContext* immediate_context,
 	const std::vector<DirectX::XMFLOAT4X4>& worlds)
 {
-	if (worlds.empty()) return;
+	if (!initialized || !immediate_context || worlds.empty()) return;
 
 	UINT instance_count = static_cast<UINT>(worlds.size());
 
@@ -1378,8 +1388,10 @@ void gltf_model::render_batched_instanced(
 
 		ID3D11Device* device = nullptr;
 		immediate_context->GetDevice(&device);
-		device->CreateBuffer(&bd, nullptr, instance_buffer.GetAddressOf());
+		if (!device) return;
+		HRESULT hr = device->CreateBuffer(&bd, nullptr, instance_buffer.GetAddressOf());
 		device->Release();
+		if (FAILED(hr) || !instance_buffer) return;
 	}
 
 	D3D11_MAPPED_SUBRESOURCE mapped{};
@@ -1388,6 +1400,7 @@ void gltf_model::render_batched_instanced(
 		memcpy(mapped.pData, worlds.data(), sizeof(DirectX::XMFLOAT4X4) * instance_count);
 		immediate_context->Unmap(instance_buffer.Get(), 0);
 	}
+	else return;
 
 	//シェーダーをセット(インスタンス用)
 	immediate_context->VSSetShader(instanced_vertex_shader.Get(), nullptr, 0);

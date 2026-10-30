@@ -23,7 +23,8 @@ public:
 	}
 
 	//初期化
-	void Initialize();
+	bool Initialize();
+	bool IsInitialized() const { return pxFoundation && pxPhysics && pxScene && pxDispatcher && pxControllerManager && pxMaterial; }
 
 	//終了化
 	void Finalize();
@@ -99,6 +100,7 @@ private:
 	physx::PxMaterial* pxMaterial = nullptr;
 
 	physx::PxPvd* pxPvd = nullptr;
+	bool extensionsInitialized = false;
 
 	struct Line
 	{
@@ -197,17 +199,17 @@ private:
 	std::unique_ptr<Effect> hitSmallEffect;//打球小エフェクトのインスタンス
 	std::unique_ptr<Effect> hitBigEffect;//打球大エフェクトのインスタンス
 
-	AudioSource* longHitSound;//長打音のインスタンス
-	AudioSource* hitSound;//打球音のインスタンス
-	AudioSource* homeRunSound;//ホームラン音のインスタンス
-	AudioSource* hitClogSound;//打球が詰まった時の音
-	AudioSource* foulSound;//ファウル音のインスタンス
-	AudioSource* boundSound;//バウンド音のインスタンス
-	AudioSource* poleHitSound;//ポールに当たった時の音のインスタンス
-	AudioSource* homeRunCheerSound;//ホームラン時の歓声音のインスタンス
-	AudioSource* standInSound;//スタンドに着地した時の音のインスタンス
-	AudioSource* hitCheerSound;//打球時の歓声音のインスタンス
-	AudioSource* clogAndFoulCheerSound;//打球が詰まった時の歓声音のインスタンス
+	AudioSource* longHitSound = nullptr;//長打音のインスタンス
+	AudioSource* hitSound = nullptr;//打球音のインスタンス
+	AudioSource* homeRunSound = nullptr;//ホームラン音のインスタンス
+	AudioSource* hitClogSound = nullptr;//打球が詰まった時の音
+	AudioSource* foulSound = nullptr;//ファウル音のインスタンス
+	AudioSource* boundSound = nullptr;//バウンド音のインスタンス
+	AudioSource* poleHitSound = nullptr;//ポールに当たった時の音のインスタンス
+	AudioSource* homeRunCheerSound = nullptr;//ホームラン時の歓声音のインスタンス
+	AudioSource* standInSound = nullptr;//スタンドに着地した時の音のインスタンス
+	AudioSource* hitCheerSound = nullptr;//打球時の歓声音のインスタンス
+	AudioSource* clogAndFoulCheerSound = nullptr;//打球が詰まった時の歓声音のインスタンス
 
 	bool isFoulSoundPlayed = false; //ファウル音が再生されたかどうかのフラグ
 

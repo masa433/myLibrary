@@ -54,28 +54,41 @@ public:
 	RenderState(ID3D11Device* device);
 	~RenderState() = default;
 
+	bool IsValid() const
+	{
+		for (const auto& state : samplerStates) if (!state) return false;
+		for (const auto& state : depthStencilStates) if (!state) return false;
+		for (const auto& state : blendStates) if (!state) return false;
+		for (const auto& state : rasterizerStates) if (!state) return false;
+		return true;
+	}
+
 	// サンプラステート取得
 	ID3D11SamplerState* GetSamplerState(SamplerState state) const
 	{
-		return samplerStates[static_cast<int>(state)].Get();
+		const int index = static_cast<int>(state);
+		return index >= 0 && index < static_cast<int>(SamplerState::EnumCount) ? samplerStates[index].Get() : nullptr;
 	}
 
 	// デプスステート取得
 	ID3D11DepthStencilState* GetDepthStencilState(DepthState state) const
 	{
-		return depthStencilStates[static_cast<int>(state)].Get();
+		const int index = static_cast<int>(state);
+		return index >= 0 && index < static_cast<int>(DepthState::EnumCount) ? depthStencilStates[index].Get() : nullptr;
 	}
 
 	// ブレンドステート取得
 	ID3D11BlendState* GetBlendState(BlendState state) const
 	{
-		return blendStates[static_cast<int>(state)].Get();
+		const int index = static_cast<int>(state);
+		return index >= 0 && index < static_cast<int>(BlendState::EnumCount) ? blendStates[index].Get() : nullptr;
 	}
 
 	// ラスタライザーステート取得
 	ID3D11RasterizerState* GetRasterizerState(RasterizerState state) const
 	{
-		return rasterizerStates[static_cast<int>(state)].Get();
+		const int index = static_cast<int>(state);
+		return index >= 0 && index < static_cast<int>(RasterizerState::EnumCount) ? rasterizerStates[index].Get() : nullptr;
 	}
 
 private:

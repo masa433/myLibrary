@@ -168,16 +168,18 @@ void Ball::Initialize()
 
 	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 	physx::PxScene* pxScene = Physics::Instance().GetScene();
+	if (!pxPhysics || !pxScene) return;
 
 	material = pxPhysics->createMaterial(0.4f, 0.35f, 0.42f);
+	if (!material) return;
 	physx::PxSphereGeometry geometry(debugRadius);
 	physx::PxTransform transform(physx::PxVec3(worldPosition.x, worldPosition.y, worldPosition.z));
 
 	collider = pxPhysics->createRigidDynamic(transform);
-	collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
-	_ASSERT_EXPR(collider != nullptr, "Failed to create ball collider");
+	if (!collider) { PX_RELEASE(material); return; }
 
 	physx::PxShape* shape = pxPhysics->createShape(geometry, *material);
+	if (!shape) { PX_RELEASE(collider); PX_RELEASE(material); return; }
 	collider->attachShape(*shape);
 	shape->release();
 
@@ -200,7 +202,7 @@ void Ball::Uninitialize()
 {
 	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 	physx::PxScene* pxScene = Physics::Instance().GetScene();
-	pxScene->removeActor(*collider);
+	if (pxScene && collider) pxScene->removeActor(*collider);
 
 	PX_RELEASE(collider);
 	PX_RELEASE(material);

@@ -3,8 +3,15 @@
 #include "Graphics.h"
 
 // 初期化
-void Graphics::Initialize(HWND hWnd)
+bool Graphics::Initialize(HWND hWnd)
 {
+	auto reportFailure = [](const wchar_t* stage, HRESULT result)
+	{
+		wchar_t message[256]{};
+		swprintf_s(message, L"グラフィックスの初期化に失敗しました (%s)\nHRESULT: 0x%08X", stage, static_cast<unsigned int>(result));
+		MessageBoxW(nullptr, message, L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
+	};
+
 	this->hWnd = hWnd;
 	// 画面のサイズを取得する。
 	RECT rc;
@@ -73,7 +80,11 @@ void Graphics::Initialize(HWND hWnd)
 			&featureLevel,
 			immediateContext.GetAddressOf()
 		);
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		if (FAILED(hr) || !swapchain || !device || !immediateContext)
+		{
+			reportFailure(L"D3D11 デバイス作成", hr);
+			return false;
+		}
 	}
 
 #if defined(DEBUG) || defined(_DEBUG)
@@ -111,11 +122,19 @@ void Graphics::Initialize(HWND hWnd)
 			0,
 			__uuidof(ID3D11Texture2D),
 			reinterpret_cast<void**>(texture2d.GetAddressOf()));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		if (FAILED(hr) || !texture2d)
+		{
+			reportFailure(L"バックバッファ取得", hr);
+			return false;
+		}
 
 		// バックバッファテクスチャへの書き込みの窓口となるレンダーターゲットビューを生成する。
 		hr = device->CreateRenderTargetView(texture2d.Get(), nullptr, renderTargetView.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		if (FAILED(hr) || !renderTargetView)
+		{
+			reportFailure(L"レンダーターゲット作成", hr);
+			return false;
+		}
 	}
 
 	// 深度ステンシルビューの生成
@@ -135,11 +154,19 @@ void Graphics::Initialize(HWND hWnd)
 		texture2dDesc.CPUAccessFlags = 0;
 		texture2dDesc.MiscFlags = 0;
 		hr = device->CreateTexture2D(&texture2dDesc, nullptr, texture2d.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		if (FAILED(hr) || !texture2d)
+		{
+			reportFailure(L"深度テクスチャ作成", hr);
+			return false;
+		}
 
 		// 深度ステンシルテクスチャへの書き込みに窓口になる深度ステンシルビューを作成する。
 		hr = device->CreateDepthStencilView(texture2d.Get(), nullptr, depthStencilView.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		if (FAILED(hr) || !depthStencilView)
+		{
+			reportFailure(L"深度ステンシルビュー作成", hr);
+			return false;
+		}
 	}
 
 	// ビューポート
@@ -154,18 +181,24 @@ void Graphics::Initialize(HWND hWnd)
 
 	// レンダーステート生成
 	renderState = std::make_unique<RenderState>(device.Get());
+	if (!renderState || !renderState->IsValid())
+	{
+		reportFailure(L"レンダーステート作成", E_FAIL);
+		return false;
+	}
 
 	// レンダラ生成
 	shapeRenderer = std::make_unique<ShapeRenderer>(device.Get());
 	primitiveRenderer = std::make_unique<PrimitiveRenderer>(device.Get());
 	modelRenderer = std::make_unique<ModelRenderer>(device.Get());
 
-	
+	return true;
 }
 
 // クリア
 void Graphics::Clear(float r, float g, float b, float a)
 {
+	if (!immediateContext || !renderTargetView || !depthStencilView) return;
 	float color[4]{ r, g, b, a };
 	immediateContext->ClearRenderTargetView(renderTargetView.Get(), color);
 	immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -174,6 +207,7 @@ void Graphics::Clear(float r, float g, float b, float a)
 // レンダーターゲット設定
 void Graphics::SetRenderTarget()
 {
+	if (!immediateContext || !renderTargetView || !depthStencilView) return;
 	immediateContext->RSSetViewports(1, &viewport);
 	immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
 }
@@ -181,12 +215,14 @@ void Graphics::SetRenderTarget()
 // 画面表示
 void Graphics::Present(UINT syncInterval)
 {
+	if (!swapchain) return;
 	swapchain->Present(syncInterval, 0);
 }
 
 // 解像度変更時にスケーラーを更新
 void Graphics::OnScreenResolutionChanged(float newWidth, float newHeight)
 {
+	if (!immediateContext || newWidth <= 0.0f || newHeight <= 0.0f) return;
 	screenWidth = newWidth;
 	screenHeight = newHeight;
 	screenScaler.UpdateScale(newWidth, newHeight);

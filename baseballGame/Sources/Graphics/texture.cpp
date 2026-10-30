@@ -7,12 +7,16 @@ static map<wstring, ComPtr<ID3D11ShaderResourceView>> resources;
 HRESULT load_texture_from_file(ID3D11Device* device, ID3D11DeviceContext* immediate_context,
 	const wchar_t* filename, ID3D11ShaderResourceView** shader_resource_view, D3D11_TEXTURE2D_DESC* texture2d_desc)
 {
+	if (!device || !immediate_context || !filename || !shader_resource_view || !texture2d_desc) return E_INVALIDARG;
+	*shader_resource_view = nullptr;
+	*texture2d_desc = {};
 	HRESULT hr{ S_OK };
 	ComPtr<ID3D11Resource> resource;
 
 	auto it = resources.find(filename);
 	if (it != resources.end())
 	{
+		if (!it->second) return E_FAIL;
 		*shader_resource_view = it->second.Get();
 		(*shader_resource_view)->AddRef();
 		(*shader_resource_view)->GetResource(resource.GetAddressOf());
@@ -25,19 +29,21 @@ HRESULT load_texture_from_file(ID3D11Device* device, ID3D11DeviceContext* immedi
 		if (std::filesystem::exists(dds_filename.c_str()))
 		{
 			hr = CreateDDSTextureFromFile(device, dds_filename.c_str(), resource.GetAddressOf(), shader_resource_view);
-			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+			if (FAILED(hr)) return hr;
 		}
 		else
 		{
 			hr = CreateWICTextureFromFile(device, immediate_context, filename, resource.GetAddressOf(), shader_resource_view);
-			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+			if (FAILED(hr)) return hr;
 		}
+		if (!resource || !*shader_resource_view) return E_FAIL;
 		resources.insert(make_pair(filename, *shader_resource_view));
 	}
 
+	if (!resource) return E_FAIL;
 	ComPtr<ID3D11Texture2D> texture2d;
 	hr = resource.Get()->QueryInterface<ID3D11Texture2D>(texture2d.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !texture2d) { if (*shader_resource_view) { (*shader_resource_view)->Release(); *shader_resource_view = nullptr; } return FAILED(hr) ? hr : E_FAIL; }
 	texture2d->GetDesc(texture2d_desc);
 
 	return hr;
@@ -50,6 +56,8 @@ void release_all_textures()
 // UNIT.16
 HRESULT make_dummy_texture(ID3D11Device* device, ID3D11ShaderResourceView** shader_resource_view, DWORD value/*0xAABBGGRR*/, UINT dimension) 
 {
+	if (!device || !shader_resource_view || dimension == 0) return E_INVALIDARG;
+	*shader_resource_view = nullptr;
 	HRESULT hr{ S_OK };
 
 	D3D11_TEXTURE2D_DESC texture2d_desc{};
@@ -73,7 +81,7 @@ HRESULT make_dummy_texture(ID3D11Device* device, ID3D11ShaderResourceView** shad
 	
 	ComPtr<ID3D11Texture2D> texture2d;
 	hr = device->CreateTexture2D(&texture2d_desc, &subresource_data, &texture2d);
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !texture2d) return FAILED(hr) ? hr : E_FAIL;
 	
 	D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc{};
 	shader_resource_view_desc.Format = texture2d_desc.Format;
@@ -81,7 +89,7 @@ HRESULT make_dummy_texture(ID3D11Device* device, ID3D11ShaderResourceView** shad
 	shader_resource_view_desc.Texture2D.MipLevels = 1;
 	hr = device->CreateShaderResourceView(texture2d.Get(), &shader_resource_view_desc,
 	     shader_resource_view);
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !*shader_resource_view) return FAILED(hr) ? hr : E_FAIL;
 	
 	return hr;
 }
@@ -89,15 +97,22 @@ HRESULT make_dummy_texture(ID3D11Device* device, ID3D11ShaderResourceView** shad
 // UNIT.36
 HRESULT load_texture_from_memory(ID3D11Device* device, const void* data, size_t size, ID3D11ShaderResourceView** shader_resource_view)
 {
+	if (!device || !data || size == 0 || !shader_resource_view) return E_INVALIDARG;
+	*shader_resource_view = nullptr;
 	HRESULT hr{ S_OK };
 	ComPtr<ID3D11Resource> resource;
 
 	hr = CreateDDSTextureFromMemory(device, reinterpret_cast<const uint8_t*>(data), size, resource.GetAddressOf(), shader_resource_view);
 	if (hr != S_OK)
 	{
+		resource.Reset();
+		if (*shader_resource_view) { (*shader_resource_view)->Release(); *shader_resource_view = nullptr; }
 		hr = CreateWICTextureFromMemory(device, reinterpret_cast<const uint8_t*>(data), size, resource.GetAddressOf(), shader_resource_view);
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-
+	if (FAILED(hr) || !resource || !*shader_resource_view)
+	{
+		if (*shader_resource_view) { (*shader_resource_view)->Release(); *shader_resource_view = nullptr; }
+		return FAILED(hr) ? hr : E_FAIL;
+	}
 	return hr;
 }

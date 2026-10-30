@@ -31,6 +31,7 @@ public:
 
 	// リソース取得
 	const ModelResource* GetResource() const { return resource.get(); }
+	bool IsLoaded() const { return resource && resource->IsLoaded(); }
 
 private:
 	std::shared_ptr<ModelResource>	resource;

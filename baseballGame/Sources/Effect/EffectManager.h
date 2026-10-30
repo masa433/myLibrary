@@ -15,7 +15,7 @@ public:
 	}
 	
 
-	void Initialize();
+	bool Initialize();
 	void Uninitialize();
 	void Update(float elapsedTime);
 	void Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection);

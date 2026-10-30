@@ -56,6 +56,7 @@ public:
 private:
 	IXAudio2* xaudio = nullptr;
 	IXAudio2MasteringVoice* masteringVoice = nullptr;
+	bool comInitialized = false;
 
 	float seVolume = 1.0f; // SE‚Ì‰¹—Ê
 	float bgmVolume = 1.0f; // BGM‚Ì‰¹—Ê

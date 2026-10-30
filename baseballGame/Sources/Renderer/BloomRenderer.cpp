@@ -6,6 +6,7 @@
 void BloomRenderer::Initialize(ID3D11Device* device, ID3D11ShaderResourceView* sceneColorSRV,
     UINT screenWidth, UINT screenHeight)
 {
+	if (!device) return;
 	HRESULT hr = S_OK;
 
 	screen_width = screenWidth;

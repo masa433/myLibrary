@@ -22,100 +22,95 @@ std::queue<std::function<void()>> velocityUpdateQueue;
 std::mutex queueMutex;
 
 // 初期化
-void Physics::Initialize()
+bool Physics::Initialize()
 {
-	// 基盤生成
-	{
-		pxFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, pxAllocator, pxErrorCallback);
-		_ASSERT_EXPR(pxFoundation != nullptr, "Failed PxCreateFoundation");
-	}
+    auto failInitialization = [this]()
+    {
+        Finalize();
+        HWND hwnd = Graphics::Instance().GetHwnd();
+        MessageBoxW(hwnd, L"物理エンジンを初期化できませんでした。", L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
+        if (hwnd) PostMessageW(hwnd, WM_CLOSE, 0, 0);
+        return false;
+    };
 
-	// PVD
-	{
-		pxPvd = physx::PxCreatePvd(*pxFoundation);
-		_ASSERT_EXPR(pxPvd != nullptr, "Failed PxCreatePvd");
+    if (pxFoundation && pxPhysics && pxScene && pxDispatcher && pxControllerManager && pxMaterial) return true;
+    if (pxFoundation || pxPhysics || pxScene || pxDispatcher || pxControllerManager || pxMaterial || pxPvd)
+    {
+        Finalize();
+    }
 
-		physx::PxPvdTransport* pxPvdTransport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
-		_ASSERT_EXPR(pxPvdTransport != nullptr, "Failed PxDefaultPvdSocketTransportCreate");
+    pxFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, pxAllocator, pxErrorCallback);
+    if (!pxFoundation) return failInitialization();
 
-		pxPvd->connect(*pxPvdTransport, physx::PxPvdInstrumentationFlag::eALL);
-	}
+    // PVD is optional: the game remains playable when the debugger transport is unavailable.
+    pxPvd = physx::PxCreatePvd(*pxFoundation);
+    if (pxPvd)
+    {
+        physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
+        if (transport)
+        {
+            pxPvd->connect(*transport, physx::PxPvdInstrumentationFlag::eALL);
+        }
+    }
 
-	// 物理システム生成
-	{
-		pxPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *pxFoundation, physx::PxTolerancesScale(), true, pxPvd);
-		_ASSERT_EXPR(pxPhysics != nullptr, "Failed PxCreatePhysics");
+    pxPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *pxFoundation, physx::PxTolerancesScale(), true, pxPvd);
+    if (!pxPhysics) return failInitialization();
 
-		PxInitExtensions(*pxPhysics, pxPvd);
-	}
+    extensionsInitialized = PxInitExtensions(*pxPhysics, pxPvd);
+    if (!extensionsInitialized) return failInitialization();
 
-	// ディスパッチャー生成
-	{
-		pxDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
-		_ASSERT_EXPR(pxDispatcher != nullptr, "Failed PxDefaultCpuDispatcherCreate");
-	}
+    pxDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
+    if (!pxDispatcher) return failInitialization();
 
-	// シーン生成
-	{
-		physx::PxSceneDesc pxSceneDesc(pxPhysics->getTolerancesScale());
-		pxSceneDesc.gravity = physx::PxVec3(gravity.x, gravity.y, gravity.z);
-		pxSceneDesc.cpuDispatcher = pxDispatcher;
-		pxSceneDesc.filterShader = SimulationFilterShader;
-		pxSceneDesc.simulationEventCallback = this;
+    physx::PxSceneDesc sceneDesc(pxPhysics->getTolerancesScale());
+    sceneDesc.gravity = physx::PxVec3(gravity.x, gravity.y, gravity.z);
+    sceneDesc.cpuDispatcher = pxDispatcher;
+    sceneDesc.filterShader = SimulationFilterShader;
+    sceneDesc.simulationEventCallback = this;
+    sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
+    pxScene = pxPhysics->createScene(sceneDesc);
+    if (!pxScene) return failInitialization();
 
-		//CCDを有効化
-		pxSceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
+    if (physx::PxPvdSceneClient* pvdSceneClient = pxScene->getScenePvdClient())
+    {
+        pvdSceneClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+        pvdSceneClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+        pvdSceneClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+    }
 
-		pxScene = pxPhysics->createScene(pxSceneDesc);
-		_ASSERT_EXPR(pxScene != nullptr, "Failed pxPhysics->createScene");
-	}
+    pxControllerManager = PxCreateControllerManager(*pxScene);
+    if (!pxControllerManager) return failInitialization();
+    pxControllerManager->setDebugRenderingFlags(physx::PxControllerDebugRenderFlag::eALL);
 
-	// PVDシーンクライアント設定
-	{
-		physx::PxPvdSceneClient* pxPvdSceneClient = pxScene->getScenePvdClient();
-		if (pxPvdSceneClient != nullptr)
-		{
-			pxPvdSceneClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-			pxPvdSceneClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
-			pxPvdSceneClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-		}
-	}
+    pxMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+    if (!pxMaterial) return failInitialization();
 
-	// コントローラーマネージャー生成
-	{
-		pxControllerManager = PxCreateControllerManager(*pxScene);
-		_ASSERT_EXPR(pxControllerManager != nullptr, "Failed PxCreateControllerManager");
-		pxControllerManager->setDebugRenderingFlags(physx::PxControllerDebugRenderFlag::eALL);
-	}
+    hitEffect = std::make_unique<Effect>("resources/effects/hit.efk");
+    hitSmallEffect = std::make_unique<Effect>("resources/effects/hitSmall.efk");
+    hitBigEffect = std::make_unique<Effect>("resources/effects/hitBig.efk");
 
-	// マテリアル生成
-	{
-		pxMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.6f);
-		_ASSERT_EXPR(pxMaterial != nullptr, "Failed pxPhysics->createMaterial");
-	}
-
-	//エフェクト読み込み
-	hitEffect = std::make_unique<Effect>("resources/effects/hit.efk");
-	hitSmallEffect = std::make_unique<Effect>("resources/effects/hitSmall.efk");
-	hitBigEffect = std::make_unique<Effect>("resources/effects/hitBig.efk");
-
-	hitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Hit.wav",SoundType::SE);	
-	homeRunSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRun.wav",SoundType::SE);
-	hitClogSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Clog.wav",SoundType::SE);
-	longHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/LongHit.wav",SoundType::SE);
-	foulSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Foul.wav",SoundType::SE);
-	boundSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/BallBound.wav",SoundType::SE);
-	poleHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Pole.wav",SoundType::SE);
-	homeRunCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRunCheer.wav",SoundType::SE);
-	standInSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/StandInCheer.wav",SoundType::SE);
-	hitCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HitCheer.wav",SoundType::SE);
-	clogAndFoulCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/ClogAndFoul.wav",SoundType::SE);
+    hitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Hit.wav", SoundType::SE);
+    homeRunSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRun.wav", SoundType::SE);
+    hitClogSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Clog.wav", SoundType::SE);
+    longHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/LongHit.wav", SoundType::SE);
+    foulSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Foul.wav", SoundType::SE);
+    boundSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/BallBound.wav", SoundType::SE);
+    poleHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Pole.wav", SoundType::SE);
+    homeRunCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRunCheer.wav", SoundType::SE);
+    standInSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/StandInCheer.wav", SoundType::SE);
+    hitCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HitCheer.wav", SoundType::SE);
+    clogAndFoulCheerSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/ClogAndFoul.wav", SoundType::SE);
+    return true;
 }
 
 // 終了化
 void Physics::Finalize()
 {
-	PxCloseExtensions();
+	if (extensionsInitialized)
+	{
+		PxCloseExtensions();
+		extensionsInitialized = false;
+	}
 
 	PX_RELEASE(pxControllerManager);
 	PX_RELEASE(pxScene);
@@ -126,7 +121,7 @@ void Physics::Finalize()
 	if (pxPvd != nullptr)
 	{
 		physx::PxPvdTransport* pxPvdTransport = pxPvd->getTransport();
-		pxPvdTransport->disconnect();
+		if (pxPvdTransport) pxPvdTransport->disconnect();
 		PX_RELEASE(pxPvd);
 		PX_RELEASE(pxPvdTransport);
 	}
@@ -167,6 +162,7 @@ void Physics::Finalize()
 // 更新処理
 void Physics::Update(float elapsedTime)
 {
+	if (!pxScene) return;
 	pxScene->simulate(elapsedTime);
 	pxScene->fetchResults(true);
 
@@ -198,8 +194,10 @@ void Physics::Update(float elapsedTime)
 // 描画
 void Physics::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection, const DirectX::XMFLOAT3& lightDirection)
 {
+	if (!pxScene || !pxControllerManager) return;
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	if (!dc || !renderState || !renderState->IsValid()) return;
 	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
 	ShapeRenderer* shapeRenderer = Graphics::Instance().GetShapeRenderer();
 

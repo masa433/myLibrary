@@ -6,6 +6,7 @@
 void Audio::Initialize()
 {
 	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	comInitialized = SUCCEEDED(hr);
 
 	hr = XAudio2Create(&xaudio, 0);
 	if (FAILED(hr) || !xaudio)
@@ -41,14 +42,19 @@ void Audio::Finalize()
 	}
 
 	// COM終了化
-	CoUninitialize();
+	if (comInitialized)
+	{
+		CoUninitialize();
+		comInitialized = false;
+	}
 }
 
 // オーディオソース読み込み
 AudioSource* Audio::LoadAudioSource(const char* filename, SoundType type)
 {
-	std::shared_ptr<AudioResource> resource = std::make_shared<AudioResource>(filename);
-	return new AudioSource(xaudio, resource, type);
+    std::shared_ptr<AudioResource> resource;
+    if (filename) resource = std::make_shared<AudioResource>(filename);
+    return new AudioSource(xaudio, resource, type);
 }
 
 

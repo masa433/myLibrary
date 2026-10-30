@@ -46,6 +46,10 @@ public:
 	int run()
 	{
 		MSG msg{};
+		if (!initialized)
+		{
+			return 1;
+		}
 
 		if (!initialize())
 		{
@@ -155,6 +159,7 @@ private:
 	uint32_t frames{ 0 };
 	float elapsed_time{ 0.0f };
 	HDC hDC;
+	bool initialized{ false };
 
 	
 

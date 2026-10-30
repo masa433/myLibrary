@@ -22,7 +22,7 @@ public:
 	}
 
 	// レンダーステートの初期化
-	void Initialize(HWND hwnd);
+	bool Initialize(HWND hwnd);
 
 	void Uninitialize()
 	{

@@ -14,6 +14,7 @@ Effect::Effect(const char* fileName)
 
 	//Effekseerのマネージャーを取得
 	Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+	if (!effekseerManager) return;
 
 	//Effekseerのエフェクトを読み込む
 	effekseerEffect = Effekseer::Effect::Create(effekseerManager, (EFK_CHAR*)utf16FileName);
@@ -24,6 +25,7 @@ Effekseer::Handle Effect::Play(const DirectX::XMFLOAT3& position, float scale)
 {
 	//Effekseerのマネージャーを取得
 	Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+	if (!effekseerManager || !effekseerEffect) return 0;
 	//エフェクトの再生
 	Effekseer::Handle handle = effekseerManager->Play(effekseerEffect, position.x, position.y, position.z);
 	//スケールの設定
@@ -36,6 +38,7 @@ void Effect::Stop(Effekseer::Handle handle)
 {
 	//Effekseerのマネージャーを取得
 	Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+	if (!effekseerManager || !effekseerEffect) return;
 	//エフェクトの停止
 	effekseerManager->StopEffect(handle);
 }
@@ -45,6 +48,7 @@ void Effect::SetPosition(Effekseer::Handle handle, const DirectX::XMFLOAT3& posi
 {
 	//Effekseerのマネージャーを取得
 	Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+	if (!effekseerManager || !effekseerEffect) return;
 	//座標の設定
 	effekseerManager->SetLocation(handle, position.x, position.y, position.z);
 }
@@ -54,6 +58,7 @@ void Effect::SetScale(Effekseer::Handle handle, const DirectX::XMFLOAT3& scale)
 {
 	//Effekseerのマネージャーを取得
 	Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+	if (!effekseerManager || !effekseerEffect) return;
 	//スケールの設定
 	effekseerManager->SetScale(handle, scale.x, scale.y, scale.z);
 }

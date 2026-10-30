@@ -6,6 +6,7 @@
 
 void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
+	if (!device || !context) return;
 	// ここで各パネルを初期化し、panelsベクターに追加する
 	panels.push_back(std::make_unique<AudioSettingPanel>());
 	panels.push_back(std::make_unique<CursorSettingPanel>());

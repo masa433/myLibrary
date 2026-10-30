@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <crtdbg.h>
+#include <cstdlib>
 
 #if defined( DEBUG ) || defined( _DEBUG )
 #define _ASSERT_EXPR_A(expr, msg) \
@@ -10,6 +11,25 @@
 	(_CrtDbgBreak(), 0))
 #else
 #define  _ASSERT_EXPR_A(expr, expr_str) ((void)0)
+#endif
+
+// Keep assertion-based pointer/resource validation active in Release builds.
+#if !defined(DEBUG) && !defined(_DEBUG)
+inline void baseball_release_check_failed(const char* file, int line)
+{
+	char message[512]{};
+	sprintf_s(message, "A runtime validation failed.\n%s (%d)", file, line);
+	MessageBoxA(nullptr, message, "BASEBALL runtime error", MB_OK | MB_ICONERROR);
+	std::abort();
+}
+
+#undef _ASSERT_EXPR
+#define _ASSERT_EXPR(expression, message) \
+	do { if (!(expression)) baseball_release_check_failed(__FILE__, __LINE__); } while (false)
+
+#undef _ASSERT_EXPR_A
+#define _ASSERT_EXPR_A(expression, message) \
+	do { if (!(expression)) baseball_release_check_failed(__FILE__, __LINE__); } while (false)
 #endif
 
 inline LPWSTR hr_trace(HRESULT hr)

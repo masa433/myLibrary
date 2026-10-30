@@ -16,6 +16,7 @@ public:
 
 	// WAVEフォーマット取得
 	const WAVEFORMATEX& GetWaveFormat() const { return wfx; }
+	bool IsValid() const { return valid; }
 
 private:
 	// RIFFヘッダ
@@ -44,9 +45,10 @@ private:
 		UINT16				quantumBits;	// サンプルあたりのビット数(bit/sample)
 	};
 
-	Riff					riff;
-	Fmt						fmt;
+	Riff				riff{};
+	Fmt						fmt{};
 	std::vector<UINT8>		data;
-	WAVEFORMATEX			wfx;
+	WAVEFORMATEX			wfx{};
+	bool valid = false;
 
 };

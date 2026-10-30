@@ -44,10 +44,17 @@ framework::framework(HWND hwnd) : hwnd(hwnd)
 	Input::Instance().Initialize(hwnd);
 
 	//グラフィックス初期化
-	Graphics::Instance().Initialize(hwnd);
+	if (!Graphics::Instance().Initialize(hwnd))
+	{
+		return;
+	}
 
 	//エフェクトマネージャー初期化
-	EffectManager::Instance().Initialize();
+	if (!EffectManager::Instance().Initialize())
+	{
+		MessageBoxW(hwnd, L"エフェクト機能を初期化できませんでした。", L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
+		return;
+	}
 
 	//framebuffers[0] = std::make_unique<framebuffer>(device.Get(), 1280, 720);
 	//framebuffers[1] = std::make_unique<framebuffer>(device.Get(), 1280 / 2, 720 / 2);
@@ -61,7 +68,7 @@ framework::framework(HWND hwnd) : hwnd(hwnd)
 
 
 	sceneManager::Instance().ChangeScene(new scene_title());
-
+	initialized = true;
 
 }
 

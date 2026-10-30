@@ -30,6 +30,10 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 void ModelRenderer::Render(const RenderContext& rc, const DirectX::XMFLOAT4X4& worldTransform, const Model* model, ShaderId shaderId)
 {
 	ID3D11DeviceContext* dc = rc.deviceContext;
+	if (!dc || !rc.renderState || !model || !model->IsLoaded()) return;
+	const size_t shaderIndex = static_cast<size_t>(shaderId);
+	constexpr size_t shaderCount = static_cast<size_t>(ShaderId::EnumCount);
+	if (shaderIndex >= shaderCount || !shaders[shaderIndex] || !sceneConstantBuffer || !skeletonConstantBuffer) return;
 
 	// シーン用定数バッファ更新
 	{
@@ -100,12 +104,13 @@ void ModelRenderer::Render(const RenderContext& rc, const DirectX::XMFLOAT4X4& w
 	dc->OMSetBlendState(rc.renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
 
 	// 描画処理
-	Shader* shader = shaders[static_cast<int>(shaderId)].get();
+	Shader* shader = shaders[shaderIndex].get();
 	shader->Begin(rc);
 
 	DirectX::XMMATRIX WorldTransform = DirectX::XMLoadFloat4x4(&worldTransform);
 
 	const ModelResource* resource = model->GetResource();
+	if (!resource) return;
 	for (const ModelResource::Mesh& mesh : resource->GetMeshes())
 	{
 		// 頂点バッファ設定

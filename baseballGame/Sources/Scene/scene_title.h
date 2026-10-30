@@ -37,7 +37,8 @@ private:
 	CameraController cameraController;
 
 	HexTransitionEffect hexTransitionEffect;
-	bool isChangingScene = false;//	シーン切り替え中かどうか
+	bool isChangingScene = false;
+	bool initializationFailed = false;//	シーン切り替え中かどうか
 
 	//空と太陽のレンダラー
 	SkyRenderer skyRenderer;

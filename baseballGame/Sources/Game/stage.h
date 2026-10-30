@@ -25,6 +25,7 @@ public:
 	stage() = default;
 	virtual ~stage() = default;
 	void initialize();
+	bool IsInitialized() const { return initialized; }
 	void update(float elapsedTime);
 	void render(const RenderContext& rc, ModelRenderer* renderer, class FrustumCulling* frustumCulling = nullptr);
 	void uninitialize();
@@ -99,6 +100,7 @@ private:
 	};
 
 	bool isInstancingEnabled = true; // インスタンシング描画の有効/無効
+	bool initialized = false;
 
 	physx::PxMaterial* groundMaterial = nullptr; // 地面の物理マテリアル
 	physx::PxMaterial* standMaterial = nullptr;  // スタンドの物理マテリアル

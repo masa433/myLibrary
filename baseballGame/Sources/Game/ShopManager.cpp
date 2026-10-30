@@ -146,6 +146,7 @@ std::wstring ShopManager::GetSpecialAbilityIconPath(SpecialAbility::AbilityID id
 
 void ShopManager::Initialize(ID3D11Device* device)
 {
+	if (!device) return;
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());

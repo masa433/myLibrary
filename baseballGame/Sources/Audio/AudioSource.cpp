@@ -7,11 +7,12 @@
 AudioSource::AudioSource(IXAudio2* xaudio, std::shared_ptr<AudioResource>& resource, SoundType type)
 	: resource(resource), xaudio(xaudio), soundType(type)
 {
+	if (!xaudio || !resource || !resource->IsValid()) return;
 	HRESULT hr;
 
 	// ソースボイスを生成
 	hr = xaudio->CreateSourceVoice(&sourceVoice, &resource->GetWaveFormat());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr)) sourceVoice = nullptr;
 
 	
 }
@@ -40,123 +41,86 @@ AudioSource::~AudioSource()
 // 再生
 void AudioSource::Play(bool loop)
 {
-	if (!sourceVoice || !resource) return;
-
-	Stop();
-
-	// ソースボイスにデータを送信
-	XAUDIO2_BUFFER buffer = { 0 };
-	buffer.AudioBytes = resource->GetAudioBytes();
-	buffer.pAudioData = resource->GetAudioData();
-	buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
-	buffer.Flags = XAUDIO2_END_OF_STREAM;
-
-	HRESULT hr = sourceVoice->SubmitSourceBuffer(&buffer);
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	sourceVoice->SetVolume(1.0f);
-	hr = sourceVoice->Start();
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    if (!sourceVoice || !resource || !resource->IsValid()) return;
+    Stop();
+    XAUDIO2_BUFFER buffer{};
+    buffer.AudioBytes = resource->GetAudioBytes();
+    buffer.pAudioData = resource->GetAudioData();
+    buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
+    buffer.Flags = XAUDIO2_END_OF_STREAM;
+    if (FAILED(sourceVoice->SubmitSourceBuffer(&buffer))) return;
+    sourceVoice->SetVolume(1.0f);
+    sourceVoice->Start();
 }
 
-// 停止
 void AudioSource::Stop()
 {
-	if (!sourceVoice) return;
-
-	fadeDuration = 0.0f; // フェードアウト中止
-	
-	HRESULT hr = sourceVoice->Stop(0);
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	hr = sourceVoice->FlushSourceBuffers();
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    if (!sourceVoice) return;
+    fadeDuration = 0.0f;
+    if (FAILED(sourceVoice->Stop(0))) return;
+    sourceVoice->FlushSourceBuffers();
 }
 
-// 音量設定
 void AudioSource::SetVolume(float volume)
 {
 	baseVolume = volume;
-	sourceVoice->SetVolume(volume * Audio::Instance().GetCategoryVolume(soundType));
+	if (sourceVoice) sourceVoice->SetVolume(volume * Audio::Instance().GetCategoryVolume(soundType));
 }
 	
 void AudioSource::PlayOneShot(float volume)
 {
-	if (!sourceVoice || !resource) return;
-
-	// 新しいソースボイスを作成
-	IXAudio2SourceVoice* oneShotVoice = nullptr;
-	HRESULT hr = xaudio->CreateSourceVoice(&oneShotVoice, &resource->GetWaveFormat());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	if (FAILED(hr) || !oneShotVoice) return;
-
-	XAUDIO2_BUFFER buffer = { 0 };
-	buffer.AudioBytes = resource->GetAudioBytes();
-	buffer.pAudioData = resource->GetAudioData();
-	buffer.LoopCount = 0;// 1回だけ再生
-	buffer.Flags = XAUDIO2_END_OF_STREAM;
-
-	hr = oneShotVoice->SubmitSourceBuffer(&buffer);
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	oneShotVoice->SetVolume(volume * Audio::Instance().GetCategoryVolume(soundType));
-	hr = oneShotVoice->Start();
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	// 再生中のボイスを保持
-	oneShotVoices.push_back(oneShotVoice);
+    if (!xaudio || !resource || !resource->IsValid()) return;
+    IXAudio2SourceVoice* oneShotVoice = nullptr;
+    if (FAILED(xaudio->CreateSourceVoice(&oneShotVoice, &resource->GetWaveFormat())) || !oneShotVoice) return;
+    XAUDIO2_BUFFER buffer{};
+    buffer.AudioBytes = resource->GetAudioBytes();
+    buffer.pAudioData = resource->GetAudioData();
+    buffer.Flags = XAUDIO2_END_OF_STREAM;
+    HRESULT hr = oneShotVoice->SubmitSourceBuffer(&buffer);
+    if (SUCCEEDED(hr))
+    {
+        oneShotVoice->SetVolume(volume * Audio::Instance().GetCategoryVolume(soundType));
+        hr = oneShotVoice->Start();
+    }
+    if (FAILED(hr)) { oneShotVoice->DestroyVoice(); return; }
+    oneShotVoices.push_back(oneShotVoice);
 }
 
 void AudioSource::PlayOneShotReverb(float volume, float wetDryMix)
 {
-	if (!sourceVoice || !resource) return;
-	// 新しいソースボイスを作成
-	IXAudio2SourceVoice* oneShotVoice = nullptr;
-	HRESULT hr = xaudio->CreateSourceVoice(&oneShotVoice, &resource->GetWaveFormat());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	if (FAILED(hr) || !oneShotVoice) return;
-	XAUDIO2_BUFFER buffer = { 0 };
-	buffer.AudioBytes = resource->GetAudioBytes();
-	buffer.pAudioData = resource->GetAudioData();
-	buffer.LoopCount = 0;// 1回だけ再生
-	buffer.Flags = XAUDIO2_END_OF_STREAM;
-	hr = oneShotVoice->SubmitSourceBuffer(&buffer);
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	oneShotVoice->SetVolume(volume * Audio::Instance().GetCategoryVolume(soundType));
-
-	// リバーブエフェクトを追加
-	IUnknown* reverbEffect = nullptr;
-	XAudio2CreateReverb(&reverbEffect);// リバーブエフェクトを作成
-
-	XAUDIO2_EFFECT_DESCRIPTOR effectDesc = {};
-	effectDesc.pEffect = reverbEffect;// リバーブエフェクトを設定
-	effectDesc.InitialState = TRUE; // エフェクトを有効にする
-	effectDesc.OutputChannels = 2; // ステレオ出力
-
-	XAUDIO2_EFFECT_CHAIN effectChain = {};
-	effectChain.EffectCount = 1;// エフェクトの数を設定
-	effectChain.pEffectDescriptors = &effectDesc;// エフェクトチェーンを設定
-	oneShotVoice->SetEffectChain(&effectChain);// エフェクトチェーンをソースボイスに設定
-	reverbEffect->Release(); // リバーブエフェクトの参照を解放
-
-	// リバーブのパラメータを設定
-	XAUDIO2FX_REVERB_I3DL2_PARAMETERS preset = XAUDIO2FX_I3DL2_PRESET_ARENA; // I3DL2プリセットを使用
-	XAUDIO2FX_REVERB_PARAMETERS reverbParams;
-	ReverbConvertI3DL2ToNative(&preset, &reverbParams); // I3DL2プリセットをネイティブパラメータに変換
-	reverbParams.WetDryMix = wetDryMix; // ウェット/ドライ比を設定
-
-	oneShotVoice->SetEffectParameters(0, &reverbParams, sizeof(reverbParams));// リバーブパラメータを設定
-	oneShotVoice->EnableEffect(0); // エフェクトを有効化
-
-	hr = oneShotVoice->Start();
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-
-	// 再生中のボイスを保持
-	oneShotVoices.push_back(oneShotVoice);
+    if (!xaudio || !resource || !resource->IsValid()) return;
+    IXAudio2SourceVoice* oneShotVoice = nullptr;
+    if (FAILED(xaudio->CreateSourceVoice(&oneShotVoice, &resource->GetWaveFormat())) || !oneShotVoice) return;
+    XAUDIO2_BUFFER buffer{};
+    buffer.AudioBytes = resource->GetAudioBytes();
+    buffer.pAudioData = resource->GetAudioData();
+    buffer.Flags = XAUDIO2_END_OF_STREAM;
+    HRESULT hr = oneShotVoice->SubmitSourceBuffer(&buffer);
+    if (FAILED(hr)) { oneShotVoice->DestroyVoice(); return; }
+    oneShotVoice->SetVolume(volume * Audio::Instance().GetCategoryVolume(soundType));
+    IUnknown* reverbEffect = nullptr;
+    if (FAILED(XAudio2CreateReverb(&reverbEffect)) || !reverbEffect) { oneShotVoice->DestroyVoice(); return; }
+    XAUDIO2_EFFECT_DESCRIPTOR effectDesc{};
+    effectDesc.pEffect = reverbEffect;
+    effectDesc.InitialState = TRUE;
+    effectDesc.OutputChannels = 2;
+    XAUDIO2_EFFECT_CHAIN effectChain{};
+    effectChain.EffectCount = 1;
+    effectChain.pEffectDescriptors = &effectDesc;
+    hr = oneShotVoice->SetEffectChain(&effectChain);
+    reverbEffect->Release();
+    if (FAILED(hr)) { oneShotVoice->DestroyVoice(); return; }
+    XAUDIO2FX_REVERB_I3DL2_PARAMETERS preset = XAUDIO2FX_I3DL2_PRESET_ARENA;
+    XAUDIO2FX_REVERB_PARAMETERS reverbParams{};
+    ReverbConvertI3DL2ToNative(&preset, &reverbParams);
+    reverbParams.WetDryMix = wetDryMix;
+    hr = oneShotVoice->SetEffectParameters(0, &reverbParams, sizeof(reverbParams));
+    if (SUCCEEDED(hr)) hr = oneShotVoice->EnableEffect(0);
+    if (SUCCEEDED(hr)) hr = oneShotVoice->Start();
+    if (FAILED(hr)) { oneShotVoice->DestroyVoice(); return; }
+    oneShotVoices.push_back(oneShotVoice);
 }
 
-// 再生し終わったワンショットボイスを片付ける（毎フレーム呼ぶ）
 void AudioSource::Update()
 {
 	//現在の音の音量を毎フレーム更新する
@@ -218,32 +182,28 @@ void AudioSource::UpdateFadeOut(float elapsedTime)
 // フェードイン開始
 void AudioSource::StartFadeIn(float duration, bool loop)
 {
-	if (!sourceVoice) return;
-	if (duration <= 0.0f) { SetVolume(0.0f); return; }
-	if (fadeInDuration > 0.0f) return;          // すでにフェード中なら何もしない
-	fadeInStartVol = 0.0f;                     // フェードインは0から始める
-	SetVolume(fadeInStartVol * Audio::Instance().GetCategoryVolume(soundType));
-	fadeInTime = 0.0f;
-	fadeInDuration = duration;
-
-	Stop();
-
-	// ソースボイスにデータを送信
-	XAUDIO2_BUFFER buffer = { 0 };
-	buffer.AudioBytes = resource->GetAudioBytes();
-	buffer.pAudioData = resource->GetAudioData();
-	buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
-	buffer.Flags = XAUDIO2_END_OF_STREAM;
-
-	HRESULT hr = sourceVoice->SubmitSourceBuffer(&buffer);
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	sourceVoice->SetVolume(baseVolume * Audio::Instance().GetCategoryVolume(soundType));
-	hr = sourceVoice->Start();
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    if (!sourceVoice || !resource || !resource->IsValid()) return;
+    if (duration <= 0.0f) { SetVolume(0.0f); return; }
+    if (fadeInDuration > 0.0f) return;
+    fadeInStartVol = 0.0f;
+    SetVolume(fadeInStartVol * Audio::Instance().GetCategoryVolume(soundType));
+    fadeInTime = 0.0f;
+    fadeInDuration = duration;
+    Stop();
+    XAUDIO2_BUFFER buffer{};
+    buffer.AudioBytes = resource->GetAudioBytes();
+    buffer.pAudioData = resource->GetAudioData();
+    buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
+    buffer.Flags = XAUDIO2_END_OF_STREAM;
+    HRESULT hr = sourceVoice->SubmitSourceBuffer(&buffer);
+    if (SUCCEEDED(hr))
+    {
+        sourceVoice->SetVolume(baseVolume * Audio::Instance().GetCategoryVolume(soundType));
+        hr = sourceVoice->Start();
+    }
+    if (FAILED(hr)) fadeInDuration = 0.0f;
 }
 
-// フェードイン更新
 void AudioSource::UpdateFadeIn(float elapsedTime)
 {
 	if (!sourceVoice || fadeInDuration <= 0.0f) return;
@@ -265,7 +225,7 @@ void AudioSource::Reverb(float wetDryMix)
 	if (!sourceVoice) return;
 
 	IUnknown* reverbEffect = nullptr;
-	XAudio2CreateReverb(&reverbEffect);// リバーブエフェクトを作成
+	if (FAILED(XAudio2CreateReverb(&reverbEffect)) || !reverbEffect) return;// リバーブエフェクトを作成
 
 	XAUDIO2_EFFECT_DESCRIPTOR effectDesc = {};
 	effectDesc.pEffect = reverbEffect;// リバーブエフェクトを設定
@@ -276,7 +236,7 @@ void AudioSource::Reverb(float wetDryMix)
 	effectChain.EffectCount = 1;// エフェクトの数を設定
 	effectChain.pEffectDescriptors = &effectDesc;// エフェクトチェーンを設定
 
-	sourceVoice->SetEffectChain(&effectChain);// エフェクトチェーンをソースボイスに設定
+	if (FAILED(sourceVoice->SetEffectChain(&effectChain))) { reverbEffect->Release(); return; }// エフェクトチェーンをソースボイスに設定
 	reverbEffect->Release(); // リバーブエフェクトの参照を解放
 
 	// リバーブのパラメータを設定

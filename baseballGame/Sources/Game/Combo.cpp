@@ -5,6 +5,7 @@
 
 void Combo::Initialize(ID3D11Device* device)
 {
+	if (!device) return;
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 	// コンボ数表示に必要な文字だけをベイクする

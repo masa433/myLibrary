@@ -7,7 +7,7 @@ Model::Model(const char* filename)
 {
 	// リソース読み込み
 	resource = std::make_shared<ModelResource>();
-	resource->Load(Graphics::Instance().GetDevice(), filename);
+	if (!resource->Load(Graphics::Instance().GetDevice(), filename)) return;
 
 	// ノード
 	const std::vector<ModelResource::Node>& resNodes = resource->GetNodes();
@@ -16,6 +16,11 @@ Model::Model(const char* filename)
 	for (size_t nodeIndex = 0; nodeIndex < nodes.size(); ++nodeIndex)
 	{
 		auto&& src = resNodes.at(nodeIndex);
+		if (src.parentIndex >= 0 && static_cast<size_t>(src.parentIndex) >= nodes.size())
+		{
+			resource.reset();
+			return;
+		}
 		auto&& dst = nodes.at(nodeIndex);
 
 		dst.name = src.name.c_str();

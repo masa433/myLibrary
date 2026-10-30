@@ -8,11 +8,12 @@
 // コンストラクタ
 AudioResource::AudioResource(const char* filename)
 {
+	if (!filename) return;
 	// WAVファイル読み込み
 	{
 		FILE* fp = nullptr;
 		errno_t error = fopen_s(&fp, filename, "rb");
-		_ASSERT_EXPR_A(error == 0, "WAV File not found");
+		if (error != 0 || !fp) return;
 
 		// ファイルのサイズを求める
 		fseek(fp, 0, SEEK_END);
@@ -22,25 +23,25 @@ AudioResource::AudioResource(const char* filename)
 		size_t readBytes = 0;
 
 		// RIFFヘッダ
-		fread(&riff, sizeof(riff), 1, fp);
+		if (fread(&riff, sizeof(riff), 1, fp) != 1) { fclose(fp); return; }
 		readBytes += sizeof(riff);
 
 		// "RIFF" との一致を確認
-		_ASSERT_EXPR_A(riff.tag == MAKE_WAVE_TAG_VALUE('R', 'I', 'F', 'F'), "not in RIFF format");
+		if (riff.tag != MAKE_WAVE_TAG_VALUE('R', 'I', 'F', 'F')) { fclose(fp); return; }
 
 		// "WAVE" との一致を確認
-		_ASSERT_EXPR_A(riff.type == MAKE_WAVE_TAG_VALUE('W', 'A', 'V', 'E'), "not in WAVE format");
+		if (riff.type != MAKE_WAVE_TAG_VALUE('W', 'A', 'V', 'E')) { fclose(fp); return; }
 
 		while (size > readBytes)
 		{
 			Chunk chunk;
-			fread(&chunk, sizeof(chunk), 1, fp);
+			if (fread(&chunk, sizeof(chunk), 1, fp) != 1) break;
 			readBytes += sizeof(chunk);
 
 			// 'fmt '
 			if (chunk.tag == MAKE_WAVE_TAG_VALUE('f', 'm', 't', ' '))
 			{
-				fread(&fmt, sizeof(fmt), 1, fp);
+				if (chunk.size < sizeof(Fmt) || chunk.size > size - readBytes || fread(&fmt, sizeof(fmt), 1, fp) != 1) break;
 				readBytes += sizeof(fmt);
 
 				// 拡張領域があれば読み捨て
@@ -63,7 +64,7 @@ AudioResource::AudioResource(const char* filename)
 			else if (chunk.tag == MAKE_WAVE_TAG_VALUE('d', 'a', 't', 'a'))
 			{
 				data.resize(chunk.size);
-				fread(data.data(), chunk.size, 1, fp);
+				if (chunk.size > size - readBytes || fread(data.data(), chunk.size, 1, fp) != 1) { data.clear(); break; }
 				readBytes += chunk.size;
 
 				// 8-bit wav ファイルの場合は unsigned -> signed の変換が必要
@@ -98,6 +99,7 @@ AudioResource::AudioResource(const char* filename)
 		wfx.nBlockAlign = (wfx.wBitsPerSample >> 3) * wfx.nChannels;
 		wfx.nAvgBytesPerSec = wfx.nBlockAlign * wfx.nSamplesPerSec;
 		wfx.cbSize = sizeof(WAVEFORMATEX);
+		valid = true;
 	}
 }
 

@@ -10,6 +10,7 @@ static void CreateStaticMeshActor(
 	std::vector<physx::PxActor*>& actors,
 	std::vector<physx::PxTriangleMesh*>& triangle_meshes)
 {
+	if (!pxPhysics || !pxScene || !material || mesh.vertices.empty() || mesh.indices.size() < 3) return;
 	using namespace DirectX;
 
 	//頂点をワールド変換する
@@ -46,14 +47,15 @@ static void CreateStaticMeshActor(
 	physx::PxTolerancesScale pxTolerances;
 	const physx::PxCookingParams cookingParams(pxTolerances);
 	physx::PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(cookingParams, meshDesc);
-	_ASSERT_EXPR(pxTriangleMesh != nullptr, "Failed to cook triangle mesh");
+	if (!pxTriangleMesh) return;
 
 	physx::PxTransform pxTransform(physx::PxIdentity); // 変換は頂点に焼き込み済み
 	physx::PxRigidStatic* pxRigidBody = pxPhysics->createRigidStatic(pxTransform);
-	_ASSERT_EXPR(pxRigidBody != nullptr, "Failed to create rigid body");
+	if (!pxRigidBody) { pxTriangleMesh->release(); return; }
 
 	physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh); // スケールは等倍
-	physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *material);
+	physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *material);
+	if (!shape) { pxRigidBody->release(); pxTriangleMesh->release(); return; }
 	pxRigidBody->setName(name);
 
 	pxScene->addActor(*pxRigidBody);
@@ -64,7 +66,9 @@ static void CreateStaticMeshActor(
 // 初期化
 void stage::initialize()
 {
+	initialized = false;
 	ID3D11Device* device = Graphics::Instance().GetDevice();
+	if (!device || !Physics::Instance().IsInitialized()) return;
 
 	// モデルの読み込み
 	stand = std::make_unique<Model>(".\\resources\\field\\stand.mdl");
@@ -74,6 +78,13 @@ void stage::initialize()
 	pole = std::make_unique<Model>(".\\resources\\field\\pole.mdl");
 	pole2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\pole.glb");
 	lightTower2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\lightTower.glb");
+	if (!stand || !stand->IsLoaded() || !ground || !ground->IsLoaded() || !pole || !pole->IsLoaded() ||
+		!stand2 || !stand2->IsInitialized() || !ground2 || !ground2->IsInitialized() ||
+		!pole2 || !pole2->IsInitialized() || !lightTower2 || !lightTower2->IsInitialized())
+	{
+		MessageBoxW(nullptr, L"ステージモデルを読み込めませんでした。resources フォルダーを確認してください。", L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
+		return;
+	}
 
 	stand2->build_static_batches(device);
 	ground2->build_static_batches(device);
@@ -109,6 +120,7 @@ void stage::initialize()
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
 
 		// Ground用のマテリアル（よく跳ねる）
+		if (!pxPhysics || !pxScene) return;
 		groundMaterial = pxPhysics->createMaterial(0.5f, 0.4f, 0.2f);
 
 		// Stand用のマテリアル（ほぼ跳ねない）
@@ -116,6 +128,7 @@ void stage::initialize()
 
 		//Pole用のマテリアル（あまり跳ねない）
 		poleMaterial = pxPhysics->createMaterial(0.4f, 0.3f, 0.4f);
+		if (!groundMaterial || !standMaterial || !poleMaterial) return;
 
 		DirectX::XMMATRIX StandTransform = DirectX::XMLoadFloat4x4(&standTransform);
 		DirectX::XMMATRIX GroundTransform = DirectX::XMLoadFloat4x4(&groundTransform);
@@ -159,6 +172,7 @@ void stage::initialize()
 		}
 
 	}
+	initialized = true;
 
 	
 }
@@ -255,7 +269,9 @@ void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 		return; // フェンスラインの頂点が2つ未満の場合は何もしない
 	}
 
+	if (!pxPhysics || !pxScene) return;
 	physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+	if (!triggerMaterial) return;
 	
 
 	for(size_t i = 0; i < editor.linePoints.size() - 1; ++i)
@@ -285,7 +301,9 @@ void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 		physx::PxBoxGeometry geometry(length * 0.5f, height * 0.5f, editor.thickness * 0.5f);
 
 		physx::PxRigidStatic* actor = pxPhysics->createRigidStatic(triggerTransform);
+		if (!actor) continue;
 		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, geometry, *triggerMaterial);
+		if (!shape) { actor->release(); continue; }
 		shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
 		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
 
@@ -377,10 +395,11 @@ void stage::update(float elapsedTime)
 
 void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCulling* frustumCulling)
 {
+	if (!initialized || !rc.deviceContext) return;
 	//renderer->Render(rc, transform, stand.get(), ShaderId::ShadowMap);
 	//renderer->Render(rc, transform, ground.get(), ShaderId::ShadowMap);
 
-	if (stand2)
+	if (stand2 && stand2->IsInitialized())
 	{
 		bool isVisibled = true;//フラスタムカリングの判定
 		if (frustumCulling)
@@ -396,7 +415,7 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 		}
 	}
 
-	if(ground2)
+	if(ground2 && ground2->IsInitialized())
 	{
 		bool isVisibled = true;//フラスタムカリングの判定
 		if (frustumCulling)
@@ -412,7 +431,7 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 		}
 	}
 
-	if(pole2)
+	if(pole2 && pole2->IsInitialized())
 	{
 		bool isVisibled = true;//フラスタムカリングの判定
 		if (frustumCulling)
@@ -432,7 +451,7 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 	visibleTowerTransforms.reserve(TOWER_COUNT);// 4箇所のライトタワーの変換行列を格納するベクターを確保
 
 	// ライトタワーをスポットライトの位置に4箇所配置
-	for (int i = 0; i < TOWER_COUNT; i++)
+	for (int i = 0; lightTower2 && lightTower2->IsInitialized() && i < TOWER_COUNT; i++)
 	{
 		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(lightScale[i].x, lightScale[i].y, lightScale[i].z);
 		DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(towerAngle[i].x, towerAngle[i].y, towerAngle[i].z);
@@ -454,11 +473,11 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 		}
 	}
 
-	if(!visibleTowerTransforms.empty() && isInstancingEnabled)
+	if(lightTower2 && lightTower2->IsInitialized() && !visibleTowerTransforms.empty() && isInstancingEnabled)
 	{
 		lightTower2->render_batched_instanced(rc.deviceContext, visibleTowerTransforms);
 	}
-	else if(!isInstancingEnabled)
+	else if(lightTower2 && lightTower2->IsInitialized() && !isInstancingEnabled)
 	{
 		for (const auto& towerTransform : visibleTowerTransforms)
 		{

@@ -131,6 +131,7 @@ void SkyRenderer::ComputeSkyColors(sky_constants& out) const
 //初期化
 void SkyRenderer::Initialize(ID3D11Device* device)
 {
+	if (!device) return;
 	HRESULT hr;
 
 	// Load shaders (adjust paths to match your project layout)

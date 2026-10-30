@@ -180,23 +180,27 @@ void ModelResource::Animation::serialize(Archive& archive, int version)
 }
 
 // 読み込み
-void ModelResource::Load(ID3D11Device* device, const char* filename)
+bool ModelResource::Load(ID3D11Device* device, const char* filename)
 {
+	loaded = false;
+	if (!device || !filename || !*filename) return false;
 	// ディレクトリパス取得
 	char drive[32], dir[256], dirname[256];
 	::_splitpath_s(filename, drive, sizeof(drive), dir, sizeof(dir), nullptr, 0, nullptr, 0);
 	::_makepath_s(dirname, sizeof(dirname), drive, dir, nullptr, nullptr);
 
 	// デシリアライズ
-	Deserialize(filename);
+	if (!Deserialize(filename)) return false;
 
 	// モデル構築
-	BuildModel(device, dirname);
+	loaded = BuildModel(device, dirname);
+	return loaded;
 }
 
 // モデル構築
-void ModelResource::BuildModel(ID3D11Device* device, const char* dirname)
+bool ModelResource::BuildModel(ID3D11Device* device, const char* dirname)
 {
+	if (!device || !dirname) return false;
 	for (Material& material : materials)
 	{
 		// 相対パスの解決
@@ -213,16 +217,18 @@ void ModelResource::BuildModel(ID3D11Device* device, const char* dirname)
 		if (FAILED(hr))
 		{
 			hr = GpuResourceUtils::CreateDummyTexture(device, 0xFFFFFFFF, material.shaderResourceView.GetAddressOf());
-			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+			if (FAILED(hr) || !material.shaderResourceView) return false;
 		}
 	}
 
 	for (Mesh& mesh : meshes)
 	{
+		if (mesh.vertices.empty() || mesh.indices.empty()) return false;
 		// サブセット
 		for (Subset& subset : mesh.subsets)
 		{
-			subset.material = &materials.at(subset.materialIndex);
+			if (subset.materialIndex < 0 || static_cast<size_t>(subset.materialIndex) >= materials.size()) return false;
+			subset.material = &materials[static_cast<size_t>(subset.materialIndex)];
 		}
 
 		// 頂点バッファ
@@ -242,7 +248,7 @@ void ModelResource::BuildModel(ID3D11Device* device, const char* dirname)
 			subresourceData.SysMemSlicePitch = 0;
 
 			HRESULT hr = device->CreateBuffer(&bufferDesc, &subresourceData, mesh.vertexBuffer.GetAddressOf());
-			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+			if (FAILED(hr) || !mesh.vertexBuffer) return false;
 		}
 
 		// インデックスバッファ
@@ -261,9 +267,10 @@ void ModelResource::BuildModel(ID3D11Device* device, const char* dirname)
 			subresourceData.SysMemPitch = 0; //Not use for index buffers.
 			subresourceData.SysMemSlicePitch = 0; //Not use for index buffers.
 			HRESULT hr = device->CreateBuffer(&bufferDesc, &subresourceData, mesh.indexBuffer.GetAddressOf());
-			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+			if (FAILED(hr) || !mesh.indexBuffer) return false;
 		}
 	}
+	return true;
 }
 
 // シリアライズ
@@ -294,34 +301,20 @@ void ModelResource::Serialize(const char* filename)
 }
 
 // デシリアライズ
-void ModelResource::Deserialize(const char* filename)
+bool ModelResource::Deserialize(const char* filename)
 {
+	if (!filename || !*filename) return false;
 	std::ifstream istream(filename, std::ios::binary);
-	if (istream.is_open())
+	if (!istream.is_open()) return false;
+	try
 	{
 		cereal::BinaryInputArchive archive(istream);
-
-		try
-		{
-			archive(
-				CEREAL_NVP(nodes),
-				CEREAL_NVP(materials),
-				CEREAL_NVP(meshes),
-				CEREAL_NVP(animations)
-			);
-		}
-		catch (...)
-		{
-			char buffer[256];
-			sprintf_s(buffer, sizeof(buffer), "model deserialize failed.\n%s\n", filename);
-			_ASSERT_EXPR_A(false, buffer);
-			return;
-		}
+		archive(CEREAL_NVP(nodes), CEREAL_NVP(materials), CEREAL_NVP(meshes), CEREAL_NVP(animations));
 	}
-	else
+	catch (...)
 	{
-		char buffer[256];
-		sprintf_s(buffer, sizeof(buffer), "File not found > %s", filename);
-		_ASSERT_EXPR_A(false, buffer);
+		nodes.clear(); materials.clear(); meshes.clear(); animations.clear();
+		return false;
 	}
+	return !nodes.empty() && !meshes.empty();
 }

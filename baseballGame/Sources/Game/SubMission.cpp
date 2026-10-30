@@ -80,6 +80,7 @@ bool SubMission::ClearHomeRunCount(int count) const
 
 void SubMission::Initialize(ID3D11Device* device)
 {
+	if (!device) return;
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 

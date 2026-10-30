@@ -113,6 +113,7 @@ bool SpecialAbility::IsHomeRunCondition() const
 
 void SpecialAbility::Initialize(ID3D11Device* device)
 {
+	if (!device) return;
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =

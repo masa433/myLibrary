@@ -6,6 +6,7 @@
 
 void FoulSprite::Initialize(ID3D11Device* device)
 {
+	if (!device) return;
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =

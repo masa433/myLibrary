@@ -36,6 +36,7 @@ using json = nlohmann::json;
 
 void scene_game::initialize()
 {
+	initializationFailed = false;
     HRESULT hr = S_OK;
 
     ID3D11Device* device = Graphics::Instance().GetDevice();
@@ -132,9 +133,10 @@ void scene_game::initialize()
   
     // ステージの初期化
 
-    Physics::Instance().Initialize();
+    if (!Physics::Instance().Initialize()) { initializationFailed = true; return; }
 
     stage::Instance().initialize();
+	if (!stage::Instance().IsInitialized()) { initializationFailed = true; return; }
 
     // プレイヤーの初期化
     Player::Instance().Initialize();
@@ -356,7 +358,7 @@ void scene_game::initialize()
     query_desc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
     query_desc.MiscFlags = 0;
     hr = device->CreateQuery(&query_desc, pipeline_stats_query.ReleaseAndGetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	_ASSERT_EXPR(SUCCEEDED(hr) && pipeline_stats_query, hr_trace(hr));
 
     // 設定のロード
     LoadSetting();
@@ -364,6 +366,7 @@ void scene_game::initialize()
 
 void scene_game::update(float elapsed_time)
 {
+	if (initializationFailed) return;
 
     // Ctrl + S で設定保存
     ImGuiIO& io = ImGui::GetIO();
@@ -675,6 +678,7 @@ void scene_game::update(float elapsed_time)
 
 void scene_game::render(float elapsedTime)
 {
+	if (initializationFailed) return;
 
 
     using namespace DirectX;

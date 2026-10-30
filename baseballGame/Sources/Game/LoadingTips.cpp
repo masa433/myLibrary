@@ -5,6 +5,7 @@
 
 void LoadingTips::Initialize(ID3D11Device* device)
 {
+	if (!device) return;
 	//シェーダー
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{

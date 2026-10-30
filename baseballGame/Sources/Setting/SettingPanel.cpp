@@ -9,6 +9,7 @@
 
 void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
+	if (!device || !context) return;
 	
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -352,6 +353,7 @@ void AudioSettingPanel::DrawGUI()
 
 void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
+	if (!device || !context) return;
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
@@ -656,6 +658,7 @@ void CursorSettingPanel::DrawGUI()
 
 void OtherSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
+	if (!device || !context) return;
 	// シェーダーの作成
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{

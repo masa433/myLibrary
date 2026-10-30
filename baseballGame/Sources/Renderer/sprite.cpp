@@ -9,6 +9,8 @@
 //コンストラクタ
 sprite::sprite(ID3D11Device* device,ID3D11DeviceContext* immediate_context, const wchar_t* filename)
 {
+	texture2d_desc = {};
+	if (!device || !immediate_context || !filename) return;
 	HRESULT hr{ S_OK };
 
 	vertex vertices[]
@@ -31,7 +33,7 @@ sprite::sprite(ID3D11Device* device,ID3D11DeviceContext* immediate_context, cons
 	subresource_data.SysMemPitch = 0;
 	subresource_data.SysMemSlicePitch = 0;
 	hr = device->CreateBuffer(&buffer_desc, &subresource_data, vertex_buffer.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !vertex_buffer) return;
 
 	
 	load_texture_from_file(device, immediate_context, filename, shader_resource_view.GetAddressOf(), &texture2d_desc);
@@ -39,6 +41,8 @@ sprite::sprite(ID3D11Device* device,ID3D11DeviceContext* immediate_context, cons
 
 sprite::sprite(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shader_resource_view)
 {
+	texture2d_desc = {};
+	if (!device || !shader_resource_view) return;
 	HRESULT hr{ S_OK };
 
 	vertex vertices[]
@@ -61,7 +65,7 @@ sprite::sprite(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11ShaderResource
 	subresource_data.SysMemPitch = 0;
 	subresource_data.SysMemSlicePitch = 0;
 	hr = device->CreateBuffer(&buffer_desc, &subresource_data, vertex_buffer.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !vertex_buffer) return;
 
 	
 	if (shader_resource_view)
@@ -74,7 +78,7 @@ sprite::sprite(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11ShaderResource
 		this->shader_resource_view->GetResource(resource.GetAddressOf());
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
 		hr = resource.Get()->QueryInterface<ID3D11Texture2D>(texture2d.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		if (FAILED(hr) || !texture2d) { this->shader_resource_view.Reset(); return; }
 		texture2d->GetDesc(&texture2d_desc);
 	}
 }
@@ -85,6 +89,7 @@ void sprite::render(ID3D11DeviceContext* immediate_context,
 	float r,float g,float b,float a,
 	float angle)
 {
+	if (!IsValid()) return;
 	render(immediate_context, dx, dy, dw, dh, r, g, b, a, angle, 0.0f, 0.0f, static_cast<float>(texture2d_desc.Width), static_cast<float>(texture2d_desc.Height));
 }
 
@@ -95,10 +100,12 @@ void sprite::render(ID3D11DeviceContext* immediate_context,
 	float angle,
 	float sx, float sy, float sw, float sh)
 {
+	if (!immediate_context || !IsValid()) return;
 	// ビューポート取得
 	D3D11_VIEWPORT viewport{};
 	UINT num_viewports{ 1 };
 	immediate_context->RSGetViewports(&num_viewports, &viewport);
+	if (num_viewports == 0 || viewport.Width <= 0.0f || viewport.Height <= 0.0f) return;
 
 	// 矩形の頂点座標
 	float x0{ dx }, y0{ dy };
@@ -147,7 +154,7 @@ void sprite::render(ID3D11DeviceContext* immediate_context,
 	// 頂点データ更新
 	D3D11_MAPPED_SUBRESOURCE mapped{};
 	HRESULT hr = immediate_context->Map(vertex_buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !mapped.pData) return;
 
 	vertex* vertices = reinterpret_cast<vertex*>(mapped.pData);
 	if (vertices)

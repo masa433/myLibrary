@@ -10,6 +10,7 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shader_resource_view;
 	D3D11_TEXTURE2D_DESC texture2d_desc;
 	bool isLoadFile = false;
+	bool IsValid() const { return vertex_buffer != nullptr && shader_resource_view != nullptr && texture2d_desc.Width > 0 && texture2d_desc.Height > 0; }
 
 	void render(ID3D11DeviceContext* immediate_context,
 		float dx, float dy,//矩形の左上の座標

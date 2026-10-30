@@ -8,6 +8,7 @@
 
 void HomeRunCount::Initialize(ID3D11Device* device)
 {
+	if (!device) return;
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
 	// シェーダーの読み込み

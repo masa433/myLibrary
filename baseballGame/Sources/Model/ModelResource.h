@@ -118,21 +118,23 @@ public:
 	const std::vector<Material>& GetMaterials() const { return materials; }
 
 	// 読み込み
-	void Load(ID3D11Device* device, const char* filename);
+	bool Load(ID3D11Device* device, const char* filename);
+	bool IsLoaded() const { return loaded; }
 
 protected:
 	// モデルセットアップ
-	void BuildModel(ID3D11Device* device, const char* dirname);
+	bool BuildModel(ID3D11Device* device, const char* dirname);
 
 	// シリアライズ
 	void Serialize(const char* filename);
 
 	// デシリアライズ
-	void Deserialize(const char* filename);
+	bool Deserialize(const char* filename);
 
 protected:
 	std::vector<Node>		nodes;
 	std::vector<Material>	materials;
 	std::vector<Mesh>		meshes;
 	std::vector<Animation>	animations;
+	bool loaded = false;
 };

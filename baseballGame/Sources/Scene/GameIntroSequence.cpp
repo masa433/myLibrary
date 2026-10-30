@@ -7,9 +7,11 @@
 #include "UiEasing.h"
 #include "GameModeManager.h"
 #include "input.h"
+#include "misc.h"
 
 void GameIntroSequence::Initialize(ID3D11Device* device)
 {
+	if (!device) return;
 
     ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 
@@ -112,7 +114,8 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 	rsDesc.CullMode = D3D11_CULL_NONE;// カリングを無効にする
 	rsDesc.DepthClipEnable = TRUE;// デプスクリッピングを有効にする
 	rsDesc.ScissorEnable = TRUE;// スクリーン外の描画を防ぐためにシザーを有効にする
-    device->CreateRasterizerState(&rsDesc, rasterizerState.ReleaseAndGetAddressOf());
+    HRESULT hr = device ? device->CreateRasterizerState(&rsDesc, rasterizerState.ReleaseAndGetAddressOf()) : E_POINTER;
+	_ASSERT_EXPR(SUCCEEDED(hr) && rasterizerState, hr_trace(hr));
 
     //フォントレンダラー初期化
 

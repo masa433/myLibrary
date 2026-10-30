@@ -3,6 +3,7 @@
 #include "Graphics.h"
 #include "shader.h"
 #include "sceneTransition.h"
+#include "misc.h"
 
 
 void batterSelectScene::SelectRandomPitcher()
@@ -156,10 +157,12 @@ void batterSelectScene::initialize()
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 		desc.ByteWidth = sizeof(BurstTransformBuffer);
-		device->CreateBuffer(&desc, nullptr, burstTransformBuffer.ReleaseAndGetAddressOf());
+		HRESULT hr = device->CreateBuffer(&desc, nullptr, burstTransformBuffer.ReleaseAndGetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr) && burstTransformBuffer, hr_trace(hr));
 
 		desc.ByteWidth = sizeof(BurstBuffer);
-		device->CreateBuffer(&desc, nullptr, burstColorBuffer.ReleaseAndGetAddressOf());
+		hr = device->CreateBuffer(&desc, nullptr, burstColorBuffer.ReleaseAndGetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr) && burstColorBuffer, hr_trace(hr));
 
 	}
 

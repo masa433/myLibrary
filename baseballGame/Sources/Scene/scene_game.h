@@ -215,6 +215,7 @@ private:
 	GameIntroSequence gameIntroSequence;
     
     AudioSource* cheerSound = nullptr;
+	bool initializationFailed = false;
 	bool isCheerSoundPlaying = false;
 	bool isOneShotFadeStarted = false;
 };

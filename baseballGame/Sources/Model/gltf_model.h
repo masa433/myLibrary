@@ -9,9 +9,11 @@
 class gltf_model 
 {
 	std::string filename;
+	bool initialized = false;
 public:
 	gltf_model(ID3D11Device* device, const std::string& filename);
 	virtual ~gltf_model() = default;
+	bool IsInitialized() const { return initialized; }
 
 	
 

@@ -6,6 +6,7 @@
 void BallNet::Initialize()
 {
 	ID3D11Device* device = Graphics::Instance().GetDevice();
+	if (!device || !Physics::Instance().IsInitialized()) return;
 	// ƒlƒbƒg‚Ìƒ‚ƒfƒ‹‚ğ“Ç‚İ‚Ş
 	for (int i = 0; i < NET_COUNT; ++i)
 	{
@@ -19,7 +20,8 @@ void BallNet::Initialize()
 		physx::PxPhysics* physics = Physics::Instance().GetPhysics();
 		physx::PxScene* scene = Physics::Instance().GetScene();
 
-		netColliderMaterial = physics->createMaterial(0.5f, 0.5f, 0.3f); // –€CŒW”‚Æ”½”­ŒW”‚ğİ’è
+		netColliderMaterial = physics->createMaterial(0.5f, 0.5f, 0.3f);
+		if (!netColliderMaterial) return; // –€CŒW”‚Æ”½”­ŒW”‚ğİ’è
 
 		for(int i = 0; i < NET_COUNT; ++i)
 		{
@@ -30,8 +32,10 @@ void BallNet::Initialize()
 
 			physx::PxTransform transform(physx::PxVec3(netColliderPositions[i].x, netColliderPositions[i].y, netColliderPositions[i].z), rotation);
 			netCollider[i] = physics->createRigidStatic(transform);
+			if (!netCollider[i]) continue;
 			physx::PxBoxGeometry boxGeometry(netColliderScales[i].x / 2.0f, netColliderScales[i].y / 2.0f, netColliderScales[i].z / 2.0f);
 			physx::PxShape* shape = physics->createShape(boxGeometry, *netColliderMaterial);
+			if (!shape) { PX_RELEASE(netCollider[i]); continue; }
 			//ƒRƒ‰ƒCƒ_[–¼‚ğİ’è
 			netColliderNames[i] = "NetCollider" + std::to_string(i);
 			netCollider[i]->setName(netColliderNames[i].c_str());

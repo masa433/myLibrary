@@ -76,6 +76,7 @@ float GenerateRandomFloat(float min, float max)
 void Pitcher::Initialize() 
 {
 	ID3D11Device* device = Graphics::Instance().GetDevice();
+	if (!device || !Physics::Instance().IsInitialized()) return;
 
 	//モデルの読み込み
 
@@ -108,13 +109,17 @@ void Pitcher::Initialize()
 	{
 		physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
 		physx::PxScene* pxScene = Physics::Instance().GetScene();
+		if (!pxPhysics || !pxScene) return;
 
 		physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+		if (!triggerMaterial) return;
 		physx::PxTransform triggerTransform(physx::PxVec3(boxPosition.x, boxPosition.y, boxPosition.z));
 		strikeZoneTrigger = pxPhysics->createRigidStatic(triggerTransform);
+		if (!strikeZoneTrigger) { triggerMaterial->release(); return; }
 
 		physx::PxBoxGeometry triggerGeometry(physx::PxVec3(boxSize.x / 2.0f, boxSize.y / 2.0f, boxSize.z / 2.0f));
 		physx::PxShape* triggerShape = physx::PxRigidActorExt::createExclusiveShape(*strikeZoneTrigger, triggerGeometry, *triggerMaterial);
+		if (!triggerShape) { strikeZoneTrigger->release(); strikeZoneTrigger = nullptr; triggerMaterial->release(); return; }
 
 		// 物理的な衝突を無効にし、トリガー（重なり判定）として設定する
 		triggerShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
@@ -122,6 +127,7 @@ void Pitcher::Initialize()
 
 		strikeZoneTrigger->setName("StrikeZoneTrigger");
 		pxScene->addActor(*strikeZoneTrigger);
+		triggerMaterial->release();
 
 		
 	}

@@ -37,14 +37,14 @@ void HexTransitionEffect::Initialize()
 	ComPtr<ID3DBlob> vsBlob;
 	//hr = CompileShaderFromFile(L".\\Shaders\\HextransitionVS.hlsl", "VSMain", "vs_5_0", vsBlob.GetAddressOf());
 	hr = create_vs_from_cso(device, ".\\resources\\shader\\HextransitionVS.cso", vertexShader.GetAddressOf(), nullptr, nullptr, 0);
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !vertexShader) return;
 	
 
 	//ピクセルシェーダーのコンパイル
 	ComPtr<ID3DBlob> psBlob;
 	//hr = CompileShaderFromFile(L".\\Shaders\\HextransitionPS.hlsl", "PSMain", "ps_5_0", psBlob.GetAddressOf());
 	hr = create_ps_from_cso(device, ".\\resources\\shader\\HextransitionPS.cso", pixelShader.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !pixelShader) return;
 
 	//定数バッファの作成
 	D3D11_BUFFER_DESC bd{};
@@ -53,14 +53,18 @@ void HexTransitionEffect::Initialize()
 	bd.ByteWidth = sizeof(TransitionConstants);
 	bd.CPUAccessFlags = 0;
 	hr = device->CreateBuffer(&bd, nullptr, constantBuffer.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !constantBuffer) return;
 
 	//バックバッファと同じサイズ・フォーマットでコピー用のテクスチャを作成
 	ComPtr<ID3D11Resource> backBufferResource;
-	Graphics::Instance().GetRenderTargetView()->GetResource(backBufferResource.GetAddressOf());
+	ID3D11RenderTargetView* renderTargetView = Graphics::Instance().GetRenderTargetView();
+	if (!renderTargetView) return;
+	renderTargetView->GetResource(backBufferResource.GetAddressOf());
+	if (!backBufferResource) return;
 
 	ComPtr<ID3D11Texture2D> backBufferTexture;
-	backBufferResource.As(&backBufferTexture);// ID3D11Texture2Dにキャスト
+	backBufferResource.As(&backBufferTexture);
+	if (!backBufferTexture) return;
 
 	D3D11_TEXTURE2D_DESC desc{};
 	backBufferTexture->GetDesc(&desc);// バックバッファの情報を取得
@@ -70,11 +74,11 @@ void HexTransitionEffect::Initialize()
 	desc.MiscFlags = 0; // 特殊な用途はなし
 
 	hr = device->CreateTexture2D(&desc, nullptr, sceneCopyTexture.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !sceneCopyTexture) return;
 
 	
 	hr = device->CreateShaderResourceView(sceneCopyTexture.Get(), nullptr, sceneCopySRV.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	if (FAILED(hr) || !sceneCopySRV) return;
 }
 
 void HexTransitionEffect::Start(float durationSeconds)
@@ -120,13 +124,14 @@ void HexTransitionEffect::Update(float elapsedTime)
 void HexTransitionEffect::Render()
 {
 	if (!playing && !finished) return;
-	if (!constantBuffer || !vertexShader || !pixelShader) return;
+	if (!constantBuffer || !vertexShader || !pixelShader || !sceneCopySRV) return;
 
 	// 通常描画済みのバックバッファをテクスチャにキャプチャ
 	CaptureScene();
 
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
+	if (!dc || !renderState || !renderState->IsValid()) return;
 
 	TransitionConstants cb{};
 	cb.screen_size = { Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight() };
@@ -164,9 +169,13 @@ void HexTransitionEffect::Render()
 void HexTransitionEffect::CaptureScene()
 {
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	if (!dc || !sceneCopyTexture) return;
 	// バックバッファのコピーを作成
 	ComPtr<ID3D11Resource> backBufferResource;
-	Graphics::Instance().GetRenderTargetView()->GetResource(backBufferResource.GetAddressOf());
+	ID3D11RenderTargetView* renderTargetView = Graphics::Instance().GetRenderTargetView();
+	if (!renderTargetView) return;
+	renderTargetView->GetResource(backBufferResource.GetAddressOf());
+	if (!backBufferResource) return;
 
 	dc->CopyResource(sceneCopyTexture.Get(), backBufferResource.Get());
 }

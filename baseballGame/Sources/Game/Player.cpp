@@ -62,6 +62,11 @@ void Player::Initialize()
     // モデルの読み込み
     rightBatter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\rightBatter.glb");
     leftBatter = std::make_unique<gltf_model>(device, ".\\resources\\batter\\leftBatter.glb");
+	if (!device || !rightBatter || !rightBatter->IsInitialized() || !leftBatter || !leftBatter->IsInitialized())
+	{
+		MessageBoxW(nullptr, L"打者モデルを読み込めませんでした。resources フォルダーを確認してください。", L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
+		return;
+	}
 
 
     if (IsRightBatter())
@@ -97,6 +102,11 @@ void Player::Initialize()
     //バットモデルの読み込み
     bat = std::make_unique<Model>(".\\resources\\object\\bat.mdl");
     batModel = std::make_unique<gltf_model>(device, ".\\resources\\object\\bat.glb");
+	if (!bat || !bat->IsLoaded() || !batModel || !batModel->IsInitialized())
+	{
+		MessageBoxW(nullptr, L"バットモデルを読み込めませんでした。resources フォルダーを確認してください。", L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
+		return;
+	}
     batScale = { 1.15f,1.1f,1.15f };
 
     meshScale = { 0.03f,0.012f,0.03f };
@@ -142,6 +152,7 @@ void Player::Initialize()
         physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
         physx::PxMaterial* pxMaterial = Physics::Instance().GetMaterial();
         physx::PxScene* pxScene = Physics::Instance().GetScene();
+        if (!pxPhysics || !pxMaterial || !pxScene || vertices.empty()) return;
 
         //pxMaterial->setRestitution(0.2f);// 反発係数を設定
         //pxMaterial->setDynamicFriction(0.3f);// 動的摩擦係数を設定
@@ -149,6 +160,7 @@ void Player::Initialize()
 
         //バット専用マテリアルの作成
         pxBatMaterial = pxPhysics->createMaterial(0.5f, 0.45f, 0.5f);
+        if (!pxBatMaterial) return;
 
         physx::PxConvexMeshDesc pxConvexMeshDesc;
         pxConvexMeshDesc.points.count = static_cast<physx::PxU32>(vertices.size());
@@ -159,13 +171,14 @@ void Player::Initialize()
         physx::PxTolerancesScale pxTolerances;
         const physx::PxCookingParams pxCookingParams(pxTolerances);
         pxBatConvexMesh = PxCreateConvexMesh(pxCookingParams, pxConvexMeshDesc);
+        if (!pxBatConvexMesh) { PX_RELEASE(pxBatMaterial); return; }
 
         //動的剛体生成
         physx::PxTransform pxTransform = physx::PxTransform(
             physx::PxVec3(batPosition.x, batPosition.y, batPosition.z),
             physx::PxQuat(0.0f, 0.0f, 0.0f, 1.0f));
         pxBatRigidBody = pxPhysics->createRigidDynamic(pxTransform);
-        _ASSERT_EXPR(pxBatRigidBody != nullptr, "Failed to create PxRigidDynamic for bat");
+        if (!pxBatRigidBody) { PX_RELEASE(pxBatConvexMesh); PX_RELEASE(pxBatMaterial); return; }
 
         // キネマティックモードに設定
         //pxBatRigidBody->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
@@ -177,7 +190,8 @@ void Player::Initialize()
             physx::PxQuat(physx::PxIdentity)
         );
         physx::PxConvexMeshGeometry pxConvexGeometry(pxBatConvexMesh, pxMeshScale);
-        physx::PxRigidActorExt::createExclusiveShape(*pxBatRigidBody, pxConvexGeometry, *pxBatMaterial);
+        physx::PxShape* batShape = physx::PxRigidActorExt::createExclusiveShape(*pxBatRigidBody, pxConvexGeometry, *pxBatMaterial);
+        if (!batShape) { PX_RELEASE(pxBatRigidBody); PX_RELEASE(pxBatConvexMesh); PX_RELEASE(pxBatMaterial); return; }
 
         // 質量の設定
         //pxBatRigidBody->setMass(0.9f); // バットの質量を設定
@@ -246,7 +260,7 @@ void Player::Uninitialize()
     physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
     physx::PxScene* pxScene = Physics::Instance().GetScene();
 
-    pxScene->removeActor(*pxBatRigidBody);
+    if (pxScene && pxBatRigidBody) pxScene->removeActor(*pxBatRigidBody);
     PX_RELEASE(pxPlayerCapsuleController);
 	PX_RELEASE(pxBatRigidBody);
     PX_RELEASE(pxBatConvexMesh);
@@ -855,8 +869,11 @@ void Player::AttachBatToHand()
                 );
 
                 // キネマティックモードに設定（アニメーションに追従）
-                pxBatRigidBody->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
-                pxBatRigidBody->setKinematicTarget(pxTransform);
+                if (pxBatRigidBody)
+                {
+                	pxBatRigidBody->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+                	pxBatRigidBody->setKinematicTarget(pxTransform);
+                }
             }
 
          

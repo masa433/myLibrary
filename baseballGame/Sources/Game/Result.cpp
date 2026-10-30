@@ -6,9 +6,11 @@
 #include "Combo.h"
 #include "RoundManager.h"
 #include "UiEasing.h"
+#include "misc.h"
 
 void Result::Initialize(ID3D11Device* device)
 {
+	if (!device) return;
 	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
@@ -106,7 +108,8 @@ void Result::Initialize(ID3D11Device* device)
 	rsDesc.CullMode = D3D11_CULL_NONE;// カリングを無効にする
 	rsDesc.DepthClipEnable = TRUE;// デプスクリッピングを有効にする
 	rsDesc.ScissorEnable = TRUE;// スクリーン外の描画を防ぐためにシザーを有効にする
-	device->CreateRasterizerState(&rsDesc, rasterizerState.ReleaseAndGetAddressOf());
+	HRESULT rasterizerResult = device ? device->CreateRasterizerState(&rsDesc, rasterizerState.ReleaseAndGetAddressOf()) : E_POINTER;
+	_ASSERT_EXPR(SUCCEEDED(rasterizerResult) && rasterizerState, hr_trace(rasterizerResult));
 
 	const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
 	ReplayManager::Instance().ResetReplayFrame(const_cast<ReplayFrame&>(frame));
