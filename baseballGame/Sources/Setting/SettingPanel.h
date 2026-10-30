@@ -91,6 +91,7 @@ private:
 
 	DirectX::XMFLOAT2 volumeSliderButtonOffset = { 70.0f, -35.0f };
 
+	float savedButtonPosX[numVolumeTypes] = { 0.0f, 0.0f, 0.0f };
 
 	bool isDragging = false; //スライダーをドラッグしているかどうかのフラグ
 
