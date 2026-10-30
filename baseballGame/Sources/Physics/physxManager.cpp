@@ -103,7 +103,6 @@ void Physics::Initialize()
 	homeRunSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/HomeRun.wav",SoundType::SE);
 	hitClogSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Clog.wav",SoundType::SE);
 	longHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/LongHit.wav",SoundType::SE);
-	foulWhistleSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/FoulWhistle.wav",SoundType::SE);
 	foulSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Foul.wav",SoundType::SE);
 	boundSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/BallBound.wav",SoundType::SE);
 	poleHitSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Pole.wav",SoundType::SE);
@@ -142,8 +141,6 @@ void Physics::Finalize()
 	hitClogSound = nullptr;
 	delete longHitSound;
 	longHitSound = nullptr;
-	delete foulWhistleSound;
-	foulWhistleSound = nullptr;
 	delete boundSound;
 	boundSound = nullptr;
 	delete poleHitSound;
@@ -188,7 +185,6 @@ void Physics::Update(float elapsedTime)
 	homeRunSound->Update();
 	hitClogSound->Update();
 	longHitSound->Update();
-	foulWhistleSound->Update();
 	foulSound->Update();
 	boundSound->Update();
 	poleHitSound->Update();

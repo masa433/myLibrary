@@ -167,7 +167,6 @@ public:
 		if (hitSound) hitSound->StartFadeOutOneShot(duration);
 		if (homeRunSound) homeRunSound->StartFadeOutOneShot(duration);
 		if (hitClogSound) hitClogSound->StartFadeOutOneShot(duration);
-		if (foulWhistleSound) foulWhistleSound->StartFadeOutOneShot(duration);
 		if (foulSound) foulSound->StartFadeOutOneShot(duration);
 		if (boundSound) boundSound->StartFadeOutOneShot(duration);
 		if (poleHitSound) poleHitSound->StartFadeOutOneShot(duration);
@@ -184,7 +183,6 @@ public:
 		if (hitSound) hitSound->UpdateFadeOutOneShot(elapsedTime);
 		if (homeRunSound) homeRunSound->UpdateFadeOutOneShot(elapsedTime);
 		if (hitClogSound) hitClogSound->UpdateFadeOutOneShot(elapsedTime);
-		if (foulWhistleSound) foulWhistleSound->UpdateFadeOutOneShot(elapsedTime);
 		if (foulSound) foulSound->UpdateFadeOutOneShot(elapsedTime);
 		if (boundSound) boundSound->UpdateFadeOutOneShot(elapsedTime);
 		if (poleHitSound) poleHitSound->UpdateFadeOutOneShot(elapsedTime);
@@ -203,7 +201,6 @@ private:
 	AudioSource* hitSound;//打球音のインスタンス
 	AudioSource* homeRunSound;//ホームラン音のインスタンス
 	AudioSource* hitClogSound;//打球が詰まった時の音
-	AudioSource* foulWhistleSound;//ファウルの笛の音
 	AudioSource* foulSound;//ファウル音のインスタンス
 	AudioSource* boundSound;//バウンド音のインスタンス
 	AudioSource* poleHitSound;//ポールに当たった時の音のインスタンス

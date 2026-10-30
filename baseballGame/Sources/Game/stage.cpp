@@ -73,7 +73,6 @@ void stage::initialize()
 	ground2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\ground.glb");
 	pole = std::make_unique<Model>(".\\resources\\field\\pole.mdl");
 	pole2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\pole.glb");
-	lightTower = std::make_unique<Model>(".\\resources\\field\\lightTower.mdl");
 	lightTower2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\lightTower.glb");
 
 	stand2->build_static_batches(device);
@@ -503,8 +502,7 @@ void stage::uninitialize()
 	stand.reset();
 	ground.reset();
 	pole.reset();
-	lightTower.reset();
-
+	
 	stand2.reset();
 	ground2.reset();
 	pole2.reset();

@@ -38,7 +38,6 @@ private:
 	std::unique_ptr<Model> stand;
 	std::unique_ptr<Model> ground;
 	std::unique_ptr<Model> pole;
-	std::unique_ptr<Model> lightTower;
 	std::unique_ptr<gltf_model> stand2;
 	std::unique_ptr<gltf_model> ground2;
 	std::unique_ptr<gltf_model> pole2;
