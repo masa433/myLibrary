@@ -11,6 +11,14 @@ LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 
 int WINAPI WinMain(_In_ HINSTANCE instance, _In_opt_  HINSTANCE prev_instance, _In_ LPSTR cmd_line, _In_ int cmd_show)
 {
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
+	if (FAILED(hr))
+	{
+		MessageBoxW(nullptr, L"COMの初期化に失敗しました", L"Error", MB_OK);
+		return -1;
+	}
+
 	srand(static_cast<unsigned int>(time(nullptr)));
 
 #if defined(DEBUG) | defined(_DEBUG)

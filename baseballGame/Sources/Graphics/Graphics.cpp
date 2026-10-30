@@ -2,9 +2,30 @@
 #include "Misc.h"
 #include "Graphics.h"
 
+// D3D11のウォームアップ処理
+static void WarmUpD3D()
+{
+	D3D_FEATURE_LEVEL fl[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };// D3D11CreateDeviceで使用する機能レベルのリスト
+
+	Microsoft::WRL::ComPtr<IDXGIFactory1> factory;
+	// DXGIファクトリを作成
+	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(factory.GetAddressOf())))) return;// DXGIファクトリの作成に失敗した場合は終了
+
+	Microsoft::WRL::ComPtr<IDXGIAdapter1> a;// アダプタを列挙して、D3D11CreateDeviceを呼び出すことでGPUのウォームアップを行う
+	for (UINT i = 0; factory->EnumAdapters1(i, a.ReleaseAndGetAddressOf()) != DXGI_ERROR_NOT_FOUND; ++i)
+	{
+		Microsoft::WRL::ComPtr<ID3D11Device> dev;
+		D3D11CreateDevice(a.Get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, fl, _countof(fl),// D3D11_SDK_VERSION, dev.GetAddressOf(), nullptr, nullptr);// D3D11CreateDeviceを呼び出すことでGPUのウォームアップを行う
+			D3D11_SDK_VERSION, dev.GetAddressOf(), nullptr, nullptr);// D3D11CreateDeviceを呼び出すことでGPUのウォームアップを行う
+	}
+	Sleep(500);// 0.5秒待機してGPUのウォームアップを完了させる
+}
+
 // 初期化
 bool Graphics::Initialize(HWND hWnd)
 {
+	WarmUpD3D();
+
 	auto reportFailure = [](const wchar_t* stage, HRESULT result)
 	{
 		wchar_t message[256]{};
@@ -65,7 +86,7 @@ bool Graphics::Initialize(HWND hWnd)
 
 		D3D_FEATURE_LEVEL featureLevel;
 
-		// デバイス＆スワップチェーンの生成
+		// まずはGPUを使用してデバイスを作成
 		hr = D3D11CreateDeviceAndSwapChain(
 			nullptr,
 			D3D_DRIVER_TYPE_HARDWARE,
@@ -80,6 +101,26 @@ bool Graphics::Initialize(HWND hWnd)
 			&featureLevel,
 			immediateContext.GetAddressOf()
 		);
+
+		// GPUでの作成に失敗した場合はWARPに切り替える
+		if (FAILED(hr))
+		{
+			hr = D3D11CreateDeviceAndSwapChain(
+				nullptr,
+				D3D_DRIVER_TYPE_WARP,
+				nullptr,
+				createDeviceFlags,
+				featureLevels,
+				ARRAYSIZE(featureLevels),
+				D3D11_SDK_VERSION,
+				&swapchainDesc,
+				swapchain.GetAddressOf(),
+				device.GetAddressOf(),
+				&featureLevel,
+				immediateContext.GetAddressOf()
+			);
+		}
+
 		if (FAILED(hr) || !swapchain || !device || !immediateContext)
 		{
 			reportFailure(L"D3D11 デバイス作成", hr);

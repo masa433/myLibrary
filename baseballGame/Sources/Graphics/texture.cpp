@@ -42,9 +42,26 @@ HRESULT load_texture_from_file(ID3D11Device* device, ID3D11DeviceContext* immedi
 			hr = CreateWICTextureFromFile(device, immediate_context, filename, resource.GetAddressOf(), shader_resource_view);
 			if (FAILED(hr))
 			{
-				wchar_t error_msg[512];
-				swprintf_s(error_msg, L"WICテクスチャの読み込みに失敗しました:\n%s", filename);
+				wchar_t error_msg[1024];
+
+				std::error_code ec;
+				auto fullPath = std::filesystem::absolute(filename, ec);
+
+				swprintf_s(
+					error_msg,
+					L"WICテクスチャの読み込みに失敗しました。\n"
+					L"ファイル名: %s\n"
+					L"フルパス: %s\n"
+					L"ファイル存在: %s\n"
+					L"HRESULT: 0x%08X",
+					filename,
+					ec ? L"取得失敗" : fullPath.c_str(),
+					(!ec && std::filesystem::exists(fullPath)) ? L"YES" : L"NO",
+					static_cast<unsigned int>(hr)
+				);
+
 				MessageBoxW(nullptr, error_msg, L"ファイル読み込みエラー", MB_OK | MB_ICONERROR);
+
 				return hr;
 			}
 

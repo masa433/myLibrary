@@ -31,6 +31,13 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 		volumeSliderBackgroundData[i]->rotation = 0.0f;
 		volumeSliderBackgroundData[i]->color = { 0.0f, 0.0f, 0.0f, 1.0f };
 		volumeSliderBackgroundSprite[i] = std::make_unique<sprite>(device, context, volumeSliderBackgroundData[i]->texturePath.c_str());
+
+		if(!volumeSliderBackgroundSprite[i] || !volumeSliderBackgroundSprite[i]->IsValid())
+		{
+			MessageBoxW(nullptr, L"オーディオ背景のテクスチャが読み込めませんでした", L"Error", MB_OK | MB_ICONERROR);
+
+			volumeSliderBackgroundSprite[i].reset();//リソースの解放
+		}
 	}
 
 	//スライダーボタンのテクスチャの読み込み
@@ -72,6 +79,12 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 
 		volumeSliderButtonData[i]->position = { volumeSliderButtonPosition[i].x, volumeSliderBackgroundPosition[i].y };
 		
+		if(!volumeSliderButtonSprite[i] || !volumeSliderButtonSprite[i]->IsValid())
+		{
+			MessageBoxW(nullptr, L"オーディオスライダーボタンのテクスチャが読み込めませんでした", L"Error", MB_OK | MB_ICONERROR);
+			volumeSliderButtonSprite[i].reset();//リソースの解放
+		}
+
 	}
 
 
@@ -148,8 +161,8 @@ void AudioSettingPanel::Update(float elapsedTime)
 		// 間隔調整の変数
 		float sliderSpacing = 130.0f * screenScaler.GetUniformScale();
 
-		float offsetX = scaledButtonCenterPos.x + volumeSliderButtonOffset.x;
-		float offsetY = scaledButtonCenterPos.y + i * sliderSpacing + volumeSliderButtonOffset.y;
+		float offsetX = scaledButtonCenterPos.x + volumeSliderButtonOffset.x * screenScaler.GetUniformScale();
+		float offsetY = scaledButtonCenterPos.y + i * sliderSpacing + volumeSliderButtonOffset.y * screenScaler.GetUniformScale();
 		float buttonWidth = scaledButtonSize.x;
 		float buttonHeight = scaledButtonSize.y;
 
@@ -215,10 +228,10 @@ void AudioSettingPanel::Render()
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	// テクスチャの描画
-	if(volumeSliderBackgroundSprite && volumeSliderBackgroundData)
+	// テクスチャの描画	
+	for(int i  = 0; i < numVolumeTypes; ++i)
 	{
-		for(int i  = 0; i < numVolumeTypes; ++i)
+		if(volumeSliderBackgroundData[i] && volumeSliderBackgroundSprite[i])
 		{
 			DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(volumeSliderBackgroundPosition[i]);
 			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(volumeSliderBackgroundData[i]->size);
@@ -229,7 +242,7 @@ void AudioSettingPanel::Render()
 			float sliderSpacing = 130.0f * screenScaler.GetUniformScale();
 
 			//3回描画することで、マスターボリューム、BGMボリューム、SEボリュームのスライダー背景を描画
-			DirectX::XMFLOAT2 offsetPos = { scaledCenterPos.x + volumeSliderOffset.x, scaledCenterPos.y + i * sliderSpacing + volumeSliderOffset.y };
+			DirectX::XMFLOAT2 offsetPos = { scaledCenterPos.x + volumeSliderOffset.x * screenScaler.GetUniformScale(), scaledCenterPos.y + i * sliderSpacing + volumeSliderOffset.y * screenScaler.GetUniformScale() };
 
 			volumeSliderBackgroundSprite[i]->render(dc,
 				offsetPos.x, offsetPos.y,
@@ -240,33 +253,35 @@ void AudioSettingPanel::Render()
 				volumeSliderBackgroundData[i]->color.w,
 				volumeSliderBackgroundData[i]->rotation);
 		}
-
 	}
 
-	// スライダーボタンの描画
-	if(volumeSliderButtonSprite && volumeSliderButtonData)
+	
+
+	// スライダーボタンの描画	
+	for(int i = 0; i < numVolumeTypes; ++i)
 	{
-		for(int i = 0; i < numVolumeTypes; ++i)
+		if (volumeSliderButtonSprite[i] && volumeSliderButtonData[i])
 		{
-			DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(volumeSliderButtonPosition[i]);
-			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(sliderButtonSize[i]);
-			DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
-			//間隔調整の変数
-			float sliderSpacing = 130.0f * screenScaler.GetUniformScale();
+		DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(volumeSliderButtonPosition[i]);
+		DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(sliderButtonSize[i]);
+		DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+		//間隔調整の変数
+		float sliderSpacing = 130.0f * screenScaler.GetUniformScale();
 
-			DirectX::XMFLOAT2 offsetPos = { scaledCenterPos.x + volumeSliderButtonOffset.x, scaledCenterPos.y + i * sliderSpacing + volumeSliderButtonOffset.y };
+		DirectX::XMFLOAT2 offsetPos = { scaledCenterPos.x + volumeSliderButtonOffset.x * screenScaler.GetUniformScale(), scaledCenterPos.y + i * sliderSpacing + volumeSliderButtonOffset.y * screenScaler.GetUniformScale() };
 
-			volumeSliderButtonSprite[i]->render(dc,
-				offsetPos.x, offsetPos.y,
-				scaledSize.x, scaledSize.y,
-				volumeSliderButtonData[i]->color.x,
-				volumeSliderButtonData[i]->color.y,
-				volumeSliderButtonData[i]->color.z,
-				volumeSliderButtonData[i]->color.w,
-				volumeSliderButtonData[i]->rotation);
+		volumeSliderButtonSprite[i]->render(dc,
+			offsetPos.x, offsetPos.y,
+			scaledSize.x, scaledSize.y,
+			volumeSliderButtonData[i]->color.x,
+			volumeSliderButtonData[i]->color.y,
+			volumeSliderButtonData[i]->color.z,
+			volumeSliderButtonData[i]->color.w,
+			volumeSliderButtonData[i]->rotation);
 		}
-		
 	}
+		
+	
 
 	// フォントの描画
 	//マスターボリュームの表示
@@ -310,6 +325,11 @@ void AudioSettingPanel::Render()
 	{
 		DirectX::XMFLOAT2 scaledVolumeFontPos = screenScaler.Scale(volumeValueFontData[i].position);
 		const float scaledVolumeFontScale = volumeValueFontData[i].size * screenScaler.GetUniformScale();
+
+		//オフセットもスケーリング
+		const float scaledOffsetX = volumeValueOffset[i].x * screenScaler.GetUniformScale();
+		const float scaledOffsetY = volumeValueOffset[i].y * screenScaler.GetUniformScale();
+
 		float volumeValue = 0.0f;
 		switch(i)
 		{
@@ -329,7 +349,7 @@ void AudioSettingPanel::Render()
 		fontRenderer.MeasureText(volumeText, scaledVolumeFontScale, volumeTextWidth, volumeTextHeight);
 		float volumeDrawPosX = scaledVolumeFontPos.x - volumeTextWidth / 2.0f;
 		float volumeDrawPosY = scaledVolumeFontPos.y - volumeTextHeight / 2.0f;
-		fontRenderer.DrawTextW(dc, volumeText, volumeDrawPosX + volumeValueOffset[i].x, volumeDrawPosY + volumeValueOffset[i].y, scaledVolumeFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+		fontRenderer.DrawTextW(dc, volumeText, volumeDrawPosX + scaledOffsetX, volumeDrawPosY + scaledOffsetY, scaledVolumeFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
 
@@ -373,6 +393,12 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 	sliderBackgroundData->rotation = 0.0f;
 	sliderBackgroundSprite = std::make_unique<sprite>(device, context, sliderBackgroundData->texturePath.c_str());
 
+	if(!sliderBackgroundSprite || !sliderBackgroundSprite->IsValid())
+	{
+		MessageBoxW(nullptr, L"カーソル背景のテクスチャが読み込めませんでした", L"Error", MB_OK | MB_ICONERROR);
+		sliderBackgroundSprite.reset();//リソースの解放
+	}
+
 	sliderButtonData = std::make_unique<SpriteData>();
 	sliderButtonData->texturePath = L".\\resources\\textures\\Ball.png";
 	sliderButtonData->position = { sliderButtonPosition.x, sliderButtonPosition.y };
@@ -381,6 +407,11 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 	sliderButtonData->rotation = 0.0f;
 	sliderButtonSprite = std::make_unique<sprite>(device, context, sliderButtonData->texturePath.c_str());
 
+	if(!sliderButtonSprite || !sliderButtonSprite->IsValid())
+	{
+		MessageBoxW(nullptr, L"カーソルスライダーボタンのテクスチャが読み込めませんでした", L"Error", MB_OK | MB_ICONERROR);
+		sliderButtonSprite.reset();//リソースの解放
+	}
 
 	// フォントレンダラーの初期化
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
@@ -444,8 +475,8 @@ void CursorSettingPanel::Update(float elapsedTime)
 	DirectX::XMFLOAT2 scaledCenterPos = { scaledButtonPos.x - scaledButtonSize.x / 2.0f, scaledButtonPos.y - scaledButtonSize.y / 2.0f };
 
 	// スライダーボタンの矩形範囲を計算
-	float buttonX = scaledCenterPos.x + offsetX;
-	float buttonY = scaledCenterPos.y + offsetY;
+	float buttonX = scaledCenterPos.x + offsetX * screenScaler.GetUniformScale();
+	float buttonY = scaledCenterPos.y + offsetY * screenScaler.GetUniformScale();
 	float buttonWidth = scaledButtonSize.x;
 	float buttonHeight = scaledButtonSize.y;
 
@@ -471,7 +502,7 @@ void CursorSettingPanel::Update(float elapsedTime)
 	if (isDragging)
 	{
 		// スライダーボタンのX座標をマウスのX座標に合わせる
-		sliderButtonPosition.x = mousePos.x - offsetX;
+		sliderButtonPosition.x = mousePos.x - offsetX * screenScaler.GetUniformScale();
 		// スライダーボタンの位置をスライダー背景の範囲内に制限
 		float minX = sliderBackgroundPosition.x - sliderBackgroundData->size.x / 2.0f;
 		float maxX = sliderBackgroundPosition.x + sliderBackgroundData->size.x / 2.0f;
@@ -562,7 +593,7 @@ void CursorSettingPanel::Render()
 		DirectX::XMFLOAT2 scaledCenterPos = { scaledSliderPos.x - scaledSliderSize.x / 2.0f, scaledSliderPos.y - scaledSliderSize.y / 2.0f };
 
 		sliderBackgroundSprite->render(dc,
-			scaledCenterPos.x + offsetX, scaledCenterPos.y + offsetY,
+			scaledCenterPos.x + offsetX * screenScaler.GetUniformScale(), scaledCenterPos.y + offsetY * screenScaler.GetUniformScale(),
 			scaledSliderSize.x, scaledSliderSize.y,
 			sliderBackgroundData->color.x, sliderBackgroundData->color.y, sliderBackgroundData->color.z, sliderBackgroundData->color.w,
 			sliderBackgroundData->rotation);
@@ -575,7 +606,7 @@ void CursorSettingPanel::Render()
 		DirectX::XMFLOAT2 scaledButtonSize = screenScaler.ScaleSize(sliderButtonSize);
 		DirectX::XMFLOAT2 scaledCenterPos = { scaledButtonPos.x - scaledButtonSize.x / 2.0f, scaledButtonPos.y - scaledButtonSize.y / 2.0f };
 		sliderButtonSprite->render(dc,
-			scaledCenterPos.x + offsetX, scaledCenterPos.y + offsetY,
+			scaledCenterPos.x + offsetX * screenScaler.GetUniformScale(), scaledCenterPos.y + offsetY * screenScaler.GetUniformScale(),
 			scaledButtonSize.x, scaledButtonSize.y,
 			sliderButtonData->color.x, sliderButtonData->color.y, sliderButtonData->color.z, sliderButtonData->color.w,
 			sliderButtonData->rotation);
@@ -598,6 +629,8 @@ void CursorSettingPanel::Render()
 	//カーソル感度の値の表示
 	DirectX::XMFLOAT2 scaledValueFontPos = screenScaler.Scale(cursorValueFontData.position);
 	const float scaledValueFontScale = cursorValueFontData.size * screenScaler.GetUniformScale();
+	
+	DirectX::XMFLOAT2 scaledOffsetPos = screenScaler.Scale(cursorValueOffset);
 
 	float valueTextWidth, valueTextHeight;
 	const char* valueText = nullptr;
@@ -626,7 +659,7 @@ void CursorSettingPanel::Render()
 	float valueDrawPosY = scaledValueFontPos.y - valueTextHeight / 2.0f;
 
 	fontRenderer.DrawTextW(dc, valueText, 
-		valueDrawPosX + cursorValueOffset.x, valueDrawPosY + cursorValueOffset.y,
+		valueDrawPosX + scaledOffsetPos.x, valueDrawPosY + scaledOffsetPos.y,
 		scaledValueFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	// 描画後の状態をリセット
