@@ -452,6 +452,14 @@ void Pitcher::Update(float elapsedTime)
 					stateTime = 0.0f;
 				}
 			}
+
+			// ボールが地面に落ちたらリセット
+			if (Ball::Instance().GetWorldPosition().y < 0.0f)
+			{
+				isBallThrown = false;
+				ResetPitchFlags(); // pitchFlagsをリセット
+				FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
+			}
 			break;
 		}
 	}
@@ -633,6 +641,8 @@ void Pitcher::ResetPitchFlags()
 	Physics::Instance().SetIsFoulSoundPlayed(false); // ファウル音の再生フラグをリセット
 	FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
 	isPlayedFoulSound = false; // ファウル音の再生フラグをリセット
+	//ステートをSelectingPitchに戻す
+	ChangeState(State::SelectingPitch);
 }
 
 // 描画

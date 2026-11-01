@@ -177,6 +177,7 @@ void Ball::Initialize()
 
 	collider = pxPhysics->createRigidDynamic(transform);
 	if (!collider) { PX_RELEASE(material); return; }
+	collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true); // 連続衝突検出を有効化
 
 	physx::PxShape* shape = pxPhysics->createShape(geometry, *material);
 	if (!shape) { PX_RELEASE(collider); PX_RELEASE(material); return; }
@@ -388,6 +389,9 @@ void Ball::UpdateFromPhysics(float elapsedTime)
 		DirectX::XMStoreFloat4x4(&worldTransform, S * R * T);
 
 		rotationQuat = { pose.q.x, pose.q.y, pose.q.z, pose.q.w };
+
+		//CCDを有効にする
+		collider->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
 	}
 	else
 	{

@@ -163,9 +163,23 @@ void Physics::Finalize()
 void Physics::Update(float elapsedTime)
 {
 	if (!pxScene) return;
-	pxScene->simulate(elapsedTime);
-	pxScene->fetchResults(true);
 
+	//1回の物理ステップの固定時間
+	float fixedTimeStep = 1.0f / 120.0f; // 120FPS相当の固定時間ステップ(約0.00833秒)
+
+	if (elapsedTime > 0.25f) elapsedTime = 0.25f; // 最大ステップ時間を制限
+
+	static float accumulatedTime = 0.0f;
+	accumulatedTime += elapsedTime;
+
+	// 複数回の物理ステップを実行する
+	while (accumulatedTime >= fixedTimeStep)
+	{
+		pxScene->simulate(fixedTimeStep);// 物理シミュレーションを実行
+		pxScene->fetchResults(true);// シミュレーション結果を取得
+		accumulatedTime -= fixedTimeStep;// 残り時間を減算
+	}
+	
 	// キューを処理
 	{
 		std::lock_guard<std::mutex> lock(queueMutex);
