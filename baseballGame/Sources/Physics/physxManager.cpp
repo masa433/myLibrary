@@ -165,7 +165,7 @@ void Physics::Update(float elapsedTime)
 	if (!pxScene) return;
 
 	//1回の物理ステップの固定時間
-	float fixedTimeStep = 1.0f / 120.0f; // 120FPS相当の固定時間ステップ(約0.00833秒)
+	float fixedTimeStep = 1.0f / 144.0f; // 144FPS相当の固定時間ステップ(約0.00694秒)
 
 	if (elapsedTime > 0.25f) elapsedTime = 0.25f; // 最大ステップ時間を制限
 
@@ -674,7 +674,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					float totalDistance = horizontalDistance + estimatedDistance;
 
 					ballTotalDistance = totalDistance;
-					lastDistanceWasTotal = true;
+					ballHorizontalDistance = horizontalDistance;
+					lastDistanceWasTotal = false;
 				}
 
 				HomeRunCount::Instance().IncrementCount();
@@ -800,7 +801,8 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 					else
 					{
 						ballTotalDistance = totalDistance;
-						lastDistanceWasTotal = true;
+						ballHorizontalDistance = horizontalDistance;
+						lastDistanceWasTotal = false;
 					}
 				}
 

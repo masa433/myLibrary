@@ -460,6 +460,7 @@ void Pitcher::Update(float elapsedTime)
 				ResetPitchFlags(); // pitchFlagsをリセット
 				FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
 			}
+
 			break;
 		}
 	}
@@ -642,7 +643,7 @@ void Pitcher::ResetPitchFlags()
 	FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
 	isPlayedFoulSound = false; // ファウル音の再生フラグをリセット
 	//ステートをSelectingPitchに戻す
-	ChangeState(State::SelectingPitch);
+	//ChangeState(State::SelectingPitch);
 }
 
 // 描画
