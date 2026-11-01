@@ -125,10 +125,10 @@ public:
 		case WM_CREATE:
 			break;
 		case WM_KEYDOWN:
-			if (wparam == VK_ESCAPE)
+			/*if (wparam == VK_ESCAPE)
 			{
 				PostMessage(hwnd, WM_CLOSE, 0, 0);
-			}
+			}*/
 			break;
 		case WM_ENTERSIZEMOVE:
 			tictoc.stop();

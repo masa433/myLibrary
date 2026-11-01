@@ -92,6 +92,9 @@ public:
 	void ResetRestartRequest(bool requested) { isRestartRequested = requested; }
 	bool IsRestartRequested() const { return isRestartRequested; }
 
+	void ResetQuitRequest(bool requested) { isQuitRequested = requested; }
+	bool IsQuitRequested() const { return isQuitRequested; }
+
 	//ボタンのタイプを取得する関数
 	ButtonType GetButtonType(ButtonType buttonType) const { return buttonType; }
 
@@ -202,6 +205,7 @@ private:
 	bool isFreeBattingRequested = false;
 	bool isSettingsRequested = false;
 	bool isRestartRequested = false;
+	bool isQuitRequested = false;
 
 	bool initialized = false;
 	AudioSource* buttonHoverSound = nullptr;

@@ -425,7 +425,7 @@ void scene_game::update(float elapsed_time)
     }
 
     //仮でPキーを押したらポーズ画面に移行
-    if (GetAsyncKeyState('P') & 0x8000)
+    if (GetAsyncKeyState(VK_ESCAPE) & 0x8000 && !isGameFinished)
     {
         Pause::Instance().OpenPauseScreen();
     }

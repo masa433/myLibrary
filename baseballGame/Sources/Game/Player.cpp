@@ -503,7 +503,7 @@ void Player::HandleInput(float elapsedTime)
 	bool isMouseButtonPressed = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT; // 左クリック
   
     // スペースキーでスイング
-    if (isMouseButtonPressed && (ballZ >= -3.0f || !Ball::Instance().GetHasCollidedWithBat()))
+    if (isMouseButtonPressed && (ballZ >= -3.0f && !Ball::Instance().GetHasCollidedWithBat()))
     {
         //スイングカウントを増やす
 		IncreaseSwingCount();

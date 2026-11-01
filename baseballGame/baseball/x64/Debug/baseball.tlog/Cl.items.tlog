@@ -8,7 +8,6 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_tables.cpp;C:\Users\
 C:\Users\2240021\Desktop\myLibrary\baseballGame\imgui\imgui_widgets.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\imgui_widgets.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\midi\devmidi.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\devmidi.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\midi\midi_wrap.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\midi_wrap.obj
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Pause.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Pause.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\pch.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\pch.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Audio\Audio.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Audio.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Audio\AudioResource.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\AudioResource.obj
@@ -34,6 +33,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\game_object.cpp;C:\
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\HomeRunCount.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\HomeRunCount.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\LoadingTips.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\LoadingTips.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Money.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Money.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pause.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Pause.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Pitcher.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Player.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Player.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ReplayManager.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ReplayManager.obj

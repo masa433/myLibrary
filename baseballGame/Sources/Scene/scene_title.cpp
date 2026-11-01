@@ -233,6 +233,13 @@ void scene_title::update(float elapsed_time)
 			SettingManager::Instance().Open();
 			buttonManager.ResetSettingsRequest(false);
 		}
+		else if(buttonManager.IsQuitRequested())
+		{
+			buttonManager.ResetQuitRequest(false);
+			//ゲームを終了する
+			HWND hwnd = GetActiveWindow();
+			PostMessage(hwnd, WM_CLOSE, 0, 0);
+		}
 	}
 	else
 	{
@@ -386,6 +393,7 @@ void scene_title::render(float elapsed_time)
 	buttonManager.Render(1.0f,ButtonManager::ButtonType::Start);
 	buttonManager.Render(1.0f, ButtonManager::ButtonType::FreeBatting);
 	buttonManager.Render(1.0f, ButtonManager::ButtonType::Settings);
+	buttonManager.Render(1.0f, ButtonManager::ButtonType::Quit);
 
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);

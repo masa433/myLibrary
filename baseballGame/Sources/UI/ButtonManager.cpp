@@ -223,6 +223,11 @@ void ButtonManager::Update(float elapsedTime)
 						OutputDebugStringA("Settings button clicked!\n");
 						break;
 					case ButtonType::Quit:
+						isQuitRequested = true;
+						if(buttonBackSound)
+						{
+							buttonBackSound->PlayOneShot();
+						}
 						OutputDebugStringA("Quit button clicked!\n");
 						break;
 					case ButtonType::Pose:
