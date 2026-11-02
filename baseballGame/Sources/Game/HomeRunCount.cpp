@@ -94,7 +94,8 @@ void HomeRunCount::Uninitialize()
 	missionFont.Uninitialize();
 	homeRunCountSprite.reset();
 	homeRunCountSpriteData.reset();
-	
+	homerunBoardData.sprite.reset();
+	homerunBoardData.spriteData.reset();
 	spriteVS.Reset();
 	spritePS.Reset();
 	spriteInputLayout.Reset();
