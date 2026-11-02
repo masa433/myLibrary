@@ -86,10 +86,70 @@ bool Graphics::Initialize(HWND hWnd)
 
 		D3D_FEATURE_LEVEL featureLevel;
 
+		Microsoft::WRL::ComPtr<IDXGIFactory1> factory;
+		hr = CreateDXGIFactory1(IID_PPV_ARGS(factory.GetAddressOf()));
+		if(FAILED(hr) || !factory)
+		{
+			reportFailure(L"DXGIファクトリ作成", hr);
+			return false;
+		}
+
+		//最適なアダプタを取得する
+		
+		IDXGIAdapter1* adapter = nullptr;
+		{
+			uint32_t nvidia = 0x10DE;
+			uint32_t ati = 0x1002;
+
+			UINT i = 0;
+			int adapterIndex = 0;
+			IDXGIOutput* output = nullptr;
+
+			while (factory->EnumAdapters1(i, &adapter) != DXGI_ERROR_NOT_FOUND)
+			{
+
+				DXGI_ADAPTER_DESC1 desc;
+				adapter->GetDesc1(&desc);
+
+				uint32_t j = 0;
+				while(adapter->EnumOutputs(j, &output) != DXGI_ERROR_NOT_FOUND)
+				{
+
+					DXGI_OUTPUT_DESC outdescr;
+					output->GetDesc(&outdescr);
+
+					j++;
+					output->Release();
+					output = nullptr;
+				}
+
+				
+				if (adapterIndex == 0 && (desc.VendorId == nvidia || desc.VendorId == ati))
+				{
+					adapterIndex = i;
+				}
+				i++;
+				adapter->Release();
+				adapter = nullptr;
+			}
+
+			//見つからなかったら、最初に見つかった有効なアダプターを使う
+			
+			hr = factory->EnumAdapters1(adapterIndex, &adapter);
+			if (FAILED(hr) || !adapter)
+			{
+				reportFailure(L"アダプタ取得", hr);
+				return false;
+			}
+			
+		}
+
+
+
 		// まずはGPUを使用してデバイスを作成
 		hr = D3D11CreateDeviceAndSwapChain(
-			nullptr,
-			D3D_DRIVER_TYPE_HARDWARE,
+			adapter,
+			D3D_DRIVER_TYPE_UNKNOWN,
 			nullptr,
 			createDeviceFlags,
 			featureLevels,
@@ -106,8 +166,8 @@ bool Graphics::Initialize(HWND hWnd)
 		if (FAILED(hr))
 		{
 			hr = D3D11CreateDeviceAndSwapChain(
-				nullptr,
-				D3D_DRIVER_TYPE_WARP,
+				adapter,
+				D3D_DRIVER_TYPE_UNKNOWN,
 				nullptr,
 				createDeviceFlags,
 				featureLevels,

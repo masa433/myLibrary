@@ -79,6 +79,12 @@ private:
 	DirectX::XMFLOAT2 homerunBoardPosition = { 960.0f,540.0f };
 	DirectX::XMFLOAT2 homerunBoardSize = { 720.0f,120.0f };
 
+	float maxFrameAccum = 0.0f; //フレームの累積時間の最大値を保持する変数
+	float homerunBoardAlpha = 1.0f; //ホームランボードの透明度を保持する変数
+	float FadeDuration = 1.0f; //透明度を減少させる速度を保持する変数
+	float currentFadeTime = 0.0f; //現在の透明度を保持する変数
+
+
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> scissorRasterizerState;//スプライトシート用のラスタライザーステート
 
 	//1フレームに表示する時間を設定する変数

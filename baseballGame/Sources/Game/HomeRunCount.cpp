@@ -86,6 +86,8 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 
 	ResetCount(); // ホームラン数を初期化
 	totalHomeRunCount = 0; // 累計ホームラン数を初期化
+	currentFadeTime = 0.0f; // 透明度の減少時間を初期化
+	FadeDuration = 1.0f; // 透明度の減少速度を初期化
 }
 
 void HomeRunCount::Uninitialize()
@@ -111,11 +113,28 @@ void HomeRunCount::UpdateHomerunBoard(float elapsedTime)
 	homerunBoardData.frameAccum += fps * elapsedTime; // 累積時間を更新
 	//最後のフレームまで到達したら、そのフレームで固定
 
-	float maxFrameAccum = static_cast<float>(homerunBoardData.frameCount - 1);
+	maxFrameAccum = static_cast<float>(homerunBoardData.frameCount - 1);
 
 	if (homerunBoardData.frameAccum >= maxFrameAccum)
 	{
 		homerunBoardData.frameAccum = maxFrameAccum;
+
+		currentFadeTime += elapsedTime; // 透明度を減少させる時間を更新
+
+		if (currentFadeTime >= FadeDuration)
+		{
+			currentFadeTime = FadeDuration; // 透明度の減少時間を制限
+
+			float t = currentFadeTime / FadeDuration; // 0.0fから1.0fまでの割合を計算
+
+			homerunBoardAlpha -= t * elapsedTime * 1.5f; // 透明度を減少させる
+
+			if(homerunBoardAlpha < 0.0f)
+			{
+				homerunBoardAlpha = 0.0f; // 透明度を0.0fに制限
+			}
+		}
+
 	}
 }
 
@@ -321,6 +340,9 @@ void HomeRunCount::Render()
 		if(Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
 		{
 			homerunBoardData.frameAccum = 0.0f; // 投球選択中はホームランボードのアニメーションをリセット
+			homerunBoardAlpha = 1.0f; // 投球選択中はホームランボードの透明度をリセット
+			currentFadeTime = 0.0f; // 投球選択中は透明度の減少時間をリセット
+			FadeDuration = 1.0f; // 投球選択中は透明度の減少速度をリセット
 		}
 
 		SubMission::Instance().Render();
@@ -376,7 +398,7 @@ void HomeRunCount::RenderHomerunBoard()
 		stripDrawX, scaledCenterPos.y,
 		stripDrawWith, scaledSize.y,
 		homerunBoardData.spriteData->color.x, homerunBoardData.spriteData->color.y,
-		homerunBoardData.spriteData->color.z, homerunBoardData.spriteData->color.w,
+		homerunBoardData.spriteData->color.z, homerunBoardData.spriteData->color.w * homerunBoardAlpha,
 		homerunBoardData.spriteData->rotation);
 
 	dc->VSSetShader(nullptr, nullptr, 0);
