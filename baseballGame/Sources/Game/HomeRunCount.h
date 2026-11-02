@@ -48,6 +48,10 @@ public:
 		return targetCount - homeRunCount;
 	}
 
+	//ホームランボードのスプライトシート関連の関数
+	void UpdateHomerunBoard(float elapsedTime);
+	void RenderHomerunBoard();
+
 private:
 	int homeRunCount = 0;//ホームラン数を保持する変数
 	int previousHomeRunCount = 0;//前回のホームラン数を保持する変数
@@ -62,6 +66,23 @@ private:
 		float rotation;
 		DirectX::XMFLOAT4 color;
 	};
+
+	struct HomeRunBoardData
+	{
+		std::unique_ptr<Sprite> spriteData;
+		std::unique_ptr<sprite> sprite;
+		int frameCount;//スプライトシートのフレーム数
+		float frameAccum;//フレームの累積時間
+	};
+
+	HomeRunBoardData homerunBoardData;
+	DirectX::XMFLOAT2 homerunBoardPosition = { 960.0f,540.0f };
+	DirectX::XMFLOAT2 homerunBoardSize = { 720.0f,120.0f };
+
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> scissorRasterizerState;//スプライトシート用のラスタライザーステート
+
+	//1フレームに表示する時間を設定する変数
+	float frameDuration = 0.05f; // 1フレームに表示する時間（秒）
 
 	std::unique_ptr<sprite> homeRunCountSprite;
 	std::unique_ptr<Sprite> homeRunCountSpriteData;

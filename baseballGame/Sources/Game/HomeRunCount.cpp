@@ -31,6 +31,33 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 	homeRunCountSpriteData->rotation = 0.0f;
 	homeRunCountSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	homeRunCountSprite = std::make_unique<sprite>(device, context, homeRunCountSpriteData->texturePath.c_str());
+
+	// ホームランボードの初期化
+	{
+		homerunBoardData.spriteData = std::make_unique<Sprite>();
+		homerunBoardData.spriteData->texturePath = L".\\resources\\textures\\HomerunBoard.png";
+		homerunBoardData.spriteData->position = homerunBoardPosition;
+		homerunBoardData.spriteData->size = homerunBoardSize;
+		homerunBoardData.spriteData->rotation = 0.0f;
+		homerunBoardData.spriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		homerunBoardData.sprite = std::make_unique<sprite>(device, context, homerunBoardData.spriteData->texturePath.c_str());
+		homerunBoardData.frameCount = 11; // スプライトシートのフレーム数
+		homerunBoardData.frameAccum = 0.0f; // フレームの累積時間を初期化
+
+		// スプライトシート用のラスタライザーステートを作成
+		D3D11_RASTERIZER_DESC rasterizerDesc = {};
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.CullMode = D3D11_CULL_NONE;
+		rasterizerDesc.DepthClipEnable = TRUE;// デプスクリッピングを有効にする
+		rasterizerDesc.ScissorEnable = TRUE; // シザーリングを有効にする
+		HRESULT rasterizerResult = device ? device->CreateRasterizerState(&rasterizerDesc, scissorRasterizerState.ReleaseAndGetAddressOf()) : E_POINTER;// ラスタライザーステートの作成
+		if (FAILED(rasterizerResult))
+		{
+			// エラーハンドリング
+			throw std::runtime_error("Failed to create rasterizer state for scissor.");
+		}
+	}
+
 	const static int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const static int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 	// ホームラン数表示に必要な文字だけをベイクする
@@ -67,11 +94,28 @@ void HomeRunCount::Uninitialize()
 	missionFont.Uninitialize();
 	homeRunCountSprite.reset();
 	homeRunCountSpriteData.reset();
+	
 	spriteVS.Reset();
 	spritePS.Reset();
 	spriteInputLayout.Reset();
 	Combo::Instance().Uninitialize();
 	SubMission::Instance().Uninitialize();
+}
+
+void HomeRunCount::UpdateHomerunBoard(float elapsedTime)
+{
+	
+	const float fps = 1.0f / frameDuration;// 1フレームに表示する時間を基にフレームレートを計算
+	
+	homerunBoardData.frameAccum += fps * elapsedTime; // 累積時間を更新
+	//最後のフレームまで到達したら、そのフレームで固定
+
+	float maxFrameAccum = static_cast<float>(homerunBoardData.frameCount - 1);
+
+	if (homerunBoardData.frameAccum >= maxFrameAccum)
+	{
+		homerunBoardData.frameAccum = maxFrameAccum;
+	}
 }
 
 void HomeRunCount::Update(float elapsedTime)
@@ -119,6 +163,12 @@ void HomeRunCount::Update(float elapsedTime)
 	else
 	{
 		countColor = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // 白色
+	}
+
+	//ホームランの場合にホームランボードのアニメーションを更新
+	if (isHomeRun && isHitFinished)
+	{
+		UpdateHomerunBoard(elapsedTime);
 	}
 
 	Combo::Instance().Update(elapsedTime);
@@ -264,6 +314,12 @@ void HomeRunCount::Render()
 		if (isFinished && Pitcher::Instance().GetCurrentState() == Pitcher::State::WaitingForResult)
 		{
 			Combo::Instance().Render();
+
+			RenderHomerunBoard();
+		}
+		if(Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
+		{
+			homerunBoardData.frameAccum = 0.0f; // 投球選択中はホームランボードのアニメーションをリセット
 		}
 
 		SubMission::Instance().Render();
@@ -276,6 +332,59 @@ void HomeRunCount::Render()
 		dc->OMSetDepthStencilState(
 			renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 	}
+}
+
+void HomeRunCount::RenderHomerunBoard()
+{
+	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+	dc->PSSetShader(spritePS.Get(), nullptr, 0);
+	dc->IASetInputLayout(spriteInputLayout.Get());
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+
+	
+	const int frameIndex = static_cast<int>(homerunBoardData.frameAccum);
+	
+	// スプライトシートの描画
+	DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(homerunBoardPosition);
+	DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(homerunBoardSize);
+
+	DirectX::XMFLOAT2 scaledCenterPos = { scaledPos.x - scaledSize.x / 2.0f, scaledPos.y - scaledSize.y / 2.0f };
+
+	const float stripDrawWith = scaledSize.x * static_cast<float>(homerunBoardData.frameCount);
+	const float stripDrawX = scaledCenterPos.x - scaledSize.x * static_cast<float>(frameIndex);
+
+	//描画時にシザーリングを有効にする
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> previousRasterizerState;
+	dc->RSGetState(previousRasterizerState.ReleaseAndGetAddressOf());// 現在のラスタライザーステートを保存
+
+	//シザーリング設定
+	D3D11_RECT scissorRect;
+	scissorRect.left = static_cast<LONG>(scaledCenterPos.x);
+	scissorRect.top = static_cast<LONG>(scaledCenterPos.y);
+	scissorRect.right = static_cast<LONG>(scaledCenterPos.x + scaledSize.x);
+	scissorRect.bottom = static_cast<LONG>(scaledCenterPos.y + scaledSize.y);
+	dc->RSSetScissorRects(1, &scissorRect);// シザーリング矩形を設定
+	dc->RSSetState(scissorRasterizerState.Get());// スプライトシート用のラスタライザーステートを設定
+
+	homerunBoardData.sprite->render(dc,
+		stripDrawX, scaledCenterPos.y,
+		stripDrawWith, scaledSize.y,
+		homerunBoardData.spriteData->color.x, homerunBoardData.spriteData->color.y,
+		homerunBoardData.spriteData->color.z, homerunBoardData.spriteData->color.w,
+		homerunBoardData.spriteData->rotation);
+
+	dc->VSSetShader(nullptr, nullptr, 0);
+	dc->PSSetShader(nullptr, nullptr, 0);
+	dc->IASetInputLayout(nullptr);
+	dc->RSSetState(previousRasterizerState.Get());// 元のラスタライザーステートに戻す
+
+	dc->OMSetDepthStencilState(
+		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 }
 
 void HomeRunCount::DrawGUI()
