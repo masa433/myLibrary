@@ -61,17 +61,9 @@ void BroadcastCamera::SetupDefaultCameras()
 	{
 		CameraPreset preset;
 		preset.name = u8"デフォルトカメラ";
-
-		if(Player::Instance().IsRightBatter())
-		{
-			preset.eye = { 0.1f, 1.1f, -3.5f };
-			preset.focus = { 0.0f, 0.0f, 14.0f };
-		}
-		else
-		{
-			preset.eye = { -0.1f, 1.1f, -3.5f };
-			preset.focus = { 0.0f, 0.0f, 14.0f };
-		}
+	
+		preset.eye = { 0.0f, 1.2f, -3.5f };
+		preset.focus = { 0.0f, 0.0f, 9.0f };
 		preset.fov = DirectX::XMConvertToRadians(45.0f);
 		preset.enableTrackingZoom = false;
 		preset.type = CameraType::NormalCamera;
@@ -649,8 +641,8 @@ void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollided
 
 		ActivateReplayCamera(); // 19番か20番か3番が選ばれる
 
-		//再生速度を0.3倍にする
-		ReplayManager::Instance().SetPlaybackSpeed(0.3f);
+		//再生速度を0.5倍にする
+		ReplayManager::Instance().SetPlaybackSpeed(0.5f);
 
 		for (int i = 0; i < static_cast<int>(cameraPresets.size()); ++i)
 		{
@@ -692,7 +684,7 @@ void BroadcastCamera::UpdateReplayCamera(float elapsedTime, bool ballHasCollided
 	if (ballHasCollidedWithBat && !prevHasCollidedWithBat)
 	{
 		replayTimer = 0.0f;// タイマーをリセット
-		replayDuration = 1.8f; // バットに当たった瞬間のカメラ表示時間を設定
+		replayDuration = 1.3f; // バットに当たった瞬間のカメラ表示時間を設定
 
 		forceLockFocusYThisPlay = (Physics::Instance().GetBallAngle() >= 55.0f);
 
@@ -1039,8 +1031,8 @@ void BroadcastCamera::LoadFromJson(const nlohmann::json& j)
 	{
 		// 打者（左右）に応じた最新の eye を反映させる場合
 		defaultPreset.eye = Player::Instance().IsRightBatter()
-			? DirectX::XMFLOAT3{ 0.1f, 1.1f, -3.5f }
-		: DirectX::XMFLOAT3{ -0.1f, 1.1f, -3.5f };
+			? DirectX::XMFLOAT3{ 0.0f, 1.2f, -3.5f }
+		: DirectX::XMFLOAT3{ 0.0f, 1.2f, -3.5f };
 
 		AddCameraPreset(defaultPreset);
 	}

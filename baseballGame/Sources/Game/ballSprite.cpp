@@ -285,14 +285,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 	//ストライクゾーンの初期化
 	strikeZoneSpriteData = std::make_unique<Sprite>();
 	strikeZoneSpriteData->texturePath = L".\\resources\\textures\\strikeZone.png";
-	if(Player::Instance().IsRightBatter())
-	{
-		strikeZoneSpriteData->position = { 850.0f, 430.0f };
-	}
-	else
-	{
-		strikeZoneSpriteData->position = { 900.0f, 430.0f };
-	}
+	strikeZoneSpriteData->position = { 875.0f, 430.0f };
 	strikeZoneSpriteData->size = { 200.0f, 300.0f };
 	strikeZoneSpriteData->rotation = 0.0f;
 	strikeZoneSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
