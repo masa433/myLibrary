@@ -82,7 +82,7 @@ void Wind::Initialize()
 		// Y軸の相対的な位置割合(0.0 ～ 1.0)を決定して保存する
 		line.baseYOffset = std::fmod(t * 1.7f, 1.0f);
 
-		line.speed = windStrength * (0.6f + std::fmod(t * 0.37f, 1.0f));
+		line.speed = (0.6f + std::fmod(t * 0.37f, 1.0f));
 		line.length = 1.5f + std::fmod(t * 0.23f, 2.0f);
 		line.phase = t * 0.4f;
 		windLines.push_back(line);
@@ -138,9 +138,10 @@ void Wind::Update(float elapsedTime)
 	// 風の流線のアニメーション
 	for (auto& line : windLines)
 	{
-		line.position.x += windDirection.x * line.speed * elapsedTime;
+		const float v = line.speed * windStrength;
+		line.position.x += windDirection.x * v * elapsedTime;
 		line.baseYOffset += (windDirection.y * line.speed * elapsedTime) / (windThickness > 0.01f ? windThickness : 0.01f);
-		line.position.z += windDirection.z * line.speed * elapsedTime;
+		line.position.z += windDirection.z * v * elapsedTime;
 		line.phase += elapsedTime * 4.0f;
 
 		// 画面外に出たらループさせる (X軸とZ軸)
@@ -169,21 +170,29 @@ void Wind::Render(const RenderContext& rc)
 	if (ShopManager::Instance().IsShopOpen()) return;
 
 	// 風の流線を描画
-	//for (const auto& line : windLines)
-	//{
-	//	DirectX::XMFLOAT3 start = line.position;
-	//	start.y += windHeight; // 風の高さを加算
-	//	DirectX::XMFLOAT3 end = {
-	//		line.position.x - windDirection.x * line.length,
-	//		(line.position.y + windHeight) - windDirection.y * line.length,
-	//		line.position.z - windDirection.z * line.length
-	//	};
+	for (const auto& line : windLines)
+	{
+		DirectX::XMFLOAT3 start = line.position;
+		start.y += windHeight; // 風の高さを加算
+		DirectX::XMFLOAT3 end = {
+			line.position.x - windDirection.x * line.length,
+			(line.position.y + windHeight) - windDirection.y * line.length,
+			line.position.z - windDirection.z * line.length
+		};
 
-	//	DirectX::XMFLOAT4 color = { 0.8f, 0.9f, 1.0f, 0.35f };
+		DirectX::XMFLOAT4 color = { 0.8f, 0.9f, 1.0f, 0.35f };
 
-	//	primitiveRenderer->AddVertex(start, color);
-	//	primitiveRenderer->AddVertex(end, color);
-	//}
+		primitiveRenderer->AddVertex(start, color);
+		primitiveRenderer->AddVertex(end, color);
+
+		Camera& camera = Camera::Instance();
+
+		//風の強さが1m/s以上の場合のみ描画する
+		if (windStrength >= 1.0f)
+		{
+			primitiveRenderer->Render(dc, camera.GetView(), camera.GetProjection(), D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		}
+	}
 
 	// トラッキングデータが表示されている場合は、風のスプライトやテキストを描画しない
 	//if (TrackingData::Instance().IsTrackingDataVisible()) return;

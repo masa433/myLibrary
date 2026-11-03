@@ -442,7 +442,7 @@ void scene_game::update(float elapsed_time)
     }
     else
     {
-		elapsed_time *= 1.0f; // 通常速度
+		elapsed_time *= GameModeManager::Instance().GetTimeScale(); // 通常速度
     }
 
     if(ReplayManager::Instance().IsPlaying() && Result::Instance().IsReplayLogoMovedHalf())
