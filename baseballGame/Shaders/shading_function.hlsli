@@ -1,5 +1,3 @@
-
-//unit4
 //--------------------------------------------
 //	ランバート拡散反射計算関数
 //--------------------------------------------
@@ -13,7 +11,6 @@ float3 CalcLambert(float3 N, float3 L, float3 C, float3 K)
     return C * power * K;
 }
 
-//unit4
 //--------------------------------------------
 //	フォンの鏡面反射計算関数
 //--------------------------------------------
@@ -30,7 +27,6 @@ float3 CalcPhongSpecular(float3 N, float3 L, float3 E, float3 C, float3 K)
     return C * power * K;
 }
 
-//unit4
 //--------------------------------------------
 //	ハーフランバート拡散反射計算関数
 //--------------------------------------------
@@ -44,7 +40,6 @@ float3 CalcHalfLambert(float3 N, float3 L, float3 C, float3 K)
     return C * D * K;
 }
 
-//unit4
 //--------------------------------------------
 // リムライト
 //--------------------------------------------
@@ -59,7 +54,6 @@ float3 CalcRimLight(float3 N, float3 E, float3 L, float3 C, float RimPower = 3.0
     return C * pow(rim, RimPower) * saturate(dot(L, -E));
 }
 
-//unit4
 //--------------------------------------------
 // ランプシェーディング
 //--------------------------------------------
@@ -77,7 +71,6 @@ float3 CalcRampShading(Texture2D tex, SamplerState samp, float3 N, float3 L, flo
 
 }
 
-//unit5
 //--------------------------------------------
 // 球体環境マッピング
 //--------------------------------------------
@@ -94,7 +87,6 @@ float3 CalcSphereEnvironment(Texture2D tex, SamplerState samp, in float3 color, 
     return lerp(color.rgb, tex.Sample(samp, texcoord).rgb, value);
 }
 
-//unit7
 //--------------------------------------------
 // 半球ライティング
 //--------------------------------------------
@@ -109,7 +101,6 @@ float3 CalcHemiSphereLight(float3 normal, float3 up, float3 sky_color, float3 gr
     return lerp(ground_color, sky_color, factor) * hemisphere_weight.x;
 }
 
-//unit7
 //--------------------------------------------
 //	フォグ
 //--------------------------------------------
@@ -123,7 +114,6 @@ float4 CalcFog(in float4 color, float4 fog_color, float2 fog_range, float eye_le
     return lerp(color, fog_color, fogAlpha);
 }
 
-//unit11
 //--------------------------------------------
 //	パノラマスカイボックス
 //--------------------------------------------

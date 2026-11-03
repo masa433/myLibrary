@@ -188,6 +188,11 @@ private:
 	bool enableBloom = false;
 	bool enableFrustumCulling = true;
 
+    bool is_fast_approximate_anti_aliasing = true;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> fast_approximate_anti_aliasing_pixel_shader;
+	std::unique_ptr<sprite> fast_approximate_anti_aliasing_sprite;
+
+
 private:	
     //	2D描画関係
     Microsoft::WRL::ComPtr<ID3D11VertexShader> sprite_vertex_shader;

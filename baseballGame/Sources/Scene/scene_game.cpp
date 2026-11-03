@@ -336,7 +336,10 @@ void scene_game::initialize()
         create_vs_from_cso(device, ".\\resources\\shader\\sprite_vs.cso", sprite_vertex_shader.ReleaseAndGetAddressOf(), sprite_input_layout.ReleaseAndGetAddressOf(), input_element_desc, _countof(input_element_desc));
         create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", sprite_pixel_shader.ReleaseAndGetAddressOf());
 
+		//FXAA用のシェーダー準備
+		create_ps_from_cso(device, ".\\resources\\shader\\fast_approximate_anti_aliasing_ps.cso", fast_approximate_anti_aliasing_pixel_shader.ReleaseAndGetAddressOf());
 
+        fast_approximate_anti_aliasing_sprite = std::make_unique<sprite>(device,scene_shader_resource_view.Get());
     }
 
     bloomRenderer.Initialize(device, scene_shader_resource_view.Get(), Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight());
@@ -425,7 +428,7 @@ void scene_game::update(float elapsed_time)
     }
 
     //仮でPキーを押したらポーズ画面に移行
-    if (GetAsyncKeyState(VK_ESCAPE) & 0x8000 && !isGameFinished)
+    if (GetAsyncKeyState(VK_ESCAPE) & 0x8000 && (!isGameFinished || gameIntroSequence.IsPlaying()))
     {
         Pause::Instance().OpenPauseScreen();
     }
@@ -930,28 +933,7 @@ void scene_game::render(float elapsedTime)
 
     EffectManager::Instance().Render(camera.GetView(), camera.GetProjection());
    
-    if (gameIntroSequence.IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
-    {
-        BatSprite::Instance().Render();
-
-        ballSprite::Instance().Render();
-
-        HomeRunCount::Instance().Render();
-
-        FoulSprite::Instance().Render();
-
-        BallDistance::Instance().Render();
-
-        Money::Instance().Render();
-
-        RoundManager::Instance().Render();
-
-        SpecialAbility::Instance().Render();
-
-		Pitcher::Instance().RenderMissShotSprite(camera.GetView(), camera.GetProjection());
-    }
-
-    gameIntroSequence.Render();
+    
 
     
 
@@ -972,6 +954,8 @@ void scene_game::render(float elapsedTime)
         Physics::Instance().Render(camera.GetView(), camera.GetProjection(), rc.lightDirection);
     }
 
+    
+
     // ここで高輝度抽出とぼかしを実行してパスのSRVを更新する
 	bloomRenderer.Extract(dc, camera.GetView(), camera.GetProjection(), cameraPosition);
 
@@ -982,13 +966,15 @@ void scene_game::render(float elapsedTime)
     ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
     dc->OMSetRenderTargets(1, &backBufferRTV, nullptr);
 
-    ID3D11Resource* srcRes = nullptr;
-    ID3D11Resource* dstRes = nullptr;
-    scene_render_target_view->GetResource(&srcRes);
-    backBufferRTV->GetResource(&dstRes);
-    dc->CopyResource(dstRes, srcRes);
-    srcRes->Release();
-    dstRes->Release();
+    {
+        ID3D11Resource* srcRes = nullptr;
+        ID3D11Resource* dstRes = nullptr;
+        scene_render_target_view->GetResource(&srcRes);
+        backBufferRTV->GetResource(&dstRes);
+        dc->CopyResource(dstRes, srcRes);
+        srcRes->Release();
+        dstRes->Release();
+    }
 
     //	ぼかした結果を加算合成
     bloomRenderer.Composite(dc);
@@ -1004,16 +990,69 @@ void scene_game::render(float elapsedTime)
         dstRes->Release();
     }
 
+    //FXAAの描画
+    {
+        //レンダーターゲットをバックバッファに戻す
+        ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
+        dc->OMSetRenderTargets(1, &backBufferRTV, nullptr);
+
+        // ブレンドを「なし（上書き）」に設定する
+        dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+        // 深度テストもオフにする
+        dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+
+        //FXAA用シェーダーの切り替え
+        dc->VSSetShader(sprite_vertex_shader.Get(), nullptr, 0);
+        ID3D11PixelShader* activePS = is_fast_approximate_anti_aliasing ?
+            fast_approximate_anti_aliasing_pixel_shader.Get() : sprite_pixel_shader.Get();
+        dc->PSSetShader(activePS, nullptr, 0);
+        dc->IASetInputLayout(sprite_input_layout.Get());
+
+        // 入力テクスチャをセット
+        ID3D11ShaderResourceView* srvs[] = { scene_shader_resource_view.Get() };
+        dc->PSSetShaderResources(0, 1, srvs);
+
+        fast_approximate_anti_aliasing_sprite->render(dc, 0, 0, Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight());
+    }
+
+    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+	dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+    if (gameIntroSequence.IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
+    {
+        BatSprite::Instance().Render();
+
+        ballSprite::Instance().Render();
+
+        HomeRunCount::Instance().Render();
+
+        FoulSprite::Instance().Render();
+
+        BallDistance::Instance().Render();
+
+        Money::Instance().Render();
+
+        RoundManager::Instance().Render();
+
+        SpecialAbility::Instance().Render();
+
+        Pitcher::Instance().RenderMissShotSprite(camera.GetView(), camera.GetProjection());
+    }
+
+    gameIntroSequence.Render();
+
     if (RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver())
     {
         //リザルトを表示する
         Result::Instance().Render();
     }
 
-    if (Pause::Instance().IsPauseScreenOpen() || Pause::Instance().IsSceneChanging() && !(RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver()))
+    if (Pause::Instance().IsPauseScreenOpen() || Pause::Instance().IsSceneChanging() && !(RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver()) && !gameIntroSequence.IsPlaying())
     {
         Pause::Instance().Render();
     }
+
+	
 
     //計測終了
     //dc->End(pipeline_stats_query.Get());
@@ -1062,6 +1101,8 @@ void scene_game::uninitialize()
     sprite_pixel_shader.Reset();
     pipeline_stats_query.Reset();
 	shadow_quality_constant_buffer.Reset();
+    fast_approximate_anti_aliasing_pixel_shader.Reset();
+	fast_approximate_anti_aliasing_sprite.reset();
 	delete cheerSound;
    
 }
@@ -1425,6 +1466,12 @@ void scene_game::DrawGUI()
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Disable for better FPS");
         }
+
+        if (ImGui::CollapsingHeader("fast approximate anti aliasing"))
+        {
+            ImGui::Checkbox("use FXAA", &is_fast_approximate_anti_aliasing);
+        }
+
 
         //ゲームモード
         if (ImGui::CollapsingHeader("Game Mode"))

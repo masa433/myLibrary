@@ -610,6 +610,9 @@
     <None Include="Shaders\WiredShapeRenderer.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\filter_functions.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\BasicPS.hlsl">
@@ -721,6 +724,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\WiredShapeRendererVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\fast_approximate_anti_aliasing_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
