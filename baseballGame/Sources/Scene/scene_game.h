@@ -58,6 +58,7 @@ private:
         DirectX::XMFLOAT4 camera_position;
         DirectX::XMFLOAT4    camera_right;
         DirectX::XMFLOAT4    camera_up;
+        DirectX::XMFLOAT4 camera_clip_distance;
     };
 
     struct light_constants
@@ -223,4 +224,57 @@ private:
 	bool initializationFailed = false;
 	bool isCheerSoundPlaying = false;
 	bool isOneShotFadeStarted = false;
+
+
+private:
+    //被写界深度関連(のちに独自のレンダラークラスを作る予定)
+    static constexpr int KernelMax = 25;
+
+    //シェーダー側への転送用定数バッファ
+    struct gaussian_filter_constants
+    {
+        DirectX::XMFLOAT4	weights[KernelMax * KernelMax];
+        float				kernel_size;
+        DirectX::XMFLOAT2	texcel;
+        float				dummy;
+
+    };
+
+    //	ガウスフィルター処理用情報
+    struct gaussian_filter_datas
+    {
+        int					kernel_size{ 9 };
+        float				sigma{ 10.0f };
+        DirectX::XMFLOAT2	texture_size{ Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight() };
+    };
+
+
+	gaussian_filter_datas gaussian_filter_data;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> gaussian_filter_constant_buffer;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> gaussian_filter_pixel_shader;
+
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> bokeh_scene_render_target_view;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bokeh_scene_shader_resource_view;
+	std::unique_ptr<sprite> bokeh_scene_sprite;
+
+    //ガウスフィルター
+	void calculate_gaussian_filter_constant(gaussian_filter_constants& constant, const gaussian_filter_datas& data);
+    //シーンのぼかし
+	void generate_bokeh_scene(float elapsed_time);
+
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> scene_depth_stencil_view;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> scene_depth_shader_resource_view;
+
+    struct depth_of_field_constants
+    {
+        float				focus_distance{ 25.0f };	//	焦点距離
+        float				dof_range{ 20.0f };			//	焦点範囲
+        DirectX::XMFLOAT2	dummy;
+    };
+    depth_of_field_constants depth_of_field_constant;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> depth_of_field_constant_buffer;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> depth_of_field_pixel_shader;
+
+    float near_clip_distance{ 0.1f };
+    float far_clip_distance{ 1000.0f };
 };
