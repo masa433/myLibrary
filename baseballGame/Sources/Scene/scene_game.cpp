@@ -427,10 +427,13 @@ void scene_game::update(float elapsed_time)
 
     }
 
-    //仮でPキーを押したらポーズ画面に移行
-    if (GetAsyncKeyState(VK_ESCAPE) & 0x8000 && (!isGameFinished || gameIntroSequence.IsPlaying()))
+    //仮でエスケープキーを押したらポーズ画面に移行
+    if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
     {
-        Pause::Instance().OpenPauseScreen();
+        if((!isGameFinished && gameIntroSequence.IsPlaying()))
+        {
+            Pause::Instance().OpenPauseScreen();
+        }
     }
     
     if(Pause::Instance().IsPauseScreenOpen() || Pause::Instance().IsSceneChanging())
@@ -445,7 +448,7 @@ void scene_game::update(float elapsed_time)
     }
     else
     {
-		elapsed_time *= GameModeManager::Instance().GetTimeScale(); // 通常速度
+		elapsed_time *= 1.0f; // 通常速度
     }
 
     if(ReplayManager::Instance().IsPlaying() && Result::Instance().IsReplayLogoMovedHalf())
@@ -1047,7 +1050,7 @@ void scene_game::render(float elapsedTime)
         Result::Instance().Render();
     }
 
-    if (Pause::Instance().IsPauseScreenOpen() || Pause::Instance().IsSceneChanging() && !(RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver()) && !gameIntroSequence.IsPlaying())
+    if (Pause::Instance().IsPauseScreenOpen() || Pause::Instance().IsSceneChanging() && !(RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver()) && gameIntroSequence.IsPlaying())
     {
         Pause::Instance().Render();
     }
