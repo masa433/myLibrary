@@ -2,7 +2,6 @@
 #include "sprite.h"
 #include "Graphics.h"
 
-using json = nlohmann::json;
 
 class BloomRenderer
 {

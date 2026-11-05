@@ -260,6 +260,9 @@
     <ClCompile Include="Sources\Game\Pause.cpp">
       <Filter>Sources\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Renderer\DoFRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -550,6 +553,9 @@
     </ClInclude>
     <ClInclude Include="Sources\Game\Pause.h">
       <Filter>Sources\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Renderer\DoFRenderer.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

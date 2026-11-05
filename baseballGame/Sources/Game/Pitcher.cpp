@@ -647,7 +647,7 @@ void Pitcher::ResetPitchFlags()
 }
 
 // 描画
-void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isShadowPass) 
+void Pitcher::RenderModel(const RenderContext& rc, ModelRenderer* renderer, bool isShadowPass) 
 {
 	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
@@ -657,13 +657,26 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	currentPitcher->render_batched(rc.deviceContext, transform, animated_nodes);
 	Ball::Instance().Render(rc, renderer, isBallThrown, !isShadowPass);
 
-	if(intro->IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
+	
+
+	
+}
+
+void Pitcher::RenderTexture(const RenderContext& rc)
+{
+
+	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
+	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	RenderState* renderState = Graphics::Instance().GetRenderState();
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
+	if (intro->IsPlaying() && !ReplayManager::Instance().IsPlaying() && !Result::Instance().IsReplayLogoAnimationStarted())
 	{
 		Wind::Instance().Render(rc);
 
 		ballCount::Instance().Render();
 	}
-	
+
 	dc->VSSetShader(spriteVS.Get(), nullptr, 0);
 	dc->PSSetShader(spritePS.Get(), nullptr, 0);
 	dc->IASetInputLayout(spriteInputLayout.Get());
@@ -709,7 +722,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 				swingData->rotation);
 		}
 
-		if(pauseData && pauseSprite)
+		if (pauseData && pauseSprite)
 		{
 			DirectX::XMFLOAT2 scaledPausePos = screenScaler.Scale(pausePosition);
 			DirectX::XMFLOAT2 scaledPauseSize = screenScaler.ScaleSize(pauseSize);
@@ -720,7 +733,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 				pauseData->rotation);
 		}
 
-		
+
 	}
 
 	//選択されているピッチャーの番号のアイコンを描画
@@ -752,7 +765,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 			}
 		}
 
-		
+
 	}
 
 	// 描画後の状態をリセット
@@ -763,6 +776,7 @@ void Pitcher::Render(const RenderContext& rc, ModelRenderer* renderer, bool isSh
 	dc->OMSetDepthStencilState(
 		renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 }
+
 
 void Pitcher::RenderMissShotSprite(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj)
 {

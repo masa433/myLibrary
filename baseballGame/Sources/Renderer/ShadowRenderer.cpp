@@ -267,7 +267,7 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
         dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
         stage::Instance().render(rc, modelRenderer);
-        Pitcher::Instance().Render(rc, modelRenderer,true);
+        Pitcher::Instance().RenderModel(rc, modelRenderer,true);
         Player::Instance().Render(rc, modelRenderer);
 		Catcher::Instance().Render(rc, modelRenderer, nullptr);
 		BallNet::Instance().Render(rc, modelRenderer);
@@ -373,7 +373,7 @@ void ShadowRenderer::RenderShadowMap(float elapsedTime)
         //dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
         // ピッチャーの描画
-        Pitcher::Instance().Render(rc, modelRenderer,true);
+        Pitcher::Instance().RenderModel(rc, modelRenderer,true);
 
         // プレイヤーの描画
         Player::Instance().Render(rc, modelRenderer);
@@ -621,7 +621,7 @@ void ShadowRenderer::RenderCascadeShadowMap(float elapsedTime)
         
         if(enableGameSceneShadow)
         {
-            Pitcher::Instance().Render(rc, modelRenderer, true);
+            Pitcher::Instance().RenderModel(rc, modelRenderer, true);
            
             Player::Instance().Render(rc, modelRenderer);
 

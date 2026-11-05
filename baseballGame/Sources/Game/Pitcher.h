@@ -28,9 +28,10 @@ public:
 	void Initialize();
 	void Uninitialize();
 	void Update(float elapsedTime);
-	void Render(const RenderContext& rc, ModelRenderer* renderer, bool isShadowPass = false);
+	void RenderModel(const RenderContext& rc, ModelRenderer* renderer, bool isShadowPass = false);
 	void DrawGUI();
 	void RenderMissShotSprite(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj);
+	void RenderTexture(const RenderContext& rc);
 
 	void AttachBallToHand(float elapsedTime);
 
