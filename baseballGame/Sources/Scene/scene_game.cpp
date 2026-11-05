@@ -981,12 +981,12 @@ void scene_game::render(float elapsedTime)
     {
         DirectX::XMFLOAT3 target = Ball::Instance().GetWorldPosition();
         DirectX::XMVECTOR p = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&target), DirectX::XMLoadFloat4x4(&camera.GetView()));
-        dofRenderer.SetFocusDistance(DirectX::XMVectorGetZ(p));
+        dofRenderer.SetFocusDistance(0.1f);
         
-        dofRenderer.SetDofRange(300.0f); // 被写界深度の範囲をボールの距離に応じて調整
+        dofRenderer.SetDofRange(DirectX::XMVectorGetZ(p)); // 被写界深度の範囲をボールの距離に応じて調整
 		if (Ball::Instance().GetHasCollidedWithBat())
         {
-            dofRenderer.SetKernelSize(1.0f); // カーネルサイズを調整
+            dofRenderer.SetKernelSize(3.0f); // カーネルサイズを調整
         }
         
     }
@@ -996,7 +996,7 @@ void scene_game::render(float elapsedTime)
 		dofRenderer.SetDofRange(20.0f); // デフォルトの被写界深度範囲
         if(!gameIntroSequence.IsPlaying())
         {
-            dofRenderer.SetKernelSize(5.0f); // デフォルトのカーネルサイズ
+            dofRenderer.SetKernelSize(8.0f); // デフォルトのカーネルサイズ
         }
         else
         {
