@@ -127,6 +127,16 @@ public:
 		prevHasShowTrackingData = false;
 	}
 
+	//デフォルトカメラがアクティブかどうかを判定する関数
+	bool IsDefaultCameraActive() const
+	{
+		if (cameraPresets.empty() || activeCameraIndex < 0 || activeCameraIndex >= static_cast<int>(cameraPresets.size()))
+		{
+			return true; // デフォルトのカメラがアクティブとみなす
+		}
+		return cameraPresets[activeCameraIndex].name == "Default";
+	}
+
 	bool prevHasCollidedWithBat = false; // 前フレームでボールがバットに当たったかどうかのフラグ
 	bool prevHasShowTrackingData = false; // 前フレームで追跡データを表示していたかどうかのフラグ
 	bool prevIsHomeRun = false; // 前フレームでホームランだったかどうかのフラグ

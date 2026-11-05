@@ -44,7 +44,12 @@ public:
     //深度ステンシルビューのゲッター
 	ID3D11DepthStencilView* GetDepthStencilView() const { return scene_depth_stencil_view.Get(); }
 
-	
+    //フォーカス地点をボールの位置に合わせる
+	void SetFocusDistance(float focus_distance) { depth_of_field_constant.focus_distance = focus_distance; }
+	void SetDofRange(float dof_range) { depth_of_field_constant.dof_range = dof_range; }
+
+	//kernelサイズのセッター
+	void SetKernelSize(int kernel_size) { gaussian_filter_data.kernel_size = kernel_size; }
 private:
     //被写界深度関連(のちに独自のレンダラークラスを作る予定)
     static constexpr int KernelMax = 25;
@@ -73,7 +78,7 @@ private:
     //	ガウスフィルター処理用情報
     struct gaussian_filter_datas
     {
-        int					kernel_size{ 2 };
+        int					kernel_size{ 5 };
         float				sigma{ 10.0f };
         DirectX::XMFLOAT2	texture_size{ Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight() };
     };
@@ -109,7 +114,7 @@ private:
 
     struct depth_of_field_constants
     {
-        float				focus_distance{ 25.0f };	//	焦点距離
+        float				focus_distance{ 0.1f };	//	焦点距離
         float				dof_range{ 20.0f };			//	焦点範囲
         DirectX::XMFLOAT2	dummy;
     };

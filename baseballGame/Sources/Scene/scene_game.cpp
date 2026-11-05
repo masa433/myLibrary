@@ -972,6 +972,37 @@ void scene_game::render(float elapsedTime)
 	// ここでレンダーターゲットをバックバッファに戻す
     ID3D11RenderTargetView* backBufferRTV = Graphics::Instance().GetRenderTargetView();
 
+    if ((gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingBatter &&
+        gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingPitcher &&
+        gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingBallMode && 
+        gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingIntroBoard &&
+        !gameIntroSequence.IsPlaying()) ||
+        (gameIntroSequence.IsPlaying() && broadcastCamera.GetActiveCameraType() != CameraType::NormalCamera ))
+    {
+        DirectX::XMFLOAT3 target = Ball::Instance().GetWorldPosition();
+        DirectX::XMVECTOR p = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&target), DirectX::XMLoadFloat4x4(&camera.GetView()));
+        dofRenderer.SetFocusDistance(DirectX::XMVectorGetZ(p));
+        
+        dofRenderer.SetDofRange(300.0f); // 被写界深度の範囲をボールの距離に応じて調整
+		if (Ball::Instance().GetHasCollidedWithBat())
+        {
+            dofRenderer.SetKernelSize(1.0f); // カーネルサイズを調整
+        }
+        
+    }
+    else
+    {
+        dofRenderer.SetFocusDistance(0.1f); // デフォルトの焦点距離
+		dofRenderer.SetDofRange(20.0f); // デフォルトの被写界深度範囲
+        if(!gameIntroSequence.IsPlaying())
+        {
+            dofRenderer.SetKernelSize(5.0f); // デフォルトのカーネルサイズ
+        }
+        else
+        {
+			dofRenderer.SetKernelSize(3.0f); // カーネルサイズを調整
+        }
+    }
 
 	// ここで被写界深度の計算を行う
 	dofRenderer.Extract(dc, camera.GetView(), camera.GetProjection(), cameraPosition, near_clip_distance, far_clip_distance);
