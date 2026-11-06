@@ -374,7 +374,7 @@ void scene_game::initialize()
 
     //パーティクル生成準備
     {
-		int num_particles = 60000; // パーティクルの数
+		int num_particles = 50000; // 最大のパーティクルの数
 
         D3D11_TEXTURE2D_DESC desc;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shader_resource_view;
@@ -390,7 +390,13 @@ void scene_game::initialize()
             { 10.0f, 0.0f, 10.0f },
             { -10.0f, 0.0f, -10.0f },
             { 5.0f, 5.0f, 5.0f },
-            { -5.0f, -5.0f, -5.0f }
+            { -5.0f, -5.0f, -5.0f },
+            { 0.0f, 0.0f, 0.0f },
+            { 0.0f, 0.0f, 0.0f },
+            { 0.0f, 0.0f, 0.0f },
+            { 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 0.0f },// 10個のパーティクル位置を設定
+            
 		};
     }
 
@@ -716,30 +722,30 @@ void scene_game::update(float elapsed_time)
     {
        
 		//1本当たりの毎秒のパーティクル数を設定
-		const float rate = 2000.0f; // 1秒あたりのパーティクル数
+		const float rate = 1000.0f; // 1秒あたりのパーティクル数
 
         for(const auto& pos : particle_positions)
         {
-			int count = (int)(rate * elapsed_time + (rand() % 10001) * 0.0001f);// パーティクルの数を決定
+			int count = (int)(rate * elapsed_time + (rand() % 10001) * 0.0004f);// パーティクルの数を範囲(0～4)でランダムに変化させる
             for (int i = 0; i < count; i++)
             {
               
                 DirectX::XMFLOAT3 v = { 0,0,0 };//速度を初期化
                 v.x = (rand() % 10001 - 5000) * 0.0003f;
-                v.y = (rand() % 10001) * 0.0002f + 3.0f;
+				v.y = (rand() % 10001) * 0.0004f + 4.0f;//4.0～8.0の間でランダムに変化させる
                 v.z = (rand() % 10001 - 5000) * 0.0003f;
 				float t = (rand() % 10001) * 0.0001f * elapsed_time;//時間をランダムに変化させる
                 DirectX::XMFLOAT3 p;
 				p = { pos.x + v.x * t,pos.y + v.y * t,pos.z + v.z * t };//位置を時間に応じて変化させる
 
                 DirectX::XMFLOAT3 f = { 0,-1.2f,0 };//重力を設定
-                DirectX::XMFLOAT2 s = { 0.1f,0.1f };//サイズを設定
+                DirectX::XMFLOAT2 s = { 0.5f,0.5f };//サイズを設定
 
-				float lifetime = 1.5f + (rand() % 10001) * 0.0001f; // ランダムな寿命を設定
+				float lifetime = 1.0f + (rand() % 10001) * 0.0001f * 0.5f; // ランダムな寿命を設定(1.0秒～1.5秒)
 
                 //パーティクルの色(黄色っぽいオレンジ)
 				float r = 1.0f;
-				float g = 0.5f + (rand() % 10001) * 0.0001f * 0.5f; // 緑の成分をランダムに変化させる
+				float g = 0.5f + (rand() % 10001) * 0.0001f * 0.5f; // 緑の成分をランダムに変化させる(0.5～1.0)
 				float b = 0.0f;
 
                 particles->Set(2, lifetime, p, v, f, s, false, 24.0f, r, g, b);
@@ -1318,6 +1324,14 @@ void scene_game::DrawGUI()
         if(ImGui::CollapsingHeader("Audio")) { Audio::Instance().DrawGUI(); }
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Pause")) { Pause::Instance().DrawGUI(); }
+		ImGui::Separator();
+        if (ImGui::CollapsingHeader("Particle"))
+        {
+            for (auto& pos : particle_positions)
+            {
+				ImGui::DragFloat3(("Particle Position " + std::to_string(&pos - &particle_positions[0])).c_str(), &pos.x, 0.1f);			
+            }
+        }
 
         ImGui::End();
 
@@ -1810,6 +1824,11 @@ void scene_game::SaveSetting()
     j["performance"]["enable_shadows"] = enableShadows;
     j["performance"]["enable_bloom"] = enableBloom;
 
+    for (auto& pos : particle_positions)
+    {
+		j["particle_positions"].push_back({ pos.x, pos.y, pos.z });
+    }
+
     //各クラスの保存処理
     Pitcher::Instance().SaveToJson(j["pitcher"]);
     Player::Instance().SaveToJson(j["player"]);
@@ -1977,6 +1996,15 @@ void scene_game::LoadSetting()
         enableShadows = j["performance"].value("enable_shadows", true);
         enableBloom = j["performance"].value("enable_bloom", true);
     }
+
+    if(j.contains("particle_positions"))
+    {
+		particle_positions.clear();// 既存のパーティクル位置をクリア
+        for (const auto& pos : j["particle_positions"])
+        {
+            particle_positions.emplace_back(pos[0], pos[1], pos[2]);
+        }
+	}
 
     //各クラスの読み込み処理
     if (j.contains("pitcher")) Pitcher::Instance().LoadFromJson(j["pitcher"]);
