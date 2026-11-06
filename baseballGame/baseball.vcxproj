@@ -122,7 +122,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\Sources\Effect;.\resources\shader;.\Sources\Audio;.\Sources\Setting;.\midi;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\Sources\Effect;.\resources\shader;.\Sources\Audio;.\Sources\Setting;.\Sources\Particle;.\midi;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -180,7 +180,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions);USE_IMGUI</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\Sources\Effect;.\resources\shader;.\Sources\Audio;.\Sources\Setting;.\midi;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\DirectXTK-main\Inc;.\External\Effekseer\include;.\External\Effekseer\include\Effekseer;.\External\Effekseer\include\EffekseerRendererDX11;.\External\Effekseer\include\EffekseerRendererCommon;.\External\tinygltf-release\tinygltf-release;.\External\cereal-master\include;.\External\PhysX\include;.\External\imgui-docking;.\External\imgui-docking\backends;.\imgui;.\Sources\Camera;.\Sources\Collision;.\Sources\Game;.\Sources\Graphics;.\Sources\Input;.\Sources\Light;.\Sources\Physics;.\Sources\Renderer;.\Sources\Scene;.\Sources\Shader;.\Sources\System;.\Sources\UI;.\Sources\Json;.\Sources\Effect;.\resources\shader;.\Sources\Audio;.\Sources\Setting;.\Sources\Particle;.\midi;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -332,6 +332,7 @@
     <ClCompile Include="Sources\Model\ModelResource.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Sources\Particle\particle_system.cpp" />
     <ClCompile Include="Sources\Physics\physxManager.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -511,6 +512,7 @@
     <ClInclude Include="Sources\Model\ModelResource.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Sources\Particle\particle_system.h" />
     <ClInclude Include="Sources\Physics\physxManager.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
@@ -599,6 +601,7 @@
       <DeploymentContent>false</DeploymentContent>
     </None>
     <None Include="Shaders\gaussian_filtering.hlsli" />
+    <None Include="Shaders\geometry_particle.hlsli" />
     <None Include="Shaders\gltf_model.hlsli">
       <FileType>Document</FileType>
       <DeploymentContent>false</DeploymentContent>
@@ -730,6 +733,28 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\geometry_particle_gs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\geometry_particle_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\geometry_particle_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="Shaders\gltf_model_ps.hlsl">
       <FileType>Document</FileType>

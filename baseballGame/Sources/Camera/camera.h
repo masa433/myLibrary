@@ -27,6 +27,14 @@ public:
 	//プロジェクション行列取得
 	const DirectX::XMFLOAT4X4& GetProjection() const { return projection; }
 
+	//ビュー×プロジェクション行列取得
+	DirectX::XMFLOAT4X4 GetViewProjection() const
+	{
+		DirectX::XMFLOAT4X4 view_projection;// ビュー×プロジェクション行列を計算
+		DirectX::XMStoreFloat4x4(&view_projection, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection));// ビュー行列とプロジェクション行列を掛け合わせる
+		return view_projection;// ビュー×プロジェクション行列を返す
+	}
+
 	//注視点取得
 	const DirectX::XMFLOAT3& GetFocus() const { return focus; }
 

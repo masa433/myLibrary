@@ -16,6 +16,7 @@
 #include "..\Sources\Audio\AudioSource.h"
 #include "..\Sources\Audio\Audio.h"
 #include "DoFRenderer.h"
+#include "particle_system.h"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
 CONST LONG SCREEN_HEIGHT{ 1080 };
@@ -62,6 +63,9 @@ private:
         DirectX::XMFLOAT4    camera_right;
         DirectX::XMFLOAT4    camera_up;
         DirectX::XMFLOAT4 camera_clip_distance;
+        DirectX::XMFLOAT4X4 view_transform;
+        DirectX::XMFLOAT4X4 projection_transform;
+        DirectX::XMFLOAT4X4 view_projection_transform;
     };
 
     struct light_constants
@@ -230,5 +234,9 @@ private:
 
     float near_clip_distance{ 0.1f };
     float far_clip_distance{ 1000.0f };
+
+private:
+	std::unique_ptr<particle_system> particles;
+	std::vector<DirectX::XMFLOAT3> particle_positions;
 
 };

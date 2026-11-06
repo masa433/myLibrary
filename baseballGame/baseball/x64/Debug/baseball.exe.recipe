@@ -40,6 +40,15 @@
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gaussian_filtering_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\geometry_particle_gs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\geometry_particle_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\geometry_particle_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>C:\Users\2240021\Desktop\myLibrary\baseballGame\resources\shader\gltf_model_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>

@@ -263,6 +263,9 @@
     <ClCompile Include="Sources\Renderer\DoFRenderer.cpp">
       <Filter>Sources\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Particle\particle_system.cpp">
+      <Filter>Sources\Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -557,6 +560,9 @@
     <ClInclude Include="Sources\Renderer\DoFRenderer.h">
       <Filter>Sources\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\Particle\particle_system.h">
+      <Filter>Sources\Particle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Basic.hlsli">
@@ -620,6 +626,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\depth_of_field.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\geometry_particle.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -741,6 +750,15 @@
     <FxCompile Include="Shaders\depth_of_field_ps.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\geometry_particle_vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\geometry_particle_gs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\geometry_particle_ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
@@ -802,6 +820,9 @@
     </Filter>
     <Filter Include="Sources\Setting">
       <UniqueIdentifier>{233bd232-b6e0-4d01-a5ea-5d2fca2b41c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Particle">
+      <UniqueIdentifier>{9a186f15-787e-456e-abf2-6ebe7e225d89}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

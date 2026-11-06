@@ -372,6 +372,28 @@ void scene_game::initialize()
     hr = device->CreateQuery(&query_desc, pipeline_stats_query.ReleaseAndGetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr) && pipeline_stats_query, hr_trace(hr));
 
+    //パーティクル生成準備
+    {
+		int num_particles = 60000; // パーティクルの数
+
+        D3D11_TEXTURE2D_DESC desc;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shader_resource_view;
+
+        //パーティクル用のテクスチャのロード
+        load_texture_from_file(device, Graphics::Instance().GetDeviceContext(), L".\\resources\\textures\\particle256x256.png", shader_resource_view.ReleaseAndGetAddressOf(), &desc);
+
+        //パーティクルシステム生成
+        particles = std::make_unique<particle_system>(device,shader_resource_view,4,4,num_particles);
+
+        particle_positions = {
+            { 0.0f, 0.0f, 0.0f },
+            { 10.0f, 0.0f, 10.0f },
+            { -10.0f, 0.0f, -10.0f },
+            { 5.0f, 5.0f, 5.0f },
+            { -5.0f, -5.0f, -5.0f }
+		};
+    }
+
     // 設定のロード
     LoadSetting();
 }
@@ -687,6 +709,47 @@ void scene_game::update(float elapsed_time)
             ReplayManager::Instance().ClearRecording();
         }
     }
+
+    
+    //	スパーク
+    if (isHomeRun || ::GetAsyncKeyState('C') & 0x8000)
+    {
+       
+		//1本当たりの毎秒のパーティクル数を設定
+		const float rate = 2000.0f; // 1秒あたりのパーティクル数
+
+        for(const auto& pos : particle_positions)
+        {
+			int count = (int)(rate * elapsed_time + (rand() % 10001) * 0.0001f);// パーティクルの数を決定
+            for (int i = 0; i < count; i++)
+            {
+              
+                DirectX::XMFLOAT3 v = { 0,0,0 };//速度を初期化
+                v.x = (rand() % 10001 - 5000) * 0.0003f;
+                v.y = (rand() % 10001) * 0.0002f + 3.0f;
+                v.z = (rand() % 10001 - 5000) * 0.0003f;
+				float t = (rand() % 10001) * 0.0001f * elapsed_time;//時間をランダムに変化させる
+                DirectX::XMFLOAT3 p;
+				p = { pos.x + v.x * t,pos.y + v.y * t,pos.z + v.z * t };//位置を時間に応じて変化させる
+
+                DirectX::XMFLOAT3 f = { 0,-1.2f,0 };//重力を設定
+                DirectX::XMFLOAT2 s = { 0.1f,0.1f };//サイズを設定
+
+				float lifetime = 1.5f + (rand() % 10001) * 0.0001f; // ランダムな寿命を設定
+
+                //パーティクルの色(黄色っぽいオレンジ)
+				float r = 1.0f;
+				float g = 0.5f + (rand() % 10001) * 0.0001f * 0.5f; // 緑の成分をランダムに変化させる
+				float b = 0.0f;
+
+                particles->Set(2, lifetime, p, v, f, s, false, 24.0f, r, g, b);
+            }
+        }
+    }
+    
+    //	パーティクル更新
+    particles->Update(elapsed_time);
+
 }
 
 
@@ -812,6 +875,9 @@ void scene_game::render(float elapsedTime)
 	scene.camera_clip_distance.y = far_clip_distance;// 遠いクリップ距離
 	scene.camera_clip_distance.z = near_clip_distance * far_clip_distance;// 近いクリップ距離 * 遠いクリップ距離
 	scene.camera_clip_distance.w = far_clip_distance - near_clip_distance;// 遠いクリップ距離 - 近いクリップ距離
+    scene.view_transform = camera.GetView();
+    scene.projection_transform = camera.GetProjection();
+    scene.view_projection_transform = camera.GetViewProjection();
     DirectX::XMStoreFloat4x4(&scene.view_projection, V * P);
     XMFLOAT3 right = camera.GetRight();
     XMFLOAT3 up = camera.GetUp();
@@ -820,6 +886,7 @@ void scene_game::render(float elapsedTime)
     dc->UpdateSubresource(constant_buffer.Get(), 0, 0, &scene, 0, 0);
     dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
     dc->PSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
+	dc->GSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
     static constexpr int LightCBVIndex = 3;
     light_constants lightConstants{};
@@ -951,6 +1018,16 @@ void scene_game::render(float elapsedTime)
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
     EffectManager::Instance().Render(camera.GetView(), camera.GetProjection());
+
+    // パーティクル(加算合成・深度テストのみ・カリングなし)
+    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+    particles->Render(dc);
+    // 元に戻す
+    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
     // ShapeRenderer の描画実行
 
@@ -1142,7 +1219,7 @@ void scene_game::uninitialize()
 	bloomRenderer.Uninitialize();
 	dofRenderer.Uninitialize();
 	gameIntroSequence.Uninitialize();
-
+    particles.reset();
     // 最後に物理システムなどを終了
     Physics::Instance().Finalize();
 
