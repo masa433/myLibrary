@@ -39,6 +39,23 @@ public:
 	bool IsGameOver() const {return isGameOver;}
 	bool IsGameClear() const { return isGameClear; }
 	int GetCurrentRound() const { return currentRound; }
+	void ResetRoundManager()
+	{
+		currentRound = 1;
+		currentState = RoundState::Playing;
+		isGameOver = false;
+		isGameClear = false;
+		abilitiesChoice.clear();
+		hoveredAbilityIndex = -1;
+		isShopClosingStarted = false;
+		// targetHomeRunsを初期値にリセット
+		targetHomeRuns = { 0,1,2,2,3,3,5 };
+		// speedModesの状態をリセット
+		for (auto& speedMode : speedModes)
+		{
+			speedMode.isActive = false;
+		}
+	}
 
 	bool IsPlaying() const { return currentState == RoundState::Playing; }
 	bool IsAbilitySelecting() const { return currentState == RoundState::SelectAbility; }

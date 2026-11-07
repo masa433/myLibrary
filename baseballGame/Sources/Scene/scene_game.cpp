@@ -1682,6 +1682,8 @@ void scene_game::DrawGUI()
 			ImGui::Text("Current Mode: %s", modeName);
 		}
 
+        ImGui::Text(u8"HOMEボタンでIMGUIの表示/非表示を切り替えできます");
+
         ImGui::End();
 
         // ════════════════════════════════════════════════════

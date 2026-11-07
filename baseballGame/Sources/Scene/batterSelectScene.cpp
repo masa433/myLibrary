@@ -197,6 +197,15 @@ void batterSelectScene::update(float elapsed_time)
 		SaveSetting();
 	}
 
+	//HOMEキーを押したらIMGUIの表示・非表示を切り替える
+	static bool prevHomePressed = false;
+	bool homePressed = (GetKeyState(VK_HOME) & 0x8000) != 0;
+	if (homePressed && !prevHomePressed)
+	{
+		showGUI = !showGUI;
+	}
+	prevHomePressed = homePressed;
+
 	// ボタンマネージャーの更新は、選手選択中または遷移完了後にのみ行う
 	if(currentState == SequenceState::Selecting || currentState == SequenceState::Finished || currentState == SequenceState::ShowPitcherParam)
 	{
@@ -724,74 +733,74 @@ void batterSelectScene::uninitialize()
 
 void batterSelectScene::DrawGUI()
 {
-
-
-
-	// スクロールビューのGUI描画
-	if (playerScrollView)
+	if(showGUI)
 	{
-		playerScrollView->DrawGUI();
-	}
-	// ボタンマネージャーのGUI描画
-	buttonManager.DrawGUI();
-
-	ImGui::Begin("ScrollView");
-
-	if (ImGui::CollapsingHeader("pitcherInfo"))
-	{
-		ImGui::DragFloat2("pitcherInfo Position", &pitcherSpriteDataArray[selectedPitcherIndex]->position.x, 1.0f);
-		ImGui::DragFloat2("pitcherInfo Size", &pitcherSpriteDataArray[selectedPitcherIndex]->size.x, 1.0f);
-
-		ImGui::DragFloat2("font Position", &fontPosition.x, 1.0f);
-		ImGui::DragFloat("font Size", &fontSize, 1.0f, 1.0f, 100.0f);
-		ImGui::ColorEdit4("font Color", &fontColor.x);
-	}
-
-	//ImGuiでもランダムにピッチャーを選択するボタンを追加
-	if (ImGui::Button("Select Random Pitcher"))
-	{
-		SelectRandomPitcher();
-	}
-
-	if(ImGui::CollapsingHeader("Burst Effect"))
-	{
-		for(auto& effect : burstList)
+		// スクロールビューのGUI描画
+		if (playerScrollView)
 		{
-			std::string label = "Burst Effect " + std::to_string(&effect - &burstList[0]);
-			if (ImGui::TreeNode(label.c_str()))
+			playerScrollView->DrawGUI();
+		}
+		// ボタンマネージャーのGUI描画
+		buttonManager.DrawGUI();
+
+		ImGui::Begin("ScrollView");
+
+		if (ImGui::CollapsingHeader("pitcherInfo"))
+		{
+			ImGui::DragFloat2("pitcherInfo Position", &pitcherSpriteDataArray[selectedPitcherIndex]->position.x, 1.0f);
+			ImGui::DragFloat2("pitcherInfo Size", &pitcherSpriteDataArray[selectedPitcherIndex]->size.x, 1.0f);
+
+			ImGui::DragFloat2("font Position", &fontPosition.x, 1.0f);
+			ImGui::DragFloat("font Size", &fontSize, 1.0f, 1.0f, 100.0f);
+			ImGui::ColorEdit4("font Color", &fontColor.x);
+		}
+
+		//ImGuiでもランダムにピッチャーを選択するボタンを追加
+		if (ImGui::Button("Select Random Pitcher"))
+		{
+			SelectRandomPitcher();
+		}
+
+		if (ImGui::CollapsingHeader("Burst Effect"))
+		{
+			for (auto& effect : burstList)
 			{
-				ImGui::DragFloat2("Position", &effect.position.x, 1.0f);
-				ImGui::DragFloat2("Size", &effect.size.x, 1.0f);
-				ImGui::DragFloat("Alpha", &effect.alpha, 0.01f, 0.0f, 1.0f);
-				ImGui::DragFloat("Time", &effect.time, 0.01f);
-				ImGui::TreePop();
+				std::string label = "Burst Effect " + std::to_string(&effect - &burstList[0]);
+				if (ImGui::TreeNode(label.c_str()))
+				{
+					ImGui::DragFloat2("Position", &effect.position.x, 1.0f);
+					ImGui::DragFloat2("Size", &effect.size.x, 1.0f);
+					ImGui::DragFloat("Alpha", &effect.alpha, 0.01f, 0.0f, 1.0f);
+					ImGui::DragFloat("Time", &effect.time, 0.01f);
+					ImGui::TreePop();
+				}
 			}
 		}
-	}
 
-	if(ImGui::CollapsingHeader("Pitcher Name"))
-	{
-		ImGui::DragFloat2("Position", &pitcherNamePosition.x, 1.0f);
-		ImGui::DragFloat2("Size", &pitcherNameSize.x, 1.0f);
-		ImGui::ColorEdit4("Color", &pitcherNameColor.x);
-	}
+		if (ImGui::CollapsingHeader("Pitcher Name"))
+		{
+			ImGui::DragFloat2("Position", &pitcherNamePosition.x, 1.0f);
+			ImGui::DragFloat2("Size", &pitcherNameSize.x, 1.0f);
+			ImGui::ColorEdit4("Color", &pitcherNameColor.x);
+		}
 
-	if (ImGui::CollapsingHeader("Modal Copy Elements"))
-	{
-		ImGui::DragFloat2("Modal Pitcher Image Pos", &modalPitcherPos.x, 1.0f);
-		ImGui::DragFloat2("Modal Pitcher Image Size", &modalPitcherSize.x, 1.0f);
-		ImGui::DragFloat2("Modal Burst Pos", &modalBurstPosition.x, 1.0f);
-		ImGui::DragFloat2("Modal Burst Size", &modalBurstSize.x, 1.0f);
-	}
+		if (ImGui::CollapsingHeader("Modal Copy Elements"))
+		{
+			ImGui::DragFloat2("Modal Pitcher Image Pos", &modalPitcherPos.x, 1.0f);
+			ImGui::DragFloat2("Modal Pitcher Image Size", &modalPitcherSize.x, 1.0f);
+			ImGui::DragFloat2("Modal Burst Pos", &modalBurstPosition.x, 1.0f);
+			ImGui::DragFloat2("Modal Burst Size", &modalBurstSize.x, 1.0f);
+		}
 
-	if(ImGui::CollapsingHeader("VS Sprite"))
-	{
-		ImGui::DragFloat2("Position", &VSPosition.x, 1.0f);
-		ImGui::DragFloat2("Size", &VSSize.x, 1.0f);
-		ImGui::ColorEdit4("Color", &VSColor.x);
-	}
+		if (ImGui::CollapsingHeader("VS Sprite"))
+		{
+			ImGui::DragFloat2("Position", &VSPosition.x, 1.0f);
+			ImGui::DragFloat2("Size", &VSSize.x, 1.0f);
+			ImGui::ColorEdit4("Color", &VSColor.x);
+		}
 
-	ImGui::End();
+		ImGui::End();
+	}
 
 }
 

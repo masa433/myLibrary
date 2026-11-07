@@ -171,4 +171,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> scene_shader_resource_view;
 
 	bool enableShadows = true;
+	bool showGUI = false;
 };

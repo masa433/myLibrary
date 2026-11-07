@@ -36,6 +36,8 @@ public:
 	void ResetHitFlag() { hasCountedHit = false; } // ヒットカウントフラグをリセットする関数
 	int GetCurrentCombo() { return currentCombo; } // 現在のコンボ数を取得する関数
 
+	void ResetMaxCombo() { maxCombo = 0; } // 最大コンボ数をリセットする関数
+
 private:
 	int currentCombo = 0;
 	int maxCombo = 0;

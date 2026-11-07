@@ -101,6 +101,13 @@ public:
 		
 	}
 
+	//Š‹à‚ğƒŠƒZƒbƒg‚·‚éŠÖ”
+	void ResetMoney()
+	{
+		currentMoney = 0;
+		targetMoney = 0;
+	}
+
 private:
 	
 

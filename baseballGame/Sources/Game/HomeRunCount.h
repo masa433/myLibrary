@@ -36,6 +36,11 @@ public:
 		numberAlpha = 1.0f; 
 	}
 
+	void ResetTotalCount()
+	{
+		totalHomeRunCount = 0;
+	}
+
 	//現在のホームラン数が目標値を超えているかどうかを判定する関数
 	bool IsHomeRunCountExceeded(int targetCount) const
 	{

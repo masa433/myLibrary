@@ -166,4 +166,5 @@ private:
 	int currentPitcherIndex = 0; // 現在のピッチャーのインデックスを保持する変数
 	bool initializationFailed = false;
 	int previousPitcherIndex = -1; // 前回のピッチャーのインデックスを保持する変数
+	bool showGUI = false; // GUIを表示するかどうかのフラグ
 };

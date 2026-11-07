@@ -218,7 +218,7 @@ private:
 
 private:
     float trackingTime = 0.0f;
-	bool showGUI = true;
+	bool showGUI = false;
     bool showResult = false;
 
     //すでに録画を開始したかどうか

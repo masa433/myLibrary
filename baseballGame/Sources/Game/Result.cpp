@@ -7,6 +7,8 @@
 #include "RoundManager.h"
 #include "UiEasing.h"
 #include "misc.h"
+#include "GameModeManager.h"
+#include "ballCount.h"
 
 void Result::Initialize(ID3D11Device* device)
 {
@@ -85,7 +87,6 @@ void Result::Initialize(ID3D11Device* device)
 
 	isResultToTitle = false;
 	isResultToBatterSelect = false;
-	isResultToRetry = false;
 
 	hasEnteredResult = false;
 	hasReplay = false;
@@ -152,7 +153,7 @@ void Result::Update(float elapsedTime)
 
 	bool isGameFinished = RoundManager::Instance().IsGameClear() || RoundManager::Instance().IsGameOver();
 
-	if(isGameFinished && !hasEnteredResult && currentState == State::Replay && isReplayLogoMovingHalf)
+	if(isGameFinished && !hasEnteredResult && currentState == State::Replay && isReplayLogoMovingHalf && GameModeManager::Instance().GetCurrentMode() == GameMode::Game)
 	{
 
 		hasEnteredResult = true;
@@ -168,7 +169,7 @@ void Result::Update(float elapsedTime)
 	}
 
 	//リプレイの再生を進める
-	if (isGameFinished && hasReplay && ReplayManager::Instance().IsPlaying() && isReplayLogoMovingHalf)
+	if ((isGameFinished && hasReplay && ReplayManager::Instance().IsPlaying() && isReplayLogoMovingHalf && GameModeManager::Instance().GetCurrentMode() == GameMode::Game))
 	{
 		ReplayManager::Instance().UpdatePlayback(elapsedTime);
 		const ReplayFrame& frame = ReplayManager::Instance().GetCurrentPlaybackFrame();
@@ -194,6 +195,13 @@ void Result::Update(float elapsedTime)
 		Physics::Instance().SetBallAngle(frame.ballLaunchAngleDegrees);
 	}
 
+	//フリーバッティングならリプレイの再生をせずに直接リザルト画面に遷移する
+	if(GameModeManager::Instance().GetCurrentMode() == GameMode::FreeBatting && !isNextButtonPressed)
+	{
+		currentState = State::Result;
+		isNextButtonPressed = true;
+		buttonManager.ResetButtonAlpha(ButtonManager::ButtonType::Next);
+	}
 	
 	if(!buttonManager.IsButtonAlphaZero())
 	{
@@ -228,7 +236,7 @@ void Result::Update(float elapsedTime)
 			
 
 			//タイトルシーンに戻るボタンの更新処理
-			if (!isResultToTitle && !isResultToRetry && !isResultToBatterSelect)
+			if (!isResultToTitle && !isResultToBatterSelect)
 			{
 				if (buttonManager.IsTitleRequested())
 				{
@@ -241,12 +249,23 @@ void Result::Update(float elapsedTime)
 				}
 				if (buttonManager.IsRetryRequested())
 				{
-					isResultToRetry = true;
-					hexTransitionEffect.Start(1.0f);
+					//hexTransitionEffect.Start(1.0f);
 					buttonManager.ResetRetryRequest(false);
-					currentState = State::Transition;
+					//currentState = State::Transition;
 					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 
+					//リトライの時はシーン遷移せずに、ゲームシーンに戻る
+					RoundManager::Instance().ResetRoundManager();//ラウンドマネージャーをリセット
+					ballCount::Instance().ResetRemainingBalls();//球数をリセット
+					Pitcher::Instance().ResetPitchFlags();//投球フラグをリセット
+					Pitcher::Instance().ClearPitchHistory();//投球履歴をクリア
+					Money::Instance().ResetMoney();//所持金をリセット
+					HomeRunCount::Instance().ResetCount();//ホームラン数をリセット
+					HomeRunCount::Instance().ResetTotalCount();//累計ホームラン数をリセット
+					BallDistance::Instance().ResetMaxDistance();//最大飛距離をリセット
+					Combo::Instance().ResetCombo();//コンボ数をリセット
+					Combo::Instance().ResetMaxCombo();//最大コンボ数をリセット
+					
 				}
 				if (buttonManager.IsBatterSelectRequested())
 				{
@@ -274,11 +293,6 @@ void Result::Update(float elapsedTime)
 				if (isResultToTitle)
 				{
 					ChangeSceneGameToTitle();
-					
-				}
-				else if (isResultToRetry)
-				{
-					ChangeSceneGameToGame();
 					
 				}
 				else if (isResultToBatterSelect)
@@ -700,7 +714,7 @@ void Result::Render()
 	}
 
 
-	if(isResultToTitle || isResultToRetry || isResultToBatterSelect)
+	if(isResultToTitle|| isResultToBatterSelect)
 	{
 		hexTransitionEffect.Render();
 	}

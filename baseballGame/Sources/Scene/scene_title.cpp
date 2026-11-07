@@ -177,6 +177,15 @@ void scene_title::update(float elapsed_time)
 		SaveSetting();
 	}
 
+	//HOMEキーを押したらIMGUIの表示・非表示を切り替える
+	static bool prevHomePressed = false;
+	bool homePressed = (GetKeyState(VK_HOME) & 0x8000) != 0;
+	if (homePressed && !prevHomePressed)
+	{
+		showGUI = !showGUI;
+	}
+	prevHomePressed = homePressed;
+
 	Camera& camera = Camera::Instance();
 	float screenWidth = static_cast<float>(Graphics::Instance().GetScreenWidth());
 	float screenHeight = static_cast<float>(Graphics::Instance().GetScreenHeight());
@@ -503,48 +512,51 @@ void scene_title::DrawGUI()
 {
 
 #ifdef USE_IMGUI
-	Camera& camera = Camera::Instance();
-	DirectX::XMFLOAT3 eye = camera.GetEye();
-	DirectX::XMFLOAT3 focus = camera.GetFocus();
-
-	ImGui::Begin("Title Debug");
-	ImGui::DragFloat3("Camera Eye", &eye.x, 0.1f);
-	ImGui::DragFloat3("Camera Focus", &focus.x, 0.1f);
-	ImGui::ColorEdit4("Ambient", &ambient_color.x);
-	ImGui::SliderFloat("Dir Intensity", &directional_light_intensity, 0.0f, 5.0f);
-	ImGui::End();
-
-	ImGui::Begin("MIDI Keyboard");
-	drawMidiKeyboard("main_kb");
-	ImGui::End();
-
-	if(ImGui::CollapsingHeader("TitleButton"))
+	if(showGUI)
 	{
-		buttonManager.DrawGUI();
-	}
+		Camera& camera = Camera::Instance();
+		DirectX::XMFLOAT3 eye = camera.GetEye();
+		DirectX::XMFLOAT3 focus = camera.GetFocus();
 
-	if(ImGui::CollapsingHeader("SettingButton"))
-	{
-		SettingManager::Instance().DrawGUI();
-	}
+		ImGui::Begin("Title Debug");
+		ImGui::DragFloat3("Camera Eye", &eye.x, 0.1f);
+		ImGui::DragFloat3("Camera Focus", &focus.x, 0.1f);
+		ImGui::ColorEdit4("Ambient", &ambient_color.x);
+		ImGui::SliderFloat("Dir Intensity", &directional_light_intensity, 0.0f, 5.0f);
+		ImGui::End();
 
-	if(ImGui::CollapsingHeader("Logo Sprite"))
-	{
-		if(logoSpriteData)
+		ImGui::Begin("MIDI Keyboard");
+		drawMidiKeyboard("main_kb");
+		ImGui::End();
+
+		if (ImGui::CollapsingHeader("TitleButton"))
 		{
-			ImGui::DragFloat2("Position", &logoPosition.x, 1.0f);
-			ImGui::DragFloat2("Size", &logoSize.x, 1.0f);
-			ImGui::ColorEdit4("Color", &logoColor.x);
+			buttonManager.DrawGUI();
 		}
-	}
 
-	if (ImGui::CollapsingHeader("Sky & Time")) { skyRenderer.DrawGUI(); }
-	if (ImGui::CollapsingHeader("Bloom"))
-	{
-		bloomRenderer.DrawGUI();
-		bloomRenderer.DrawEnableCheckbox();
+		if (ImGui::CollapsingHeader("SettingButton"))
+		{
+			SettingManager::Instance().DrawGUI();
+		}
+
+		if (ImGui::CollapsingHeader("Logo Sprite"))
+		{
+			if (logoSpriteData)
+			{
+				ImGui::DragFloat2("Position", &logoPosition.x, 1.0f);
+				ImGui::DragFloat2("Size", &logoSize.x, 1.0f);
+				ImGui::ColorEdit4("Color", &logoColor.x);
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Sky & Time")) { skyRenderer.DrawGUI(); }
+		if (ImGui::CollapsingHeader("Bloom"))
+		{
+			bloomRenderer.DrawGUI();
+			bloomRenderer.DrawEnableCheckbox();
+		}
+		ImGui::Checkbox("Enable Shadows", &enableShadows);
 	}
-	ImGui::Checkbox("Enable Shadows", &enableShadows);
 
 #endif
 
