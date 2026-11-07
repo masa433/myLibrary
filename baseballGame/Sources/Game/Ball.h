@@ -255,7 +255,7 @@ public:
 	static constexpr float BALL_MASS = 0.145f; // ボールの質量(kg)
 	static constexpr float BALL_RADIUS = 0.0365f; // ボールの半径(m)
 	float AIR_DENSITY = 1.225f; // 空気密度(kg/m^3)
-	float DRAG_COEFFICIENT = 0.32f; // 抗力係数
+	float DRAG_COEFFICIENT = 0.35f; // 抗力係数
 
 private:
 	float angularSpeed = 0.0f; // 回転速度(rad/s)

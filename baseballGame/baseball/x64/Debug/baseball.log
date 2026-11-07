@@ -1,4 +1,183 @@
-﻿  scene_game.cpp
+﻿  BroadcastCamera.cpp
+  camera_controller.cpp
+  Ball.cpp
+  FoulSprite.cpp
+  GameTimer.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\GameTimer.cpp(68,21): warning C4244: '-=': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/GameTimer.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\GameTimer.cpp(69,47): warning C4244: '=': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/GameTimer.cpp' をコンパイルしています)
+  
+  HomeRunCount.cpp
+  Money.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(446,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Money.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(447,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Money.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Money.cpp(584,23): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Money.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Money.cpp(589,18): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Money.cpp' をコンパイルしています)
+  
+  Pause.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(101,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Pause.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(102,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Pause.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(129,57): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Pause.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(130,59): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Pause.cpp' をコンパイルしています)
+  
+  Pitcher.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(101,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(102,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(129,57): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(130,59): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Pitcher.cpp' をコンパイルしています)
+  
+  Player.cpp
+  ReplayManager.cpp
+  Result.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(101,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Result.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(102,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Result.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(129,57): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Result.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(130,59): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Result.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Result.cpp(79,12): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Result.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Result.cpp(79,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Result.cpp' をコンパイルしています)
+  
+  RoundManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(446,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/RoundManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(447,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/RoundManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(320,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/RoundManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(320,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/RoundManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(343,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/RoundManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\RoundManager.cpp(343,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/RoundManager.cpp' をコンパイルしています)
+  
+  ShopManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(446,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(447,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(72,42): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(580,100): warning C4244: '引数': 'const int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(791,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(791,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(938,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(938,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(1063,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.cpp(1063,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ShopManager.cpp' をコンパイルしています)
+  
+  SpecialAbility.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(436,25): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/SpecialAbility.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\SpecialAbility.cpp(437,27): warning C4244: '+=': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/SpecialAbility.cpp' をコンパイルしています)
+  
+  SubMission.cpp
+  TrackingData.cpp
+  Wind.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(446,29): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Wind.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ShopManager.h(447,33): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/Wind.cpp' をコンパイルしています)
+  
+  ballCount.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballCount.cpp(44,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ballCount.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballCount.cpp(43,3): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Game/ballCount.cpp' をコンパイルしています)
+  
+  ballDistance.cpp
+  コードを生成中...
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.h(433,1): warning C4715: 'Pitcher::StringToPitchType': 値を返さないコントロール パスがあります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.h(457,1): warning C4715: 'Pitcher::StringToPower': 値を返さないコントロール パスがあります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.h(445,1): warning C4715: 'Pitcher::StringToBreakGrade': 値を返さないコントロール パスがあります。
+  コンパイル中...
+  ballSprite.cpp
+  batSprite.cpp
+  catcher.cpp
+  physxManager.cpp
+  ShadowRenderer.cpp
+  GameIntroSequence.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\GameIntroSequence.cpp(265,114): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/GameIntroSequence.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\GameIntroSequence.cpp(265,81): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/GameIntroSequence.cpp' をコンパイルしています)
+  
+  batterSelectScene.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(101,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(102,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(129,57): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(130,59): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\batterSelectScene.cpp(28,24): warning C4267: '=': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル '/Sources/Scene/batterSelectScene.cpp' をコンパイルしています)
+  
+  scene_game.cpp
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(101,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
   (ソース ファイル '/Sources/Scene/scene_game.cpp' をコンパイルしています)
   
@@ -35,4 +214,101 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(108
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_game.cpp(1086,30): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
   (ソース ファイル '/Sources/Scene/scene_game.cpp' をコンパイルしています)
   
+  scene_title.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(101,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(102,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(129,57): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(130,59): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(113,144): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Scene\scene_title.cpp(113,104): warning C4244: '引数': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Scene/scene_title.cpp' をコンパイルしています)
+  
+  SettingPanel.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(152,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(152,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(469,112): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(469,79): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(515,19): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(522,18): warning C4244: '=': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(528,30): warning C4244: '=': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(800,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(800,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(841,111): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Setting\SettingPanel.cpp(841,78): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/Setting/SettingPanel.cpp' をコンパイルしています)
+  
+  framework.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(101,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/System/framework.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(102,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/System/framework.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(129,57): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/System/framework.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(130,59): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/System/framework.cpp' をコンパイルしています)
+  
+  main.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(101,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/System/main.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(102,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/System/main.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(129,57): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/System/main.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(130,59): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/System/main.cpp' をコンパイルしています)
+  
+  ButtonManager.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(101,60): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/UI/ButtonManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\BloomRenderer.h(102,62): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/UI/ButtonManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(129,57): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/UI/ButtonManager.cpp' をコンパイルしています)
+  
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(130,59): warning C4244: '初期化中': 'float' から 'UINT' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/UI/ButtonManager.cpp' をコンパイルしています)
+  
+  ScrollView.cpp
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\UI\ScrollView.cpp(540,13): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+  (ソース ファイル '/Sources/UI/ScrollView.cpp' をコンパイルしています)
+  
+  コードを生成中...
   baseball.vcxproj -> C:\Users\2240021\Desktop\myLibrary\baseballGame\x64\Debug\baseball.exe
