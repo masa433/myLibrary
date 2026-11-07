@@ -5,6 +5,7 @@
 #include "Combo.h"
 #include <Pitcher.h>
 #include "SubMission.h"
+#include <GameModeManager.h>
 
 void HomeRunCount::Initialize(ID3D11Device* device)
 {
@@ -70,14 +71,14 @@ void HomeRunCount::Initialize(ID3D11Device* device)
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
 		100.0f,
 		screenWidth, screenHeight,
-		1024, 1024,
+		2048, 2048,
 		&homeRunCountCodepoints);
 
 	missionFont.Initialize(device,
 		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
 		100.0f,
 		screenWidth, screenHeight,
-		1024, 1024,
+		2048, 2048,
 		&homeRunCountCodepoints);
 
 	Combo::Instance().Initialize(device);

@@ -9,6 +9,7 @@
 #include "misc.h"
 #include "GameModeManager.h"
 #include "ballCount.h"
+#include "SubMission.h"
 
 void Result::Initialize(ID3D11Device* device)
 {
@@ -265,6 +266,8 @@ void Result::Update(float elapsedTime)
 					BallDistance::Instance().ResetMaxDistance();//最大飛距離をリセット
 					Combo::Instance().ResetCombo();//コンボ数をリセット
 					Combo::Instance().ResetMaxCombo();//最大コンボ数をリセット
+					SubMission::Instance().ResetSubMission();//サブミッションをリセット
+					SubMission::Instance().ResetCurrentMission();//現在のサブミッションをリセット
 					
 				}
 				if (buttonManager.IsBatterSelectRequested())

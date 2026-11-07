@@ -122,6 +122,15 @@ public:
 		return currentMission ? currentMission.get() : nullptr;// 現在のミッションが存在する場合はそのポインタを返す、存在しない場合はnullptrを返す
 	}
 
-
+	//クリア状況をリセットする関数
+	void ResetCurrentMission()
+	{
+		if (currentMission)
+		{
+			currentMission->current = 0;
+			currentMission->cleared = false;
+			currentMission->rewardClaimed = false;
+		}
+	}
 };
 

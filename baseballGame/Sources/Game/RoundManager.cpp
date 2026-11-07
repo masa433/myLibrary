@@ -494,29 +494,32 @@ void RoundManager::Render()
 		}
 	}
 
-	if(roundSpriteData && roundSprite)
+	if (GameModeManager::Instance().GetCurrentMode() == GameMode::Game)
 	{
-		DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(spritePosition);
-		DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(spriteSize);
-		DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
+		if (roundSpriteData && roundSprite)
+		{
+			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(spritePosition);
+			DirectX::XMFLOAT2 scaledSize = screenScaler.Scale(spriteSize);
+			DirectX::XMFLOAT2 scaledCenterPosition = { scaledPosition.x - scaledSize.x / 2.0f, scaledPosition.y - scaledSize.y / 2.0f };
 
-		roundSprite->render(dc,
-			scaledCenterPosition.x,
-			scaledCenterPosition.y,
-			scaledSize.x, scaledSize.y,
-			spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w,
-			roundSpriteData->rotation);
+			roundSprite->render(dc,
+				scaledCenterPosition.x,
+				scaledCenterPosition.y,
+				scaledSize.x, scaledSize.y,
+				spriteColor.x, spriteColor.y, spriteColor.z, spriteColor.w,
+				roundSpriteData->rotation);
+		}
+
+
+		// ラウンド表示の描画
+		std::string roundText = std::to_string(currentRound) + " / " + std::to_string(totalRounds);
+		DirectX::XMFLOAT2 scaledRoundTextPosition = screenScaler.Scale(roundTextPosition);
+		const float scaledRoundTextScale = roundTextScale * screenScaler.GetUniformScale();
+		roundFont.DrawTextW(Graphics::Instance().GetDeviceContext(), roundText.c_str(),
+			scaledRoundTextPosition.x, scaledRoundTextPosition.y,
+			scaledRoundTextScale,
+			roundTextColor.x, roundTextColor.y, roundTextColor.z, roundTextColor.w);
 	}
-
-
-	// ラウンド表示の描画
-	std::string roundText = std::to_string(currentRound) + " / " + std::to_string(totalRounds);
-	DirectX::XMFLOAT2 scaledRoundTextPosition = screenScaler.Scale(roundTextPosition);
-	const float scaledRoundTextScale = roundTextScale * screenScaler.GetUniformScale();
-	roundFont.DrawTextW(Graphics::Instance().GetDeviceContext(), roundText.c_str(),
-		scaledRoundTextPosition.x, scaledRoundTextPosition.y,
-		scaledRoundTextScale,
-		roundTextColor.x, roundTextColor.y, roundTextColor.z, roundTextColor.w);
 
 	
 
