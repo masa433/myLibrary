@@ -742,7 +742,7 @@ void ScrollView::Update(float elapsedTime)
 
 void ScrollView::DrawGUI()
 {
-#ifdef _DEBUG
+
 	if (ImGui::CollapsingHeader("ScrollView Settings"))
 	{
 		if (ImGui::CollapsingHeader("batterList"))
@@ -870,7 +870,7 @@ void ScrollView::DrawGUI()
 			
 		}
 	}
-#endif // _DEBUG
+
 }
 
 void ScrollView::SaveToJson(nlohmann::json& json)

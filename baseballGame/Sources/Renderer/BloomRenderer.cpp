@@ -372,7 +372,7 @@ void BloomRenderer::Composite(ID3D11DeviceContext* dc)
 
 void BloomRenderer::DrawGUI()
 {
-#ifdef _DEBUG
+
     if (ImGui::CollapsingHeader("Bloom Setting"))
     {
         ImGui::SliderFloat("Threshold", &luminance_extract_constant.threshold, 0.0f, 2.0f);
@@ -383,16 +383,16 @@ void BloomRenderer::DrawGUI()
         ImGui::SliderFloat("Sigma", &gaussian_filter_data.sigma, 1.0f, 50.0f);
         ImGui::Image(ImTextureRef(bokeh_luminance_extract_shader_resource_view.Get()), ImVec2(200, 200));
     }
-#endif
+
 }
 
 void BloomRenderer::DrawEnableCheckbox()
 {
-#ifdef _DEBUG
+
     ImGui::Checkbox("Enable Bloom", &enable_bloom);
     if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Disable for better FPS");
-#endif
+
 }
 
 void BloomRenderer::SaveToJson(nlohmann::json& j) const

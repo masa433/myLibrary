@@ -724,7 +724,7 @@ void batterSelectScene::uninitialize()
 
 void batterSelectScene::DrawGUI()
 {
-#ifdef _DEBUG
+
 
 
 	// スクロールビューのGUI描画
@@ -792,7 +792,7 @@ void batterSelectScene::DrawGUI()
 	}
 
 	ImGui::End();
-#endif // !_DEBUG
+
 }
 
 void batterSelectScene::SaveSetting()

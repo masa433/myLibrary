@@ -43,8 +43,8 @@ public:
 
     //設定
     //ヒット有効窓：ボールがストライクゾーン到達の何秒前から何秒後まで有効か
-	float hitWindowBeforeSec = 0.5f; //早すぎ判定
-	float hitWindowAfterSec = 0.5f;  //遅すぎ判定
+	float hitWindowBeforeSec = 1.0f; //早すぎ判定
+	float hitWindowAfterSec = 1.0f;  //遅すぎ判定
 
 	float timingJustWindowSec = 0.05f; //ジャスト判定窓（秒）
 	float timingSlightWindowSec = 0.01f; //少し早い/遅い判定窓（秒）

@@ -500,7 +500,7 @@ void scene_title::uninitialize()
 
 void scene_title::DrawGUI()
 {
-#ifdef _DEBUG
+
 #ifdef USE_IMGUI
 	Camera& camera = Camera::Instance();
 	DirectX::XMFLOAT3 eye = camera.GetEye();
@@ -546,7 +546,7 @@ void scene_title::DrawGUI()
 	ImGui::Checkbox("Enable Shadows", &enableShadows);
 
 #endif
-#endif
+
 }
 
 void scene_title::SaveSetting()

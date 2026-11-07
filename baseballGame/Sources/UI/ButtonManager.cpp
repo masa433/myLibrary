@@ -519,7 +519,7 @@ void ButtonManager::ChangeColor(DirectX::XMFLOAT4 color,ButtonType buttonType)
 
 void ButtonManager::DrawGUI()
 {
-#ifdef _DEBUG
+
 #ifdef USE_IMGUI
 	if (!buttonSpriteData) return;
 
@@ -594,7 +594,7 @@ void ButtonManager::DrawGUI()
 
 	ImGui::End();
 #endif
-#endif
+
 }
 
 void ButtonManager::SaveToJson(nlohmann::json& j)

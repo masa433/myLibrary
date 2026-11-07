@@ -1257,7 +1257,7 @@ void scene_game::DrawGUI()
 
 	
 
-#ifdef _DEBUG
+
 
 #ifdef USE_IMGUI
     if(showGUI)
@@ -1731,7 +1731,6 @@ void scene_game::DrawGUI()
 
 #endif // USE_IMGUI
 
-#endif // _DEBUG
 }
 
 void scene_game::SaveSetting()
