@@ -150,9 +150,10 @@ void scene_title::initialize()
 	}
 
 	//	ステージ初期化
-	if (!Physics::Instance().Initialize()) { initializationFailed = true; return; }
-	stage::Instance().initialize();
+	//if (!Physics::Instance().Initialize()) { initializationFailed = true; return; }
+	stage::Instance().initializeModel();
 	if (!stage::Instance().IsInitialized()) { initializationFailed = true; return; }
+
 
 	hexTransitionEffect.Initialize();
 	isChangingScene = false;
@@ -189,7 +190,7 @@ void scene_title::update(float elapsed_time)
 	);
 	cameraPosition = camera.GetEye();
 
-	Physics::Instance().Update(elapsed_time);
+	//Physics::Instance().Update(elapsed_time);
 
 	stage::Instance().update(elapsed_time);
 
@@ -475,7 +476,7 @@ void scene_title::uninitialize()
 	hexTransitionEffect.Uninitialize();
 	SettingManager::Instance().Uninitialize();
 
-	Physics::Instance().Finalize();
+	//Physics::Instance().Finalize();
 
 	// GPU コマンドをフラッシュしてからリソース破棄
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();

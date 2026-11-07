@@ -140,8 +140,9 @@ void scene_game::initialize()
 
     if (!Physics::Instance().Initialize()) { initializationFailed = true; return; }
 
-    stage::Instance().initialize();
+    stage::Instance().initializeModel();
 	if (!stage::Instance().IsInitialized()) { initializationFailed = true; return; }
+	stage::Instance().initializePhysics();
 
     // プレイヤーの初期化
     Player::Instance().Initialize();
@@ -748,6 +749,34 @@ void scene_game::update(float elapsed_time)
 				float g = 0.5f + (rand() % 10001) * 0.0001f * 0.5f; // 緑の成分をランダムに変化させる(0.5～1.0)
 				float b = 0.0f;
 
+                particles->Set(2, lifetime, p, v, f, s, false, 24.0f, r, g, b);
+            }
+        }
+    }
+
+    //花火
+    if (::GetAsyncKeyState('X') & 0x8000)
+    {
+        const float rate = 500.0f; // 1秒あたりのパーティクル数
+        for (const auto& pos : particle_positions)
+        {
+            int count = (int)(rate * elapsed_time + (rand() % 10001) * 0.0004f);// パーティクルの数を範囲(0～4)でランダムに変化させる
+            for (int i = 0; i < count; i++)
+            {
+                DirectX::XMFLOAT3 v = { 0,0,0 };//速度を初期化
+				v.x = (rand() % 10001) * 0.0005f + 5.0f;//5.0～10.0の間でランダムに変化させる
+                v.y = (rand() % 10001) * 0.0002f + 1.0f;//1.0～3.0の間でランダムに変化させる
+                v.z = (rand() % 10001) * 0.0005f + 5.0f;//5.0～10.0の間でランダムに変化させる
+                float t = (rand() % 10001) * 0.0001f * elapsed_time;//時間をランダムに変化させる
+                DirectX::XMFLOAT3 p;
+                p = { pos.x + v.x * t,pos.y + v.y * t,pos.z + v.z * t };//位置を時間に応じて変化させる
+                DirectX::XMFLOAT3 f = { 0,-1.2f,0 };//重力を設定
+                DirectX::XMFLOAT2 s = { 1.0f,1.0f };//サイズを設定
+				float lifetime = (rand() % 10001) * 0.0001f + 1.0f; // ランダムな寿命を設定(1.0秒～2.0秒)
+                //パーティクルの色(赤っぽいオレンジ)
+                float r = 1.0f;
+                float g = (rand() % 10001) * 0.0001f * 0.5f; // 緑の成分をランダムに変化させる(0～0.5)
+                float b = (rand() % 10001) * 0.0001f * 0.5f; // 青の成分をランダムに変化させる(0～0.5)
                 particles->Set(2, lifetime, p, v, f, s, false, 24.0f, r, g, b);
             }
         }

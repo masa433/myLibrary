@@ -24,7 +24,8 @@ public:
 
 	stage() = default;
 	virtual ~stage() = default;
-	void initialize();
+	void initializeModel();
+	void initializePhysics();
 	bool IsInitialized() const { return initialized; }
 	void update(float elapsedTime);
 	void render(const RenderContext& rc, ModelRenderer* renderer, class FrustumCulling* frustumCulling = nullptr);

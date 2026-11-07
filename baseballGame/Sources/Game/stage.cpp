@@ -64,22 +64,20 @@ static void CreateStaticMeshActor(
 }
 
 // 初期化
-void stage::initialize()
+void stage::initializeModel()
 {
 	initialized = false;
 	ID3D11Device* device = Graphics::Instance().GetDevice();
-	if (!device || !Physics::Instance().IsInitialized()) return;
+	if (!device) return;
 
 	// モデルの読み込み
-	stand = std::make_unique<Model>(".\\resources\\field\\stand.mdl");
-	ground = std::make_unique<Model>(".\\resources\\field\\ground.mdl");
+	
 	stand2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\stand.glb");
 	ground2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\ground.glb");
-	pole = std::make_unique<Model>(".\\resources\\field\\pole.mdl");
+	
 	pole2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\pole.glb");
 	lightTower2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\lightTower.glb");
-	if (!stand || !stand->IsLoaded() || !ground || !ground->IsLoaded() || !pole || !pole->IsLoaded() ||
-		!stand2 || !stand2->IsInitialized() || !ground2 || !ground2->IsInitialized() ||
+	if (!stand2 || !stand2->IsInitialized() || !ground2 || !ground2->IsInitialized() ||
 		!pole2 || !pole2->IsInitialized() || !lightTower2 || !lightTower2->IsInitialized())
 	{
 		MessageBoxW(nullptr, L"ステージモデルを読み込めませんでした。resources フォルダーを確認してください。", L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
@@ -113,6 +111,24 @@ void stage::initialize()
 	foulLineEditor.raycastTargetNames = { "Stand", "Ground" };  //ファウルラインはスタンドとグラウンドの両方に当たる可能性があるため、両方を指定
 	foulLineEditor.thickness = 0.5f;
 	foulLineEditor.extraHeight = 3.0f;
+
+	
+	initialized = true;
+
+	
+}
+
+void stage::initializePhysics()
+{
+	stand = std::make_unique<Model>(".\\resources\\field\\stand.mdl");
+	ground = std::make_unique<Model>(".\\resources\\field\\ground.mdl");
+	pole = std::make_unique<Model>(".\\resources\\field\\pole.mdl");
+
+	if (!stand || !stand->IsLoaded() || !ground || !ground->IsLoaded() || !pole || !pole->IsLoaded())
+	{
+		MessageBoxW(nullptr, L"ステージモデルを読み込めませんでした。resources フォルダーを確認してください。", L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
+		return;
+	}
 
 	//静的剛体の作成
 	{
@@ -151,12 +167,12 @@ void stage::initialize()
 		const ModelResource* groundResources = ground->GetResource();
 		for (const ModelResource::Mesh& mesh : groundResources->GetMeshes())
 		{
-			
+
 			const Model::Node& node = ground->GetNodes().at(mesh.nodeIndex);
 			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(groundScale.x, groundScale.y, groundScale.z);
 			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(groundAngle.x, groundAngle.y, groundAngle.z);
 			DirectX::XMMATRIX NodeTransform = DirectX::XMLoadFloat4x4(&node.globalTransform) * S * R * GroundTransform;
-			
+
 			CreateStaticMeshActor(pxPhysics, pxScene, mesh, NodeTransform, groundMaterial, "Ground", actors, triangle_meshes);
 		}
 
@@ -172,9 +188,6 @@ void stage::initialize()
 		}
 
 	}
-	initialized = true;
-
-	
 }
 
 void stage::UpdateLineEditor(LineTriggerEditor& editor,
