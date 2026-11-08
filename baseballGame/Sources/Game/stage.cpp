@@ -76,9 +76,9 @@ void stage::initializeModel()
 	ground2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\ground.glb");
 	
 	pole2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\pole.glb");
-	lightTower2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\lightTower.glb");
+	
 	if (!stand2 || !stand2->IsInitialized() || !ground2 || !ground2->IsInitialized() ||
-		!pole2 || !pole2->IsInitialized() || !lightTower2 || !lightTower2->IsInitialized())
+		!pole2 || !pole2->IsInitialized())
 	{
 		MessageBoxW(nullptr, L"ステージモデルを読み込めませんでした。resources フォルダーを確認してください。", L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
 		return;
@@ -87,7 +87,7 @@ void stage::initializeModel()
 	stand2->build_static_batches(device);
 	ground2->build_static_batches(device);
 	pole2->build_static_batches(device);
-	lightTower2->build_static_batches(device);
+	
 
 	// 位置、スケール、回転の初期化
 	standPosition = { 0.0f, 0.0f, 0.0f };
@@ -188,6 +188,22 @@ void stage::initializePhysics()
 		}
 
 	}
+}
+
+void stage::initializeLightTower()
+{
+	ID3D11Device* device = Graphics::Instance().GetDevice();
+	if (!device) return;
+
+	lightTower2 = std::make_unique<gltf_model>(device, ".\\resources\\field\\lightTower.glb");
+
+	if (!lightTower2 || !lightTower2->IsInitialized())
+	{
+		MessageBoxW(nullptr, L"ステージモデルを読み込めませんでした。resources フォルダーを確認してください。", L"BASEBALL 起動エラー", MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	lightTower2->build_static_batches(device);
 }
 
 void stage::UpdateLineEditor(LineTriggerEditor& editor,
@@ -460,6 +476,19 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 		}
 	}
 
+	
+
+	/*for (Flag& f : flags)
+	{
+		f.Render(rc, renderer);
+	}*/
+
+}
+
+void stage::renderLightTower(const RenderContext& rc, ModelRenderer* renderer, FrustumCulling* frustumCulling)
+{
+	if (!initialized || !rc.deviceContext) return;
+
 	std::vector<DirectX::XMFLOAT4X4> visibleTowerTransforms;
 	visibleTowerTransforms.reserve(TOWER_COUNT);// 4箇所のライトタワーの変換行列を格納するベクターを確保
 
@@ -486,23 +515,17 @@ void stage::render(const RenderContext& rc, ModelRenderer* renderer, FrustumCull
 		}
 	}
 
-	if(lightTower2 && lightTower2->IsInitialized() && !visibleTowerTransforms.empty() && isInstancingEnabled)
+	if (lightTower2 && lightTower2->IsInitialized() && !visibleTowerTransforms.empty() && isInstancingEnabled)
 	{
 		lightTower2->render_batched_instanced(rc.deviceContext, visibleTowerTransforms);
 	}
-	else if(lightTower2 && lightTower2->IsInitialized() && !isInstancingEnabled)
+	else if (lightTower2 && lightTower2->IsInitialized() && !isInstancingEnabled)
 	{
 		for (const auto& towerTransform : visibleTowerTransforms)
 		{
 			lightTower2->render_batched(rc.deviceContext, towerTransform, {});
 		}
 	}
-
-	/*for (Flag& f : flags)
-	{
-		f.Render(rc, renderer);
-	}*/
-
 }
 
 // 終了

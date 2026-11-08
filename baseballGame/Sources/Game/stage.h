@@ -26,9 +26,11 @@ public:
 	virtual ~stage() = default;
 	void initializeModel();
 	void initializePhysics();
+	void initializeLightTower();
 	bool IsInitialized() const { return initialized; }
 	void update(float elapsedTime);
 	void render(const RenderContext& rc, ModelRenderer* renderer, class FrustumCulling* frustumCulling = nullptr);
+	void renderLightTower(const RenderContext& rc, ModelRenderer* renderer, class FrustumCulling* frustumCulling = nullptr);
 	void uninitialize();
 	void DrawGUI();
 

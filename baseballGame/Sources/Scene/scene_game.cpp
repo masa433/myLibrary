@@ -141,6 +141,7 @@ void scene_game::initialize()
     if (!Physics::Instance().Initialize()) { initializationFailed = true; return; }
 
     stage::Instance().initializeModel();
+	stage::Instance().initializeLightTower();
 	if (!stage::Instance().IsInitialized()) { initializationFailed = true; return; }
 	stage::Instance().initializePhysics();
 
@@ -999,6 +1000,7 @@ void scene_game::render(float elapsedTime)
     // ステージの描画
     //フラスタムカリングを有効にする場合は frustumCulling を渡す、無効にする場合は nullptr を渡す
     stage::Instance().render(rc, modelRenderer, enableFrustumCulling ? &frustumCulling : nullptr);
+	stage::Instance().renderLightTower(rc, modelRenderer, enableFrustumCulling ? &frustumCulling : nullptr);
 
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
