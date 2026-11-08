@@ -205,7 +205,7 @@ void Result::Update(float elapsedTime)
 		buttonManager.ResetButtonAlpha(ButtonManager::ButtonType::Next);
 	}
 	
-	if(!buttonManager.IsButtonAlphaZero())
+	if(!buttonManager.IsButtonAlphaZero() && currentState != State::Transition)
 	{
 		buttonManager.Update(elapsedTime);
 	}
