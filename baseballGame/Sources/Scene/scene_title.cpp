@@ -152,7 +152,7 @@ void scene_title::initialize()
 	//	ステージ初期化
 	//if (!Physics::Instance().Initialize()) { initializationFailed = true; return; }
 	stage::Instance().initializeModel();
-	if (!stage::Instance().IsInitialized()) { initializationFailed = true; return; }
+	//if (!stage::Instance().IsInitialized()) { initializationFailed = true; return; }
 
 
 	hexTransitionEffect.Initialize();
@@ -162,7 +162,7 @@ void scene_title::initialize()
 
 	SettingManager::Instance().Initialize(device, context);
 	
-	devmidiInit();
+	//devmidiInit();
 
 	LoadSetting();
 }
@@ -261,7 +261,7 @@ void scene_title::update(float elapsed_time)
 		}
 	}
 	
-	devmidiUpdate();
+	//devmidiUpdate();
 }
 
 void scene_title::render(float elapsed_time)
@@ -476,7 +476,7 @@ void scene_title::render(float elapsed_time)
 void scene_title::uninitialize()
 {
 	stage::Instance().uninitialize();
-	devmidiTerm();
+	//devmidiTerm();
 
 	skyRenderer.Uninitialize();
 	shadowRenderer.Uninitialize();
@@ -525,9 +525,9 @@ void scene_title::DrawGUI()
 		ImGui::SliderFloat("Dir Intensity", &directional_light_intensity, 0.0f, 5.0f);
 		ImGui::End();
 
-		ImGui::Begin("MIDI Keyboard");
+		/*ImGui::Begin("MIDI Keyboard");
 		drawMidiKeyboard("main_kb");
-		ImGui::End();
+		ImGui::End();*/
 
 		if (ImGui::CollapsingHeader("TitleButton"))
 		{

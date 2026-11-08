@@ -88,6 +88,7 @@ void Result::Initialize(ID3D11Device* device)
 
 	isResultToTitle = false;
 	isResultToBatterSelect = false;
+	isResultToRetry = false;
 
 	hasEnteredResult = false;
 	hasReplay = false;
@@ -237,7 +238,7 @@ void Result::Update(float elapsedTime)
 			
 
 			//タイトルシーンに戻るボタンの更新処理
-			if (!isResultToTitle && !isResultToBatterSelect)
+			if (!isResultToTitle &&  !isResultToBatterSelect && !isResultToRetry)
 			{
 				if (buttonManager.IsTitleRequested())
 				{
@@ -248,7 +249,7 @@ void Result::Update(float elapsedTime)
 					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 
 				}
-				if (buttonManager.IsRetryRequested())
+				if (buttonManager.IsRetryRequested() && GameModeManager::Instance().GetCurrentMode() == GameMode::FreeBatting)
 				{
 					//hexTransitionEffect.Start(1.0f);
 					buttonManager.ResetRetryRequest(false);
@@ -269,6 +270,14 @@ void Result::Update(float elapsedTime)
 					SubMission::Instance().ResetSubMission();//サブミッションをリセット
 					SubMission::Instance().ResetCurrentMission();//現在のサブミッションをリセット
 					
+				}
+				if(buttonManager.IsRetryRequested() && GameModeManager::Instance().GetCurrentMode() == GameMode::Game)
+				{
+					isResultToRetry = true;
+					hexTransitionEffect.Start(1.0f);
+					buttonManager.ResetRetryRequest(false);
+					currentState = State::Transition;
+					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
 				}
 				if (buttonManager.IsBatterSelectRequested())
 				{
@@ -297,6 +306,10 @@ void Result::Update(float elapsedTime)
 				{
 					ChangeSceneGameToTitle();
 					
+				}
+				else if (isResultToRetry)
+				{
+					ChangeSceneGameToGame();
 				}
 				else if (isResultToBatterSelect)
 				{
@@ -717,7 +730,7 @@ void Result::Render()
 	}
 
 
-	if(isResultToTitle|| isResultToBatterSelect)
+	if(isResultToTitle|| isResultToBatterSelect || isResultToRetry)
 	{
 		hexTransitionEffect.Render();
 	}

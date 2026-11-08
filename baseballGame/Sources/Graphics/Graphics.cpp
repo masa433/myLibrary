@@ -24,7 +24,7 @@ static void WarmUpD3D()
 // 初期化
 bool Graphics::Initialize(HWND hWnd)
 {
-	WarmUpD3D();
+	//WarmUpD3D();
 
 	auto reportFailure = [](const wchar_t* stage, HRESULT result)
 	{
@@ -110,18 +110,6 @@ bool Graphics::Initialize(HWND hWnd)
 
 				DXGI_ADAPTER_DESC1 desc;
 				adapter->GetDesc1(&desc);
-
-				uint32_t j = 0;
-				while(adapter->EnumOutputs(j, &output) != DXGI_ERROR_NOT_FOUND)
-				{
-
-					DXGI_OUTPUT_DESC outdescr;
-					output->GetDesc(&outdescr);
-
-					j++;
-					output->Release();
-					output = nullptr;
-				}
 
 				
 				if (adapterIndex == 0 && (desc.VendorId == nvidia || desc.VendorId == ati))

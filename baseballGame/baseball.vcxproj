@@ -138,8 +138,8 @@
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
       <ObjectFileOutput>$(ProjectDir)resources\shader\%(Filename).cso</ObjectFileOutput>
-      <AssemblerOutput>AssemblyCode</AssemblerOutput>
-      <AssemblerOutputFile>$(ProjectDir)resources\shader\%(Filename).cod</AssemblerOutputFile>
+      <AssemblerOutputFile>
+      </AssemblerOutputFile>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -197,8 +197,8 @@
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
       <ObjectFileOutput>$(ProjectDir)resources\shader\%(Filename).cso</ObjectFileOutput>
-      <AssemblerOutput>AssemblyCode</AssemblerOutput>
-      <AssemblerOutputFile>$(ProjectDir)resources\shader\%(Filename).cod</AssemblerOutputFile>
+      <AssemblerOutputFile>
+      </AssemblerOutputFile>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
