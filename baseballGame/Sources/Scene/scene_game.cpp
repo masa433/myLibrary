@@ -368,14 +368,6 @@ void scene_game::initialize()
     cheerSound = Audio::Instance().LoadAudioSource("resources/sounds/BGM/Cheer.wav",SoundType::BGM);
 	isCheerSoundPlaying = false;
 	isOneShotFadeStarted = false;
-
-    //ドローコール表示用
-    D3D11_QUERY_DESC query_desc{};
-    query_desc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
-    query_desc.MiscFlags = 0;
-    hr = device->CreateQuery(&query_desc, pipeline_stats_query.ReleaseAndGetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr) && pipeline_stats_query, hr_trace(hr));
-
    
     // 設定のロード
     LoadSetting();
@@ -723,17 +715,6 @@ void scene_game::render(float elapsedTime)
         frustumCulling.Construct(camera.GetView(), camera.GetProjection());
     }
 
-    // 前フレームの結果を取得（ノンブロッキング）
-    /*dc->GetData(pipeline_stats_query.Get(), &pipeline_stats,
-        sizeof(pipeline_stats), D3D11_ASYNC_GETDATA_DONOTFLUSH);*/
-
-        // 今フレームの計測開始
-        //dc->Begin(pipeline_stats_query.Get());
-
-        // shadowRenderer にカメラ位置を渡す
-    //shadowRenderer.SetCameraPosition(cameraPosition);
-
-	
     // 3本の描画呼び出し（関数名だけ変わる）
     if (enableShadows)
     {
@@ -1185,7 +1166,6 @@ void scene_game::uninitialize()
     sprite_vertex_shader.Reset();
     sprite_input_layout.Reset();
     sprite_pixel_shader.Reset();
-    pipeline_stats_query.Reset();
 	shadow_quality_constant_buffer.Reset();
     fast_approximate_anti_aliasing_pixel_shader.Reset();
 	fast_approximate_anti_aliasing_sprite.reset();

@@ -212,10 +212,7 @@ private:
 	
 
 private:
-    //ドローコール表示用
-    Microsoft::WRL::ComPtr<ID3D11Query> pipeline_stats_query;
-    D3D11_QUERY_DATA_PIPELINE_STATISTICS pipeline_stats = {};
-
+  
     std::vector<std::string> consoleLog;
 
 private:
