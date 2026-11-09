@@ -16,7 +16,7 @@
 #include "..\Sources\Audio\AudioSource.h"
 #include "..\Sources\Audio\Audio.h"
 #include "DoFRenderer.h"
-#include "particle_system.h"
+#include "ParticleRenderer.h"
 
 CONST LONG SCREEN_WIDTH{ 1920 };
 CONST LONG SCREEN_HEIGHT{ 1080 };
@@ -47,6 +47,8 @@ private:
 	BloomRenderer bloomRenderer;
 
 	DoFRenderer dofRenderer;
+
+    ParticleRenderer particleRenderer;
 
 private:
     //	カスケードシャドウマップ数
@@ -235,15 +237,5 @@ private:
     float near_clip_distance{ 0.1f };
     float far_clip_distance{ 1000.0f };
 
-private:
-	std::unique_ptr<particle_system> particles;
-	std::vector<DirectX::XMFLOAT3> particle_positions;
-	std::vector<DirectX::XMFLOAT3> fireworks_positions;
-	bool isFireworksActive = false;
-	float fireworksTimer = 0.0f;
-	int fireworksCount = 0;
-	const int maxFireworksCount = 5;
-	bool isLaunchingFireworks = false;
-	int loopCount = 0;
-	int maxLoopCount = 2;
+
 };

@@ -266,6 +266,9 @@
     <ClCompile Include="Sources\Particle\particle_system.cpp">
       <Filter>Sources\Particle</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Renderer\ParticleRenderer.cpp">
+      <Filter>Sources\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Game\Ball.h">
@@ -562,6 +565,9 @@
     </ClInclude>
     <ClInclude Include="Sources\Particle\particle_system.h">
       <Filter>Sources\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Renderer\ParticleRenderer.h">
+      <Filter>Sources\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
