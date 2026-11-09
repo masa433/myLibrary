@@ -238,5 +238,12 @@ private:
 private:
 	std::unique_ptr<particle_system> particles;
 	std::vector<DirectX::XMFLOAT3> particle_positions;
-
+	std::vector<DirectX::XMFLOAT3> fireworks_positions;
+	bool isFireworksActive = false;
+	float fireworksTimer = 0.0f;
+	int fireworksCount = 0;
+	const int maxFireworksCount = 5;
+	bool isLaunchingFireworks = false;
+	int loopCount = 0;
+	int maxLoopCount = 2;
 };

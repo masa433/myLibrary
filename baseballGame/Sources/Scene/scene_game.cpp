@@ -400,6 +400,15 @@ void scene_game::initialize()
 			{ 0.0f, 0.0f, 0.0f },// 10個のパーティクル位置を設定
             
 		};
+
+        fireworks_positions = {
+            { 0.0f, 0.0f, 0.0f },
+            { 10.0f, 0.0f, 10.0f },
+            { -10.0f, 0.0f, -10.0f },
+            { 5.0f, 5.0f, 5.0f },
+            { -5.0f, -5.0f, -5.0f },
+            
+		};
     }
 
     // 設定のロード
@@ -756,31 +765,81 @@ void scene_game::update(float elapsed_time)
     }
 
     //花火
-    if (::GetAsyncKeyState('X') & 0x8000)
+    if (isHomeRun || ::GetAsyncKeyState('X') & 0x8000)
     {
-        const float rate = 500.0f; // 1秒あたりのパーティクル数
-        for (const auto& pos : particle_positions)
+        if(!isFireworksActive)
         {
-            int count = (int)(rate * elapsed_time + (rand() % 10001) * 0.0004f);// パーティクルの数を範囲(0～4)でランダムに変化させる
-            for (int i = 0; i < count; i++)
+			isFireworksActive = true;
+			fireworksTimer = 1.0f;//1発目をすぐに出すために1秒に設定
+			fireworksCount = 0;
+
+        }
+
+        if(isFireworksActive)
+        {
+
+			fireworksTimer += elapsed_time;
+
+            if(fireworksTimer >= 0.5f)
             {
-                DirectX::XMFLOAT3 v = { 0,0,0 };//速度を初期化
-				v.x = (rand() % 10001) * 0.0005f + 5.0f;//5.0～10.0の間でランダムに変化させる
-                v.y = (rand() % 10001) * 0.0002f + 1.0f;//1.0～3.0の間でランダムに変化させる
-                v.z = (rand() % 10001) * 0.0005f + 5.0f;//5.0～10.0の間でランダムに変化させる
-                float t = (rand() % 10001) * 0.0001f * elapsed_time;//時間をランダムに変化させる
-                DirectX::XMFLOAT3 p;
-                p = { pos.x + v.x * t,pos.y + v.y * t,pos.z + v.z * t };//位置を時間に応じて変化させる
-                DirectX::XMFLOAT3 f = { 0,-1.2f,0 };//重力を設定
-                DirectX::XMFLOAT2 s = { 1.0f,1.0f };//サイズを設定
-				float lifetime = (rand() % 10001) * 0.0001f + 1.0f; // ランダムな寿命を設定(1.0秒～2.0秒)
-                //パーティクルの色(赤っぽいオレンジ)
-                float r = 1.0f;
-                float g = (rand() % 10001) * 0.0001f * 0.5f; // 緑の成分をランダムに変化させる(0～0.5)
-                float b = (rand() % 10001) * 0.0001f * 0.5f; // 青の成分をランダムに変化させる(0～0.5)
-                particles->Set(2, lifetime, p, v, f, s, false, 24.0f, r, g, b);
+
+                fireworksTimer = 0.0f;
+				fireworksCount++;
+
+                if(!fireworks_positions.empty())
+                {
+					const auto& pos = fireworks_positions[fireworksCount % fireworks_positions.size()];
+
+                    int count = 500; // パーティクルの数を固定で500に設定
+                    for (int i = 0; i < count; i++)
+                    {
+                        //ランダムな方向を生成するために球面座標系を使用
+                        float theta = (rand() % 10001) * 0.0001f * DirectX::XM_PI * 2.0f;
+                        float phi = (rand() % 10001) * 0.0001f * DirectX::XM_PI;
+
+                        float speed = (rand() % 10001) * 0.0007f + 5.0f;//5.0～12.0の間でランダムに変化させる
+
+
+                        DirectX::XMFLOAT3 v = { 0,0,0 };//速度を初期化
+                        v.x = sinf(phi) * cosf(theta) * speed;//球面座標系を使ってランダムな方向に速度を設定
+                        v.y = cosf(phi) * speed;//-12.5～12.5の間でランダムに変化させる
+                        v.z = sinf(phi) * sinf(theta) * speed;//-10.0～10.0の間でランダムに変化させる
+                        float t = (rand() % 10001) * 0.0001f * elapsed_time;//時間をランダムに変化させる
+                        DirectX::XMFLOAT3 p;
+                        p = { pos.x + v.x * t,pos.y + v.y * t,pos.z + v.z * t };//位置を時間に応じて変化させる
+                        DirectX::XMFLOAT3 f = { 0,-1.2f,0 };//重力を設定
+                        DirectX::XMFLOAT2 s = { 0.7f,0.7f };//サイズを設定
+                        float lifetime = (rand() % 10001) * 0.0001f + 1.0f; // ランダムな寿命を設定(1.0秒～2.0秒)
+                        //パーティクルの色(赤っぽいオレンジ)
+                        float r = 1.0f;
+                        float g = (rand() % 10001) * 0.0001f * 0.5f; // 緑の成分をランダムに変化させる(0～0.5)
+                        float b = (rand() % 10001) * 0.0001f * 0.5f; // 青の成分をランダムに変化させる(0～0.5)
+
+                        //パーティクルを1発ずつ生成する
+                        particles->Set(2, lifetime, p, v, f, s, false, 24.0f, r, g, b);
+
+						if (fireworksCount >= maxFireworksCount)
+                        {
+                            fireworksCount = 0;//花火の最大数に達したら最初の花火に戻す
+							loopCount++;//ループ回数を増やす
+                        }
+                        if (loopCount >= maxLoopCount)//ループ回数が最大数に達したら花火を終了する
+                        {
+                            isFireworksActive = false;
+							fireworksTimer = 0.0f;
+							loopCount = 0;
+                        }
+
+                    }
+                }
             }
         }
+             
+    }
+    else
+    {
+        isFireworksActive = false;
+		fireworksTimer = 0.0f;
     }
     
     //	パーティクル更新
@@ -1362,6 +1421,11 @@ void scene_game::DrawGUI()
             {
 				ImGui::DragFloat3(("Particle Position " + std::to_string(&pos - &particle_positions[0])).c_str(), &pos.x, 0.1f);			
             }
+			ImGui::Separator();
+            for(auto& fireWorkPos : fireworks_positions)
+            {
+                ImGui::DragFloat3(("Firework Position " + std::to_string(&fireWorkPos - &fireworks_positions[0])).c_str(), &fireWorkPos.x, 0.1f);
+			}
         }
 
         ImGui::End();
@@ -1860,6 +1924,10 @@ void scene_game::SaveSetting()
     {
 		j["particle_positions"].push_back({ pos.x, pos.y, pos.z });
     }
+    for(auto& fireWorkPos : fireworks_positions)
+    {
+        j["fireworks_positions"].push_back({ fireWorkPos.x, fireWorkPos.y, fireWorkPos.z });
+	}
 
     //各クラスの保存処理
     Pitcher::Instance().SaveToJson(j["pitcher"]);
@@ -2035,6 +2103,14 @@ void scene_game::LoadSetting()
         for (const auto& pos : j["particle_positions"])
         {
             particle_positions.emplace_back(pos[0], pos[1], pos[2]);
+        }
+	}
+    if(j.contains("fireworks_positions"))
+    {
+        fireworks_positions.clear();// 既存の花火位置をクリア
+        for (const auto& pos : j["fireworks_positions"])
+        {
+            fireworks_positions.emplace_back(pos[0], pos[1], pos[2]);
         }
 	}
 
