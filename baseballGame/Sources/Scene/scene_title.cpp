@@ -126,6 +126,11 @@ void scene_title::initialize()
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 	if (!spriteVS || !spritePS || !spriteInputLayout) { initializationFailed = true; OutputDebugStringA("scene_title initialization failed: sprite shader unavailable\n"); return; }
 
+	//FXAA用のシェーダーをロード
+	create_ps_from_cso(device, ".\\resources\\shader\\fast_approximate_anti_aliasing_ps.cso", fast_approximate_anti_aliasing_pixel_shader.ReleaseAndGetAddressOf());
+
+	fast_approximate_anti_aliasing_sprite = std::make_unique<sprite>(device, scene_shader_resource_view.Get());
+
 	logoSpriteData = std::make_unique<SpriteData>();
 	logoSpriteData->texturePath = L".\\resources\\textures\\titleLogo.png";
 	logoSpriteData->position = { logoPosition.x, logoPosition.y };
@@ -464,6 +469,28 @@ void scene_title::render(float elapsed_time)
 	// ここでブルームの合成を行う
 	bloomRenderer.Composite(dc);
 
+	//FXAAの描画
+	{
+		dc->OMSetRenderTargets(1, &backbufferRTV, nullptr);
+
+		// ブレンドを「なし（上書き）」に設定する
+		dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+		// 深度テストもオフにする
+		dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+
+		//FXAA用シェーダーの切り替え
+		dc->VSSetShader(spriteVS.Get(), nullptr, 0);
+		ID3D11PixelShader* activePS = is_fast_approximate_anti_aliasing ?
+			fast_approximate_anti_aliasing_pixel_shader.Get() : spritePS.Get();
+		dc->PSSetShader(activePS, nullptr, 0);
+		dc->IASetInputLayout(spriteInputLayout.Get());
+		// 入力テクスチャをセット
+		ID3D11ShaderResourceView* srvs[] = { scene_shader_resource_view.Get() };
+		dc->PSSetShaderResources(0, 1, srvs);
+
+		fast_approximate_anti_aliasing_sprite->render(dc, 0, 0, Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight());
+	}
+
 	if (isChangingScene)
 	{
 		hexTransitionEffect.Render();
@@ -505,6 +532,8 @@ void scene_title::uninitialize()
 	spriteInputLayout.Reset();
 	logoSprite.reset();
 	logoSpriteData.reset();
+	fast_approximate_anti_aliasing_pixel_shader.Reset();
+	fast_approximate_anti_aliasing_sprite.reset();
 	buttonManager.Uninitialize();
 }
 
@@ -556,6 +585,10 @@ void scene_title::DrawGUI()
 			bloomRenderer.DrawEnableCheckbox();
 		}
 		ImGui::Checkbox("Enable Shadows", &enableShadows);
+		if (ImGui::CollapsingHeader("fast approximate anti aliasing"))
+		{
+			ImGui::Checkbox("use FXAA", &is_fast_approximate_anti_aliasing);
+		}
 	}
 
 #endif

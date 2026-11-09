@@ -136,27 +136,31 @@ void Wind::Uninitialize()
 void Wind::Update(float elapsedTime)
 {
 	// 風の流線のアニメーション
-	for (auto& line : windLines)
+	//風の強さが1m/s以上の場合のみ描画する
+	if (windStrength >= 1.0f)
 	{
-		const float v = line.speed * windStrength;
-		line.position.x += windDirection.x * v * elapsedTime;
-		line.baseYOffset += (windDirection.y * line.speed * elapsedTime) / (windThickness > 0.01f ? windThickness : 0.01f);
-		line.position.z += windDirection.z * v * elapsedTime;
-		line.phase += elapsedTime * 4.0f;
+		for (auto& line : windLines)
+		{
+			const float v = line.speed * windStrength;
+			line.position.x += windDirection.x * v * elapsedTime;
+			line.baseYOffset += (windDirection.y * line.speed * elapsedTime) / (windThickness > 0.01f ? windThickness : 0.01f);
+			line.position.z += windDirection.z * v * elapsedTime;
+			line.phase += elapsedTime * 4.0f;
 
-		// 画面外に出たらループさせる (X軸とZ軸)
-		if (line.position.x > 100.0f) line.position.x -= 200.0f;
-		else if (line.position.x < -100.0f) line.position.x += 200.0f;
+			// 画面外に出たらループさせる (X軸とZ軸)
+			if (line.position.x > 100.0f) line.position.x -= 200.0f;
+			else if (line.position.x < -100.0f) line.position.x += 200.0f;
 
-		if (line.position.z > 100.0f) line.position.z -= 105.0f;
-		else if (line.position.z < -5.0f) line.position.z += 105.0f;
+			if (line.position.z > 100.0f) line.position.z -= 105.0f;
+			else if (line.position.z < -5.0f) line.position.z += 105.0f;
 
-		// Y軸(上下)の相対範囲ループ (0.0 ～ 1.0)
-		if (line.baseYOffset > 1.0f) line.baseYOffset -= 1.0f;
-		else if (line.baseYOffset < 0.0f) line.baseYOffset += 1.0f;
+			// Y軸(上下)の相対範囲ループ (0.0 ～ 1.0)
+			if (line.baseYOffset > 1.0f) line.baseYOffset -= 1.0f;
+			else if (line.baseYOffset < 0.0f) line.baseYOffset += 1.0f;
 
-		// 実際のY座標を計算して更新
-		line.position.y = line.baseYOffset * windThickness;
+			// 実際のY座標を計算して更新
+			line.position.y = line.baseYOffset * windThickness;
+		}
 	}
 }
 
@@ -170,27 +174,30 @@ void Wind::Render(const RenderContext& rc)
 	if (ShopManager::Instance().IsShopOpen()) return;
 
 	// 風の流線を描画
-	for (const auto& line : windLines)
+	//風の強さが1m/s以上の場合のみ描画する
+	if (windStrength >= 1.0f)
 	{
-		DirectX::XMFLOAT3 start = line.position;
-		start.y += windHeight; // 風の高さを加算
-		DirectX::XMFLOAT3 end = {
-			line.position.x - windDirection.x * line.length,
-			(line.position.y + windHeight) - windDirection.y * line.length,
-			line.position.z - windDirection.z * line.length
-		};
-
-		DirectX::XMFLOAT4 color = { 0.8f, 0.9f, 1.0f, 0.35f };
-
-		primitiveRenderer->AddVertex(start, color);
-		primitiveRenderer->AddVertex(end, color);
-
-		Camera& camera = Camera::Instance();
-
-		//風の強さが1m/s以上の場合のみ描画する
-		if (windStrength >= 1.0f)
+		for (const auto& line : windLines)
 		{
+			DirectX::XMFLOAT3 start = line.position;
+			start.y += windHeight; // 風の高さを加算
+			DirectX::XMFLOAT3 end = {
+				line.position.x - windDirection.x * line.length,
+				(line.position.y + windHeight) - windDirection.y * line.length,
+				line.position.z - windDirection.z * line.length
+			};
+
+			DirectX::XMFLOAT4 color = { 0.8f, 0.9f, 1.0f, 0.35f };
+
+			primitiveRenderer->AddVertex(start, color);
+			primitiveRenderer->AddVertex(end, color);
+
+			Camera& camera = Camera::Instance();
+
+
+
 			primitiveRenderer->Render(dc, camera.GetView(), camera.GetProjection(), D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+
 		}
 	}
 

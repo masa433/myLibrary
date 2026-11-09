@@ -172,4 +172,10 @@ private:
 
 	bool enableShadows = true;
 	bool showGUI = false;
+
+private:
+	// FXAA用の変数など
+	bool is_fast_approximate_anti_aliasing = true;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> fast_approximate_anti_aliasing_pixel_shader;
+	std::unique_ptr<sprite> fast_approximate_anti_aliasing_sprite;
 };

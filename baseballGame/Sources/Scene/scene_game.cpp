@@ -469,7 +469,7 @@ void scene_game::update(float elapsed_time)
     //仮でエスケープキーを押したらポーズ画面に移行
     if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
     {
-        if((!isGameFinished && gameIntroSequence.IsPlaying()))
+        if((!isGameFinished && gameIntroSequence.IsPlaying() && Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch))
         {
             Pause::Instance().OpenPauseScreen();
         }
