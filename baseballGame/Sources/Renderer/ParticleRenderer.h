@@ -3,6 +3,8 @@
 #include "shader.h"
 #include "texture.h"
 #include "sprite.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 using json = nlohmann::json;
 
@@ -29,4 +31,6 @@ private:
 	bool isLaunchingFireworks = false;
 	int loopCount = 0;
 	int maxLoopCount = 2;
+
+	AudioSource* fireworksSound = nullptr;
 };

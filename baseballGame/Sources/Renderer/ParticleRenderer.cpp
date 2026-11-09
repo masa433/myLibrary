@@ -44,11 +44,14 @@ void ParticleRenderer::Initialize(ID3D11Device* device, ID3D11DeviceContext* con
     isLaunchingFireworks = false;
     loopCount = 0;
     maxLoopCount = 2;
+
+	fireworksSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\FireWorks.wav", SoundType::SE);
 }
 
 void ParticleRenderer::Uninitialize()
 {
     particles.reset();
+	delete fireworksSound;
 }
 
 void ParticleRenderer::Update(float elapsed_time, bool isHomeRun)
@@ -112,6 +115,7 @@ void ParticleRenderer::Update(float elapsed_time, bool isHomeRun)
 
                 fireworksTimer = 0.0f;
                 fireworksCount++;
+				if (fireworksSound) fireworksSound->PlayOneShot(); // ‰Ô‰Î‚Ì‰¹‚ğÄ¶
 
                 if (!fireworks_positions.empty())
                 {

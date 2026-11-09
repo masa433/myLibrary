@@ -156,9 +156,9 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Renderer\DoFRenderer.h(1
   (ソース ファイル '/Sources/UI/ButtonManager.cpp' をコンパイルしています)
   
   コードを生成中...
-C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.h(457,1): warning C4715: 'Pitcher::StringToPower': 値を返さないコントロール パスがあります。
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.h(445,1): warning C4715: 'Pitcher::StringToBreakGrade': 値を返さないコントロール パスがあります。
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.h(433,1): warning C4715: 'Pitcher::StringToPitchType': 値を返さないコントロール パスがあります。
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Pitcher.h(457,1): warning C4715: 'Pitcher::StringToPower': 値を返さないコントロール パスがあります。
   ライブラリを検索しています。
       C:\Program Files (x86)\Windows Kits\10\lib\10.0.26100.0\um\x64\d3d11.lib を検索中:
   ライブラリの検索が終了しました。
