@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ParticleRenderer.h"
 #include "Graphics.h"
+#include "camera.h"
 
 void ParticleRenderer::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
@@ -103,6 +104,26 @@ void ParticleRenderer::Update(float elapsed_time, bool isHomeRun)
             fireworksTimer = 1.0f;//1発目をすぐに出すために1秒に設定
             fireworksCount = 0;
 
+			//カメラのeyeの位置を取得
+			const DirectX::XMFLOAT3 cameraEye = Camera::Instance().GetEye();
+			//カメラの前方向のベクトルを取得
+			const DirectX::XMFLOAT3 cameraFront = Camera::Instance().GetFront();
+
+			//カメラのeyeの位置から前方向に40.0f進めた位置を花火の発射位置とする
+			DirectX::XMFLOAT3 launchPosition =
+            { 
+                cameraEye.x + cameraFront.x * 40.0f,
+                cameraEye.y + cameraFront.y * 40.0f,
+                cameraEye.z + cameraFront.z * 40.0f 
+            };
+
+			//花火の発射位置をfireworks_positionsの要素に設定
+			fireworks_positions.clear();//花火の発射位置をクリア
+			fireworks_positions.push_back(launchPosition);//花火の発射位置を追加
+			fireworks_positions.push_back({ launchPosition.x + 1.0f, launchPosition.y + 1.0f, launchPosition.z + 1.0f });
+			fireworks_positions.push_back({ launchPosition.x - 1.0f, launchPosition.y - 1.0f, launchPosition.z - 1.0f });
+            
+           
         }
 
         if (isFireworksActive)
@@ -128,7 +149,7 @@ void ParticleRenderer::Update(float elapsed_time, bool isHomeRun)
                         float theta = (rand() % 10001) * 0.0001f * DirectX::XM_PI * 2.0f;
                         float phi = (rand() % 10001) * 0.0001f * DirectX::XM_PI;
 
-                        float speed = (rand() % 10001) * 0.0007f + 5.0f;//5.0～12.0の間でランダムに変化させる
+						float speed = (rand() % 10001) * 0.0002f + 2.0f;//速度をランダムに変化させる(2.0～4.0の間)
 
 
                         DirectX::XMFLOAT3 v = { 0,0,0 };//速度を初期化
@@ -139,7 +160,7 @@ void ParticleRenderer::Update(float elapsed_time, bool isHomeRun)
                         DirectX::XMFLOAT3 p;
                         p = { pos.x + v.x * t,pos.y + v.y * t,pos.z + v.z * t };//位置を時間に応じて変化させる
                         DirectX::XMFLOAT3 f = { 0,-1.2f,0 };//重力を設定
-                        DirectX::XMFLOAT2 s = { 0.7f,0.7f };//サイズを設定
+                        DirectX::XMFLOAT2 s = { 0.1f,0.1f };//サイズを設定
                         float lifetime = (rand() % 10001) * 0.0001f + 1.0f; // ランダムな寿命を設定(1.0秒～2.0秒)
                         //パーティクルの色(赤っぽいオレンジ)
                         float r = 1.0f;
