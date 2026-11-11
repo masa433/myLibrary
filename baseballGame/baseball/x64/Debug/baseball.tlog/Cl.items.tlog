@@ -19,6 +19,7 @@ C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Camera\FreeCameraControl
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Collision\collision.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\collision.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Effect\Effect.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Effect.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Effect\EffectManager.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\EffectManager.obj
+C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Audience.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Audience.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\Ball.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\Ball.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballCount.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ballCount.obj
 C:\Users\2240021\Desktop\myLibrary\baseballGame\Sources\Game\ballDistance.cpp;C:\Users\2240021\Desktop\myLibrary\baseballGame\baseball\x64\Debug\ballDistance.obj

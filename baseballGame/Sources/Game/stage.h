@@ -37,6 +37,9 @@ public:
 	void SaveToJson(json& j);
 	void LoadFromJson(const json& j);
 
+	//スタンドのモデルを取得する
+	const gltf_model* GetStandModel() const { return stand2.get(); }
+
 private:
 
 	std::unique_ptr<Model> stand;

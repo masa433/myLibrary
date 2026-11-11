@@ -161,6 +161,11 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
     float4 basecolor = (m.pbr_metallic_roughness.basecolor_texture.index > -1)
         ? material_textures[BASECOLOR_TEXTURE].Sample(sampler_states[ANISOTROPIC], pin.texcoord)
         : m.pbr_metallic_roughness.basecolor_factor;
+    
+    if (basecolor.a < 0.5f)
+    {
+        discard;
+    }
 
     // Ž©ŒÈ”­ŒõF
     float3 emmisive = (m.emissive_texture.index > -1)

@@ -261,6 +261,7 @@
     </ClCompile>
     <ClCompile Include="Sources\Effect\Effect.cpp" />
     <ClCompile Include="Sources\Effect\EffectManager.cpp" />
+    <ClCompile Include="Sources\Game\Audience.cpp" />
     <ClCompile Include="Sources\Game\Ball.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -434,6 +435,7 @@
     </ClInclude>
     <ClInclude Include="Sources\Effect\Effect.h" />
     <ClInclude Include="Sources\Effect\EffectManager.h" />
+    <ClInclude Include="Sources\Game\Audience.h" />
     <ClInclude Include="Sources\Game\Ball.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

@@ -308,4 +308,32 @@ public:
 	void render_batched_instanced(
 		ID3D11DeviceContext* immediate_context,
 		const std::vector<DirectX::XMFLOAT4X4>& worlds);
+
+	//アニメーション付きモデルのインスタンシング描画関数
+	void render_skinned_instanced(
+		ID3D11DeviceContext* immediate_context,
+		const std::vector<DirectX::XMFLOAT4X4>& worlds,
+		const std::vector<node>& animated_nodes);
+
+	//マテリアルの名前を取得する関数
+	const std::string& GetMaterialName(int material_index) const
+	{
+		if (material_index < 0 || material_index >= static_cast<int>(materials.size()))
+		{
+			static const std::string empty_string;
+			return empty_string;
+		}
+		return materials[material_index].name;
+	}
+
+	//マテリアルの名前からインデックスを取得する関数
+	int FindMaterialIndexByName(const std::string& name) const
+	{
+		for (size_t i = 0; i < materials.size(); ++i)
+		{
+			if (materials[i].name == name) return static_cast<int>(i);
+		}
+		return -1;
+	}
+
 };

@@ -1051,6 +1051,7 @@ void gltf_model::render_batched(ID3D11DeviceContext* immediate_context,
     if (!initialized || !immediate_context) return;
     using namespace DirectX;
 
+	// アニメーション済みノードがある場合はそれを使い、ない場合は通常のノードを使う
     const std::vector<node>& nodes{
         animated_nodes.size() > 0 ? animated_nodes : gltf_model::nodes };
 
@@ -1470,4 +1471,159 @@ void gltf_model::render_batched_instanced(
 			0, 0, 0
 		);
 	}
+}
+
+//アニメーション付きのインスタンス描画
+void gltf_model::render_skinned_instanced(
+	ID3D11DeviceContext* immediate_context,
+	const std::vector<DirectX::XMFLOAT4X4>& worlds,
+	const std::vector<node>& animated_nodes)
+{
+	if (!initialized || !immediate_context || worlds.empty()) return;
+	using namespace DirectX;
+
+	//アニメーション済みノードがある場合はそれを使い、ない場合は通常のノードを使う
+	const std::vector<node>& nodes{
+		animated_nodes.size() > 0 ? animated_nodes : gltf_model::nodes };
+
+	UINT instance_count = static_cast<UINT>(worlds.size());
+
+	//インスタンスバッファの更新
+	if (!instance_buffer || instance_buffer_capacity < instance_count)
+	{
+		instance_buffer.Reset();//古いバッファを破棄
+		instance_buffer_capacity = instance_count;
+		//インスタンバッファの生成
+		D3D11_BUFFER_DESC bd{};
+		bd.Usage = D3D11_USAGE_DYNAMIC;//CPUから書き込み可能
+		bd.ByteWidth = sizeof(instance_data) * instance_buffer_capacity;//インスタンスデータのサイズ
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		ID3D11Device* device = nullptr;
+		immediate_context->GetDevice(&device);
+		if (!device) return;
+		HRESULT hr = device->CreateBuffer(&bd, nullptr, instance_buffer.GetAddressOf());
+		device->Release();
+		if (FAILED(hr) || !instance_buffer) return;//失敗したら描画しない
+	}
+
+	//インスタンスバッファにワールド行列を書き込む
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	if (SUCCEEDED(immediate_context->Map(instance_buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+	{
+		memcpy(mapped.pData, worlds.data(), sizeof(DirectX::XMFLOAT4X4) * instance_count);
+		immediate_context->Unmap(instance_buffer.Get(), 0);
+	}
+	else return;
+
+	//シェーダーをセット(インスタンス用)
+	immediate_context->VSSetShader(instanced_vertex_shader.Get(), nullptr, 0);
+	immediate_context->PSSetShader(pixel_shader.Get(), nullptr, 0);
+	immediate_context->IASetInputLayout(instanced_input_layout.Get());
+	immediate_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	immediate_context->PSSetShaderResources(0, 1, material_resource_view.GetAddressOf());//マテリアルテクスチャをセット
+
+	std::function<void(int)> traverse_skinned{ [&](int node_index)->void
+   {
+	   const node& nd{ nodes.at(node_index) };
+
+	   if (nd.skin > -1)
+	   {
+		   // ボーン行列を更新
+		   const skin& sk{ skins.at(nd.skin) };
+		   primitive_joint_constants joint_data{};
+		   for (size_t ji = 0; ji < sk.joints.size(); ++ji)
+		   {
+			   XMStoreFloat4x4(&joint_data.matrices[ji],
+				   XMLoadFloat4x4(&sk.inverse_bind_matrices.at(ji)) *
+				   XMLoadFloat4x4(&nodes.at(sk.joints.at(ji)).global_transform) *
+				   XMMatrixInverse(nullptr, XMLoadFloat4x4(&nd.global_transform)));
+		   }
+		   immediate_context->UpdateSubresource(
+			   primitive_joint_cbuffer.Get(), 0, 0, &joint_data, 0, 0);
+		   immediate_context->VSSetConstantBuffers(2, 1, primitive_joint_cbuffer.GetAddressOf());
+
+		   if (nd.mesh > -1)
+		   {
+			   const mesh& m{ meshes.at(nd.mesh) };
+			   for (const auto& prim : m.primitives)
+			   {
+				   // テクスチャバインド
+				   const material& mat{ materials.at(prim.material) };
+				   const int tex_indices[]
+				   {
+					   mat.data.pbr_metallic_roughness.basecolor_texture.index,
+					   mat.data.pbr_metallic_roughness.metallic_roughness_texture.index,
+					   mat.data.normal_texture.index,
+					   mat.data.emissive_texture.index,
+					   mat.data.occlusion_texture.index,
+				   };
+				   ID3D11ShaderResourceView* null_srv{};
+				   std::vector<ID3D11ShaderResourceView*> srvs(_countof(tex_indices));
+				   for (int i = 0; i < (int)srvs.size(); ++i)
+					   srvs[i] = tex_indices[i] > -1
+						   ? texture_resource_views.at(
+							   textures.at(tex_indices[i]).source).Get()
+						   : null_srv;
+				   immediate_context->PSSetShaderResources(1, (UINT)srvs.size(), srvs.data());
+
+				   // 定数バッファ
+				   primitive_constants prim_data{};
+				   prim_data.material = prim.material;
+				   prim_data.has_tangent = prim.vertex_buffer_views.at("TANGENT").buffer != nullptr;
+				   prim_data.skin = nd.skin;
+				   prim_data.world = nd.global_transform; // ワールド行列はインスタンスごとに異なるため、ここでは単位行列を設定
+				   immediate_context->UpdateSubresource(
+					   primitive_cbuffer.Get(), 0, 0, &prim_data, 0, 0);
+				   immediate_context->VSSetConstantBuffers(0, 1, primitive_cbuffer.GetAddressOf());
+				   immediate_context->PSSetConstantBuffers(0, 1, primitive_cbuffer.GetAddressOf());
+
+				   // 頂点バッファ
+				   ID3D11Buffer* vbs[]
+				   {
+					   prim.vertex_buffer_views.at("POSITION").buffer.Get(),
+					   prim.vertex_buffer_views.at("NORMAL").buffer.Get(),
+					   prim.vertex_buffer_views.at("TANGENT").buffer.Get(),
+					   prim.vertex_buffer_views.at("TEXCOORD_0").buffer.Get(),
+					   prim.vertex_buffer_views.at("JOINTS_0").buffer.Get(),
+					   prim.vertex_buffer_views.at("WEIGHTS_0").buffer.Get(),
+					   instance_buffer.Get(),//インスタンスバッファを追加
+				   };
+				   UINT strides[]
+				   {
+					   (UINT)prim.vertex_buffer_views.at("POSITION").stride_in_bytes,
+					   (UINT)prim.vertex_buffer_views.at("NORMAL").stride_in_bytes,
+					   (UINT)prim.vertex_buffer_views.at("TANGENT").stride_in_bytes,
+					   (UINT)prim.vertex_buffer_views.at("TEXCOORD_0").stride_in_bytes,
+					   (UINT)prim.vertex_buffer_views.at("JOINTS_0").stride_in_bytes,
+					   (UINT)prim.vertex_buffer_views.at("WEIGHTS_0").stride_in_bytes,
+					   (UINT)sizeof(instance_data),//インスタンスバッファのストライド
+				   };
+				   UINT offsets[_countof(vbs)]{};
+				   immediate_context->IASetVertexBuffers(0, _countof(vbs), vbs, strides, offsets);
+				   immediate_context->IASetIndexBuffer(
+					   prim.index_buffer_view.buffer.Get(),
+					   prim.index_buffer_view.format, 0);
+				   immediate_context->DrawIndexedInstanced(
+					   (UINT)prim.index_buffer_view.count(), instance_count, 0, 0, 0);
+			   }
+		   }
+	   }
+
+	   for (int child : nd.children)
+		   traverse_skinned(child);
+   } };
+
+	// スキンありノードを先に描画
+	bool has_skinned = false;
+	for (const auto& nd : nodes)
+		if (nd.skin > -1) { has_skinned = true; break; }
+
+	if (has_skinned)
+	{
+		for (int root : scenes.at(0).nodes)
+			traverse_skinned(root);
+	}
+
 }
