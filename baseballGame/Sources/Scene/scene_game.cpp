@@ -521,7 +521,7 @@ void scene_game::update(float elapsed_time)
 			float dz = pitcherPos.z - hitPos.z;
 			const float yaw = std::atan2(dx, dz);
 
-            Audience::Instance().AddAudience(hitPos, {1.0f, 1.0f, 1.0f}, {0.0f, yaw, 0.0f});
+            Audience::Instance().AddAudience(hitPos, {1.5f, 1.5f, 1.5f}, {0.0f, yaw, 0.0f});
         }
     }
     
@@ -1288,71 +1288,71 @@ void scene_game::DrawGUI()
         // ════════════════════════════════════════════════════
         //  中央上 ── Game View
         // ════════════════════════════════════════════════════
-        ImGui::SetNextWindowPos(ImVec2(LEFT_W, 0.0f));
-        ImGui::SetNextWindowSize(ImVec2(CENTER_W, CENTER_H));
-        ImGui::Begin("Game View", nullptr, FLOAT_FLAGS);
-        {
-            
-            // タイトルバー分を除いたコンテンツ領域
-            ImVec2 avail = ImGui::GetContentRegionAvail();
+        //ImGui::SetNextWindowPos(ImVec2(LEFT_W, 0.0f));
+        //ImGui::SetNextWindowSize(ImVec2(CENTER_W, CENTER_H));
+        //ImGui::Begin("Game View", nullptr, FLOAT_FLAGS);
+        //{
+        //    
+        //    // タイトルバー分を除いたコンテンツ領域
+        //    ImVec2 avail = ImGui::GetContentRegionAvail();
 
-            // アスペクト比を保ってフィット（16:9 想定）
-            const float aspect = Graphics::Instance().GetScreenWidth()
-                / Graphics::Instance().GetScreenHeight();
-            float dispW = avail.x;
-            float dispH = avail.x / aspect;
-            if (dispH > avail.y) { dispH = avail.y; dispW = avail.y * aspect; }
+        //    // アスペクト比を保ってフィット（16:9 想定）
+        //    const float aspect = Graphics::Instance().GetScreenWidth()
+        //        / Graphics::Instance().GetScreenHeight();
+        //    float dispW = avail.x;
+        //    float dispH = avail.x / aspect;
+        //    if (dispH > avail.y) { dispH = avail.y; dispW = avail.y * aspect; }
 
-            // センタリング
-            float offX = (avail.x - dispW) * 0.5f;
-            float offY = (avail.y - dispH) * 0.5f;
-            ImGui::SetCursorPos(ImVec2(
-                ImGui::GetCursorPosX() + offX,
-                ImGui::GetCursorPosY() + offY));
+        //    // センタリング
+        //    float offX = (avail.x - dispW) * 0.5f;
+        //    float offY = (avail.y - dispH) * 0.5f;
+        //    ImGui::SetCursorPos(ImVec2(
+        //        ImGui::GetCursorPosX() + offX,
+        //        ImGui::GetCursorPosY() + offY));
 
-            // 画像が実際に描画されるスクリーン座標(左上)を取得 
-            ImVec2 imageScreenPos = ImGui::GetCursorScreenPos();
+        //    // 画像が実際に描画されるスクリーン座標(左上)を取得 
+        //    ImVec2 imageScreenPos = ImGui::GetCursorScreenPos();
 
-            // scene_shader_resource_view = シーンのカラーバッファ SRV
-            ImGui::Image(
-                ImTextureRef(scene_shader_resource_view.Get()),
-                ImVec2(dispW, dispH));
+        //    // scene_shader_resource_view = シーンのカラーバッファ SRV
+        //    ImGui::Image(
+        //        ImTextureRef(scene_shader_resource_view.Get()),
+        //        ImVec2(dispW, dispH));
 
-            // ── フェンスライン編集ツールの更新 ──
-            Camera& camera = Camera::Instance();
-            DirectX::XMFLOAT4X4 view = camera.GetView();          // ※名称が違う場合は合わせてください
-            DirectX::XMFLOAT4X4 proj = camera.GetProjection();    // ※同上
+        //    // ── フェンスライン編集ツールの更新 ──
+        //    Camera& camera = Camera::Instance();
+        //    DirectX::XMFLOAT4X4 view = camera.GetView();          // ※名称が違う場合は合わせてください
+        //    DirectX::XMFLOAT4X4 proj = camera.GetProjection();    // ※同上
 
-            
-            stage::Instance().UpdateLineEditor(
-                stage::Instance().homerunLineEditor,
-                view, proj,
-                imageScreenPos.x, imageScreenPos.y,
-                dispW, dispH);
+        //    
+        //    stage::Instance().UpdateLineEditor(
+        //        stage::Instance().homerunLineEditor,
+        //        view, proj,
+        //        imageScreenPos.x, imageScreenPos.y,
+        //        dispW, dispH);
 
-            stage::Instance().UpdateLineEditor(
-                stage::Instance().foulLineEditor,
-                view, proj,
-                imageScreenPos.x, imageScreenPos.y,
-                dispW, dispH);
+        //    stage::Instance().UpdateLineEditor(
+        //        stage::Instance().foulLineEditor,
+        //        view, proj,
+        //        imageScreenPos.x, imageScreenPos.y,
+        //        dispW, dispH);
 
-            // ── 打った点をその場でつないで見せる(Rebuildする前のプレビュー) ──
-           
-            // ホームランフェンス：赤系
-            stage::Instance().DrawLineOverlay(
-                stage::Instance().homerunLineEditor,
-                view, proj,
-                imageScreenPos.x, imageScreenPos.y,
-                dispW, dispH, IM_COL32(255, 60, 60, 255), IM_COL32(255, 255, 0, 255)); // 赤線・黄点
+        //    // ── 打った点をその場でつないで見せる(Rebuildする前のプレビュー) ──
+        //   
+        //    // ホームランフェンス：赤系
+        //    stage::Instance().DrawLineOverlay(
+        //        stage::Instance().homerunLineEditor,
+        //        view, proj,
+        //        imageScreenPos.x, imageScreenPos.y,
+        //        dispW, dispH, IM_COL32(255, 60, 60, 255), IM_COL32(255, 255, 0, 255)); // 赤線・黄点
 
-            // ファウルライン：青系
-            stage::Instance().DrawLineOverlay(
-                stage::Instance().foulLineEditor,
-                view, proj,
-                imageScreenPos.x, imageScreenPos.y,
-                dispW, dispH, IM_COL32(60, 60, 255, 255), IM_COL32(0, 255, 255, 255)); // 青線・水色点
-        }
-        ImGui::End();
+        //    // ファウルライン：青系
+        //    stage::Instance().DrawLineOverlay(
+        //        stage::Instance().foulLineEditor,
+        //        view, proj,
+        //        imageScreenPos.x, imageScreenPos.y,
+        //        dispW, dispH, IM_COL32(60, 60, 255, 255), IM_COL32(0, 255, 255, 255)); // 青線・水色点
+        //}
+        //ImGui::End();
 
         // ════════════════════════════════════════════════════
         //  右パネル ── Debug

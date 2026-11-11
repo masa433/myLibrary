@@ -7,20 +7,38 @@
 void Audience::Initialize()
 {
 	ID3D11Device* device = Graphics::Instance().GetDevice();
-	audienceModel = std::make_unique<gltf_model>(device,".\\resources\\audience\\ClappingAudienceLow.glb");
+
+	audienceModel[static_cast<int>(AudienceModelType::MaleUniform)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::MaleUniform));
+	audienceModel[static_cast<int>(AudienceModelType::FemaleUniform)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::FemaleUniform));
+	audienceModel[static_cast<int>(AudienceModelType::MaleTShirt)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::MaleTShirt));
+	audienceModel[static_cast<int>(AudienceModelType::FemaleTShirt)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::FemaleTShirt));
+	audienceModel[static_cast<int>(AudienceModelType::MaleFlag)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::MaleFlag));
+	audienceModel[static_cast<int>(AudienceModelType::FemaleFlag)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::FemaleFlag));
+	audienceModel[static_cast<int>(AudienceModelType::MaleParker)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::MaleParker));
+	audienceModel[static_cast<int>(AudienceModelType::Suits)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::Suits));
+	audienceModel[static_cast<int>(AudienceModelType::Elderly)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::Elderly));
+	audienceModel[static_cast<int>(AudienceModelType::Child)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::Child));
 	
-	audienceModel->build_static_batches(device); // 静的バッチを構築
-
+	for(int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
+	{
+		if(audienceModel[i])
+		{
+			audienceModel[i]->build_static_batches(device);
+			animated_nodes = audienceModel[i]->nodes; // 初期状態のノードをコピー
+		}
+	}
+	
 	initialized = true;
-
-	animated_nodes = audienceModel->nodes; // 初期状態のノードをコピー
-
-	audienceState = AudienceState::ClappingCheer;
+	
+	currentModelType = AudienceModelType::MaleUniform;
 }
 
 void Audience::Uninitialize()
 {
-	audienceModel.reset();
+	for (int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
+	{
+		audienceModel[i].reset();
+	}
 	animated_nodes.clear();
 	initialized = false;
 }
@@ -38,12 +56,13 @@ void Audience::Update(float elapsedTime)
 	//レイキャストで置いた観客はCTRL+Zで元に戻す
 	if(GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState('Z') & 0x8000)
 	{
-		if(!audiencePositions.empty())
+		int currentModelTypeIndex = static_cast<int>(currentModelType);
+		if(!audiencePositions[currentModelTypeIndex].empty())
 		{
-			audiencePositions.pop_back();
-			audienceScales.pop_back();
-			audienceRotations.pop_back();
-			audienceTransforms.pop_back();
+			audiencePositions[currentModelTypeIndex].pop_back();
+			audienceScales[currentModelTypeIndex].pop_back();
+			audienceRotations[currentModelTypeIndex].pop_back();
+			audienceTransforms[currentModelTypeIndex].pop_back();
 		}
 	}
 
@@ -53,7 +72,10 @@ bool Audience::UpdateRayCastToStand(const DirectX::XMFLOAT4X4& view, const Direc
 	float viewportWidth, float viewportHeight, DirectX::XMFLOAT3& outHitPos,
 	const DirectX::XMFLOAT2& mouseInViewport)
 {
-	if (!initialized || !audienceModel || !audienceModel->IsInitialized()) return false;
+	for (int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
+	{
+		if (!initialized || !audienceModel[i] || !audienceModel[i]->IsInitialized()) return false;
+	}
 	if (viewportHeight <= 0.0f || viewportWidth <= 0.0f) return false;
 	
 
@@ -136,31 +158,34 @@ void Audience::UpdateAnimation(float elapsedTime)
 	if (!initialized) return;
 
 	// アニメーションの更新
-	if(!audienceModel->animations.empty())
+	for (int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
 	{
-		//カメラとの距離を取得
-		Camera& camera = Camera::Instance();
-		const DirectX::XMFLOAT3 cameraEye = camera.GetEye();
-		
-		DirectX::XMFLOAT3 audiencePosition = GetPosition();
-
-		//距離に応じてアニメーションするかしないかを決める
-		DirectX::XMFLOAT3 diff;
-		diff.x = audiencePosition.x - cameraEye.x;
-		diff.y = audiencePosition.y - cameraEye.y;
-		diff.z = audiencePosition.z - cameraEye.z;
-
-		float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
-
-		if (distance < 50.0f) // 距離が50.0f未満の場合のみアニメーションを更新
+		if (!audienceModel[i]->animations.empty())
 		{
+			//カメラとの距離を取得
+			Camera& camera = Camera::Instance();
+			const DirectX::XMFLOAT3 cameraEye = camera.GetEye();
 
-			animation_time += elapsedTime;
-			audienceModel->animate(current_animation_index, animation_time, animated_nodes);
+			DirectX::XMFLOAT3 audiencePosition = GetPosition();
 
-			if (animation_time > audienceModel->animations[current_animation_index].duration)
+			//距離に応じてアニメーションするかしないかを決める
+			DirectX::XMFLOAT3 diff;
+			diff.x = audiencePosition.x - cameraEye.x;
+			diff.y = audiencePosition.y - cameraEye.y;
+			diff.z = audiencePosition.z - cameraEye.z;
+
+			float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+
+			if (distance < 50.0f) // 距離が50.0f未満の場合のみアニメーションを更新
 			{
-				animation_time = 0.0f; // アニメーションの時間をリセット
+
+				animation_time += elapsedTime;
+				audienceModel[i]->animate(current_animation_index, animation_time, animated_nodes);
+
+				if (animation_time > audienceModel[i]->animations[current_animation_index].duration)
+				{
+					animation_time = 0.0f; // アニメーションの時間をリセット
+				}
 			}
 		}
 	}
@@ -169,47 +194,52 @@ void Audience::UpdateAnimation(float elapsedTime)
 
 void Audience::Render(FrustumCulling* frustumCulling)
 {
-	if (!initialized || !audienceModel || !audienceModel->IsInitialized()) return;
-	
-	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
-	RenderState* renderState = Graphics::Instance().GetRenderState();
-	
-	// モデルの描画
-	std::vector<DirectX::XMFLOAT4X4> audienceTransform;
-	audienceTransform.reserve(audienceTransforms.size());
-
-
-	ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
-	for (auto& transform : audienceTransforms)
+	for (int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
 	{
-		if (audienceModel)
+		if (!initialized || !audienceModel[i] || !audienceModel[i]->IsInitialized()) return;
+	
+		ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+		RenderState* renderState = Graphics::Instance().GetRenderState();
+		
+		// モデルの描画
+		std::vector<DirectX::XMFLOAT4X4> audienceTransform;
+		audienceTransform.reserve(audienceTransforms[i].size());
+
+
+		ID3D11DeviceContext* context = Graphics::Instance().GetDeviceContext();
+		for (auto& transform : audienceTransforms[i])
 		{
-			bool isVisible = true;
-
-			if (frustumCulling)
+			if (audienceModel[i])
 			{
-				const auto& sphere = audienceModel->GetBoundingSphere();
-				isVisible = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, transform);
-			}
+				bool isVisible = true;
 
-			if (isVisible)
-			{
-				// オーディエンスのモデルをレンダリングする処理をここに追加
-				audienceTransform.push_back(transform);
+				if (frustumCulling)
+				{
+					const auto& sphere = audienceModel[i]->GetBoundingSphere();
+					isVisible = frustumCulling->IsTransformedSphereVisible(sphere.center, sphere.radius, transform);
+				}
+
+				if (isVisible)
+				{
+					// オーディエンスのモデルをレンダリングする処理をここに追加
+					audienceTransform.push_back(transform);
+				}
 			}
+		}
+
+		if(!audienceTransform.empty())
+		{
+			//背景を透過して描画するために、ブレンドステートを設定
+
+			//dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+
+
+			audienceModel[i]->render_batched_instanced(context, audienceTransform);
+
+			//dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
 		}
 	}
 
-	if(!audienceTransform.empty())
-	{
-		//背景を透過して描画するために、ブレンドステートを設定
-
-		dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
-
-		audienceModel->render_batched_instanced(context, audienceTransform);
-
-		dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
-	}
 }
 
 void Audience::DrawGUI()
@@ -217,21 +247,46 @@ void Audience::DrawGUI()
 	if (!initialized) return;
 	if(ImGui::CollapsingHeader("Audience Manager"))
 	{
-		//ボタンで観客のモデルの増減
-		if(ImGui::Button("Add Audience"))
+		// 観客のモデルタイプを選択するコンボボックス
+		const char* modelTypeNames[] = {
+			"MaleUniform",
+			"FemaleUniform",
+			"MaleTShirt",
+			"FemaleTShirt",
+			"MaleFlag",
+			"FemaleFlag",
+			"MaleParker",
+			"Suits",
+			"Elderly",
+			"Child"
+		};
+
+		int currentModelTypeIndex = static_cast<int>(currentModelType);
+
+		if (ImGui::Combo("Model Type", &currentModelTypeIndex, modelTypeNames, IM_ARRAYSIZE(modelTypeNames)))
 		{
-			//観客のモデルを追加する処理
-			AddAudience({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f});
+			currentModelType = static_cast<AudienceModelType>(currentModelTypeIndex);
 		}
-		if(ImGui::Button("Remove Audience"))
+
+		//現在のモデルのファイル名を表示
+		if (audienceModel[currentModelTypeIndex])
 		{
-			//観客のモデルを削除する処理
-			if(!audiencePositions.empty())
+			ImGui::Text("Current Model: %s", GetModelFileName(currentModelType).c_str());
+		}
+		else
+		{
+			ImGui::Text("Current Model: None");
+		}
+
+		//各モデルタイプの位置情報などを操作できるようにする
+		for (int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
+		{
+			if (ImGui::TreeNode(modelTypeNames[i]))
 			{
-				audiencePositions.pop_back();
-				audienceScales.pop_back();
-				audienceRotations.pop_back();
-				audienceTransforms.pop_back();
+				ImGui::DragFloat3("Position", &audiencePositions[i][0].x, 0.1f);
+				ImGui::DragFloat3("Scale", &audienceScales[i][0].x, 0.1f);
+				ImGui::DragFloat3("Rotation", &audienceRotations[i][0].x, 0.1f);
+				ImGui::TreePop();
 			}
 		}
 	}
@@ -239,57 +294,89 @@ void Audience::DrawGUI()
 
 void Audience::SaveToJson(json& j)
 {
-	for(auto& pos : audiencePositions)
+	for(int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
 	{
-		j["audiencePositions"].push_back({ pos.x, pos.y, pos.z });
-	}
-	for(auto& scale : audienceScales)
-	{
-		j["audienceScales"].push_back({ scale.x, scale.y, scale.z });
-	}
-	for(auto& rot : audienceRotations)
-	{
-		j["audienceRotations"].push_back({ rot.x, rot.y, rot.z });
-	}
-	for(auto& transform : audienceTransforms)
-	{
-		j["audienceTransforms"].push_back({
-			{transform._11, transform._12, transform._13, transform._14},
-			{transform._21, transform._22, transform._23, transform._24},
-			{transform._31, transform._32, transform._33, transform._34},
-			{transform._41, transform._42, transform._43, transform._44}
-		});
-	}
+		j["audiencePositions"][i] = json::array();
+		for(const auto& pos : audiencePositions[i])
+		{
+			j["audiencePositions"][i].push_back({pos.x, pos.y, pos.z});
+		}
 
+		j["audienceScales"][i] = json::array();
+		for(const auto& scale : audienceScales[i])
+		{
+			j["audienceScales"][i].push_back({scale.x, scale.y, scale.z});
+		}
+		j["audienceRotations"][i] = json::array();
+		for(const auto& rot : audienceRotations[i])
+		{
+			j["audienceRotations"][i].push_back({rot.x, rot.y, rot.z});
+		}
+		j["audienceTransforms"][i] = json::array();
+		for(const auto& trans : audienceTransforms[i])
+		{
+			j["audienceTransforms"][i].push_back({
+				{trans._11, trans._12, trans._13, trans._14},
+				{trans._21, trans._22, trans._23, trans._24},
+				{trans._31, trans._32, trans._33, trans._34},
+				{trans._41, trans._42, trans._43, trans._44}
+			});
+		}
+	}
 }
 
 void Audience::LoadFromJson(const json& j)
 {
-	audiencePositions.clear();
-	audienceScales.clear();
-	audienceRotations.clear();
-	audienceTransforms.clear();
-	for(auto& pos : j["audiencePositions"])
+	for (int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
 	{
-		audiencePositions.push_back({ pos[0], pos[1], pos[2] });
+		audiencePositions[i].clear();
+		audienceScales[i].clear();
+		audienceRotations[i].clear();
+		audienceTransforms[i].clear();
 	}
-	for(auto& scale : j["audienceScales"])
+
+	for(int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
 	{
-		audienceScales.push_back({ scale[0], scale[1], scale[2] });
+		if(j.contains("audiencePositions") && j["audiencePositions"].is_array() && j["audiencePositions"].size() > i)
+		{
+			for(const auto& pos : j["audiencePositions"][i])
+			{
+				DirectX::XMFLOAT3 p = { pos[0], pos[1], pos[2] };
+				audiencePositions[i].push_back(p);
+			}
+		}
+		if(j.contains("audienceScales") && j["audienceScales"].is_array() && j["audienceScales"].size() > i)
+		{
+			for(const auto& scale : j["audienceScales"][i])
+			{
+				DirectX::XMFLOAT3 s = { scale[0], scale[1], scale[2] };
+				audienceScales[i].push_back(s);
+			}
+		}
+		if(j.contains("audienceRotations") && j["audienceRotations"].is_array() && j["audienceRotations"].size() > i)
+		{
+			for(const auto& rot : j["audienceRotations"][i])
+			{
+				DirectX::XMFLOAT3 r = { rot[0], rot[1], rot[2] };
+				audienceRotations[i].push_back(r);
+			}
+		}
+		if(j.contains("audienceTransforms") && j["audienceTransforms"].is_array() && j["audienceTransforms"].size() > i)
+		{
+			for(const auto& trans : j["audienceTransforms"][i])
+			{
+				DirectX::XMFLOAT4X4 t = {
+					trans[0][0], trans[0][1], trans[0][2], trans[0][3],
+					trans[1][0], trans[1][1], trans[1][2], trans[1][3],
+					trans[2][0], trans[2][1], trans[2][2], trans[2][3],
+					trans[3][0], trans[3][1], trans[3][2], trans[3][3]
+				};
+				audienceTransforms[i].push_back(t);
+			}
+		}
+		
 	}
-	for(auto& rot : j["audienceRotations"])
-	{
-		audienceRotations.push_back({ rot[0], rot[1], rot[2] });
-	}
-	for(auto& transform : j["audienceTransforms"])
-	{
-		audienceTransforms.push_back({
-			transform[0][0], transform[0][1], transform[0][2], transform[0][3],
-			transform[1][0], transform[1][1], transform[1][2], transform[1][3],
-			transform[2][0], transform[2][1], transform[2][2], transform[2][3],
-			transform[3][0], transform[3][1], transform[3][2], transform[3][3]
-		});
-	}
+	
 }
 
 void Audience::SaveToFile(const std::string& filename)
