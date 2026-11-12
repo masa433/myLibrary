@@ -3,6 +3,7 @@
 #include "Graphics.h"
 #include "input.h"
 #include "physxManager.h"
+#include "Ball.h"
 
 void Audience::Initialize()
 {
@@ -31,6 +32,13 @@ void Audience::Initialize()
 	initialized = true;
 	
 	currentModelType = AudienceModelType::MaleUniform;
+
+	jumpHeight = 0.5f; // ジャンプの高さを設定
+	jumpTimer = 0.0f; // ジャンプのタイマーを初期化
+	junpDuration = 0.5f; // ジャンプの持続時間を設定
+
+	
+
 }
 
 void Audience::Uninitialize()
@@ -66,6 +74,60 @@ void Audience::Update(float elapsedTime)
 		}
 	}
 
+
+	
+	
+}
+
+void Audience::UpdateAudienceJump(float elapsedTime)
+{
+	jumpTimer += elapsedTime;
+	if (jumpTimer >= junpDuration)
+	{
+		jumpTimer = 0.0f;
+	}
+	
+	for (int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
+	{
+		for (size_t j = 0; j < audiencePositions[i].size(); ++j)
+		{
+			
+			//各モデルでジャンプするまでの遅延時間を0.1秒ずつずらして設定
+			float delayTime = audienceJumpDelays[i][j]; // 各観客の遅延時間を取得
+
+			float currentTime = fmodf(jumpTimer + delayTime, junpDuration);// 現在のジャンプ時間を計算（遅延時間を加算してループさせる）
+
+			
+			float jumpProgress = currentTime / junpDuration; // ジャンプの進行度（0.0～1.0）
+			float jumpOffset = sinf(jumpProgress * DirectX::XM_PI) * jumpHeight; // サイン波でジャンプのオフセットを計算
+
+			
+			audiencePositions[i][j].y = currentAudiencePositions[i][j].y + jumpOffset; // y座標にジャンプのオフセットを加算
+			
+		}
+	}
+}
+
+bool Audience::CanPlace(const DirectX::XMFLOAT3& newPos)
+{
+	
+	for(int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
+	{
+		for (const auto& pos : audiencePositions[i])
+		{
+			float dx = pos.x - newPos.x;
+			float dz = pos.z - newPos.z;
+
+			float distanceSquared = dx * dx + dz * dz;// y座標は無視してXZ平面での距離を計算
+
+			if (distanceSquared < radius * radius)
+			{
+				return false; // 衝突している場合は配置できない
+			}
+		}
+	}
+
+	return true; // 衝突していない場合は配置できる
 }
 
 bool Audience::UpdateRayCastToStand(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
@@ -136,11 +198,15 @@ bool Audience::UpdateRayCastToStand(const DirectX::XMFLOAT4X4& view, const Direc
 			std::string actorName = actor->getName();// ヒットしたアクターの名前を取得
 			if (actorName == "Stand")// ヒットしたアクターが"Stand"の場合
 			{
-				outHitPos.x = hitInfo.block.position.x;
-				outHitPos.y = hitInfo.block.position.y;
-				outHitPos.z = hitInfo.block.position.z;
-				
-				return true;
+				//置けるかどうか
+				if (CanPlace(DirectX::XMFLOAT3(hitInfo.block.position.x, hitInfo.block.position.y, hitInfo.block.position.z)))
+				{
+					outHitPos.x = hitInfo.block.position.x;
+					outHitPos.y = hitInfo.block.position.y;
+					outHitPos.z = hitInfo.block.position.z;
+
+					return true;
+				}
 			}
 
 			//ヒットしたらヒットしたアクターの名前を出力する
@@ -278,17 +344,12 @@ void Audience::DrawGUI()
 			ImGui::Text("Current Model: None");
 		}
 
-		//各モデルタイプの位置情報などを操作できるようにする
-		for (int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
-		{
-			if (ImGui::TreeNode(modelTypeNames[i]))
-			{
-				ImGui::DragFloat3("Position", &audiencePositions[i][0].x, 0.1f);
-				ImGui::DragFloat3("Scale", &audienceScales[i][0].x, 0.1f);
-				ImGui::DragFloat3("Rotation", &audienceRotations[i][0].x, 0.1f);
-				ImGui::TreePop();
-			}
-		}
+		//ジャンプ関連
+		ImGui::DragFloat("Jump Duration", &junpDuration, 0.1f, 0.1f, 5.0f);
+		ImGui::DragFloat("Jump Height", &jumpHeight, 0.1f, 0.1f, 5.0f);
+
+		ImGui::Checkbox("Is Can Place", &isCanPlacing);
+		ImGui::DragFloat("Radius", &radius, 0.1f, 0.1f, 100.0f);
 	}
 }
 
@@ -333,6 +394,7 @@ void Audience::LoadFromJson(const json& j)
 		audienceScales[i].clear();
 		audienceRotations[i].clear();
 		audienceTransforms[i].clear();
+
 	}
 
 	for(int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
@@ -343,6 +405,8 @@ void Audience::LoadFromJson(const json& j)
 			{
 				DirectX::XMFLOAT3 p = { pos[0], pos[1], pos[2] };
 				audiencePositions[i].push_back(p);
+
+				currentAudiencePositions[i].push_back(p); // 現在の観客の位置も更新
 			}
 		}
 		if(j.contains("audienceScales") && j["audienceScales"].is_array() && j["audienceScales"].size() > i)
@@ -374,6 +438,8 @@ void Audience::LoadFromJson(const json& j)
 				audienceTransforms[i].push_back(t);
 			}
 		}
+		
+		SetAudienceJumpDelays();
 		
 	}
 	

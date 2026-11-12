@@ -134,7 +134,8 @@ void scene_game::initialize()
         static std::mt19937 rng(std::random_device{}());
         std::uniform_int_distribution<int> dist(0, 1);
 
-		skyRenderer.time_of_day = (dist(rng) == 0) ? 14.0f : 21.0f;
+		//skyRenderer.time_of_day = (dist(rng) == 0) ? 14.0f : 21.0f;
+        skyRenderer.time_of_day = 21.0f;
     }
 
   
@@ -510,23 +511,42 @@ void scene_game::update(float elapsed_time)
     //ステージとマウスカーソルのレイキャスト判定
 	Input& input = Input::Instance();
     //マウスの右クリックを押したらレイキャスト実行
+    DirectX::XMFLOAT3 ballPos = Ball::Instance().GetWorldPosition();
+	DirectX::XMFLOAT3 cameraPos = camera.GetEye();
 
-    if(input.GetMouse().GetButton() & Mouse::BTN_LEFT)
+    if(Audience::Instance().GetIsCanPlacing())
     {
-        if (Audience::Instance().UpdateRayCastToStand(camera.GetView(), camera.GetProjection(), screenWidth, screenHeight, hitPos, DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY())))
+        if (input.GetMouse().GetButton() & Mouse::BTN_LEFT)
         {
+            if (Audience::Instance().UpdateRayCastToStand(camera.GetView(), camera.GetProjection(),
+                screenWidth, screenHeight, hitPos,
+                DirectX::XMFLOAT2(input.GetMouse().GetPositionX(),
+                    input.GetMouse().GetPositionY())))
+            {
+                float dx = ballPos.x - hitPos.x;
+                float dz = ballPos.z - hitPos.z;
+                const float yaw = std::atan2(dx, dz);
 
-			DirectX::XMFLOAT3 pitcherPos = Pitcher::Instance().GetPosition();
-			float dx = pitcherPos.x - hitPos.x;
-			float dz = pitcherPos.z - hitPos.z;
-			const float yaw = std::atan2(dx, dz);
-
-            Audience::Instance().AddAudience(hitPos, {1.5f, 1.5f, 1.5f}, {0.0f, yaw, 0.0f});
+                Audience::Instance().AddAudience(hitPos, { 1.5f, 1.5f, 1.5f }, { 0.0f, yaw, 0.0f });
+            }
         }
     }
-    
 
+	Audience::Instance().UpdateAudienceRotation(cameraPos);
 
+	
+    bool isFinished = Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround();
+
+    bool isHomeRun = (Ball::Instance().GetHasPassedHomeRunZone() && isFinished) || Ball::Instance().GetHasCollidedWithPole();
+
+    //普通のヒット判定
+    bool isHit = isFinished && !Ball::Instance().GetIsFoulConfirmed();
+
+    if (isHomeRun || Physics::Instance().GetIsHomeRun())
+    {
+        Audience::Instance().UpdateAudienceJump(elapsed_time);
+    }
+  
     // プレイヤーの更新
     if (gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingPitcher )
     {
@@ -679,12 +699,7 @@ void scene_game::update(float elapsed_time)
         ReplayManager::Instance().RecordFrame(frame, elapsed_time);
     }
 
-    bool isFinished = Ball::Instance().GetHasCollidedWithFence() || Ball::Instance().GetHasCollidedWithGround();
-
-    bool isHomeRun = (Ball::Instance().GetHasPassedHomeRunZone() && isFinished) || Ball::Instance().GetHasCollidedWithPole();
-
-    //普通のヒット判定
-    bool isHit = isFinished && !Ball::Instance().GetIsFoulConfirmed();
+    
 
     if (!ReplayManager::Instance().IsPendingSave())
     {

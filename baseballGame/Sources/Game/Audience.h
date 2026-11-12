@@ -53,7 +53,38 @@ public:
 		audienceTransforms[static_cast<int>(currentModelType)].push_back(worldTransform);
 	}
 
+	//モデルのy軸の回転をボールの位置によって更新する
+	void UpdateAudienceRotation(const DirectX::XMFLOAT3& cameraPosition)
+	{
+		for (int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
+		{
+			for (size_t j = 0; j < audiencePositions[i].size(); ++j)
+			{
+				DirectX::XMFLOAT3 direction;
+				direction.x = cameraPosition.x - audiencePositions[i][j].x;
+				direction.y = 0.0f; // y軸の回転のみを考慮するため、y成分は0に設定
+				direction.z = cameraPosition.z - audiencePositions[i][j].z;
+				float angle = atan2f(direction.x, direction.z); // xとzの成分から角度を計算
+				audienceRotations[i][j].y = angle; // y軸の回転を更新
+				// ワールド行列を再計算
+				DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(audienceScales[i][j].x, audienceScales[i][j].y, audienceScales[i][j].z);
+				DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(audienceRotations[i][j].x, audienceRotations[i][j].y, audienceRotations[i][j].z);
+				DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(audiencePositions[i][j].x, audiencePositions[i][j].y, audiencePositions[i][j].z);
+				DirectX::XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+				DirectX::XMStoreFloat4x4(&audienceTransforms[i][j], worldMatrix);
+			}
+		}
+	}
 
+
+	//positionを更新して、ジャンプしているように見せる
+	void UpdateAudienceJump(float elapsedTime);
+	
+	//置けるかどうかを判定する
+	bool CanPlace(const DirectX::XMFLOAT3& newPos);
+
+	bool GetIsCanPlacing() const { return isCanPlacing; }
+	
 private:
 	enum class AudienceModelType
 	{
@@ -82,10 +113,22 @@ private:
 	std::vector<DirectX::XMFLOAT3> audiencePositions[static_cast<int>(AudienceModelType::Count)];
 	std::vector<DirectX::XMFLOAT3> audienceScales[static_cast<int>(AudienceModelType::Count)];
 	std::vector<DirectX::XMFLOAT3> audienceRotations[static_cast<int>(AudienceModelType::Count)];
+
+	std::vector<DirectX::XMFLOAT3> currentAudiencePositions[static_cast<int>(AudienceModelType::Count)];
+
 	bool initialized = false;
 	// アニメーション関連
 	float animation_time = 0.0f;
 	int current_animation_index = 0;
+
+	float jumpTimer = 0.0f;
+	float junpDuration = 2.0f;
+	float jumpHeight = 0.5f; // ジャンプの高さ
+
+	float radius = 1.0f; // 観客の半径
+	bool isCanPlacing = true; // 置けるかどうかのフラグ
+
+	std::vector<float> audienceJumpDelays[static_cast<int>(AudienceModelType::Count)]; // 観客ごとの遅延時間
 
 	//ファイル名を取得
 	std::string GetModelFileName(AudienceModelType modelType)
@@ -116,4 +159,20 @@ private:
 			return "";
 		}
 	}
+
+	//ジャンプするまでの遅延時間をモデルタイプごとに設定
+	void SetAudienceJumpDelays()
+	{
+		for(int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
+		{
+			audienceJumpDelays[i].clear();
+			for (size_t j = 0; j < audiencePositions[i].size(); ++j)
+			{
+				float delay = static_cast<float>(rand()) / RAND_MAX * 2.0f; // 0.0fから2.0fの範囲でランダムな遅延時間を生成
+				audienceJumpDelays[i].push_back(delay);
+
+			}
+		}	
+	}
+
 };
