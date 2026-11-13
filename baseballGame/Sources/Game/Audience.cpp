@@ -18,7 +18,6 @@ void Audience::Initialize()
 	audienceModel[static_cast<int>(AudienceModelType::MaleParker)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::MaleParker));
 	audienceModel[static_cast<int>(AudienceModelType::Suits)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::Suits));
 	audienceModel[static_cast<int>(AudienceModelType::Elderly)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::Elderly));
-	audienceModel[static_cast<int>(AudienceModelType::Child)] = std::make_unique<gltf_model>(device,GetModelFileName(AudienceModelType::Child));
 	
 	for(int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
 	{
@@ -33,7 +32,7 @@ void Audience::Initialize()
 	
 	currentModelType = AudienceModelType::MaleUniform;
 
-	jumpHeight = 0.5f; // ジャンプの高さを設定
+	jumpHeight = 0.3f; // ジャンプの高さを設定
 	jumpTimer = 0.0f; // ジャンプのタイマーを初期化
 	junpDuration = 0.5f; // ジャンプの持続時間を設定
 
@@ -73,10 +72,6 @@ void Audience::Update(float elapsedTime)
 			audienceTransforms[currentModelTypeIndex].pop_back();
 		}
 	}
-
-
-	
-	
 }
 
 void Audience::UpdateAudienceJump(float elapsedTime)

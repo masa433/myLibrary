@@ -98,8 +98,6 @@ private:
 		MaleParker,
 		Suits,
 		Elderly,
-		Child,
-
 
 		Count,
 	};
@@ -122,11 +120,11 @@ private:
 	int current_animation_index = 0;
 
 	float jumpTimer = 0.0f;
-	float junpDuration = 2.0f;
+	float junpDuration = 0.3f;
 	float jumpHeight = 0.5f; // ジャンプの高さ
 
 	float radius = 1.0f; // 観客の半径
-	bool isCanPlacing = true; // 置けるかどうかのフラグ
+	bool isCanPlacing = false; // 置けるかどうかのフラグ
 
 	std::vector<float> audienceJumpDelays[static_cast<int>(AudienceModelType::Count)]; // 観客ごとの遅延時間
 
@@ -153,8 +151,7 @@ private:
 			return ".\\resources\\audience\\suits.glb";
 		case AudienceModelType::Elderly:
 			return ".\\resources\\audience\\elderly.glb";
-		case AudienceModelType::Child:
-			return ".\\resources\\audience\\child.glb";
+		
 		default:
 			return "";
 		}
