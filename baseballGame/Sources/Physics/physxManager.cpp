@@ -15,6 +15,7 @@
 #include "Money.h"
 #include "Combo.h"
 #include "SpecialAbility.h"
+#include "ReplayManager.h"
 #define NET_COUNT 4
 
 // グローバルまたはクラス内にキューを用意
@@ -709,7 +710,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			{
 				bool isNewTouch = pair.events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
-				if (isNewTouch && Ball::Instance().GetHasCollidedWithBat())
+				if (isNewTouch && Ball::Instance().GetHasCollidedWithBat() && !ReplayManager::Instance().IsPlaying())
 				{
 					if (boundSound) boundSound->PlayOneShot();
 				}
@@ -817,7 +818,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 		{
 			bool isNewTouch = pair.events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
-			if (isNewTouch && Ball::Instance().GetHasCollidedWithBat())
+			if (isNewTouch && Ball::Instance().GetHasCollidedWithBat() && !ReplayManager::Instance().IsPlaying())
 			{
 				if (boundSound) boundSound->PlayOneShot();
 			}
@@ -932,7 +933,7 @@ void Physics::onContact(const physx::PxContactPairHeader& pairHeader, const phys
 			(pairHeader.actors[1] == Ball::Instance().GetBallCollider() && pairHeader.actors[0]->getName() == "Stand"))
 		{
 			bool isNewTouch = pair.events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
-			if (isNewTouch && Ball::Instance().GetHasCollidedWithBat())
+			if (isNewTouch && Ball::Instance().GetHasCollidedWithBat() && !ReplayManager::Instance().IsPlaying())
 			{
 				if (boundSound) boundSound->PlayOneShot();
 			}
