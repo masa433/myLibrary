@@ -542,7 +542,7 @@ void scene_game::update(float elapsed_time)
     //普通のヒット判定
     bool isHit = isFinished && !Ball::Instance().GetIsFoulConfirmed();
 
-    if (isHomeRun || Physics::Instance().GetIsHomeRun())
+    if (isHomeRun || (Physics::Instance().GetIsHomeRun() && broadcastCamera.GetActiveCameraType() == CameraType::HitCamera))
     {
         Audience::Instance().UpdateAudienceJump(elapsed_time);
     }
@@ -1027,7 +1027,7 @@ void scene_game::render(float elapsedTime)
         gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingBallMode && 
         gameIntroSequence.GetIntroState() != GameIntroSequence::GameIntroState::ShowingIntroBoard &&
         !gameIntroSequence.IsPlaying()) ||
-        (gameIntroSequence.IsPlaying() && broadcastCamera.GetActiveCameraType() != CameraType::NormalCamera ))
+        (gameIntroSequence.IsPlaying() && broadcastCamera.GetActiveCameraType() != CameraType::NormalCamera && broadcastCamera.GetActiveCameraType() != CameraType::HomeRunCamera))
     {
         DirectX::XMFLOAT3 target = Ball::Instance().GetWorldPosition();
         DirectX::XMVECTOR p = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&target), DirectX::XMLoadFloat4x4(&camera.GetView()));
@@ -1051,6 +1051,14 @@ void scene_game::render(float elapsedTime)
         else
         {
 			dofRenderer.SetKernelSize(3.0f); // カーネルサイズを調整
+        }
+
+		if (gameIntroSequence.IsPlaying() &&
+            Physics::Instance().GetIsHomeRun() && 
+            broadcastCamera.GetActiveCameraType() == CameraType::HomeRunCamera)
+        {
+            dofRenderer.SetDofRange(3.0f); // カーネルサイズを調整
+            dofRenderer.SetKernelSize(5.0f); // カーネルサイズを調整
         }
     }
 
