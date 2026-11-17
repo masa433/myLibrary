@@ -183,6 +183,7 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 	introBoardAnimationSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\introBoardAnimation.wav",SoundType::SE);
 	ballModeHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
 	ballModeSelectSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Hit.wav",SoundType::SE);
+	introAudienceSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\BGM\\IntroAudienceCheer.wav", SoundType::BGM);
 
 	introBoardAnimationSoundPlayed = false;
 }
@@ -232,6 +233,7 @@ void GameIntroSequence::Uninitialize()
     delete introBoardAnimationSound;
 	delete ballModeHoverSound;
 	delete ballModeSelectSound;
+	delete introAudienceSound;
 }
 
 void GameIntroSequence::UpdateIntroBoardAnimation(float elapsedTime)
@@ -346,6 +348,20 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 	//効果音更新処理
 	if (introBoardAnimationSound) introBoardAnimationSound->Update();
 
+
+    if(introAudienceSound && !isIntroAudienceSoundPlayed && introState != GameIntroState::ShowingIntroBoard && introState != GameIntroState::ShowingBallMode)
+    {
+        introAudienceSound->StartFadeIn(1.0f,true); // イントロの観客歓声音を再生
+        isIntroAudienceSoundPlayed = true;
+	}
+
+    if (introAudienceSound)
+    {
+        introAudienceSound->Update();
+		introAudienceSound->UpdateFadeIn(elapsed_time);
+		introAudienceSound->UpdateFadeOut(elapsed_time);
+    }
+
     //showingboardのアニメーション更新関数
 	if(introState == GameIntroState::ShowingIntroBoard)
 	{
@@ -356,11 +372,24 @@ void GameIntroSequence::UpdateIntro(float elapsed_time,BroadcastCamera& broadcas
 			introBoardAnimationSound->PlayOneShot(); // イントロボードのアニメーション音を再生
             introBoardAnimationSoundPlayed = true;
         }
+
+        if (introAudienceSound && isIntroAudienceSoundPlayed)
+        {
+            introAudienceSound->StartFadeOut(1.0f); // イントロの観客歓声音をフェードアウト
+            isIntroAudienceSoundPlayed = false;
+        }
 	}
 
     if(introState == GameIntroState::ShowingBallMode)
     {
         UpdateBallSpeedModeSelection();
+
+        if(introAudienceSound && isIntroAudienceSoundPlayed)
+        {
+            introAudienceSound->StartFadeOut(1.0f); // イントロの観客歓声音をフェードアウト
+            isIntroAudienceSoundPlayed = false;
+		}
+
         return;
 	}
 

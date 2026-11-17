@@ -7,6 +7,8 @@
 #include "Hextransitioneffect.h"
 #include "BroadcastCamera.h"
 #include "ReplayManager.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 enum class State
 {
@@ -186,4 +188,10 @@ private:
 	State currentState = State::Result;
 
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
+
+	AudioSource* replayAnimIntroSound = nullptr;
+	AudioSource* replayAnimOutroSound = nullptr;
+
+	bool isReplayAnimIntroSoundPlayed = false;
+	bool isReplayAnimOutroSoundPlayed = false;
 };

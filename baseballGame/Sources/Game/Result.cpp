@@ -105,6 +105,12 @@ void Result::Initialize(ID3D11Device* device)
 	replayLogoAnimation.currentSize = replayLogoAnimation.startSize;
 	replayLogoAnimation.currentRotation = replayLogoAnimation.startRotation;
 
+	replayAnimIntroSound = Audio::Instance().LoadAudioSource("resources\\sounds\\SE\\IntroBoardAnimation.wav", SoundType::SE);
+	replayAnimOutroSound = Audio::Instance().LoadAudioSource("resources\\sounds\\SE\\ReplayAnimation.wav", SoundType::SE);
+
+	isReplayAnimIntroSoundPlayed = false;
+	isReplayAnimOutroSoundPlayed = false;
+
 	//テクスチャを左側から順に表示するためのラスタライザステートを作成
 	D3D11_RASTERIZER_DESC rsDesc = {};
 	rsDesc.FillMode = D3D11_FILL_SOLID;// 塗りつぶしモードを設定
@@ -141,6 +147,8 @@ void Result::Uninitialize()
 	spriteInputLayout.Reset();
 	replayBoardData.reset();
 	replayBoardSprite.reset();
+	delete replayAnimIntroSound;
+	delete replayAnimOutroSound;
 }
 
 void Result::Update(float elapsedTime)
@@ -374,6 +382,11 @@ void Result::UpdateReplayLogoPosition(float elapsedTime)
 				replayLogoAnimation.targetRotation,
 				t1, UiEasing::EasingType::OutQuad);
 
+			if (replayAnimIntroSound && !isReplayAnimIntroSoundPlayed && GameModeManager::Instance().GetCurrentMode() == GameMode::Game)
+			{
+				replayAnimIntroSound->PlayOneShot();
+				isReplayAnimIntroSoundPlayed = true;
+			}
 			
 		}
 		else if( t >= 0.5f && t <= 0.6f)
@@ -400,7 +413,12 @@ void Result::UpdateReplayLogoPosition(float elapsedTime)
 				replayLogoAnimation.endRotation,
 				t2, UiEasing::EasingType::InQuad);	
 
-			
+			if (replayAnimOutroSound && !isReplayAnimOutroSoundPlayed && hasReplay)
+			{
+				replayAnimOutroSound->PlayOneShot();
+				isReplayAnimOutroSoundPlayed = true;
+			}
+
 		}
 
 		

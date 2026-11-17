@@ -840,7 +840,7 @@ void ballSprite::Update(float elapsedTime)
 		ApplyTagetSpritePosition(currentScreenPos);
 	}
 
-	if(wp.z < -1.5f && wp.z > -2.0f && !Ball::Instance().GetHasCollidedWithBat() && intro && intro->IsPlaying())
+	if(wp.z < -1.5f && wp.z > -2.0f && !Ball::Instance().GetHasCollidedWithBat())
 	{
 		
 		

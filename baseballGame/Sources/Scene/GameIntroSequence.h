@@ -226,4 +226,7 @@ private:
 
 	AudioSource* ballModeHoverSound = nullptr; // ボールモードのホバー音声
 	AudioSource* ballModeSelectSound = nullptr; // ボールモードの選択音声
+	AudioSource* introAudienceSound = nullptr; // イントロの観客音声
+
+	bool isIntroAudienceSoundPlayed = false; // イントロの観客音声が再生されたかどうか
 };
