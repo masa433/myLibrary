@@ -84,6 +84,9 @@ public:
 	bool CanPlace(const DirectX::XMFLOAT3& newPos);
 
 	bool GetIsCanPlacing() const { return isCanPlacing; }
+
+	void SetIsShowAudience(bool show) { isShowAudience = show; }
+	bool GetIsShowAudience() const { return isShowAudience; }
 	
 private:
 	enum class AudienceModelType
@@ -126,6 +129,8 @@ private:
 	float radius = 1.0f; // ŠÏ‹q‚Ì”¼Œa
 	bool isCanPlacing = false; // ’u‚¯‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
 	bool isInstansing = false; //ƒCƒ“ƒXƒ^ƒ“ƒX•`‰æ‚·‚é‚©‚Ç‚¤‚©
+
+	bool isShowAudience = true; //ŠÏ‹q‚ð•\Ž¦‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
 
 	std::vector<float> audienceJumpDelays[static_cast<int>(AudienceModelType::Count)]; // ŠÏ‹q‚²‚Æ‚Ì’x‰„ŽžŠÔ
 

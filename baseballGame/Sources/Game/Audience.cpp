@@ -54,6 +54,7 @@ void Audience::Uninitialize()
 void Audience::Update(float elapsedTime)
 {
 	if (!initialized) return;
+	if (!isShowAudience) return;// 観客を表示しない場合は更新をスキップ
 	
 	// アニメーションの更新
 	UpdateTransform();
@@ -255,6 +256,8 @@ void Audience::UpdateAnimation(float elapsedTime)
 
 void Audience::Render(FrustumCulling* frustumCulling)
 {
+	if (!isShowAudience) return;
+
 	for (int i = 0; i < static_cast<int>(AudienceModelType::Count); ++i)
 	{
 		if (!initialized || !audienceModel[i] || !audienceModel[i]->IsInitialized()) return;

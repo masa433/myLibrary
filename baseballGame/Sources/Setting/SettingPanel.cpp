@@ -6,6 +6,7 @@
 #include "input.h"
 #include "Pitcher.h"
 #include "GameModeManager.h"
+#include "Audience.h"
 
 void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
@@ -444,6 +445,7 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 	(
 		u8"バットカーソル感度"
 		u8"打撃後のゲーム速度操作方法表示"
+		u8"観客の表示/非表示"
 		u8"1234567890"
 	);
 
@@ -743,21 +745,24 @@ void OtherSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	create_ps_from_cso(device, ".\\resources\\shader\\sprite_ps.cso", spritePS.ReleaseAndGetAddressOf());
 
 	//テクスチャの読み込み
-	showOperationCheckboxData = std::make_unique<SpriteData>();
-	showOperationCheckboxData->texturePath = L".\\resources\\textures\\checkBoxFrame.png";
-	showOperationCheckboxData->position = checkboxPosition;
-	showOperationCheckboxData->size = checkboxSize;
-	showOperationCheckboxData->rotation = 0.0f;
-	showOperationCheckboxData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	showOperationCheckboxSprite = std::make_unique<sprite>(device, context, showOperationCheckboxData->texturePath.c_str());
+	for (int i = 0; i < numCheckBoxes; ++i)
+	{
+		showOperationCheckboxData[i] = std::make_unique<SpriteData>();
+		showOperationCheckboxData[i]->texturePath = L".\\resources\\textures\\checkBoxFrame.png";
+		showOperationCheckboxData[i]->position = checkboxPosition[i];
+		showOperationCheckboxData[i]->size = checkboxSize[i];
+		showOperationCheckboxData[i]->rotation = 0.0f;
+		showOperationCheckboxData[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		showOperationCheckboxSprite[i] = std::make_unique<sprite>(device, context, showOperationCheckboxData[i]->texturePath.c_str());
 
-	checkIconData = std::make_unique<SpriteData>();
-	checkIconData->texturePath = L".\\resources\\textures\\checkIcon.png";
-	checkIconData->position = checkIconPosition;
-	checkIconData->size = checkIconSize;
-	checkIconData->rotation = 0.0f;
-	checkIconData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	checkIconSprite = std::make_unique<sprite>(device, context, checkIconData->texturePath.c_str());
+		checkIconData[i] = std::make_unique<SpriteData>();
+		checkIconData[i]->texturePath = L".\\resources\\textures\\checkIcon.png";
+		checkIconData[i]->position = checkIconPosition[i];
+		checkIconData[i]->size = checkIconSize[i];
+		checkIconData[i]->rotation = 0.0f;
+		checkIconData[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		checkIconSprite[i] = std::make_unique<sprite>(device, context, checkIconData[i]->texturePath.c_str());
+	}
 	
 	// フォントレンダラーの初期化
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
@@ -767,6 +772,7 @@ void OtherSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	(
 		u8"打撃後のゲーム速度操作方法表示"
 		u8"通常中速高速"
+		u8"観客の表示"
 	);
 
 	// フォントレンダラーの初期化
@@ -778,11 +784,14 @@ void OtherSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 		&trackingDataCodepoints);
 
 	// フォントデータの設定
-	gameSpeedFontData.position = { 600.0f, 550.0f };
+	gameSpeedFontData.position = { 600.0f, 500.0f };
 	gameSpeedFontData.size = 0.3f;
 
-	showOperationFontData.position = { 600.0f, 700.0f };
+	showOperationFontData.position = { 600.0f, 650.0f };
 	showOperationFontData.size = 0.3f;
+
+	showAudienceFontData.position = { 600.0f, 800.0f };
+	showAudienceFontData.size = 0.3f;
 
 	for (int i = 0; i < numGameSpeedTypes; ++i)
 	{
@@ -797,8 +806,12 @@ void OtherSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	gameSpeedTypeFontData[clickedCheckboxIndex].color = { 1.0f, 1.0f, 0.0f, 1.0f };
 
 	// チェックボックスの位置をフォントの右側に配置するためのオフセットを計算
-	checkboxPosition = { showOperationFontData.position.x + offsetX, showOperationFontData.position.y + offsetY };
-	checkIconPosition = { checkboxPosition.x, checkboxPosition.y };
+	for (int i = 0; i < numCheckBoxes; ++i)
+	{
+		checkboxPosition[i] = { showOperationFontData.position.x + offsetX, showOperationFontData.position.y + offsetY };
+		checkIconPosition[i] = { checkboxPosition[i].x, checkboxPosition[i].y };
+
+	}
 
 	hoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav", SoundType::SE);
 	clickSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Clog.wav", SoundType::SE);
@@ -813,17 +826,20 @@ void OtherSettingPanel::Uninitialize()
 	fontRenderer.Uninitialize();
 	showOperationFontData = {};
 	gameSpeedFontData = {};
+	showAudienceFontData = {};
 	for(int i = 0; i < numGameSpeedTypes; ++i)
 	{
 		gameSpeedTypeFontData[i] = {};
 	}
 
 	// チェックボックスとチェックアイコンの解放
-	showOperationCheckboxData.reset();
-	showOperationCheckboxSprite.reset();
-	checkIconData.reset();
-	checkIconSprite.reset();
-
+	for (int i = 0; i < numCheckBoxes; ++i)
+	{
+		showOperationCheckboxData[i].reset();
+		showOperationCheckboxSprite[i].reset();
+		checkIconData[i].reset();
+		checkIconSprite[i].reset();
+	}
 }
 
 void OtherSettingPanel::Update(float elapsedTime)
@@ -847,49 +863,69 @@ void OtherSettingPanel::UpdateShowOperationCheckbox()
 	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
 
 	bool isClicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
+	int prevHoveredCheckBoxIndex = hoveredCheckboxIndex;
+	hoveredCheckboxIndex = -1; // 初期化
 
-	//チェックボックスの位置とサイズをスケーリング
-	DirectX::XMFLOAT2 scaledCheckboxPos = screenScaler.Scale(checkboxPosition);
-	DirectX::XMFLOAT2 scaledCheckboxSize = screenScaler.ScaleSize(checkboxSize);
-	DirectX::XMFLOAT2 scaledCenterPos = { scaledCheckboxPos.x - scaledCheckboxSize.x / 2.0f, scaledCheckboxPos.y - scaledCheckboxSize.y / 2.0f };
-
-	//チェックボックスの範囲を計算
-	float checkBoxX = scaledCenterPos.x;
-	float checkBoxY = scaledCenterPos.y;
-	float checkBoxWidth = scaledCheckboxSize.x;
-	float checkBoxHeight = scaledCheckboxSize.y;
-
-	bool isHovered = (mousePos.x >= checkBoxX && mousePos.x <= checkBoxX + checkBoxWidth &&
-		mousePos.y >= checkBoxY && mousePos.y <= checkBoxY + checkBoxHeight);
-
-	bool isPressed = isHovered && (input.GetMouse().GetButton() & input.GetMouse().BTN_LEFT);// 左クリックが押されているかどうか
-
-	// チェックボックスのサイズを変更
-	checkboxSize = isPressed ? checkBoxOriginalSize : (isHovered ? checkBoxHoverSize : checkBoxOriginalSize);
-
-	if (isHovered)
+	for (int i = 0; i < numCheckBoxes; ++i)
 	{
-		if(hoverSound && !isHoverSoundPlayed)
+		//チェックボックスの位置とサイズをスケーリング
+		DirectX::XMFLOAT2 scaledCheckboxPos = screenScaler.Scale(checkboxPosition[i]);
+		DirectX::XMFLOAT2 scaledCheckboxSize = screenScaler.ScaleSize(checkboxSize[i]);
+		DirectX::XMFLOAT2 scaledCenterPos = { scaledCheckboxPos.x - scaledCheckboxSize.x / 2.0f, scaledCheckboxPos.y - scaledCheckboxSize.y / 2.0f };
+
+		// 間隔調整の変数
+		float sliderSpacing = 140.0f * screenScaler.GetUniformScale();
+
+		//チェックボックスの範囲を計算
+		float checkBoxX = scaledCenterPos.x + offsetX * screenScaler.GetUniformScale();
+		float checkBoxY = scaledCenterPos.y + i * sliderSpacing + offsetY * screenScaler.GetUniformScale();
+		float checkBoxWidth = scaledCheckboxSize.x;
+		float checkBoxHeight = scaledCheckboxSize.y;
+
+		bool isHovered = (mousePos.x >= checkBoxX && mousePos.x <= checkBoxX + checkBoxWidth &&
+			mousePos.y >= checkBoxY && mousePos.y <= checkBoxY + checkBoxHeight);
+
+		bool isPressed = isHovered && (input.GetMouse().GetButton() & input.GetMouse().BTN_LEFT);// 左クリックが押されているかどうか
+
+		// チェックボックスのサイズを変更
+		checkboxSize[i] = isPressed ? checkBoxOriginalSize[i] : (isHovered ? checkBoxHoverSize[i] : checkBoxOriginalSize[i]);
+
+		if (isHovered)
 		{
-			hoverSound->PlayOneShot();
-			isHoverSoundPlayed = true;
-		}
+			hoveredCheckboxIndex = i; // マウスオーバーしているチェックボックスのインデックスを更新
 
-
-		if (isClicked)
-		{
-			showCheckIcon = !showCheckIcon;
-			Pitcher::Instance().SetShowOperationGuide(showCheckIcon);
-
-			if(clickSound)
+			if (prevHoveredCheckBoxIndex != i && hoverSound && !isHoverSoundPlayed)
 			{
-				clickSound->PlayOneShot();
+				hoverSound->PlayOneShot();
+				isHoverSoundPlayed = true;
+			}
+
+
+			if (isClicked)
+			{
+				showCheckIcon[i] = !showCheckIcon[i];
+				switch(hoveredCheckboxIndex)
+				{
+					case 0:
+						// 打撃後のゲーム速度操作方法表示のON/OFFを切り替える処理
+						Pitcher::Instance().SetShowOperationGuide(showCheckIcon[i]);
+						break;
+					case 1:
+						// 観客の表示/非表示のON/OFFを切り替える処理
+						Audience::Instance().SetIsShowAudience(showCheckIcon[i]);
+						break;
+				}
+
+				if (clickSound)
+				{
+					clickSound->PlayOneShot();
+				}
 			}
 		}
-	}
-	else
-	{
-		isHoverSoundPlayed = false;
+		else
+		{
+			isHoverSoundPlayed = false;
+		}
 	}
 
 }
@@ -905,8 +941,8 @@ void OtherSettingPanel::UpdateGameSpeedDisplay()
 
 	bool isClicked = input.GetMouse().GetButtonDown() & Mouse::BTN_LEFT;
 
-	int prevHoveredCheckboxIndex = hoveredCheckboxIndex;
-	hoveredCheckboxIndex = -1; // 初期化
+	int prevHoveredGameSpeedIndex = hoveredGameSpeedIndex;
+	hoveredGameSpeedIndex = -1; // 初期化
 
 	//チェックボックスの位置とサイズをスケーリング
 	for (int i = 0; i < numGameSpeedTypes; ++i)
@@ -929,9 +965,9 @@ void OtherSettingPanel::UpdateGameSpeedDisplay()
 
 		if (isHovered)
 		{
-			hoveredCheckboxIndex = i; // マウスオーバーしているチェックボックスのインデックスを更新
+			hoveredGameSpeedIndex = i; // マウスオーバーしているゲームスピードのインデックスを更新
 
-			if(prevHoveredCheckboxIndex != i && hoverSound)
+			if(prevHoveredGameSpeedIndex != i && hoverSound)
 			{
 				hoverSound->PlayOneShot();
 			}
@@ -943,13 +979,13 @@ void OtherSettingPanel::UpdateGameSpeedDisplay()
 					clickSound->PlayOneShot();
 				}
 
-				// クリックされたチェックボックスのインデックスを保存
-				clickedCheckboxIndex = i;
+				// クリックされたゲームスピードのインデックスを保存
+				clickedGameSpeedIndex = i;
 
 				// ゲームスピードの変更処理
-				if(hoveredCheckboxIndex >= 0 && hoveredCheckboxIndex < numGameSpeedTypes)
+				if(hoveredGameSpeedIndex >= 0 && hoveredGameSpeedIndex < numGameSpeedTypes)
 				{
-					switch (hoveredCheckboxIndex)
+					switch (hoveredGameSpeedIndex)
 					{
 						case 0:
 						//GameModeManager::Instance().SetTimeScale(1.0f);
@@ -969,7 +1005,7 @@ void OtherSettingPanel::UpdateGameSpeedDisplay()
 				//選ばれたボタンはフォントの色をきいろにする
 				for(int j = 0; j < numGameSpeedTypes; ++j)
 				{
-					if(j == hoveredCheckboxIndex)
+					if(j == clickedGameSpeedIndex)
 					{
 						gameSpeedTypeFontData[j].color = { 1.0f, 1.0f, 0.0f, 1.0f }; // 選択されたボタンの色を黄色に設定
 					}
@@ -999,33 +1035,46 @@ void OtherSettingPanel::Render()
 		renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
 	// チェックボックスの描画
-	if(showOperationCheckboxData && showOperationCheckboxSprite)
+	for (int i = 0; i < numCheckBoxes; ++i)
 	{
-		DirectX::XMFLOAT2 scaledCheckboxPos = screenScaler.Scale(checkboxPosition);
-		DirectX::XMFLOAT2 scaledCheckboxSize = screenScaler.ScaleSize(checkboxSize);
+		if (showOperationCheckboxData && showOperationCheckboxSprite)
+		{
+			DirectX::XMFLOAT2 scaledCheckboxPos = screenScaler.Scale(checkboxPosition[i]);
+			DirectX::XMFLOAT2 scaledCheckboxSize = screenScaler.ScaleSize(checkboxSize[i]);
 
-		DirectX::XMFLOAT2 checkBoxCenterPos = { scaledCheckboxPos.x - scaledCheckboxSize.x / 2.0f, scaledCheckboxPos.y - scaledCheckboxSize.y / 2.0f };
+			DirectX::XMFLOAT2 checkBoxCenterPos = { scaledCheckboxPos.x - scaledCheckboxSize.x / 2.0f, scaledCheckboxPos.y - scaledCheckboxSize.y / 2.0f };
 
-		showOperationCheckboxSprite->render(
-			dc, checkBoxCenterPos.x, checkBoxCenterPos.y, 
-			scaledCheckboxSize.x, scaledCheckboxSize.y,
-			showOperationCheckboxData->color.x, showOperationCheckboxData->color.y, showOperationCheckboxData->color.z, showOperationCheckboxData->color.w, 
-			showOperationCheckboxData->rotation);
-		
-	}
+			//間隔調整の変数
+			float sliderSpacing = 150.0f * screenScaler.GetUniformScale();
 
-	// チェックアイコンの描画
-	if (checkIconData && checkIconSprite && showCheckIcon)
-	{
-		DirectX::XMFLOAT2 scaledCheckIconPos = screenScaler.Scale(checkIconPosition);
-		DirectX::XMFLOAT2 scaledCheckIconSize = screenScaler.ScaleSize(checkIconSize);
-		DirectX::XMFLOAT2 checkIconCenterPos = { scaledCheckIconPos.x - scaledCheckIconSize.x / 2.0f, scaledCheckIconPos.y - scaledCheckIconSize.y / 2.0f };
-		checkIconSprite->render(
-			dc, checkIconCenterPos.x, checkIconCenterPos.y,
-			scaledCheckIconSize.x, scaledCheckIconSize.y,
-			checkIconData->color.x, checkIconData->color.y, checkIconData->color.z, checkIconData->color.w,
-			checkIconData->rotation);
+			//3回描画することで、マスターボリューム、BGMボリューム、SEボリュームのスライダー背景を描画
+			DirectX::XMFLOAT2 offsetPos = { checkBoxCenterPos.x + offsetX * screenScaler.GetUniformScale(), checkBoxCenterPos.y + i * sliderSpacing + offsetY * screenScaler.GetUniformScale() };
 
+			showOperationCheckboxSprite[i]->render(
+				dc, offsetPos.x, offsetPos.y,
+				scaledCheckboxSize.x, scaledCheckboxSize.y,
+				showOperationCheckboxData[i]->color.x, showOperationCheckboxData[i]->color.y, showOperationCheckboxData[i]->color.z, showOperationCheckboxData[i]->color.w,
+				showOperationCheckboxData[i]->rotation);
+		}
+
+		// チェックアイコンの描画
+		if (checkIconData && checkIconSprite && showCheckIcon[i])
+		{
+			DirectX::XMFLOAT2 scaledCheckIconPos = screenScaler.Scale(checkIconPosition[i]);
+			DirectX::XMFLOAT2 scaledCheckIconSize = screenScaler.ScaleSize(checkIconSize[i]);
+			DirectX::XMFLOAT2 checkIconCenterPos = { scaledCheckIconPos.x - scaledCheckIconSize.x / 2.0f, scaledCheckIconPos.y - scaledCheckIconSize.y / 2.0f };
+
+			//間隔調整の変数
+			float sliderSpacing = 150.0f * screenScaler.GetUniformScale();
+
+			DirectX::XMFLOAT2 offsetPos = { checkIconCenterPos.x + offsetX * screenScaler.GetUniformScale(), checkIconCenterPos.y + i * sliderSpacing + offsetY * screenScaler.GetUniformScale() };
+
+			checkIconSprite[i]->render(
+				dc, offsetPos.x, offsetPos.y,
+				scaledCheckIconSize.x, scaledCheckIconSize.y,
+				checkIconData[i]->color.x, checkIconData[i]->color.y, checkIconData[i]->color.z, checkIconData[i]->color.w,
+				checkIconData[i]->rotation);
+		}
 	}
 
 	//ゲームスピードタイプの描画
@@ -1089,6 +1138,19 @@ void OtherSettingPanel::Render()
 	float gameSpeedDrawPosY = scaledGameSpeedFontPos.y - gameSpeedTextHeight / 2.0f;
 
 	fontRenderer.DrawTextW(dc, gameSpeedText, gameSpeedDrawPosX, gameSpeedDrawPosY, scaledGameSpeedFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	//観客の表示
+	DirectX::XMFLOAT2 scaledAudienceFontPos = screenScaler.Scale(showAudienceFontData.position);
+	const float scaledAudienceFontScale = showAudienceFontData.size * screenScaler.GetUniformScale();
+
+	float audienceTextWidth, audienceTextHeight;
+	const char* audienceText = u8"観客の表示";
+	fontRenderer.MeasureText(audienceText, scaledAudienceFontScale, audienceTextWidth, audienceTextHeight);
+	float audienceDrawPosX = scaledAudienceFontPos.x - audienceTextWidth / 2.0f;
+	float audienceDrawPosY = scaledAudienceFontPos.y - audienceTextHeight / 2.0f;
+
+	fontRenderer.DrawTextW(dc, audienceText, audienceDrawPosX, audienceDrawPosY, scaledAudienceFontScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
 	// 描画後の状態をリセット
 	dc->VSSetShader(nullptr, nullptr, 0);
 	dc->PSSetShader(nullptr, nullptr, 0);
@@ -1103,7 +1165,8 @@ void OtherSettingPanel::DrawGUI()
 	// ImGuiを使ったGUI描画処理
 	ImGui::Begin("Other Settings");
 	// 操作方法表示のチェックボックス
-	ImGui::Checkbox("Show Operation", &showCheckIcon);
+	ImGui::Checkbox("Show Operation", &showCheckIcon[0]);
+	ImGui::Checkbox("Show Audience", &showCheckIcon[1]);
 
 	ImGui::End();
 }

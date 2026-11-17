@@ -177,9 +177,11 @@ public:
 private:
 	
 	static const int numGameSpeedTypes = 3; // ゲームスピードの種類の数
+	static const int numCheckBoxes = 2; // チェックボックスの数
 
 	FontData showOperationFontData = { { 960.0f, 540.0f }, 0.5f };//操作方法の表示
 	FontData gameSpeedFontData = { { 960.0f, 540.0f }, 0.5f };//ゲームスピードの表示
+	FontData showAudienceFontData = { { 960.0f, 540.0f }, 0.5f };//観客の表示	
 
 	FontData gameSpeedTypeFontData[numGameSpeedTypes] = {{{960.0f, 540.0f}, 0.5f}, {{960.0f, 540.0f}, 0.5f}, {{960.0f, 540.0f}, 0.5f}};//ゲームスピードの種類の表示 
 	float gameSpeedOffsetX[numGameSpeedTypes] = { 300.0f, 500.0f, 700.0f };//ゲームスピードの種類の表示位置のオフセット
@@ -188,25 +190,24 @@ private:
 	float gameSpeedTypeOriginalSize[numGameSpeedTypes] = { 0.5f, 0.5f, 0.5f };//ゲームスピードの種類の表示サイズ
 	float gameSpeedTypeHoverSize[numGameSpeedTypes] = { 0.55f, 0.55f, 0.55f };//ゲームスピードの種類の表示サイズ(マウスオーバー時)
 
-	std::unique_ptr<SpriteData> showOperationCheckboxData;
-	std::unique_ptr<sprite> showOperationCheckboxSprite;
+	std::unique_ptr<SpriteData> showOperationCheckboxData[numCheckBoxes];
+	std::unique_ptr<sprite> showOperationCheckboxSprite[numCheckBoxes];
 
-	DirectX::XMFLOAT2 checkboxPosition = { 960.0f, 540.0f };
-	DirectX::XMFLOAT2 checkboxSize = { 80.0f, 80.0f };
+	DirectX::XMFLOAT2 checkboxPosition[numCheckBoxes] = { {960.0f, 540.0f}, {960.0f, 540.0f} };
+	DirectX::XMFLOAT2 checkboxSize[numCheckBoxes] = { {80.0f, 80.0f}, {80.0f, 80.0f} };
 
-	DirectX::XMFLOAT2 checkBoxOriginalSize = { checkboxSize.x, checkboxSize.y };
-	DirectX::XMFLOAT2 checkBoxHoverSize = { checkBoxOriginalSize.x * 1.1f, checkBoxOriginalSize.y * 1.1f };
+	DirectX::XMFLOAT2 checkBoxOriginalSize[numCheckBoxes] = { {checkboxSize[0].x, checkboxSize[0].y}, {checkboxSize[1].x, checkboxSize[1].y} };
+	DirectX::XMFLOAT2 checkBoxHoverSize[numCheckBoxes] = { {checkBoxOriginalSize[0].x * 1.1f, checkBoxOriginalSize[0].y * 1.1f}, {checkBoxOriginalSize[1].x * 1.1f, checkBoxOriginalSize[1].y * 1.1f} };
 
-	std::unique_ptr<SpriteData> checkIconData;
-	std::unique_ptr<sprite> checkIconSprite;
+	std::unique_ptr<SpriteData> checkIconData[numCheckBoxes];
+	std::unique_ptr<sprite> checkIconSprite[numCheckBoxes];
 
-	DirectX::XMFLOAT2 checkIconPosition = { 970.0f, 535.0f };
-	DirectX::XMFLOAT2 checkIconSize = { 80.0f, 80.0f };
+	DirectX::XMFLOAT2 checkIconPosition[numCheckBoxes] = { {970.0f, 535.0f}, {970.0f, 535.0f} };
+	DirectX::XMFLOAT2 checkIconSize[numCheckBoxes] = { {80.0f, 80.0f}, {80.0f, 80.0f} };
+	float offsetX = 250.0f;
+	float offsetY = -15.0f;
 
-	float offsetX = 500.0f;
-	float offsetY = -30.0f;
-
-	bool showCheckIcon = true;
+	bool showCheckIcon[numCheckBoxes] = { true, true };
 
 	int hoveredCheckboxIndex = -1; // マウスオーバーしているチェックボックスのインデックス(-1はどのチェックボックスにもマウスオーバーしていない状態)
 
@@ -214,4 +215,7 @@ private:
 	int clickedCheckboxIndex = 0; // 0にして、通常速度が初期値になるようにする
 
 	bool isHoverSoundPlayed = false; //マウスオーバー時の効果音が再生されたかどうかのフラグ
+
+	int hoveredGameSpeedIndex = -1; // マウスオーバーしているゲームスピードのインデックス(-1はどのゲームスピードにもマウスオーバーしていない状態)
+	int clickedGameSpeedIndex = 0; // クリックされたゲームスピードのインデックス(0にして、通常速度が初期値になるようにする)
 };
