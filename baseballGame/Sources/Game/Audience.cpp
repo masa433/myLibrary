@@ -36,7 +36,7 @@ void Audience::Initialize()
 	jumpTimer = 0.0f; // ジャンプのタイマーを初期化
 	junpDuration = 0.5f; // ジャンプの持続時間を設定
 
-	
+	isInstansing = true; // インスタンシングを有効にする
 
 }
 
@@ -290,14 +290,17 @@ void Audience::Render(FrustumCulling* frustumCulling)
 
 		if(!audienceTransform.empty())
 		{
-			//背景を透過して描画するために、ブレンドステートを設定
-
-			//dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
-
-
-			audienceModel[i]->render_batched_instanced(context, audienceTransform);
-
-			//dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+			if(isInstansing)
+			{
+				audienceModel[i]->render_batched_instanced(context, audienceTransform);
+			}
+			else
+			{
+				for (auto& transform : audienceTransforms[i])
+				{
+					audienceModel[i]->render_batched(context, transform, {});
+				}
+			}
 		}
 	}
 
@@ -345,6 +348,7 @@ void Audience::DrawGUI()
 
 		ImGui::Checkbox("Is Can Place", &isCanPlacing);
 		ImGui::DragFloat("Radius", &radius, 0.1f, 0.1f, 100.0f);
+		ImGui::Checkbox("Instancing", &isInstansing);
 	}
 }
 

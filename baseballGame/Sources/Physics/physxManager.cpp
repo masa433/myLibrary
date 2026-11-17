@@ -1336,8 +1336,9 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 
 			physx::PxVec3 horizDir;
 
+			// 2D判定の仰角を使用して打ち出し方向を調整
 			{
-				float angle2DRad = result.launchAngle2DDeg * (3.14159265359f / 180.0f);
+				float angle2DRad = result.launchAngle2DDeg * (3.14159265359f / 180.0f);// 2D判定の仰角をラジアンに変換
 				horizDir = launchDirection;
 				
 				horizDir.y = 0.0f;// 水平方向のみを考慮
@@ -1350,8 +1351,8 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 					horizDir.normalize();
 				}
 
-				launchDirection = physx::PxVec3(horizDir.x * cosf(angle2DRad), sinf(angle2DRad), horizDir.z * cosf(angle2DRad));
-				launchDirection.normalize();
+				launchDirection = physx::PxVec3(horizDir.x * cosf(angle2DRad), sinf(angle2DRad), horizDir.z * cosf(angle2DRad));// 2D判定の仰角を反映
+				launchDirection.normalize();// 正規化して単位ベクトルにする
 			}
 
 			// 打球速度計算（onContact と同じロジック）

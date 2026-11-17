@@ -104,12 +104,12 @@ void ParticleRenderer::Update(float elapsed_time, bool isHomeRun)
             fireworksTimer = 1.0f;//1発目をすぐに出すために1秒に設定
             fireworksCount = 0;
 
-			//カメラのeyeの位置を取得
+            //カメラの視点を取得
 			const DirectX::XMFLOAT3 cameraEye = Camera::Instance().GetEye();
 			//カメラの前方向のベクトルを取得
 			const DirectX::XMFLOAT3 cameraFront = Camera::Instance().GetFront();
 
-			//カメラのeyeの位置から前方向に40.0f進めた位置を花火の発射位置とする
+			//カメラの視点から前方向に40.0f進めた位置を花火の発射位置とする
 			DirectX::XMFLOAT3 launchPosition =
             { 
                 cameraEye.x + cameraFront.x * 40.0f,
@@ -218,7 +218,7 @@ void ParticleRenderer::Render(ID3D11DeviceContext* immediate_context)
 
 void ParticleRenderer::DrawGUI()
 {
-    if (ImGui::CollapsingHeader("Particle"))
+    if (ImGui::Begin("Particle"))
     {
         for (auto& pos : particle_positions)
         {
@@ -230,6 +230,7 @@ void ParticleRenderer::DrawGUI()
             ImGui::DragFloat3(("Firework Position " + std::to_string(&fireWorkPos - &fireworks_positions[0])).c_str(), &fireWorkPos.x, 0.1f);
         }
     }
+	ImGui::End();
 }
 
 void ParticleRenderer::SaveToJson(json& j)

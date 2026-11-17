@@ -36,6 +36,7 @@ static void CreateStaticMeshActor(
 		}
 	}
 
+	// PhysXの三角形メッシュを作成
 	physx::PxTriangleMeshDesc meshDesc;
 	meshDesc.points.count = static_cast<physx::PxU32>(transformedVertices.size());
 	meshDesc.points.data = transformedVertices.data();
@@ -56,11 +57,11 @@ static void CreateStaticMeshActor(
 	physx::PxTriangleMeshGeometry pxMeshGeometry(pxTriangleMesh); // スケールは等倍
 	physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*pxRigidBody, pxMeshGeometry, *material);
 	if (!shape) { pxRigidBody->release(); pxTriangleMesh->release(); return; }
-	pxRigidBody->setName(name);
+	pxRigidBody->setName(name);// 剛体に名前を設定
 
-	pxScene->addActor(*pxRigidBody);
-	actors.emplace_back(pxRigidBody);
-	triangle_meshes.emplace_back(pxTriangleMesh);
+	pxScene->addActor(*pxRigidBody);// シーンに追加
+	actors.emplace_back(pxRigidBody);// 生成した剛体をリストに追加
+	triangle_meshes.emplace_back(pxTriangleMesh);// 生成した三角形メッシュをリストに追加
 }
 
 // 初期化
@@ -206,6 +207,7 @@ void stage::initializeLightTower()
 	lightTower2->build_static_batches(device);
 }
 
+// フェンスラインの編集モードで、マウスクリックに応じてラインの頂点を追加する
 void stage::UpdateLineEditor(LineTriggerEditor& editor,
 	const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
 	float viewportX, float viewportY, float viewportWidth, float viewportHeight)
@@ -245,6 +247,7 @@ void stage::UpdateLineEditor(LineTriggerEditor& editor,
 	physx::PxQueryFilterData filterData;
 	filterData.flags |= physx::PxQueryFlag::eSTATIC; // 静的オブジェクトのみを対象
 
+	// レイキャストを実行して、ヒットしたオブジェクトの名前を確認
 	bool hit = pxScene->raycast(
 		physx::PxVec3(rayOrigin.x, rayOrigin.y, rayOrigin.z),// レイの原点
 		physx::PxVec3(rayDir.x, rayDir.y, rayDir.z),// レイの方向
@@ -261,6 +264,7 @@ void stage::UpdateLineEditor(LineTriggerEditor& editor,
 		if (actor && actor->getName())
 		{
 			std::string actorName(actor->getName());
+			// ヒットしたオブジェクトの名前が、フェンスラインのターゲット名リストに含まれているか確認
 			for (const auto& targetName : editor.raycastTargetNames)
 			{
 				if (actorName == targetName)
@@ -274,6 +278,7 @@ void stage::UpdateLineEditor(LineTriggerEditor& editor,
 	}
 }
 
+// フェンスラインの頂点からトリガーコライダーを再構築する
 void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 {
 	physx::PxPhysics* pxPhysics = Physics::Instance().GetPhysics();
@@ -302,7 +307,7 @@ void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 	physx::PxMaterial* triggerMaterial = pxPhysics->createMaterial(0.5f, 0.5f, 0.5f);
 	if (!triggerMaterial) return;
 	
-
+	// フェンスラインの各セグメントに対してトリガーコライダーを作成
 	for(size_t i = 0; i < editor.linePoints.size() - 1; ++i)
 	{
 		const auto& p1 = editor.linePoints[i];
@@ -327,6 +332,7 @@ void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 			physx::PxQuat(angle, physx::PxVec3(0, 1, 0)) // Y軸回転
 		);
 
+		// フェンスラインのトリガーコライダーの形状を作成
 		physx::PxBoxGeometry geometry(length * 0.5f, height * 0.5f, editor.thickness * 0.5f);
 
 		physx::PxRigidStatic* actor = pxPhysics->createRigidStatic(triggerTransform);
@@ -336,15 +342,16 @@ void stage::RebuildLineTriggers(LineTriggerEditor& editor)
 		shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
 		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
 
-		actor->setName(editor.triggerName.c_str());
+		actor->setName(editor.triggerName.c_str());// トリガーコライダーに名前を設定
 
-		pxScene->addActor(*actor);
-		editor.triggers.push_back(actor);
+		pxScene->addActor(*actor);// シーンに追加
+		editor.triggers.push_back(actor);// トリガーリストに追加
 	}
 
 	triggerMaterial->release(); // マテリアルの解放
 }
 
+// フェンスラインの頂点をスクリーン座標に変換して描画する
 void stage::DrawLineOverlay(const LineTriggerEditor& editor,
 	const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& proj,
 	float viewportX, float viewportY, float viewportWidth, float viewportHeight,
@@ -356,6 +363,7 @@ void stage::DrawLineOverlay(const LineTriggerEditor& editor,
 	DirectX::XMMATRIX Proj = DirectX::XMLoadFloat4x4(&proj);
 	DirectX::XMMATRIX VP = View * Proj;
 
+	// ワールド座標をスクリーン座標に変換するラムダ関数
 	auto worldToScreen = [&](const DirectX::XMFLOAT3& worldPos, ImVec2& outScreen)->bool
 		{
 			DirectX::XMFLOAT4 clipCheck;
@@ -376,6 +384,7 @@ void stage::DrawLineOverlay(const LineTriggerEditor& editor,
 	ImVec2 prevScreen;
 	bool hasPrev = false;
 
+	// フェンスラインの頂点を順に描画
 	for (const auto& p : editor.linePoints)
 	{
 		ImVec2 screenPos;
@@ -627,7 +636,7 @@ void stage::DrawGUI()
 		}
 	}
 
-	if (ImGui::CollapsingHeader("Fence Line Editor"))
+	if (ImGui::Begin("Fence Line Editor"))
 	{
 		if (ImGui::Checkbox(u8"Edit Mode (Homerun)", &homerunLineEditor.editMode))
 		{
@@ -671,6 +680,7 @@ void stage::DrawGUI()
 		ImGui::DragFloat("Extra Height (Foul)", &foulLineEditor.extraHeight, 0.5f);
 		ImGui::DragFloat("Thickness (Foul)", &foulLineEditor.thickness, 0.1f);
 	}
+	ImGui::End();
 
 	ImGui::Checkbox("Enable Instancing for Light Towers", &isInstancingEnabled);
 

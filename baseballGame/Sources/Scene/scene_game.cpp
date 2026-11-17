@@ -436,6 +436,9 @@ void scene_game::update(float elapsed_time)
             isOneShotFadeStarted = true;
         }
 
+        BatSprite::Instance().SetIsAssisting(false);
+		BatSprite::Instance().SetMeetAssistEnabled(false);
+
     }
 
     //仮でエスケープキーを押したらポーズ画面に移行

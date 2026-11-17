@@ -864,7 +864,7 @@ void BroadcastCamera::StartEventCameraEyeXZShift(float targetEyeX, float targetE
 void BroadcastCamera::DrawGUI()
 {
 	//中継カメラの設定
-	if (ImGui::CollapsingHeader(u8"中継カメラ"), ImGuiTreeNodeFlags_DefaultOpen)
+	ImGui::Begin(u8"中継カメラ設定");
 	{
 		Camera& camera = Camera::Instance();
 		ImGui::TextDisabled(u8"数字キーでも切り替えできる");
@@ -976,6 +976,7 @@ void BroadcastCamera::DrawGUI()
 			activeCameraIndex = AddCameraPreset(newName, camera.GetEye(), camera.GetFocus());
 		}
 	}
+	ImGui::End();
 }
 
 void BroadcastCamera::SaveToJson(json& j) const

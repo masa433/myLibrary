@@ -331,7 +331,9 @@ void Player::Update(float elapsedTime)
 		float mouseX = BatSprite::Instance().GetEffectiveCursorPosition().x;
         float mouseY = BatSprite::Instance().GetEffectiveCursorPosition().y;
         DirectX::XMFLOAT2 zoneTopLeft, zoneBottomRight;
-        bs.GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);
+		bs.GetBallZoneScreenBounds(zoneTopLeft, zoneBottomRight);// ボールゾーンのスクリーン境界を取得
+
+		// マウス座標をボールゾーン内に制限
         mouseX = std::max(zoneTopLeft.x, std::min(zoneBottomRight.x, mouseX));
         mouseY = std::max(zoneTopLeft.y, std::min(zoneBottomRight.y, mouseY));
 
@@ -428,7 +430,7 @@ void Player::Update(float elapsedTime)
 
         // ストライクゾーンのスクリーン境界を取得
         DirectX::XMFLOAT2 szTopLeft, szBottomRight;
-        bs.GetStrikeZoneScreenBounds(szTopLeft, szBottomRight); // 後述のgetter
+		bs.GetStrikeZoneScreenBounds(szTopLeft, szBottomRight);// ストライクゾーンのスクリーン境界を取得
 
         // ボールスプライトがストライクゾーン外 = ボールゾーン
         bool isBallZone = (ballCenter.x < szTopLeft.x || ballCenter.x > szBottomRight.x ||
@@ -441,11 +443,11 @@ void Player::Update(float elapsedTime)
 
 		bool isInsideCourse = IsRightBatter() ? (ballCenter.x < zoneCenterX - insideCourseMargin) : (ballCenter.x > zoneCenterX + insideCourseMargin);
 
-        HitJudge2D::Instance().isBallZone = isBallZone; // 後述のメンバ
-        HitJudge2D::Instance().isInsideCourse = isInsideCourse; // 後述のメンバ
+		HitJudge2D::Instance().isBallZone = isBallZone;//ボールゾーン判定をHitJudge2Dに渡す
+		HitJudge2D::Instance().isInsideCourse = isInsideCourse; //インコース判定をHitJudge2Dに渡す
 
         HitJudge2D::Instance().Update(
-            ballCenter, batCenter, batSize, batRotPhysics, cursorCenter, estTime);
+			ballCenter, batCenter, batSize, batRotPhysics, cursorCenter, estTime);//最終的なヒット判定をHitJudge2Dに渡す
 
 
     }

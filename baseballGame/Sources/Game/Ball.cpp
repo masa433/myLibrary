@@ -487,18 +487,20 @@ void Ball::ApplyPitchPhysics(bool isKnuckleball, const physx::PxVec3& windVeloci
 
 	if (relativeSpeed > 0.0f)
 	{
-		dragMag = 0.5f * AIR_DENSITY * relativeSpeed * relativeSpeed * DRAG_COEFFICIENT * ballArea;
+		//抗力の大きさを計算してコライダーに加える
+		dragMag = 0.5f * AIR_DENSITY * relativeSpeed * relativeSpeed * DRAG_COEFFICIENT * ballArea;//抗力の大きさ
 		physx::PxVec3 dragForce = -relativeVelocity.getNormalized() * dragMag;
-		collider->addForce(dragForce, physx::PxForceMode::eFORCE);
+		collider->addForce(dragForce, physx::PxForceMode::eFORCE);//抗力を加える
 	}
 
 	physx::PxVec3 angularVelocity = collider->getAngularVelocity();
 	angularSpeed = angularVelocity.magnitude();
 
+	// マグナス力の計算
 	if (relativeSpeed > 0.0f && angularSpeed > 0.0f)
 	{
 		spinParameter = (BALL_RADIUS * angularSpeed) / relativeSpeed;
-		float liftCoeff = 1.0f * spinParameter;//揚力係数の計算（簡略化）
+		float liftCoeff = 1.0f * spinParameter;//揚力係数の計算
 		if (liftCoeff > 0.5f) liftCoeff = 0.5f;//揚力係数の上限を設定
 		magnusMag = 0.5f * AIR_DENSITY * relativeSpeed * relativeSpeed * liftCoeff * ballArea;//マグナス力の大きさ
 

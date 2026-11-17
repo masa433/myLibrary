@@ -339,6 +339,8 @@ void DoFRenderer::DrawGUI(float near_clip_distance, float far_clip_distance)
 {
     if (ImGui::CollapsingHeader("depth of field"))
     {
+		ImGui::Checkbox("enable", &enable_dof);
+
         ImGui::SliderInt("kernel", &gaussian_filter_data.kernel_size, 1, KernelMax);
         ImGui::SliderFloat("sigma", &gaussian_filter_data.sigma, 1.0f, 50.0f);
 

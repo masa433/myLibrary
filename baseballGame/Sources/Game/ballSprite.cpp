@@ -1211,118 +1211,122 @@ void ballSprite::DrawGUI()
 
 	TrackingData::Instance().DrawGUI();
 
-	const Pitcher::RealPitcher selectedRP = Pitcher::Instance().GetSelectedRealPitcher();
-	if (selectedRP != Pitcher::RealPitcher::None)
+	if (ImGui::Begin(u8"2D変化量調整エディター"))
 	{
-		ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.2f, 1.0f), u8"※「%s」専用の変化量データを編集中（他の投手には影響しません）",
-			Pitcher::GetRealPitcherName(selectedRP));
-	}
-	else
-	{
-		ImGui::Text(u8"※現在は共通エディター値を編集中（実在投手プリセット未選択）");
-	}
-
-	const char* names[] = {
-		u8"ストレート", u8"スライダー", u8"カーブ", u8"チェンジアップ", u8"フォーク",
-		u8"ツーシーム", u8"カットボール", Pitcher::Instance().IsRightPitcher() ? u8"シンカー" : u8"スクリュー", u8"縦スライダー", u8"スプリット",
-		u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール", u8"スイーパー", u8"パーム",
-		u8"ナチュラルシュート", u8"真っスラ", u8"火の玉ストレート"
-	};
-
-	ImGui::Combo(u8"編集する球種", reinterpret_cast<int*>(&Pitcher::Instance().selectedPitchType), names, PITCH_TYPE_COUNT);
-
-	const int editIndex = Pitcher::PitchTypeToBreakIndex(Pitcher::Instance().GetSelectedPitchType());
-
-	// 実在投手選択中なら、その投手専用の変化量セットを直接編集する
-	PitchBreakSet* activeSet = nullptr;
-	if (selectedRP != Pitcher::RealPitcher::None)
-	{
-		activeSet = &realPitcherBreaks[static_cast<int>(selectedRP)];
-	}
-
-	ballBreak2D& brk = pitchBreaks[editIndex];
-
-	// ----- グレード（段階）で一括指定 -----
-	if (activeSet != nullptr)
-	{
-		int gradeIndex = static_cast<int>(activeSet->grades[editIndex]); // F=0 ... S=6
-		static const char* gradeNames[] = { u8"F", u8"E", u8"D", u8"C", u8"B", u8"A", u8"S"};
-		ImGui::TextColored(ImVec4(0.3f, 0.9f, 1.0f, 1.0f), u8"曲がりグレード : %s", GetBreakGradeLabel(activeSet->grades[editIndex]));
-		if (ImGui::Combo(u8"グレード変更", &gradeIndex, gradeNames, IM_ARRAYSIZE(gradeNames)))
+		const Pitcher::RealPitcher selectedRP = Pitcher::Instance().GetSelectedRealPitcher();
+		if (selectedRP != Pitcher::RealPitcher::None)
 		{
-			activeSet->grades[editIndex] = static_cast<Pitcher::BreakGrade>(gradeIndex);
-			// グレード基準の形状（=C相当の向き）に対して倍率をかけ直す
-			
-			const float newScale = GetBreakGradeScale(activeSet->grades[editIndex]);
-			activeSet->breaks[editIndex].breakX = activeSet->baseBreaks[editIndex].breakX * newScale;
-			activeSet->breaks[editIndex].breakY = activeSet->baseBreaks[editIndex].breakY * newScale;
-			brk = activeSet->breaks[editIndex];
+			ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.2f, 1.0f), u8"※「%s」専用の変化量データを編集中（他の投手には影響しません）",
+				Pitcher::GetRealPitcherName(selectedRP));
 		}
-		ImGui::Spacing();
-
-		//球威のグレードも表示
-		int powerIndex = static_cast<int>(activeSet->powerGrades[editIndex]); // F=0 ... S=6
-		static const char* powerNames[] = { u8"F", u8"E", u8"D", u8"C", u8"B", u8"A", u8"S" };
-		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.2f, 1.0f), u8"球威グレード : %s", GetPowerGradeLabel(activeSet->powerGrades[editIndex]));
-		if (ImGui::Combo(u8"球威グレード変更", &powerIndex, powerNames, IM_ARRAYSIZE(powerNames)))
+		else
 		{
-			activeSet->powerGrades[editIndex] = static_cast<Pitcher::Power>(powerIndex);
-			pitchPowers[editIndex] = activeSet->powerGrades[editIndex]; // 投手専用データにも反映
+			ImGui::Text(u8"※現在は共通エディター値を編集中（実在投手プリセット未選択）");
 		}
 
-		if (ImGui::CollapsingHeader(u8"球威デバッグ"))
+		const char* names[] = {
+			u8"ストレート", u8"スライダー", u8"カーブ", u8"チェンジアップ", u8"フォーク",
+			u8"ツーシーム", u8"カットボール", Pitcher::Instance().IsRightPitcher() ? u8"シンカー" : u8"スクリュー", u8"縦スライダー", u8"スプリット",
+			u8"スローカーブ", u8"シュート", u8"ナックルボール", u8"スローボール", u8"スイーパー", u8"パーム",
+			u8"ナチュラルシュート", u8"真っスラ", u8"火の玉ストレート"
+		};
+
+		ImGui::Combo(u8"編集する球種", reinterpret_cast<int*>(&Pitcher::Instance().selectedPitchType), names, PITCH_TYPE_COUNT);
+
+		const int editIndex = Pitcher::PitchTypeToBreakIndex(Pitcher::Instance().GetSelectedPitchType());
+
+		// 実在投手選択中なら、その投手専用の変化量セットを直接編集する
+		PitchBreakSet* activeSet = nullptr;
+		if (selectedRP != Pitcher::RealPitcher::None)
 		{
-			Pitcher::Power baseGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)]
-				.powerGrades[currentPitchIndex];
-			int totalPowerRankDown = shopPowerRankDown + abilityPowerRankDown;
-			Pitcher::Power effectiveGrade = Pitcher::GetPowerRankDown(baseGrade, totalPowerRankDown);
-
-			Pitcher::BreakGrade baseBreakGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)]
-				.grades[currentPitchIndex];
-			int totalBreakRankDown = shopBreakRankDown + abilityBreakRankDown;
-			Pitcher::BreakGrade effectiveBreakGrade = Pitcher::GetBreakGradeRankDown(baseBreakGrade, totalBreakRankDown);
-
-			ImGui::Text(u8"ランクダウン量 : %d", totalPowerRankDown);
-			ImGui::Text(u8"基礎グレード   : %s", GetPowerGradeLabel(baseGrade));
-			ImGui::Text(u8"実効グレード   : %s", GetPowerGradeLabel(effectiveGrade));
-			ImGui::Text(u8"曲がりランクダウン量 : %d", totalBreakRankDown);
-			ImGui::Text(u8"基礎曲がりグレード   : %s", GetBreakGradeLabel(baseBreakGrade));
-			ImGui::Text(u8"実効曲がりグレード   : %s", GetBreakGradeLabel(effectiveBreakGrade));
-
+			activeSet = &realPitcherBreaks[static_cast<int>(selectedRP)];
 		}
-	}
-	if(activeSet == nullptr)
-	{
-		ImGui::TextColored(ImVec4(0.3f, 0.9f, 1.0f, 1.0f), u8"曲がりグレード : %s", GetBreakGradeLabel(Pitcher::BreakGrade::C));
-		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.2f, 1.0f), u8"球威グレード : %s", GetPowerGradeLabel(Pitcher::Power::C));
-	}
 
-	// ----- 数値での微調整（従来通り） -----
-	float displayBreakX = Pitcher::Instance().IsRightPitcher() ? brk.breakX : -brk.breakX;
-	if (ImGui::SliderFloat(u8"横変化 (+ アウト / - イン)", &displayBreakX, -20.0f, 20.0f, "%.1f cm"))
-	{
-		brk.breakX = Pitcher::Instance().IsRightPitcher() ? displayBreakX : -displayBreakX;
+		ballBreak2D& brk = pitchBreaks[editIndex];
+
+		// ----- グレード（段階）で一括指定 -----
 		if (activeSet != nullptr)
 		{
-			activeSet->breaks[editIndex] = brk; // 投手専用データにも反映
+			int gradeIndex = static_cast<int>(activeSet->grades[editIndex]); // F=0 ... S=6
+			static const char* gradeNames[] = { u8"F", u8"E", u8"D", u8"C", u8"B", u8"A", u8"S" };
+			ImGui::TextColored(ImVec4(0.3f, 0.9f, 1.0f, 1.0f), u8"曲がりグレード : %s", GetBreakGradeLabel(activeSet->grades[editIndex]));
+			if (ImGui::Combo(u8"グレード変更", &gradeIndex, gradeNames, IM_ARRAYSIZE(gradeNames)))
+			{
+				activeSet->grades[editIndex] = static_cast<Pitcher::BreakGrade>(gradeIndex);
+				// グレード基準の形状（=C相当の向き）に対して倍率をかけ直す
+
+				const float newScale = GetBreakGradeScale(activeSet->grades[editIndex]);
+				activeSet->breaks[editIndex].breakX = activeSet->baseBreaks[editIndex].breakX * newScale;
+				activeSet->breaks[editIndex].breakY = activeSet->baseBreaks[editIndex].breakY * newScale;
+				brk = activeSet->breaks[editIndex];
+			}
+			ImGui::Spacing();
+
+			//球威のグレードも表示
+			int powerIndex = static_cast<int>(activeSet->powerGrades[editIndex]); // F=0 ... S=6
+			static const char* powerNames[] = { u8"F", u8"E", u8"D", u8"C", u8"B", u8"A", u8"S" };
+			ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.2f, 1.0f), u8"球威グレード : %s", GetPowerGradeLabel(activeSet->powerGrades[editIndex]));
+			if (ImGui::Combo(u8"球威グレード変更", &powerIndex, powerNames, IM_ARRAYSIZE(powerNames)))
+			{
+				activeSet->powerGrades[editIndex] = static_cast<Pitcher::Power>(powerIndex);
+				pitchPowers[editIndex] = activeSet->powerGrades[editIndex]; // 投手専用データにも反映
+			}
+
+			if (ImGui::CollapsingHeader(u8"球威デバッグ"))
+			{
+				Pitcher::Power baseGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)]
+					.powerGrades[currentPitchIndex];
+				int totalPowerRankDown = shopPowerRankDown + abilityPowerRankDown;
+				Pitcher::Power effectiveGrade = Pitcher::GetPowerRankDown(baseGrade, totalPowerRankDown);
+
+				Pitcher::BreakGrade baseBreakGrade = realPitcherBreaks[static_cast<size_t>(lastAppliedPitcher)]
+					.grades[currentPitchIndex];
+				int totalBreakRankDown = shopBreakRankDown + abilityBreakRankDown;
+				Pitcher::BreakGrade effectiveBreakGrade = Pitcher::GetBreakGradeRankDown(baseBreakGrade, totalBreakRankDown);
+
+				ImGui::Text(u8"ランクダウン量 : %d", totalPowerRankDown);
+				ImGui::Text(u8"基礎グレード   : %s", GetPowerGradeLabel(baseGrade));
+				ImGui::Text(u8"実効グレード   : %s", GetPowerGradeLabel(effectiveGrade));
+				ImGui::Text(u8"曲がりランクダウン量 : %d", totalBreakRankDown);
+				ImGui::Text(u8"基礎曲がりグレード   : %s", GetBreakGradeLabel(baseBreakGrade));
+				ImGui::Text(u8"実効曲がりグレード   : %s", GetBreakGradeLabel(effectiveBreakGrade));
+
+			}
 		}
-	}
-	if (ImGui::SliderFloat(u8"縦変化 (+ 落ち / - 上げ)", &brk.breakY, -25.0f, 10.0f, "%.1f cm"))
-	{
-		if (activeSet != nullptr)
+		if (activeSet == nullptr)
 		{
-			activeSet->breaks[editIndex] = brk; // 投手専用データにも反映
+			ImGui::TextColored(ImVec4(0.3f, 0.9f, 1.0f, 1.0f), u8"曲がりグレード : %s", GetBreakGradeLabel(Pitcher::BreakGrade::C));
+			ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.2f, 1.0f), u8"球威グレード : %s", GetPowerGradeLabel(Pitcher::Power::C));
 		}
+
+		// ----- 数値での微調整（従来通り） -----
+		float displayBreakX = Pitcher::Instance().IsRightPitcher() ? brk.breakX : -brk.breakX;
+		if (ImGui::SliderFloat(u8"横変化 (+ アウト / - イン)", &displayBreakX, -20.0f, 20.0f, "%.1f cm"))
+		{
+			brk.breakX = Pitcher::Instance().IsRightPitcher() ? displayBreakX : -displayBreakX;
+			if (activeSet != nullptr)
+			{
+				activeSet->breaks[editIndex] = brk; // 投手専用データにも反映
+			}
+		}
+		if (ImGui::SliderFloat(u8"縦変化 (+ 落ち / - 上げ)", &brk.breakY, -25.0f, 10.0f, "%.1f cm"))
+		{
+			if (activeSet != nullptr)
+			{
+				activeSet->breaks[editIndex] = brk; // 投手専用データにも反映
+			}
+		}
+
+		ImGui::DragFloat(u8"スピン回転数 (RPM)", &kPitchSpinRPM[editIndex], 1.0f, 0.0f, 3000.0f);
+
+		ImGui::Checkbox(u8"変化量を反映", &useBallBreak);
+
+		ImGui::Separator();
+		ImGui::Text(u8"球種名/球速 表示位置 (%s)", names[editIndex]);
+		ImGui::DragFloat2(u8"球種名 オフセット(左右, Y)##pitchName", &pitchNameOffsets[editIndex].x, 1.0f, -200.0f, 1920.0f);
+		ImGui::DragFloat2(u8"球速 オフセット(右寄せ, Y)##pitchSpeed", &pitchSpeedOffsets[editIndex].x, 1.0f, -200.0f, 1080.0f);
 	}
-
-	ImGui::DragFloat(u8"スピン回転数 (RPM)", &kPitchSpinRPM[editIndex], 1.0f, 0.0f, 3000.0f);
-
-	ImGui::Checkbox(u8"変化量を反映", &useBallBreak);
-
-	ImGui::Separator();
-	ImGui::Text(u8"球種名/球速 表示位置 (%s)", names[editIndex]);
-	ImGui::DragFloat2(u8"球種名 オフセット(左右, Y)##pitchName", &pitchNameOffsets[editIndex].x, 1.0f, -200.0f, 1920.0f);
-	ImGui::DragFloat2(u8"球速 オフセット(右寄せ, Y)##pitchSpeed", &pitchSpeedOffsets[editIndex].x, 1.0f, -200.0f, 1080.0f);
+	ImGui::End();
 }
 
 void ballSprite::BuildRealPitcherBreakSet(Pitcher::RealPitcher rp)

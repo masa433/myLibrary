@@ -389,7 +389,7 @@ public:
 
 
 
-	//実在投手が投げる球種のデータ
+	// 実在投手の持ち球情報を格納する構造体
 	struct RealArsenalEntry
 	{
 		PitchType pitchType;

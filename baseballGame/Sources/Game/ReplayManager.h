@@ -158,6 +158,10 @@ private:
 
 	//すでにクリアされているかどうかのフラグ
 	bool hasClearedRecording = false;
+
+	//トレイル発生までの遅延時間
+	float trailDelayTime = 0.0f;
+	float trailDelayDuration =1.0f; //トレイル発生までの遅延時間（秒）
 private:
 
 	//2つのフレーム間を補間する関数

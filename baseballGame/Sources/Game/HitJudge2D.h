@@ -114,7 +114,7 @@ public:
         // 重なり判定
         bool overlapOK = overlapResult_.anyOverlap;
 
-        if (!timingOK || !overlapOK)
+        if (!overlapOK)
         {
             // 空振り
             outResult.validHit = false;
@@ -428,7 +428,7 @@ public:
 
     void DrawGUI()
     {
-        if (ImGui::CollapsingHeader("HitJudge2D Debug"))
+        if (ImGui::Begin(u8"2D当たり判定"))
         {
             HitJudge2D& hj = HitJudge2D::Instance();
             ImGui::Text(u8"かぶっているか : %s", hj.IsOverlapping() ? "YES" : "no");
@@ -469,6 +469,7 @@ public:
 			ImGui::DragFloat(u8"カーソル重なりペナルティ", &hj.cursorOverlapPenalty, 0.01f, 0.0f, 1.0f);
 			ImGui::DragFloat(u8"カーソル重なり中立点", &hj.cursorNeutralPoint, 0.01f, 0.0f, 1.0f);
         }
+        ImGui::End();
     }
 
 	/// 2D OBB と円の衝突判定（回転矩形と円）

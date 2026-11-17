@@ -19,12 +19,13 @@
 
 namespace
 {
-	// JSONファイルを読み込む関数（staticでキャッシュして寿命を安全に保つ）
+	// JSONファイルを読み込む関数
 	const std::unordered_map<Pitcher::RealPitcher, Pitcher::RealPitcherData>& GetRealPitcherDataMap()
 	{
 		static std::unordered_map<Pitcher::RealPitcher, Pitcher::RealPitcherData> dataMap;
 		if (dataMap.empty())
 		{
+			// JSONファイルを読み込む
 			std::ifstream file(".\\resources\\paramJson\\RealPitcherData.json");
 			if (!file.is_open())
 			{
@@ -34,13 +35,15 @@ namespace
 			json j;
 			file >> j;
 
+			// JSONデータをマップに格納する
 			for (const auto& item : j)
 			{
 				int id = item.at("id").get<int>();
 				Pitcher::RealPitcher pitcherEnum = static_cast<Pitcher::RealPitcher>(id);
 				Pitcher::RealPitcherData& pitcherData = dataMap[pitcherEnum];
 
-				if (pitcherData.arsenal.empty())
+				// JSONデータを構造体に格納する
+				if (pitcherData.arsenal.empty())// まだデータが格納されていない場合のみ格納
 				{
 					pitcherData.id = id;
 					pitcherData.isRightPitcher = item.at("isRightPitcher").get<bool>();
@@ -48,6 +51,7 @@ namespace
 					pitcherData.rank = item.at("rank").get<int>();
 				}
 
+				//投手の持ち球情報を格納する
 				Pitcher::RealArsenalEntry arsenalEntry;
 				arsenalEntry.pitchType = Pitcher::StringToPitchType(item.at("pitchType").get<std::string>());
 				arsenalEntry.weightPercent = item.at("weightPercent").get<float>();
@@ -55,7 +59,7 @@ namespace
 				arsenalEntry.breakGrade = Pitcher::StringToBreakGrade(item.at("breakGrade").get<std::string>());
 				arsenalEntry.power = Pitcher::StringToPower(item.at("power").get<std::string>());
 
-				pitcherData.arsenal.push_back(arsenalEntry);
+				pitcherData.arsenal.push_back(arsenalEntry);// 投手の持ち球情報を追加
 			}
 		}
 		return dataMap;
@@ -459,6 +463,7 @@ void Pitcher::Update(float elapsedTime)
 				isBallThrown = false;
 				ResetPitchFlags(); // pitchFlagsをリセット
 				FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
+				currentState = State::SelectingPitch;
 			}
 
 			break;
@@ -529,6 +534,8 @@ void Pitcher::Update(float elapsedTime)
 		isBallThrown = false;
 		ResetPitchFlags(); // pitchFlagsをリセット
 		FairFaulJudgeDelayTime = 0.0f; // フェア・ファウル判定の遅延時間をリセット
+		currentFoulWaitTime = 0.0f; // ファウル待機時間をリセット
+		currentState = State::SelectingPitch;
 	}
 
 	Wind::Instance().Update(elapsedTime);
@@ -961,7 +968,9 @@ void Pitcher::DrawGUI()
 			}
 		}
 
-		if (ImGui::CollapsingHeader(u8"球種エディター"))
+		int editingPitchIndex = static_cast<int>(selectedPitchType);
+
+		if (ImGui::Begin(u8"球種エディター"))
 		{
 			const char* pitchTypeNames[] = {
 				u8"ストレート", u8"スライダー", u8"カーブ", u8"チェンジアップ", u8"フォーク",
@@ -971,7 +980,7 @@ void Pitcher::DrawGUI()
 			};
 
 			//現在選択されている球種を基準に編集
-			int editingPitchIndex = static_cast<int>(selectedPitchType);
+			
 			if (ImGui::Combo(u8"編集する球種", &editingPitchIndex, pitchTypeNames, IM_ARRAYSIZE(pitchTypeNames)))// 選択された球種を編集するためのコンボボックス
 			{
 				selectedPitchType = static_cast<PitchType>(editingPitchIndex);// 選択された球種を更新
@@ -1198,169 +1207,173 @@ void Pitcher::DrawGUI()
 				
 			}
 
-			if (ImGui::CollapsingHeader(u8"ベジェ曲線エディター"))
+			
+		}
+		ImGui::End();
+
+		if (ImGui::Begin(u8"ベジェ曲線エディター"))
+		{
+			ImGui::Text(u8"ベジェ軌道エディター");
+			ImGui::TextDisabled(u8"P1 = 序盤の軌道オフセット　P2 = 終盤の変化量(メートル単位)");
+			ImGui::TextDisabled(u8"x:左右(+インコース)  y:上下(+上)  z:前後(通常0)");
+			ImGui::Spacing();
+
+			if (editingPitchIndex >= 0 && editingPitchIndex < static_cast<int>(pitchParameters.size()))
 			{
-				ImGui::Text(u8"ベジェ軌道エディター");
-				ImGui::TextDisabled(u8"P1 = 序盤の軌道オフセット　P2 = 終盤の変化量(メートル単位)");
-				ImGui::TextDisabled(u8"x:左右(+インコース)  y:上下(+上)  z:前後(通常0)");
+				PitchParameter& p = pitchParameters[editingPitchIndex];
+
+				//P1オフセットの編集
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.9f, 1.0f, 1.0f));
+				ImGui::Text(u8"▶ P1（序盤ゆらぎ 0～30%%区間）");
+				ImGui::PopStyleColor();
+				ImGui::DragFloat(u8"P1 横変化", &p.bezierCtrl1.x, 0.01f, -1.5f, 1.5f, "%.3f m");
+				ImGui::DragFloat(u8"P1 縦変化", &p.bezierCtrl1.y, 0.01f, -1.5f, 1.5f, "%.3f m");
+				ImGui::DragFloat(u8"P1 奥行き", &p.bezierCtrl1.z, 0.01f, -1.0f, 1.0f, "%.3f m");
+
 				ImGui::Spacing();
 
-				if (editingPitchIndex >= 0 && editingPitchIndex < static_cast<int>(pitchParameters.size()))
+
+				//P2オフセットの編集
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.2f, 1.0f));
+				ImGui::Text(u8"▶ P2（終盤変化 70～100%%区間）");
+				ImGui::PopStyleColor();
+				ImGui::DragFloat(u8"P2 横変化", &p.bezierCtrl2.x, 0.01f, -1.5f, 1.5f, "%.3f m");
+				ImGui::DragFloat(u8"P2 縦変化", &p.bezierCtrl2.y, 0.01f, -1.5f, 1.5f, "%.3f m");
+				ImGui::DragFloat(u8"P2 奥行き", &p.bezierCtrl2.z, 0.01f, -1.0f, 1.0f, "%.3f m");
+
+				ImGui::Spacing();
+
+				// ===== P3オフセット =====
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
+				ImGui::Text(u8"▶ P3（終着点オフセット）");
+				ImGui::PopStyleColor();
+				ImGui::TextDisabled(u8"ストライクゾーン中心からのずれ。コース・高低の調整に使う");
+				ImGui::DragFloat(u8"P3 横ずれ (x)", &p.bezierTarget.x, 0.005f, -0.5f, 0.5f, "%.3f m");
+				ImGui::DragFloat(u8"P3 高低  (y)", &p.bezierTarget.y, 0.005f, -0.5f, 0.5f, "%.3f m");
+				ImGui::DragFloat(u8"P3 手前/奥 (z)", &p.bezierTarget.z, 0.005f, -0.3f, 0.3f, "%.3f m");
+
+				if (ImGui::Button(u8"P3をリセット（ゾーン中心）"))
 				{
-					PitchParameter& p = pitchParameters[editingPitchIndex];
+					p.bezierTarget = { 0.0f, 0.0f, 0.0f };
+				}
 
-					//P1オフセットの編集
-					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.9f, 1.0f, 1.0f));
-					ImGui::Text(u8"▶ P1（序盤ゆらぎ 0～30%%区間）");
-					ImGui::PopStyleColor();
-					ImGui::DragFloat(u8"P1 横変化", &p.bezierCtrl1.x, 0.01f, -1.5f, 1.5f, "%.3f m");
-					ImGui::DragFloat(u8"P1 縦変化", &p.bezierCtrl1.y, 0.01f, -1.5f, 1.5f, "%.3f m");
-					ImGui::DragFloat(u8"P1 奥行き", &p.bezierCtrl1.z, 0.01f, -1.0f, 1.0f, "%.3f m");
+				//ベジェプレビュー
+				if (ImGui::CollapsingHeader(u8"ベジェ軌道プレビュー"))
+				{
+					constexpr float PV_W = 220.0f, PV_H = 220.0f;
+					ImVec2 pvOrigin = ImGui::GetCursorScreenPos();
+					ImGui::Dummy(ImVec2(PV_W, PV_H));
+					ImDrawList* dl = ImGui::GetWindowDrawList();
 
-					ImGui::Spacing();
+					dl->AddRectFilled(pvOrigin, ImVec2(pvOrigin.x + PV_W, pvOrigin.y + PV_H), IM_COL32(30, 30, 30, 255));
+					dl->AddRect(pvOrigin, ImVec2(pvOrigin.x + PV_W, pvOrigin.y + PV_H), IM_COL32(100, 180, 255, 220));
 
+					//ストライクゾーンの枠を中央に描画
+					constexpr float ZONE_SCALE = 120.0f; // 1m = 120px
+					ImVec2 center{ pvOrigin.x + PV_W * 0.5f, pvOrigin.y + PV_H * 0.65f };
 
-					//P2オフセットの編集
-					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.2f, 1.0f));
-					ImGui::Text(u8"▶ P2（終盤変化 70～100%%区間）");
-					ImGui::PopStyleColor();
-					ImGui::DragFloat(u8"P2 横変化", &p.bezierCtrl2.x, 0.01f, -1.5f, 1.5f, "%.3f m");
-					ImGui::DragFloat(u8"P2 縦変化", &p.bezierCtrl2.y, 0.01f, -1.5f, 1.5f, "%.3f m");
-					ImGui::DragFloat(u8"P2 奥行き", &p.bezierCtrl2.z, 0.01f, -1.0f, 1.0f, "%.3f m");
+					//ゾーンの枠
+					ImVec2 zMin{ center.x - boxSize.x * 0.5f * ZONE_SCALE, center.y - boxSize.y * ZONE_SCALE };
+					ImVec2 zMax{ center.x + boxSize.x * 0.5f * ZONE_SCALE, center.y };
+					dl->AddRect(zMin, zMax, IM_COL32(100, 180, 255, 180), 0, 0, 1.5f);
+					dl->AddText(ImVec2(zMin.x, zMin.y - 14), IM_COL32(100, 180, 255, 200), u8"ゾーン");
 
-					ImGui::Spacing();
+					// ベジェ軌道をサンプリングして描画（打者視点: X-Y平面に投影）
+					// ダミーのP0（投手リリース点相当）を画面外上方に配置
+					struct BVec2 { float x, y; };
 
-					// ===== P3オフセット =====
-					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
-					ImGui::Text(u8"▶ P3（終着点オフセット）");
-					ImGui::PopStyleColor();
-					ImGui::TextDisabled(u8"ストライクゾーン中心からのずれ。コース・高低の調整に使う");
-					ImGui::DragFloat(u8"P3 横ずれ (x)", &p.bezierTarget.x, 0.005f, -0.5f, 0.5f, "%.3f m");
-					ImGui::DragFloat(u8"P3 高低  (y)", &p.bezierTarget.y, 0.005f, -0.5f, 0.5f, "%.3f m");
-					ImGui::DragFloat(u8"P3 手前/奥 (z)", &p.bezierTarget.z, 0.005f, -0.3f, 0.3f, "%.3f m");
+					//実際の制御点をスクリーン座標に変換するラムダ式
+					auto WorldToScreen = [&](float wx, float wy, float wz)->ImVec2 {
+						// zを縦軸（投手→捕手）、xを横軸、yを縦高さにマッピング
+						// wz: 18.15(投手)→0(捕手)を pvOrigin.y→center.y にマップ
+						float normZ = 1.0f - std::clamp((wz) / 18.15f, 0.0f, 1.2f); // 0～1に正規化
+						float sx = center.x + wx * ZONE_SCALE;
+						float sy = pvOrigin.y + 10.0f + normZ * (PV_H - 30.0f);
 
-					if (ImGui::Button(u8"P3をリセット（ゾーン中心）"))
-					{
-						p.bezierTarget = { 0.0f, 0.0f, 0.0f };
-					}
-
-					//ベジェプレビュー
-					if (ImGui::CollapsingHeader(u8"ベジェ軌道プレビュー"))
-					{
-						constexpr float PV_W = 220.0f, PV_H = 220.0f;
-						ImVec2 pvOrigin = ImGui::GetCursorScreenPos();
-						ImGui::Dummy(ImVec2(PV_W, PV_H));
-						ImDrawList* dl = ImGui::GetWindowDrawList();
-
-						dl->AddRectFilled(pvOrigin, ImVec2(pvOrigin.x + PV_W, pvOrigin.y + PV_H), IM_COL32(30, 30, 30, 255));
-						dl->AddRect(pvOrigin, ImVec2(pvOrigin.x + PV_W, pvOrigin.y + PV_H), IM_COL32(100, 180, 255, 220));
-
-						//ストライクゾーンの枠を中央に描画
-						constexpr float ZONE_SCALE = 120.0f; // 1m = 120px
-						ImVec2 center{ pvOrigin.x + PV_W * 0.5f, pvOrigin.y + PV_H * 0.65f };
-
-						//ゾーンの枠
-						ImVec2 zMin{ center.x - boxSize.x * 0.5f * ZONE_SCALE, center.y - boxSize.y * ZONE_SCALE };
-						ImVec2 zMax{ center.x + boxSize.x * 0.5f * ZONE_SCALE, center.y };
-						dl->AddRect(zMin, zMax, IM_COL32(100, 180, 255, 180), 0, 0, 1.5f);
-						dl->AddText(ImVec2(zMin.x, zMin.y - 14), IM_COL32(100, 180, 255, 200), u8"ゾーン");
-
-						// ベジェ軌道をサンプリングして描画（打者視点: X-Y平面に投影）
-						// ダミーのP0（投手リリース点相当）を画面外上方に配置
-						struct BVec2 { float x, y; };
-
-						//実際の制御点をスクリーン座標に変換するラムダ式
-						auto WorldToScreen = [&](float wx, float wy, float wz)->ImVec2 {
-							// zを縦軸（投手→捕手）、xを横軸、yを縦高さにマッピング
-							// wz: 18.15(投手)→0(捕手)を pvOrigin.y→center.y にマップ
-							float normZ = 1.0f - std::clamp((wz) / 18.15f, 0.0f, 1.2f); // 0～1に正規化
-							float sx = center.x + wx * ZONE_SCALE;
-							float sy = pvOrigin.y + 10.0f + normZ * (PV_H - 30.0f);
-
-							// 右パネル上部ほど投手寄り
-							// yはゾーン中心に合わせてオフセット
-							sy -= (wy - boxPosition.y) * ZONE_SCALE;
-							return ImVec2(sx, sy);
+						// 右パネル上部ほど投手寄り
+						// yはゾーン中心に合わせてオフセット
+						sy -= (wy - boxPosition.y) * ZONE_SCALE;
+						return ImVec2(sx, sy);
 						};
 
-						//制御点を推定
-						DirectX::XMFLOAT3 previewP0 = { 0.0f + (IsRightPitcher() ? -0.1f : 0.1f),1.7f,18.15f};
+					//制御点を推定
+					DirectX::XMFLOAT3 previewP0 = { 0.0f + (IsRightPitcher() ? -0.1f : 0.1f),1.7f,18.15f };
 
-						DirectX::XMFLOAT3 previewP3 = boxPosition;
-						float side = IsRightPitcher() ? 1.0f : -1.0f;
+					DirectX::XMFLOAT3 previewP3 = boxPosition;
+					float side = IsRightPitcher() ? 1.0f : -1.0f;
 
-						auto Lerp3 = [](const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b, float t) {
-							return DirectX::XMFLOAT3{
-								a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t };
+					auto Lerp3 = [](const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b, float t) {
+						return DirectX::XMFLOAT3{
+							a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t };
 						};
 
-						DirectX::XMFLOAT3 base1 = Lerp3(previewP0, previewP3, 0.3f);
-						DirectX::XMFLOAT3 base2 = Lerp3(previewP0, previewP3, 0.7f);
+					DirectX::XMFLOAT3 base1 = Lerp3(previewP0, previewP3, 0.3f);
+					DirectX::XMFLOAT3 base2 = Lerp3(previewP0, previewP3, 0.7f);
 
-						DirectX::XMFLOAT3 previewP1 = {
-							base1.x + p.bezierCtrl1.x * side, base1.y + p.bezierCtrl1.y, base1.z + p.bezierCtrl1.z };
-						DirectX::XMFLOAT3 previewP2 = {
-							base2.x + p.bezierCtrl2.x * side, base2.y + p.bezierCtrl2.y, base2.z + p.bezierCtrl2.z };
+					DirectX::XMFLOAT3 previewP1 = {
+						base1.x + p.bezierCtrl1.x * side, base1.y + p.bezierCtrl1.y, base1.z + p.bezierCtrl1.z };
+					DirectX::XMFLOAT3 previewP2 = {
+						base2.x + p.bezierCtrl2.x * side, base2.y + p.bezierCtrl2.y, base2.z + p.bezierCtrl2.z };
 
-						// ベジェ曲線をサンプリングして描画
-						const int STEPS = 40;
-						ImVec2 prev = WorldToScreen(previewP0.x, previewP0.y, previewP0.z);
-						for (int s = 1; s <= STEPS; ++s)
-						{
-							float t = (float)s / STEPS;
-							// ベジェ曲線の計算
-							float u = 1.0f - t;
-							float bx = u * u * u * previewP0.x + 3 * u * u * t * previewP1.x + 3 * u * t * t * previewP2.x + t * t * t * previewP3.x;
-							float by = u * u * u * previewP0.y + 3 * u * u * t * previewP1.y + 3 * u * t * t * previewP2.y + t * t * t * previewP3.y;
-							float bz = u * u * u * previewP0.z + 3 * u * u * t * previewP1.z + 3 * u * t * t * previewP2.z + t * t * t * previewP3.z;
-							ImVec2 curr = WorldToScreen(bx, by, bz);
-							// 色を時間経過でグラデーション
-							ImU32 col = IM_COL32(
-								(int)(80 + 170 * t),
-								(int)(200 - 100 * t),
-								(int)(255 - 180 * t),
-								200);
-							dl->AddLine(prev, curr, col, 2.0f);
-							prev = curr;
-						}
-
-						//制御点を描画
-						ImVec2 sp0 = WorldToScreen(previewP0.x, previewP0.y, previewP0.z);
-						ImVec2 sp1 = WorldToScreen(previewP1.x, previewP1.y, previewP1.z);
-						ImVec2 sp2 = WorldToScreen(previewP2.x, previewP2.y, previewP2.z);
-						ImVec2 sp3 = WorldToScreen(previewP3.x, previewP3.y, previewP3.z);
-
-						// 制御点を結ぶ線を描画
-						dl->AddLine(sp0, sp1, IM_COL32(100, 255, 100, 100), 1.0f);
-						dl->AddLine(sp2, sp3, IM_COL32(255, 200, 50, 100), 1.0f);
-
-						// 制御点を描画
-						dl->AddCircleFilled(sp0, 4.0f, IM_COL32(100, 255, 100, 255));
-						dl->AddCircleFilled(sp1, 4.0f, IM_COL32(80, 200, 255, 255));
-						dl->AddCircleFilled(sp2, 4.0f, IM_COL32(255, 200, 50, 255));
-						dl->AddCircleFilled(sp3, 4.0f, IM_COL32(255, 100, 100, 255));
-
-						// 凡例
-						ImGui::SetCursorScreenPos(ImVec2(pvOrigin.x + 2, pvOrigin.y + PV_H + 2));
-						ImGui::TextColored({ 0.4f,1.0f,0.4f,1 }, u8"P0リリース ");
-						ImGui::SameLine();
-						ImGui::TextColored({ 0.3f,0.8f,1.0f,1 }, u8"P1序盤 ");
-						ImGui::SameLine();
-						ImGui::TextColored({ 1.0f,0.8f,0.2f,1 }, u8"P2終盤 ");
-						ImGui::SameLine();
-						ImGui::TextColored({ 1.0f,0.3f,0.3f,1 }, u8"P3目標");
-						ImGui::Dummy(ImVec2(0, 6));
-					}
-
-					// リセットボタン
-					if (ImGui::Button(u8"ベジェをリセット（直球）"))
+					// ベジェ曲線をサンプリングして描画
+					const int STEPS = 40;
+					ImVec2 prev = WorldToScreen(previewP0.x, previewP0.y, previewP0.z);
+					for (int s = 1; s <= STEPS; ++s)
 					{
-						p.bezierCtrl1 = { 0.0f, 0.0f, 0.0f };
-						p.bezierCtrl2 = { 0.0f, 0.0f, 0.0f };
+						float t = (float)s / STEPS;
+						// ベジェ曲線の計算
+						float u = 1.0f - t;
+						float bx = u * u * u * previewP0.x + 3 * u * u * t * previewP1.x + 3 * u * t * t * previewP2.x + t * t * t * previewP3.x;
+						float by = u * u * u * previewP0.y + 3 * u * u * t * previewP1.y + 3 * u * t * t * previewP2.y + t * t * t * previewP3.y;
+						float bz = u * u * u * previewP0.z + 3 * u * u * t * previewP1.z + 3 * u * t * t * previewP2.z + t * t * t * previewP3.z;
+						ImVec2 curr = WorldToScreen(bx, by, bz);
+						// 色を時間経過でグラデーション
+						ImU32 col = IM_COL32(
+							(int)(80 + 170 * t),
+							(int)(200 - 100 * t),
+							(int)(255 - 180 * t),
+							200);
+						dl->AddLine(prev, curr, col, 2.0f);
+						prev = curr;
 					}
+
+					//制御点を描画
+					ImVec2 sp0 = WorldToScreen(previewP0.x, previewP0.y, previewP0.z);
+					ImVec2 sp1 = WorldToScreen(previewP1.x, previewP1.y, previewP1.z);
+					ImVec2 sp2 = WorldToScreen(previewP2.x, previewP2.y, previewP2.z);
+					ImVec2 sp3 = WorldToScreen(previewP3.x, previewP3.y, previewP3.z);
+
+					// 制御点を結ぶ線を描画
+					dl->AddLine(sp0, sp1, IM_COL32(100, 255, 100, 100), 1.0f);
+					dl->AddLine(sp2, sp3, IM_COL32(255, 200, 50, 100), 1.0f);
+
+					// 制御点を描画
+					dl->AddCircleFilled(sp0, 4.0f, IM_COL32(100, 255, 100, 255));
+					dl->AddCircleFilled(sp1, 4.0f, IM_COL32(80, 200, 255, 255));
+					dl->AddCircleFilled(sp2, 4.0f, IM_COL32(255, 200, 50, 255));
+					dl->AddCircleFilled(sp3, 4.0f, IM_COL32(255, 100, 100, 255));
+
+					// 凡例
+					ImGui::SetCursorScreenPos(ImVec2(pvOrigin.x + 2, pvOrigin.y + PV_H + 2));
+					ImGui::TextColored({ 0.4f,1.0f,0.4f,1 }, u8"P0リリース ");
+					ImGui::SameLine();
+					ImGui::TextColored({ 0.3f,0.8f,1.0f,1 }, u8"P1序盤 ");
+					ImGui::SameLine();
+					ImGui::TextColored({ 1.0f,0.8f,0.2f,1 }, u8"P2終盤 ");
+					ImGui::SameLine();
+					ImGui::TextColored({ 1.0f,0.3f,0.3f,1 }, u8"P3目標");
+					ImGui::Dummy(ImVec2(0, 6));
+				}
+
+				// リセットボタン
+				if (ImGui::Button(u8"ベジェをリセット（直球）"))
+				{
+					p.bezierCtrl1 = { 0.0f, 0.0f, 0.0f };
+					p.bezierCtrl2 = { 0.0f, 0.0f, 0.0f };
 				}
 			}
 		}
+		ImGui::End();
 
 		if (ImGui::Checkbox("Right Handed", &isRightPitcher))
 		{
@@ -1420,7 +1433,7 @@ void Pitcher::AttachBallToHand(float elapsedTime)
 			animation_time = 0.0f;
 			ResetPitchFlags();			
 			Ball::Instance().ResetMotion();
-
+			currentState = State::SelectingPitch;
 		}
 	}
 }

@@ -125,6 +125,7 @@ private:
 
 	float radius = 1.0f; // 観客の半径
 	bool isCanPlacing = false; // 置けるかどうかのフラグ
+	bool isInstansing = false; //インスタンス描画するかどうか
 
 	std::vector<float> audienceJumpDelays[static_cast<int>(AudienceModelType::Count)]; // 観客ごとの遅延時間
 

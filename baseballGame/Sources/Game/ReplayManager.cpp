@@ -18,6 +18,8 @@ void ReplayManager::Initialize()
 	hasLooped = false;
 	hasEverLooped = false;
 	hasClearedRecording = false;
+	trailDelayTime = 0.0f;
+	trailDelayDuration = 1.0f;
 	StopPlayback();
 	
 }
@@ -159,6 +161,7 @@ void ReplayManager::ClearRecording()
 		saveTimeRemaining = 0.0f;//保存までの残り時間をリセット
 		isRecording = false;//記録中フラグをリセット
 		isPendingSave = false;//保存待機中フラグをリセット
+		trailDelayTime = 0.0f; // トレイル遅延時間をリセット
 
 		if (consoleLog)
 		{
@@ -176,6 +179,7 @@ void ReplayManager::StartPlayback()
 		playbackIndex = 0;
 		hasLooped = false;
 		hasEverLooped = false;
+		trailDelayTime = 0.0f; // トレイル遅延時間をリセット
 		currentPlaybackFrame = savedReplayList.front();//最初のフレームを設定
 		if(consoleLog)
 		{
@@ -212,6 +216,7 @@ void ReplayManager::UpdatePlayback(float elapsedTime)
 			playbackIndex = 0;
 			hasLooped = true;
 			hasEverLooped = true;
+			trailDelayTime = 0.0f; // トレイル遅延時間をリセット
 			currentPlaybackFrame = savedReplayList.front();
 			if(consoleLog)
 			{
@@ -239,6 +244,7 @@ void ReplayManager::UpdatePlayback(float elapsedTime)
 
 	const ReplayFrame& a = savedReplayList[playbackIndex];
 
+	//次のフレームが存在する場合は補間を行う
 	if(playbackIndex + 1 < savedReplayList.size())
 	{
 		const ReplayFrame& b = savedReplayList[playbackIndex + 1];
@@ -254,19 +260,26 @@ void ReplayManager::UpdatePlayback(float elapsedTime)
 
 	if (currentPlaybackFrame.hasCollidedWithBat)
 	{
-		std::deque<DirectX::XMFLOAT3> replayTrail;
-		const size_t maxTrailPoints = 1000; // 最大トレイルポイント数
+		trailDelayTime += elapsedTime;
 
-		for(int i = static_cast<int>(playbackIndex); i>= 0 && replayTrail.size() < maxTrailPoints; --i)
+		if(trailDelayTime >= trailDelayDuration)
 		{
-			// 打球前のフレームに達したらトレイルの記録を中断
-			if (!savedReplayList[i].hasCollidedWithBat) break;
+			trailDelayTime = trailDelayDuration; // 遅延時間を最大値に制限
 
-			replayTrail.push_front(savedReplayList[i].ballPosition);
+			std::deque<DirectX::XMFLOAT3> replayTrail;
+			const size_t maxTrailPoints = 1000; // 最大トレイルポイント数
+
+			for (int i = static_cast<int>(playbackIndex); i >= 0 && replayTrail.size() < maxTrailPoints; --i)
+			{
+				// 打球前のフレームに達したらトレイルの記録を中断
+				if (!savedReplayList[i].hasCollidedWithBat) break;
+
+				replayTrail.push_front(savedReplayList[i].ballPosition);
+			}
+
+			replayTrail.push_back(currentPlaybackFrame.ballPosition);
+			Ball::Instance().SetBallTrail(replayTrail);//ボールのトレイルを設定
 		}
-
-		replayTrail.push_back(currentPlaybackFrame.ballPosition);
-		Ball::Instance().SetBallTrail(replayTrail);//ボールのトレイルを設定
 	}
 	else
 	{
