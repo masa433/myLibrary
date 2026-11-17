@@ -43,6 +43,9 @@ protected:
 		DirectX::XMFLOAT4 color;
 	};
 
+	AudioSource* hoverSound = nullptr;
+	AudioSource* clickSound = nullptr;
+
 };
 
 class AudioSettingPanel : public SettingPanel
@@ -152,6 +155,7 @@ private:
 	bool isDragging = false; //スライダーをドラッグしているかどうかのフラグ
 
 	int currentSliderButtonIndex = 2; //現在のスライダーのボタンのインデックス(保存用)
+	bool isHoverSoundPlayed = false; //マウスオーバー時の効果音が再生されたかどうかのフラグ
 
 };
 
@@ -208,4 +212,6 @@ private:
 
 	//クリックされたインデックスを保存する変数
 	int clickedCheckboxIndex = 0; // 0にして、通常速度が初期値になるようにする
+
+	bool isHoverSoundPlayed = false; //マウスオーバー時の効果音が再生されたかどうかのフラグ
 };

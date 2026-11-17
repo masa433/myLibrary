@@ -122,6 +122,8 @@ void AudioSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 		volumeValueFontData[i].size = 0.5f;
 	}
 	
+	hoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav", SoundType::SE);
+
 }
 
 void AudioSettingPanel::Uninitialize()
@@ -141,15 +143,23 @@ void AudioSettingPanel::Uninitialize()
 		volumeSliderButtonData[i].reset();
 		volumeSliderButtonSprite[i].reset();
 	}
+
+	delete hoverSound;
+
 }
 void AudioSettingPanel::Update(float elapsedTime)
 {
+	if (hoverSound) hoverSound->Update();
+
 	Input& input = Input::Instance();
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
 	// スライダーのドラッグ処理
 	// マウスの位置を取得
 	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2(input.GetMouse().GetPositionX(), input.GetMouse().GetPositionY());
+
+	int previousHoveredButtonIndex = hoveredButtonIndex;
+	hoveredButtonIndex = -1; // 初期化
 
 	for (int i = 0; i < numVolumeTypes; ++i)
 	{
@@ -173,6 +183,18 @@ void AudioSettingPanel::Update(float elapsedTime)
 
 		sliderButtonSize[i] = isPressed ? sliderButtonOriginalSize[i] : (isHovered ? sliderButtonHoverSize[i] : sliderButtonOriginalSize[i]	);
 
+		if(isHovered)
+		{
+			hoveredButtonIndex = i;
+
+			if (previousHoveredButtonIndex != i && hoverSound)
+			{
+				hoverSound->PlayOneShot();
+			}
+		}
+
+		
+
 		if(!isPressed)
 		{
 			isDragging = false;
@@ -181,6 +203,7 @@ void AudioSettingPanel::Update(float elapsedTime)
 		{
 			isDragging = true;
 			hoveredButtonIndex = i;
+
 		}
 		if(isDragging && hoveredButtonIndex == i)
 		{
@@ -441,6 +464,8 @@ void CursorSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* c
 
 	//保存されているスライダーボタンのインデックスに応じて現在のスライダーの位置を設定
 	currentSliderPosition = static_cast<SliderPosition>(currentSliderButtonIndex);
+
+	hoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav", SoundType::SE);
 }
 
 void CursorSettingPanel::Uninitialize()
@@ -456,6 +481,8 @@ void CursorSettingPanel::Uninitialize()
 	sliderBackgroundSprite.reset();
 	sliderButtonData.reset();
 	sliderButtonSprite.reset();
+	delete hoverSound;
+	hoverSound = nullptr;
 }
 
 void CursorSettingPanel::Update(float elapsedTime)
@@ -487,6 +514,19 @@ void CursorSettingPanel::Update(float elapsedTime)
 	
 	sliderButtonSize = isPressed ? sliderButtonOriginalSize : (isHover ? sliderButtonHoverSize : sliderButtonOriginalSize);
 
+
+	if (isHover)
+	{
+		if (hoverSound && !isHoverSoundPlayed)
+		{
+			hoverSound->PlayOneShot();
+			isHoverSoundPlayed = true;
+		}
+	}
+	else
+	{
+		isHoverSoundPlayed = false;
+	}
 
 	//スライダーボタンがクリックされた瞬間にドラッグ状態を開始
 	if(!isPressed)
@@ -759,6 +799,9 @@ void OtherSettingPanel::Initialize(ID3D11Device* device, ID3D11DeviceContext* co
 	// チェックボックスの位置をフォントの右側に配置するためのオフセットを計算
 	checkboxPosition = { showOperationFontData.position.x + offsetX, showOperationFontData.position.y + offsetY };
 	checkIconPosition = { checkboxPosition.x, checkboxPosition.y };
+
+	hoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav", SoundType::SE);
+	clickSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Clog.wav", SoundType::SE);
 }
 
 void OtherSettingPanel::Uninitialize()
@@ -785,6 +828,9 @@ void OtherSettingPanel::Uninitialize()
 
 void OtherSettingPanel::Update(float elapsedTime)
 {
+	if (hoverSound) hoverSound->Update();
+	if (clickSound) clickSound->Update();
+
 	// 設定パネルの更新処理
 	UpdateShowOperationCheckbox();
 
@@ -793,6 +839,7 @@ void OtherSettingPanel::Update(float elapsedTime)
 
 void OtherSettingPanel::UpdateShowOperationCheckbox()
 {
+
 	Input& input = Input::Instance();
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
@@ -822,11 +869,27 @@ void OtherSettingPanel::UpdateShowOperationCheckbox()
 
 	if (isHovered)
 	{
+		if(hoverSound && !isHoverSoundPlayed)
+		{
+			hoverSound->PlayOneShot();
+			isHoverSoundPlayed = true;
+		}
+
+
 		if (isClicked)
 		{
 			showCheckIcon = !showCheckIcon;
 			Pitcher::Instance().SetShowOperationGuide(showCheckIcon);
+
+			if(clickSound)
+			{
+				clickSound->PlayOneShot();
+			}
 		}
+	}
+	else
+	{
+		isHoverSoundPlayed = false;
 	}
 
 }
@@ -868,8 +931,18 @@ void OtherSettingPanel::UpdateGameSpeedDisplay()
 		{
 			hoveredCheckboxIndex = i; // マウスオーバーしているチェックボックスのインデックスを更新
 
+			if(prevHoveredCheckboxIndex != i && hoverSound)
+			{
+				hoverSound->PlayOneShot();
+			}
+
 			if (isClicked)
 			{
+				if (clickSound)
+				{
+					clickSound->PlayOneShot();
+				}
+
 				// クリックされたチェックボックスのインデックスを保存
 				clickedCheckboxIndex = i;
 

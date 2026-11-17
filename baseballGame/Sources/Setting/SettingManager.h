@@ -1,6 +1,8 @@
 #pragma once
 #include "SettingPanel.h"
 #include "ButtonManager.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 class SettingManager
 {
@@ -79,5 +81,8 @@ private:
 	float underBarOffsetY = 50.0f; // アンダーバーのY方向のオフセット
 
 	DirectX::XMFLOAT2 firstTabButtonPosition = { 0.0f, 0.0f }; // 最初のタブボタンの位置
+
+	AudioSource* hoverSound = nullptr; // マウスオーバー時の効果音
+	AudioSource* clickSound = nullptr; // クリック時の効果音
 
 };

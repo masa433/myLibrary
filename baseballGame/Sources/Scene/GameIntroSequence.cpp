@@ -183,7 +183,6 @@ void GameIntroSequence::Initialize(ID3D11Device* device)
 	introBoardAnimationSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\introBoardAnimation.wav",SoundType::SE);
 	ballModeHoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
 	ballModeSelectSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Hit.wav",SoundType::SE);
-	playBallSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\PlayBall.wav",SoundType::SE);
 
 	introBoardAnimationSoundPlayed = false;
 }
@@ -233,7 +232,6 @@ void GameIntroSequence::Uninitialize()
     delete introBoardAnimationSound;
 	delete ballModeHoverSound;
 	delete ballModeSelectSound;
-	delete playBallSound;
 }
 
 void GameIntroSequence::UpdateIntroBoardAnimation(float elapsedTime)
@@ -255,7 +253,6 @@ void GameIntroSequence::UpdateBallSpeedModeSelection()
     //効果音更新処理
 	if (ballModeHoverSound) ballModeHoverSound->Update();
 	if (ballModeSelectSound) ballModeSelectSound->Update();
-	if (playBallSound) playBallSound->Update();
 
     Input& input = Input::Instance();
     ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
@@ -310,10 +307,9 @@ void GameIntroSequence::UpdateBallSpeedModeSelection()
 					// 選択されたボールモードに応じてPitcherのボールスピードモードを設定
                     // (デフォルトでストライクゾーンから外れる確率を70%にする)
 
-                    if (ballModeSelectSound && playBallSound)
+                    if (ballModeSelectSound)
                     {
                         ballModeSelectSound->PlayOneShot(); // 選択音を再生
-						playBallSound->PlayOneShot(); // PlayBall音を再生
                     }
 
 					Pitcher::Instance().SetStrikeZoneRate(freeBattingAiStrikeRate); // ストライクゾーンから外れる確率を80%に設定

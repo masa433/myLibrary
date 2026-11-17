@@ -226,5 +226,4 @@ private:
 
 	AudioSource* ballModeHoverSound = nullptr; // ボールモードのホバー音声
 	AudioSource* ballModeSelectSound = nullptr; // ボールモードの選択音声
-	AudioSource* playBallSound = nullptr; // ボールを投げる音声
 };

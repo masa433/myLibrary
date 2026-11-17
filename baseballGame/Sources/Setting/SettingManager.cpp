@@ -103,7 +103,8 @@ void SettingManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 	underBarData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	underBarSprite = std::make_unique<sprite>(device, context, underBarData->texturePath.c_str());
 
-
+	hoverSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav", SoundType::SE);
+	clickSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\Clog.wav", SoundType::SE);
 
 	hoveredTabButtonIndex = -1; // 初期化
 
@@ -134,10 +135,15 @@ void SettingManager::Uninitialize()
 
 	//タブボタンの解放
 	tabButtons.clear();
+
+	delete hoverSound;
+	delete clickSound;
 }
 
 void SettingManager::UpdateSelectedTabButton()
 {
+	if (hoverSound) hoverSound->Update();
+
 	Input& input = Input::Instance();
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
@@ -174,6 +180,15 @@ void SettingManager::UpdateSelectedTabButton()
 		if (isHovered)
 		{
 			hoveredTabButtonIndex = tabButton.panelIndex; // マウスオーバーしているタブボタンのインデックスを保存
+
+			if (hoveredTabButtonIndex != -1 && hoveredTabButtonIndex != previousHoveredIndex)
+			{
+				if (hoverSound)
+				{
+					hoverSound->PlayOneShot(); // マウスオーバー時の効果音を再生
+				}
+			}
+
 			if (clicked)
 			{
 				currentActivePanel = panels[tabButton.panelIndex].get(); // 対応するパネルをアクティブにする
@@ -181,8 +196,12 @@ void SettingManager::UpdateSelectedTabButton()
 				//アンダーバーの位置を更新
 				underBarData->position = { tabButton.tabButtonData->position.x, tabButton.tabButtonData->position.y + underBarOffsetY };
 
+				if (clickSound)
+				{
+					clickSound->PlayOneShot(); // クリック時の効果音を再生
+				}
+
 			}
-			break; // マウスオーバーしているボタンが見つかったらループを抜ける
 		}
 	}
 
