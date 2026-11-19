@@ -10,6 +10,7 @@
 #include "Hextransitioneffect.h"
 #include "ButtonManager.h" 
 #include "BloomRenderer.h"
+#include "UiEasing.h"
 
 
 using json = nlohmann::json;
@@ -27,6 +28,8 @@ public:
 
 	void SaveSetting();
 	void LoadSetting();
+
+	void UpdateLogoAnimation(float elapsedTime);
 
 private:
 	//	カメラのZ座標の描画範囲
@@ -160,6 +163,12 @@ private:
 	DirectX::XMFLOAT2 logoPosition = { 0.0f, 0.0f };
 	DirectX::XMFLOAT2 logoSize = { 400.0f, 200.0f };
 	DirectX::XMFLOAT4 logoColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	float logoAnimationTime = 0.0f;
+	float logoAnimationDuration = 4.0f; // ロゴのアニメーション時間（秒）
+
+	DirectX::XMFLOAT2 logoInitialPosition = { 0.0f, 0.0f }; // 初期位置（画面下）
+	DirectX::XMFLOAT2 logoTargetPosition = { 0.0f, 0.0f }; // 目標位置（画面中央）
 
 	//シェーダー関連
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> spriteVS;

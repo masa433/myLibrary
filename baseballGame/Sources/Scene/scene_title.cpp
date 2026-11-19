@@ -139,6 +139,9 @@ void scene_title::initialize()
 	logoSpriteData->color = logoColor;
 	logoSprite = std::make_unique<sprite>(device, context, logoSpriteData->texturePath.c_str());
 
+	logoInitialPosition = logoPosition;
+	logoTargetPosition = { logoPosition.x,logoPosition.y + 50.0f };
+
 	// ロゴ画像が見つからない場合はロゴだけを省略し、タイトル UI の初期化は続行する。
 	if (!logoSprite || !logoSprite->IsValid())
 	{
@@ -265,8 +268,24 @@ void scene_title::update(float elapsed_time)
 			ChangeSceneTitleToBatterSelect();
 		}
 	}
+
+	UpdateLogoAnimation(elapsed_time);
 	
 	//devmidiUpdate();
+}
+
+//ロゴの位置を往復させる関数
+void scene_title::UpdateLogoAnimation(float elapsedTime)
+{
+
+	logoAnimationTime += elapsedTime;
+	float t = logoAnimationTime / logoAnimationDuration;
+	
+	//サイン波を使って、滑らかにロゴの位置を変化させる
+	float sineValue = sinf(t * DirectX::XM_2PI - DirectX::XM_PIDIV2); // 開始位置をInitializePositionに合わせる
+	
+
+	logoPosition.y = logoInitialPosition.y + (logoTargetPosition.y - logoInitialPosition.y) * (sineValue * 0.5f + 0.5f); // 0から1の範囲に変換して位置を計算
 }
 
 void scene_title::render(float elapsed_time)
