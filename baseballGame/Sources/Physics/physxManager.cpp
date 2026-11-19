@@ -1382,6 +1382,38 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			
 			//特殊能力による打球速度補正
 			float SpecialAbilityScale = SpecialAbility::Instance().GetBallVelocityBonus();
+
+			//バッターのパワーとピッチャーの球威を比較して、その差に応じて打球速度を補正する
+			int batterPowerRank = static_cast<int>(Player::Instance().GetPowerRank(batterPower));
+			int pitchPowerRank = static_cast<int>(Pitcher::Instance().GetCurrentPitchPower());
+
+			//バッターのパワーのランクが球威のランクよりも低い場合は打球速度を1.05倍にする
+			int powerDifference = batterPowerRank - pitchPowerRank;// バッターのパワーランクと球威ランクの差を計算
+
+			switch (powerDifference)
+			{
+				case -2:
+					estimatedExitVelocity *= 1.05f;
+					break;
+				case -1:
+					estimatedExitVelocity *= 1.02f;
+					break;
+				case 0:
+					// 何もしない
+					break;
+				case 1:
+					estimatedExitVelocity *= 0.98f;
+					break;
+				case 2:
+					estimatedExitVelocity *= 0.95f;
+					break;
+				default:
+					if (powerDifference < -2)
+						estimatedExitVelocity *= 1.08f; // バッターのパワーが球威よりも大幅に低い場合はさらに補正
+					else if (powerDifference > 2)
+						estimatedExitVelocity *= 0.90f; // バッターのパワーが球威よりも大幅に高い場合はさらに補正
+					break;
+			}
 			
 			estimatedExitVelocity *= batterPowerScale;
 			estimatedExitVelocity *= pitchPowerScale;

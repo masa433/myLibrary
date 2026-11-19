@@ -140,7 +140,7 @@ void scene_title::initialize()
 	logoSprite = std::make_unique<sprite>(device, context, logoSpriteData->texturePath.c_str());
 
 	logoInitialPosition = logoPosition;
-	logoTargetPosition = { logoPosition.x,logoPosition.y + 50.0f };
+	logoTargetPosition = { logoPosition.x,logoPosition.y + 75.0f };
 
 	// ロゴ画像が見つからない場合はロゴだけを省略し、タイトル UI の初期化は続行する。
 	if (!logoSprite || !logoSprite->IsValid())
