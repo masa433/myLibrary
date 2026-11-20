@@ -35,10 +35,12 @@ private:
 
 	//	選手のリスト
 	std::unique_ptr<ScrollView> playerScrollView;
+
+	static const int fontCount = 2; // フォントの数
 	
 	ButtonManager buttonManager; // ボタンマネージャーのインスタンス
 	FontRenderer fontRenderer;
-	DirectX::XMFLOAT2 fontPosition = { 1680.0f, 857.0f };
+	DirectX::XMFLOAT2 fontPosition[fontCount] = { {1680.0f, 857.0f}, {680.0f, 857.0f} };
 	float fontSize = 1.0f;
 	DirectX::XMFLOAT4 fontColor = { 1.0f,1.0f,1.0f,1.0f };
 
@@ -139,7 +141,8 @@ private:
 		Finished,// 遷移準備完了
 		Reverting,// 戻るボタン押下後のフェード演出
 		ShowPitcherParam,// ピッチャーのパラメータ表示中
-		ChangeScene// シーン遷移中
+		ChangeScene,// シーン遷移中
+		ShowBatterParam,// バッターのパラメータ表示中
 	};
 
 	SequenceState currentState = SequenceState::Selecting;

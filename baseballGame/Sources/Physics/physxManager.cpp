@@ -1390,33 +1390,33 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			//バッターのパワーのランクが球威のランクよりも低い場合は打球速度を1.05倍にする
 			int powerDifference = batterPowerRank - pitchPowerRank;// バッターのパワーランクと球威ランクの差を計算
 
-			switch (powerDifference)
-			{
-				case -2:
-					estimatedExitVelocity *= 1.05f;
-					break;
-				case -1:
-					estimatedExitVelocity *= 1.02f;
-					break;
-				case 0:
-					// 何もしない
-					break;
-				case 1:
-					estimatedExitVelocity *= 0.98f;
-					break;
-				case 2:
-					estimatedExitVelocity *= 0.95f;
-					break;
-				default:
-					if (powerDifference < -2)
-						estimatedExitVelocity *= 1.08f; // バッターのパワーが球威よりも大幅に低い場合はさらに補正
-					else if (powerDifference > 2)
-						estimatedExitVelocity *= 0.90f; // バッターのパワーが球威よりも大幅に高い場合はさらに補正
-					break;
-			}
+			//switch (powerDifference)
+			//{
+			//	case -2:
+			//		estimatedExitVelocity *= 1.05f;
+			//		break;
+			//	case -1:
+			//		estimatedExitVelocity *= 1.02f;
+			//		break;
+			//	case 0:
+			//		// 何もしない
+			//		break;
+			//	case 1:
+			//		estimatedExitVelocity *= 0.98f;
+			//		break;
+			//	case 2:
+			//		estimatedExitVelocity *= 0.95f;
+			//		break;
+			//	default:
+			//		if (powerDifference < -2)
+			//			estimatedExitVelocity *= 1.08f; // バッターのパワーが球威よりも大幅に低い場合はさらに補正
+			//		else if (powerDifference > 2)
+			//			estimatedExitVelocity *= 0.90f; // バッターのパワーが球威よりも大幅に高い場合はさらに補正
+			//		break;
+			//}
 			
 			estimatedExitVelocity *= batterPowerScale;
-			estimatedExitVelocity *= pitchPowerScale;
+			//estimatedExitVelocity *= pitchPowerScale;
 			estimatedExitVelocity *= SpecialAbilityScale;
 			
 			// 2D判定の仰角を使用
@@ -1501,7 +1501,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			//打球方向が15度～30度の範囲内で打球速度が170キロ以上、打球角度が25度～35度の時は確信ホームランとして仮でログ出力
 			//後で確信ホームラン用のカメラ演出に切り替える
 			const char* homeRunResult = nullptr;
-			if(hitDirectionAngleDeg >= 15.0f && hitDirectionAngleDeg <= 30.0f && launchAngleDeg >= 25.0f && launchAngleDeg <= 35.0f && finalExitVelocityKmh >= 170.0f)
+			if(hitDirectionAngleDeg >= 15.0f && hitDirectionAngleDeg <= 30.0f && launchAngleDeg >= 30.0f && launchAngleDeg <= 40.0f && finalExitVelocityKmh >= 170.0f)
 			{
 				homeRunResult = u8"確信ホームラン！";
 				isHomeRun = true;

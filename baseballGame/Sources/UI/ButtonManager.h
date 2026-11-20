@@ -32,6 +32,7 @@ public:
 		Next,//次へボタン
 		FreeBatting,//フリーバッティングボタン
 		Restart,//リスタートボタン
+		ShowBatterParam,//打者パラメータ表示ボタン
 		Count
 	};
 
@@ -94,6 +95,9 @@ public:
 
 	void ResetQuitRequest(bool requested) { isQuitRequested = requested; }
 	bool IsQuitRequested() const { return isQuitRequested; }
+
+	void ResetShowBatterParamRequest(bool requested) { isShowBatterParamRequested = requested; }
+	bool IsShowBatterParamRequested() const { return isShowBatterParamRequested; }
 
 	//ボタンのタイプを取得する関数
 	ButtonType GetButtonType(ButtonType buttonType) const { return buttonType; }
@@ -206,6 +210,7 @@ private:
 	bool isSettingsRequested = false;
 	bool isRestartRequested = false;
 	bool isQuitRequested = false;
+	bool isShowBatterParamRequested = false;
 
 	bool initialized = false;
 	AudioSource* buttonHoverSound = nullptr;

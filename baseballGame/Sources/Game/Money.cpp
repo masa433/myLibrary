@@ -224,8 +224,6 @@ void Money::Initialize(ID3D11Device* device)
 	currentMoney = 0;
 	targetMoney = 0;
 	currentBallZoneBonusMoney = baseBallZoneBonusMoney;
-	breakingBallBonus = 1.1f;
-	homerunBonus = 1.1f;
 	comboBonus = 1.0f;
 	moneyMakerBonus = 0.0f;
 	jackpotBonus = 0.0f;
@@ -233,6 +231,34 @@ void Money::Initialize(ID3D11Device* device)
 
 	getMoneySound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\GetMoney.wav",SoundType::SE);
 	activeBonusSound = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ActiveBonusBoard.wav",SoundType::SE);
+
+	int power = Player::Instance().GetSelectedRealBatterPower();
+	int contact = Player::Instance().GetSelectedRealBatterContact();
+	// 関数側が inline const RankData& GetPowerRank(int power) const のような場合
+	Player::BatterPowerRank powerRank = Player::Instance().GetPowerRank(power);
+	Player::BatterContactRank contactRank = Player::Instance().GetContactRank(contact);
+
+	//パワーとミートのランクを足して、その合計に応じて初期倍率を変える
+	int totalRankValue = static_cast<int>(powerRank) + static_cast<int>(contactRank);
+
+	switch (totalRankValue)
+	{
+	case BatterRank::Rank0:
+		SetHomeRunAndBreakingBallBonus(1.5f, 1.5f);
+		break;
+	case BatterRank::Rank1:
+		SetHomeRunAndBreakingBallBonus(1.5f, 1.5f);
+		break;
+	case BatterRank::Rank2:
+		SetHomeRunAndBreakingBallBonus(1.3f, 1.3f);
+		break;
+	case BatterRank::Rank3:
+		SetHomeRunAndBreakingBallBonus(1.2f, 1.2f);
+		break;
+	default:
+		SetHomeRunAndBreakingBallBonus(1.0f, 1.0f);
+		break;
+	}
 }
 
 void Money::Uninitialize()

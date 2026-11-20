@@ -207,7 +207,7 @@ void batterSelectScene::update(float elapsed_time)
 	prevHomePressed = homePressed;
 
 	// ボタンマネージャーの更新は、選手選択中または遷移完了後にのみ行う
-	if(currentState == SequenceState::Selecting || currentState == SequenceState::Finished || currentState == SequenceState::ShowPitcherParam)
+	if(currentState == SequenceState::Selecting || currentState == SequenceState::Finished || currentState == SequenceState::ShowPitcherParam || currentState == SequenceState::ShowBatterParam)
 	{
 		buttonManager.Update(elapsed_time);
 	}
@@ -292,7 +292,7 @@ void batterSelectScene::update(float elapsed_time)
 				currentState = SequenceState::Reverting;
 				buttonManager.ResetReturnRequest(false);
 				transitionTimer = 0.0f; // 遷移演出のタイマーをリセット
-			}
+			}			
 
 			if (buttonManager.IsRerollRequested())
 			{			
@@ -320,6 +320,14 @@ void batterSelectScene::update(float elapsed_time)
 				transitionTimer = 0.0f; // 遷移演出のタイマーをリセット
 				buttonManager.ResetShowPitchParamRequest(false);
 				currentState = SequenceState::ShowPitcherParam;
+			}
+
+			if (buttonManager.IsShowBatterParamRequested())
+			{
+				transitionTimer = 0.0f; // 遷移演出のタイマーをリセット
+				buttonManager.ResetShowBatterParamRequest(false);
+				currentState = SequenceState::ShowBatterParam;
+				playerScrollView->SetShowState(ShowState::ShowBatterParam); // バッターのパラメータ表示状態に切り替え
 			}
 			
 
@@ -381,6 +389,27 @@ void batterSelectScene::update(float elapsed_time)
 				currentState = SequenceState::Finished;
 				buttonManager.ResetCloseRequest(false);
 				transitionTimer = 0.0f; // 遷移演出のタイマーをリセット
+			}
+
+			break;
+		}
+		case SequenceState::ShowBatterParam:
+		{
+			batterImageAlpha = 1.0f;
+			returnAlpha = 0.0f;
+			paramImageAlpha = 1.0f;
+
+
+			buttonManager.ResetReturnRequest(false);
+			buttonManager.ResetOKRequest(false);
+			buttonManager.ResetStartRequest(false);
+
+			if (buttonManager.IsCloseRequested())
+			{
+				currentState = SequenceState::Finished;
+				buttonManager.ResetCloseRequest(false);
+				transitionTimer = 0.0f; // 遷移演出のタイマーをリセット
+				playerScrollView->SetShowState(ShowState::ShowBatterName); // 選手選択状態に戻す
 			}
 
 			break;
@@ -467,7 +496,7 @@ void batterSelectScene::render(float elapsedTime)
 	for(const auto& effect : burstList )
 
 	{
-		if (effect.alpha > 0.001f && currentState !=  SequenceState::ShowPitcherParam)
+		if (effect.alpha > 0.001f && currentState != SequenceState::ShowPitcherParam && currentState != SequenceState::ShowBatterParam)
 		{
 
 
@@ -550,23 +579,27 @@ void batterSelectScene::render(float elapsedTime)
 	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Start);
 	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::Reroll);
 	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::ShowPitchParam);
+	buttonManager.Render(returnAlpha, ButtonManager::ButtonType::ShowBatterParam);
 
 	if (fontRenderer.IsValid())
 	{
-		DirectX::XMFLOAT2 scaledFontPos = screenScaler.Scale(fontPosition);
-		const float scaledFontSize = fontSize * screenScaler.GetUniformScale(); // フォントサイズもスケーリング
+		for (int i = 0; i < fontCount; ++i)
+		{
+			DirectX::XMFLOAT2 scaledFontPos = screenScaler.Scale(fontPosition[i]);
+			const float scaledFontSize = fontSize * screenScaler.GetUniformScale(); // フォントサイズもスケーリング
 
-		float textWidth, textHeight;
+			float textWidth, textHeight;
 
-		fontRenderer.MeasureText(u8"詳細確認", scaledFontSize, textWidth, textHeight);
+			fontRenderer.MeasureText(u8"詳細確認", scaledFontSize, textWidth, textHeight);
 
-		float drawX = scaledFontPos.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
-		float drawY = scaledFontPos.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
+			float drawX = scaledFontPos.x - textWidth / 2.0f; // 中央揃えのためにX座標を調整
+			float drawY = scaledFontPos.y - textHeight / 2.0f; // 中央揃えのためにY座標を調整
 
-		fontRenderer.DrawTextW(dc,
-			u8"詳細確認",
-			drawX, drawY, scaledFontSize,
-			fontColor.x, fontColor.y, fontColor.z, fontColor.w * returnAlpha);
+			fontRenderer.DrawTextW(dc,
+				u8"詳細確認",
+				drawX, drawY, scaledFontSize,
+				fontColor.x, fontColor.y, fontColor.z, fontColor.w * returnAlpha);
+		}
 	}
 
 	dc->VSSetShader(vertex_shader.Get(), nullptr, 0);
@@ -576,7 +609,7 @@ void batterSelectScene::render(float elapsedTime)
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF); // 半透明のガラス調テクスチャなので有効化推奨
 
 
-	if(currentState == SequenceState::ShowPitcherParam)
+	if(currentState == SequenceState::ShowPitcherParam || currentState == SequenceState::ShowBatterParam)
 	{
 		
 		//背景描画
@@ -604,7 +637,7 @@ void batterSelectScene::render(float elapsedTime)
 
 
 		//パラメーター出現中のエフェクト描画
-		if (currentState == SequenceState::ShowPitcherParam && paramImageAlpha > 0.001f)
+		if ((currentState == SequenceState::ShowPitcherParam || currentState == SequenceState::ShowBatterParam) && paramImageAlpha > 0.001f && batterImageAlpha > 0.001f)
 		{
 			D3D11_MAPPED_SUBRESOURCE mapped;
 
@@ -634,30 +667,37 @@ void batterSelectScene::render(float elapsedTime)
 		dc->OMSetBlendState(renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
 		dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-
+		if (currentState == SequenceState::ShowBatterParam)
+		{
+			if (playerScrollView) playerScrollView->RenderBatterImage(dc, batterImageAlpha); // この中でVS/PS/InputLayoutがnullptrに戻る
+		}
 
 		////選択されたピッチャーのスプライトを描画
-		if (selectedPitcherIndex < PITCHER_COUNT && pitcherSprites[selectedPitcherIndex] && pitcherSpriteDataArray[selectedPitcherIndex])
+		if (currentState == SequenceState::ShowPitcherParam)
 		{
-			DirectX::XMFLOAT2 scaledPitcherPos = screenScaler.Scale(pitcherSpriteDataArray[selectedPitcherIndex]->position);
-			DirectX::XMFLOAT2 scaledPitcherSize = screenScaler.Scale(pitcherSpriteDataArray[selectedPitcherIndex]->size);
-			pitcherSprites[selectedPitcherIndex]->render(dc, scaledPitcherPos.x, scaledPitcherPos.y,
-				scaledPitcherSize.x, scaledPitcherSize.y,
-				pitcherSpriteDataArray[selectedPitcherIndex]->color.x, pitcherSpriteDataArray[selectedPitcherIndex]->color.y,
-				pitcherSpriteDataArray[selectedPitcherIndex]->color.z, pitcherSpriteDataArray[selectedPitcherIndex]->color.w * paramImageAlpha,
-				pitcherSpriteDataArray[selectedPitcherIndex]->rotation);
-		}
+			if (selectedPitcherIndex < PITCHER_COUNT && pitcherSprites[selectedPitcherIndex] && pitcherSpriteDataArray[selectedPitcherIndex])
+			{
+				DirectX::XMFLOAT2 scaledPitcherPos = screenScaler.Scale(pitcherSpriteDataArray[selectedPitcherIndex]->position);
+				DirectX::XMFLOAT2 scaledPitcherSize = screenScaler.Scale(pitcherSpriteDataArray[selectedPitcherIndex]->size);
+				pitcherSprites[selectedPitcherIndex]->render(dc, scaledPitcherPos.x, scaledPitcherPos.y,
+					scaledPitcherSize.x, scaledPitcherSize.y,
+					pitcherSpriteDataArray[selectedPitcherIndex]->color.x, pitcherSpriteDataArray[selectedPitcherIndex]->color.y,
+					pitcherSpriteDataArray[selectedPitcherIndex]->color.z, pitcherSpriteDataArray[selectedPitcherIndex]->color.w * paramImageAlpha,
+					pitcherSpriteDataArray[selectedPitcherIndex]->rotation);
+			}
 
-		if (randomPitcherImageIndex >= 0)
-		{
-			DirectX::XMFLOAT2 scaledModalPitcherPos = screenScaler.Scale(modalPitcherPos);
-			DirectX::XMFLOAT2 scaledModalPitcherSize = screenScaler.Scale(modalPitcherSize);
-			pitcherImageSprites[randomPitcherImageIndex]->render(dc, scaledModalPitcherPos.x, scaledModalPitcherPos.y,
-				scaledModalPitcherSize.x, scaledModalPitcherSize.y,
-				pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.y,
-				pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.z, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.w * batterImageAlpha,
-				pitcherImageSpriteDataArray[randomPitcherImageIndex]->rotation);
+			if (randomPitcherImageIndex >= 0)
+			{
+				DirectX::XMFLOAT2 scaledModalPitcherPos = screenScaler.Scale(modalPitcherPos);
+				DirectX::XMFLOAT2 scaledModalPitcherSize = screenScaler.Scale(modalPitcherSize);
+				pitcherImageSprites[randomPitcherImageIndex]->render(dc, scaledModalPitcherPos.x, scaledModalPitcherPos.y,
+					scaledModalPitcherSize.x, scaledModalPitcherSize.y,
+					pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.x, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.y,
+					pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.z, pitcherImageSpriteDataArray[randomPitcherImageIndex]->color.w * batterImageAlpha,
+					pitcherImageSpriteDataArray[randomPitcherImageIndex]->rotation);
+			}
 		}
+		
 
 		buttonManager.Render(paramImageAlpha, ButtonManager::ButtonType::Close);
 
@@ -750,7 +790,11 @@ void batterSelectScene::DrawGUI()
 			ImGui::DragFloat2("pitcherInfo Position", &pitcherSpriteDataArray[selectedPitcherIndex]->position.x, 1.0f);
 			ImGui::DragFloat2("pitcherInfo Size", &pitcherSpriteDataArray[selectedPitcherIndex]->size.x, 1.0f);
 
-			ImGui::DragFloat2("font Position", &fontPosition.x, 1.0f);
+			for(int i =0; i < fontCount; ++i)
+			{
+				std::string label = "font Position " + std::to_string(i);
+				ImGui::DragFloat2(label.c_str(), &fontPosition[i].x, 1.0f);
+			}
 			ImGui::DragFloat("font Size", &fontSize, 1.0f, 1.0f, 100.0f);
 			ImGui::ColorEdit4("font Color", &fontColor.x);
 		}

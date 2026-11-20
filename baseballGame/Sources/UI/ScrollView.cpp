@@ -2,7 +2,28 @@
 #include "ScrollView.h"
 #include "Graphics.h"
 #include <shader.h>
+#include "Money.h"
 
+std::string FormatBonusFloat(float value)
+{
+
+	char buf[32];
+	std::snprintf(buf, sizeof(buf), "%.2f", value);
+	std::string str(buf);
+
+	// 末尾が '0' かつ 小数点から2文字以上後ろにある場合のみ '0' を削る
+	// (＝ "1.00" の場合は "1.0" になるが、"1.0" の末尾の0は削られない)
+	size_t dotPos = str.find('.');
+	if (dotPos != std::string::npos)
+	{
+		while (str.back() == '0' && str.length() > dotPos + 2)
+		{
+			str.pop_back();
+		}
+	}
+
+	return str;
+}
 
 void ScrollView::MatchSelectedButtonAndBatter()
 {
@@ -159,8 +180,11 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
 
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
-		u8"0123456789"
+		u8"0123456789×.:"
 		u8"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		u8"バッターランク"
+		u8"初期ホームランボーナス変化球ボーナス"
+		u8"パッシブ能力なし"
 	);
 
 	// フォントレンダラーの初期化
@@ -169,6 +193,13 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 		100.0f,
 		screenWidth, screenHeight,
 		1024, 1024,
+		&trackingDataCodepoints);
+
+	paramFontRenderer.Initialize(device,
+		L".\\resources\\fonts\\GenEiGothicN-U-KL.otf",
+		100.0f,
+		screenWidth, screenHeight,
+		2048, 2048,
 		&trackingDataCodepoints);
 
 	powerFontData.position = { 1300.0f, 400.0f }; // 画面内に配置
@@ -186,6 +217,22 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	contactRankFontData.position = { 1500.0f, 500.0f };
 	contactRankFontData.scale = 1.0f;
 	contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	rankFontData.position = { 1300.0f, 600.0f };
+	rankFontData.scale = 0.5f;
+	rankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	homerunBonusFontData.position = { 1300.0f, 700.0f };
+	homerunBonusFontData.scale = 0.5f;
+	homerunBonusFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	breakingBallBonusFontData.position = { 1300.0f, 800.0f };
+	breakingBallBonusFontData.scale = 0.5f;
+	breakingBallBonusFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	passiveFontData.position = { 1300.0f, 900.0f };
+	passiveFontData.scale = 0.5f;
+	passiveFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	clickNameButton = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav",SoundType::SE);
 	hoverArrow = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
@@ -434,6 +481,32 @@ void ScrollView::Render(float alpha)
 					break;
 			}
 
+			totalRank = static_cast<int>(powerRank) + static_cast<int>(contactRank);
+
+			switch (totalRank)
+			{
+			case BatterRank::Rank0:
+				homerunBonus = 1.5f;
+				breakingBallBonus = 1.5f;
+				break;
+			case BatterRank::Rank1:
+				homerunBonus = 1.5f;
+				breakingBallBonus = 1.5f;
+				break;
+			case BatterRank::Rank2:
+				homerunBonus = 1.3f;
+				breakingBallBonus = 1.3f;
+				break;
+			case BatterRank::Rank3:
+				homerunBonus = 1.2f;
+				breakingBallBonus = 1.2f;
+				break;
+			default:
+				homerunBonus = 1.0f;
+				breakingBallBonus = 1.0f;
+				break;
+			}
+
 			auto scaledText = [&](const DirectX::XMFLOAT2& scaledPos, float scaledSize) -> std::pair<DirectX::XMFLOAT2, float>
 				{
 					return {
@@ -482,37 +555,107 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 	if (!initialized || !dc) return;
 	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
 
-	if (randomBatterImageIndex >= 0 && randomBatterImageIndex < BATTER_IMAGE_COUNT)
+	if(currentState == ShowState::ShowBatterName)
 	{
-		if (imageData[randomBatterImageIndex] && imageDataArray[randomBatterImageIndex])
+		if (randomBatterImageIndex >= 0 && randomBatterImageIndex < BATTER_IMAGE_COUNT)
 		{
-			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(imageDataArray[randomBatterImageIndex]->position);
-			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(imageDataArray[randomBatterImageIndex]->size);
+			if (imageData[randomBatterImageIndex] && imageDataArray[randomBatterImageIndex])
+			{
+				DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(imageDataArray[randomBatterImageIndex]->position);
+				DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(imageDataArray[randomBatterImageIndex]->size);
 
-			imageData[randomBatterImageIndex]->render(dc,
-				scaledPosition.x,
-				scaledPosition.y,
-				scaledSize.x, scaledSize.y,
-				imageDataArray[randomBatterImageIndex]->color.x, imageDataArray[randomBatterImageIndex]->color.y, 
-				imageDataArray[randomBatterImageIndex]->color.z, imageDataArray[randomBatterImageIndex]->color.w * alpha,
-				imageDataArray[randomBatterImageIndex]->rotation);
+				imageData[randomBatterImageIndex]->render(dc,
+					scaledPosition.x,
+					scaledPosition.y,
+					scaledSize.x, scaledSize.y,
+					imageDataArray[randomBatterImageIndex]->color.x, imageDataArray[randomBatterImageIndex]->color.y,
+					imageDataArray[randomBatterImageIndex]->color.z, imageDataArray[randomBatterImageIndex]->color.w * alpha,
+					imageDataArray[randomBatterImageIndex]->rotation);
+			}
+		}
+
+		if (selectedIndex >= 0 && selectedIndex < BATTER_COUNT)
+		{
+			if (batterNameTagSprite[selectedIndex] && batterNameTagData[selectedIndex])
+			{
+				DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(batterNameTagPosition);
+				DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(batterNameTagSize);
+
+				batterNameTagSprite[selectedIndex]->render(dc,
+					scaledPosition.x, scaledPosition.y,
+					scaledSize.x, scaledSize.y,
+					batterNameTagColor.x, batterNameTagColor.y,
+					batterNameTagColor.z, batterNameTagColor.w * alpha,
+					batterNameTagData[selectedIndex]->rotation);
+			}
 		}
 	}
-
-	if (selectedIndex >= 0 && selectedIndex < BATTER_COUNT)
+	else if(currentState == ShowState::ShowBatterParam)
 	{
-		if (batterNameTagSprite[selectedIndex] && batterNameTagData[selectedIndex])
+		if (randomBatterImageIndex >= 0 && randomBatterImageIndex < BATTER_IMAGE_COUNT)
 		{
-			DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(batterNameTagPosition);
-			DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(batterNameTagSize);
+			if (imageData[randomBatterImageIndex] && imageDataArray[randomBatterImageIndex])
+			{
+				DirectX::XMFLOAT2 scaledPosition = screenScaler.Scale(showBatterParamPosition);
+				DirectX::XMFLOAT2 scaledSize = screenScaler.ScaleSize(showBatterParamSize);
 
-			batterNameTagSprite[selectedIndex]->render(dc,
-				scaledPosition.x, scaledPosition.y,
-				scaledSize.x, scaledSize.y,
-				batterNameTagColor.x, batterNameTagColor.y,
-				batterNameTagColor.z, batterNameTagColor.w * alpha,
-				batterNameTagData[selectedIndex]->rotation);
+				imageData[randomBatterImageIndex]->render(dc,
+					scaledPosition.x,
+					scaledPosition.y,
+					scaledSize.x, scaledSize.y,
+					imageDataArray[randomBatterImageIndex]->color.x, imageDataArray[randomBatterImageIndex]->color.y,
+					imageDataArray[randomBatterImageIndex]->color.z, imageDataArray[randomBatterImageIndex]->color.w * alpha,
+					imageDataArray[randomBatterImageIndex]->rotation);
+			}
 		}
+
+		//ランク・ボーナス・パッシブ能力のフォント描画
+		auto scaledText = [&](const DirectX::XMFLOAT2& scaledPos, float scaledSize) -> std::pair<DirectX::XMFLOAT2, float>
+			{
+				return {
+					screenScaler.Scale(scaledPos),
+					scaledSize * screenScaler.GetUniformScale()
+				};
+			};
+
+		auto [scaledRankPos, scaledRankSize] = scaledText(rankFontData.position, rankFontData.scale);
+		auto [scaledHomerunBonusPos, scaledHomerunBonusSize] = scaledText(homerunBonusFontData.position, homerunBonusFontData.scale);
+		auto [scaledBreakingBallPos, scaledBreakingBallSize] = scaledText(breakingBallBonusFontData.position, breakingBallBonusFontData.scale);
+		auto [scaledPassivePos, scaledPassiveSize] = scaledText(passiveFontData.position, passiveFontData.scale);
+
+		//左ぞろえにするヘルパー関数
+		auto leftAlignTextPosition = [&](const std::string& text, float fontSize, float x, float y) -> DirectX::XMFLOAT2
+			{
+				float textWidth = 0.0f;
+				float textHeight = 0.0f;
+				paramFontRenderer.MeasureText(text.c_str(), fontSize, textWidth, textHeight);
+				return { x, y - textHeight / 2.0f };
+			};
+
+		const std::string rankString = u8"バッターランク:  " + std::to_string(totalRank);
+		DirectX::XMFLOAT2 centeredRankPos = leftAlignTextPosition(rankString, scaledRankSize, scaledRankPos.x, scaledRankPos.y);
+		paramFontRenderer.DrawTextW(dc, rankString.c_str(),
+			centeredRankPos.x, centeredRankPos.y, scaledRankSize,
+			rankFontData.color.x, rankFontData.color.y, rankFontData.color.z, rankFontData.color.w * alpha);
+
+
+		const std::string homerunBonusString = u8"初期ホームランボーナス:  " + FormatBonusFloat(homerunBonus);
+		DirectX::XMFLOAT2 centeredHomerunBonusPos = leftAlignTextPosition(homerunBonusString, scaledHomerunBonusSize, scaledHomerunBonusPos.x, scaledHomerunBonusPos.y);
+		paramFontRenderer.DrawTextW(dc, homerunBonusString.c_str(),
+			centeredHomerunBonusPos.x, centeredHomerunBonusPos.y, scaledHomerunBonusSize,
+			homerunBonusFontData.color.x, homerunBonusFontData.color.y, homerunBonusFontData.color.z, homerunBonusFontData.color.w * alpha);
+
+		const std::string breakingBallBonusString = u8"初期変化球ボーナス:  " + FormatBonusFloat(breakingBallBonus);
+		DirectX::XMFLOAT2 centeredBreakingBallBonusPos = leftAlignTextPosition(breakingBallBonusString, scaledBreakingBallSize, scaledBreakingBallPos.x, scaledBreakingBallPos.y);
+		paramFontRenderer.DrawTextW(dc, breakingBallBonusString.c_str(),
+			centeredBreakingBallBonusPos.x, centeredBreakingBallBonusPos.y, scaledBreakingBallSize,
+			breakingBallBonusFontData.color.x, breakingBallBonusFontData.color.y, breakingBallBonusFontData.color.z, breakingBallBonusFontData.color.w * alpha);
+
+		/*paramFontRenderer.DrawTextW(dc, std::to_string(passive).c_str(),
+			scaledPassivePos.x, scaledPassivePos.y, scaledPassiveSize,
+			passiveFontData.color.x, passiveFontData.color.y, passiveFontData.color.z, passiveFontData.color.w * alpha);*/
+
+		
 	}
 }
 
@@ -868,6 +1011,13 @@ void ScrollView::DrawGUI()
 			}
 			
 			
+		}
+
+		//バッターパラメータの位置など調整
+		if(ImGui::CollapsingHeader("Batter Param Adjustments"))
+		{
+			ImGui::DragFloat2("Show Batter Param Position", &showBatterParamPosition.x, 1.0f);
+			ImGui::DragFloat2("Show Batter Param Size", &showBatterParamSize.x, 1.0f);
 		}
 	}
 

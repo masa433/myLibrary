@@ -12,6 +12,13 @@
 
 using json = nlohmann::json;
 
+enum class ShowState
+{
+	None,
+	ShowBatterName,
+	ShowBatterParam,
+};
+
 class ScrollView
 {
 public:
@@ -29,7 +36,20 @@ public:
 
 private:
 
+	enum BatterRank
+	{
+		Rank0 = 0,
+		Rank1 = 1,
+		Rank2 = 2,
+		Rank3 = 3,
+		Rank4 = 4,
+		Rank5 = 5
+	};
+
+	ShowState currentState = ShowState::ShowBatterName;
+
 	FontRenderer fontRenderer;
+	FontRenderer paramFontRenderer;
 
 	struct BatterParamFontData
 	{
@@ -42,6 +62,10 @@ private:
 	BatterParamFontData powerRankFontData;
 	BatterParamFontData contactFontData;
 	BatterParamFontData contactRankFontData;
+	BatterParamFontData rankFontData;
+	BatterParamFontData homerunBonusFontData;
+	BatterParamFontData breakingBallBonusFontData;
+	BatterParamFontData passiveFontData;
 
 	//スクロール背景スプライトデータ
 	struct ScrollBackData
@@ -162,7 +186,14 @@ private:
 	Player::RealBatter selectedBatter = Player::RealBatter::None; // 選択されたバッターの種類
 	int selectedBatterIndex = -1; // 選択されたバッターのインデックス
 
+	DirectX::XMFLOAT2 showBatterParamPosition = { 300.0f, 100.0f }; // バッターのパラメータ表示位置
+	DirectX::XMFLOAT2 showBatterParamSize = { 600.0f, 800.0f }; // バッターのパラメータ表示サイズ
+
 	bool showBatterButton = false;
+
+	float homerunBonus = 0.0f; // ホームランボーナス
+	float breakingBallBonus = 0.0f; // 変化球ボーナス
+	int totalRank = 0; // 総合ランク
 
 	//選択されたボタンとバッターを一致させる関数
 	void MatchSelectedButtonAndBatter();
@@ -214,6 +245,12 @@ public:
 		case Player::BatterContactRank::S: return "S";
 		default: return "";
 		}
+	}
+
+	//ステートを変更する
+	void SetShowState(ShowState state)
+	{
+		currentState = state;
 	}
 
 private:

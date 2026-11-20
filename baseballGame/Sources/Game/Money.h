@@ -108,6 +108,23 @@ public:
 		targetMoney = 0;
 	}
 
+	//ホームラン・変化球のボーナス倍率の初期値を設定する関数
+	void SetHomeRunAndBreakingBallBonus(float homerun, float breaking)
+	{
+		homerunBonus = homerun;
+		breakingBallBonus = breaking;
+	}
+
+	enum BatterRank
+	{
+		Rank0 = 0,
+		Rank1 = 1,
+		Rank2 = 2,
+		Rank3 = 3,
+		Rank4 = 4,
+		Rank5 = 5
+	};
+
 private:
 	
 
@@ -120,12 +137,11 @@ private:
 	int ballZoneBonusIncrement = 50; // ボールゾーンボーナスの増加量
 
 	//ホームラン時の倍率ボーナス
-	float homerunBonus = 1.1f;
+	float homerunBonus = 1.0f;
 	int finalDistance = 0; //最終的な飛距離
 
 	//変化球を打ったときの倍率ボーナス
-	float breakingBallBonus = 1.1f;
-
+	float breakingBallBonus = 1.0f;
 	//コンボ時の倍率ボーナス
 	float comboBonus = 1.0f; // コンボボーナスの倍率
 	float comboBonusIncrement = 0.1f; // コンボボーナスの増加量
