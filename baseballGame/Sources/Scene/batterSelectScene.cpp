@@ -6,6 +6,7 @@
 #include "misc.h"
 
 
+
 void batterSelectScene::SelectRandomPitcher()
 {
 	static std::mt19937 rng(std::random_device{}()); // 乱数生成器の初期化
@@ -183,6 +184,17 @@ void batterSelectScene::initialize()
 	hexTransitionEffect.Initialize();
 	isChangingScene = false;
 	isTitleChanging = false;
+
+	SpecialAbility& specialAbility = SpecialAbility::Instance();
+
+	specialAbility.BuildAbility();
+	specialAbility.InitializeAbilities(device, context);
+	//選ばれた初期能力を所持する
+	specialAbility.SetOwned(specialAbility.GetRandomPassiveAbility(), true);
+	if(specialAbility.GetOwnedAbilities().size() > 0)
+	{
+		OutputDebugStringA("Owned Abilities:\n");
+	}
 
 	SelectRandomPitcher(); // ランダムにピッチャーを選択
 	LoadSetting(); // 設定をロード

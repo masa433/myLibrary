@@ -182,9 +182,10 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	std::vector<int> trackingDataCodepoints = FontRenderer::Utf8ToCodepoints(
 		u8"0123456789×.:"
 		u8"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-		u8"バッターランク"
-		u8"初期ホームランボーナス変化球ボーナス"
-		u8"パッシブ能力なし"
+		u8"ランク"
+		u8"初期ホームランボーナス初期変化球ボーナス"
+		u8"初期配布能力なし"
+		u8"はランク2以下のバッターにのみ適用"
 	);
 
 	// フォントレンダラーの初期化
@@ -233,6 +234,14 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	passiveFontData.position = { 1300.0f, 900.0f };
 	passiveFontData.scale = 0.5f;
 	passiveFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	passiveParamFontData.position = { 1300.0f, 1000.0f };
+	passiveParamFontData.scale = 0.5f;
+	passiveParamFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	notPassiveFontData.position = { 1350.0f, 700.0f };
+	notPassiveFontData.scale = 0.5f;
+	notPassiveFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	clickNameButton = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav",SoundType::SE);
 	hoverArrow = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
@@ -622,6 +631,8 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 		auto [scaledHomerunBonusPos, scaledHomerunBonusSize] = scaledText(homerunBonusFontData.position, homerunBonusFontData.scale);
 		auto [scaledBreakingBallPos, scaledBreakingBallSize] = scaledText(breakingBallBonusFontData.position, breakingBallBonusFontData.scale);
 		auto [scaledPassivePos, scaledPassiveSize] = scaledText(passiveFontData.position, passiveFontData.scale);
+		auto [scaledPassiveParamPos, scaledPassiveParamSize] = scaledText(passiveParamFontData.position, passiveParamFontData.scale);
+		auto [scaledNotPassivePos, scaledNotPassiveSize] = scaledText(notPassiveFontData.position, notPassiveFontData.scale);
 
 		//左ぞろえにするヘルパー関数
 		auto leftAlignTextPosition = [&](const std::string& text, float fontSize, float x, float y) -> DirectX::XMFLOAT2
@@ -632,7 +643,7 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 				return { x, y - textHeight / 2.0f };
 			};
 
-		const std::string rankString = u8"バッターランク:  " + std::to_string(totalRank);
+		const std::string rankString = u8"ランク:  " + std::to_string(totalRank);
 		DirectX::XMFLOAT2 centeredRankPos = leftAlignTextPosition(rankString, scaledRankSize, scaledRankPos.x, scaledRankPos.y);
 		paramFontRenderer.DrawTextW(dc, rankString.c_str(),
 			centeredRankPos.x, centeredRankPos.y, scaledRankSize,
@@ -651,11 +662,26 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 			centeredBreakingBallBonusPos.x, centeredBreakingBallBonusPos.y, scaledBreakingBallSize,
 			breakingBallBonusFontData.color.x, breakingBallBonusFontData.color.y, breakingBallBonusFontData.color.z, breakingBallBonusFontData.color.w * alpha);
 
-		/*paramFontRenderer.DrawTextW(dc, std::to_string(passive).c_str(),
-			scaledPassivePos.x, scaledPassivePos.y, scaledPassiveSize,
-			passiveFontData.color.x, passiveFontData.color.y, passiveFontData.color.z, passiveFontData.color.w * alpha);*/
+		const std::string passiveBonusString = u8"初期配布能力 　";
+		DirectX::XMFLOAT2 centeredPassiveBonusPos = leftAlignTextPosition(passiveBonusString, scaledPassiveSize, scaledPassivePos.x, scaledPassivePos.y);
+		paramFontRenderer.DrawTextW(dc, passiveBonusString.c_str(),
+			centeredPassiveBonusPos.x, centeredPassiveBonusPos.y, scaledPassiveSize,
+			passiveFontData.color.x, passiveFontData.color.y, passiveFontData.color.z, passiveFontData.color.w * alpha);
 
-		
+		if(totalRank >= 3)
+		{
+			const std::string notPassiveBonusString = u8"なし";
+			DirectX::XMFLOAT2 centeredNotPassiveBonusPos = leftAlignTextPosition(notPassiveBonusString, scaledNotPassiveSize, scaledNotPassivePos.x, scaledNotPassivePos.y);
+			paramFontRenderer.DrawTextW(dc, notPassiveBonusString.c_str(),
+				centeredNotPassiveBonusPos.x, centeredNotPassiveBonusPos.y, scaledNotPassiveSize,
+				notPassiveFontData.color.x, notPassiveFontData.color.y, notPassiveFontData.color.z, notPassiveFontData.color.w * alpha);
+
+			const std::string passiveParamString = u8"初期能力はランク2以下のバッターのみ配布";
+			DirectX::XMFLOAT2 centeredPassiveParamPos = leftAlignTextPosition(passiveParamString, scaledPassiveParamSize, scaledPassiveParamPos.x, scaledPassiveParamPos.y);
+			paramFontRenderer.DrawTextW(dc, passiveParamString.c_str(),
+				centeredPassiveParamPos.x, centeredPassiveParamPos.y, scaledPassiveParamSize,
+				passiveParamFontData.color.x, passiveParamFontData.color.y, passiveParamFontData.color.z, passiveParamFontData.color.w * alpha);
+		}
 	}
 }
 
@@ -1010,6 +1036,42 @@ void ScrollView::DrawGUI()
 				ImGui::ColorEdit4("Contact Rank Font Color", &contactRankFontData.color.x);
 			}
 			
+			if(ImGui::CollapsingHeader("Rank Font"))
+			{
+				ImGui::DragFloat2("Rank Font Position", &rankFontData.position.x, 1.0f);
+				ImGui::DragFloat("Rank Font Scale", &rankFontData.scale, 0.01f, 0.1f, 10.0f);
+				ImGui::ColorEdit4("Rank Font Color", &rankFontData.color.x);
+			}
+			if(ImGui::CollapsingHeader("Homerun Bonus Font"))
+			{
+				ImGui::DragFloat2("Homerun Bonus Font Position", &homerunBonusFontData.position.x, 1.0f);
+				ImGui::DragFloat("Homerun Bonus Font Scale", &homerunBonusFontData.scale, 0.01f, 0.1f, 10.0f);
+				ImGui::ColorEdit4("Homerun Bonus Font Color", &homerunBonusFontData.color.x);
+			}
+			if(ImGui::CollapsingHeader("Breaking Ball Bonus Font"))
+			{
+				ImGui::DragFloat2("Breaking Ball Bonus Font Position", &breakingBallBonusFontData.position.x, 1.0f);
+				ImGui::DragFloat("Breaking Ball Bonus Font Scale", &breakingBallBonusFontData.scale, 0.01f, 0.1f, 10.0f);
+				ImGui::ColorEdit4("Breaking Ball Bonus Font Color", &breakingBallBonusFontData.color.x);
+			}
+			if(ImGui::CollapsingHeader("Passive Font"))
+			{
+				ImGui::DragFloat2("Passive Font Position", &passiveFontData.position.x, 1.0f);
+				ImGui::DragFloat("Passive Font Scale", &passiveFontData.scale, 0.01f, 0.1f, 10.0f);
+				ImGui::ColorEdit4("Passive Font Color", &passiveFontData.color.x);
+			}
+			if(ImGui::CollapsingHeader("Passive Param Font"))
+			{
+				ImGui::DragFloat2("Passive Param Font Position", &passiveParamFontData.position.x, 1.0f);
+				ImGui::DragFloat("Passive Param Font Scale", &passiveParamFontData.scale, 0.01f, 0.1f, 10.0f);
+				ImGui::ColorEdit4("Passive Param Font Color", &passiveParamFontData.color.x);
+			}
+			if(ImGui::CollapsingHeader("Not Passive Font"))
+			{
+				ImGui::DragFloat2("Not Passive Font Position", &notPassiveFontData.position.x, 1.0f);
+				ImGui::DragFloat("Not Passive Font Scale", &notPassiveFontData.scale, 0.01f, 0.1f, 10.0f);
+				ImGui::ColorEdit4("Not Passive Font Color", &notPassiveFontData.color.x);
+			}
 			
 		}
 
@@ -1080,7 +1142,22 @@ void ScrollView::SaveToJson(nlohmann::json& json)
 		{"contactFontColor", {contactFontData.color.x, contactFontData.color.y, contactFontData.color.z, contactFontData.color.w}},
 		{"contactRankFontPosition", {contactRankFontData.position.x, contactRankFontData.position.y}},
 		{"contactRankFontScale", contactRankFontData.scale},
-		{"contactRankFontColor", {contactRankFontData.color.x, contactRankFontData.color.y, contactRankFontData.color.z, contactRankFontData.color.w}}
+		{"contactRankFontColor", {contactRankFontData.color.x, contactRankFontData.color.y, contactRankFontData.color.z, contactRankFontData.color.w}},
+		{"rankFontPosition", {rankFontData.position.x, rankFontData.position.y}},
+		{"rankFontScale", rankFontData.scale},
+		{"rankFontColor", {rankFontData.color.x, rankFontData.color.y, rankFontData.color.z, rankFontData.color.w}},
+		{"homerunBonusFontPosition", {homerunBonusFontData.position.x, homerunBonusFontData.position.y}},
+		{"homerunBonusFontScale", homerunBonusFontData.scale},
+		{"homerunBonusFontColor", {homerunBonusFontData.color.x, homerunBonusFontData.color.y, homerunBonusFontData.color.z, homerunBonusFontData.color.w}},
+		{"breakingBallBonusFontPosition", {breakingBallBonusFontData.position.x, breakingBallBonusFontData.position.y}},
+		{"breakingBallBonusFontScale", breakingBallBonusFontData.scale},
+		{"breakingBallBonusFontColor", {breakingBallBonusFontData.color.x, breakingBallBonusFontData.color.y, breakingBallBonusFontData.color.z, breakingBallBonusFontData.color.w}},
+		{"passiveFontPosition", {passiveFontData.position.x, passiveFontData.position.y}},
+		{"passiveFontScale", passiveFontData.scale},
+		{"passiveFontColor", {passiveFontData.color.x, passiveFontData.color.y, passiveFontData.color.z, passiveFontData.color.w}},
+		{"passiveParamFontPosition", {passiveParamFontData.position.x, passiveParamFontData.position.y}},
+		{"passiveParamFontScale", passiveParamFontData.scale},
+		{"passiveParamFontColor", {passiveParamFontData.color.x, passiveParamFontData.color.y, passiveParamFontData.color.z, passiveParamFontData.color.w}}
 	};
 }
 
@@ -1255,6 +1332,86 @@ void ScrollView::LoadFromJson(const nlohmann::json& json)
 			contactRankFontData.color.y = fontSettingsJson["contactRankFontColor"][1].get<float>();
 			contactRankFontData.color.z = fontSettingsJson["contactRankFontColor"][2].get<float>();
 			contactRankFontData.color.w = fontSettingsJson["contactRankFontColor"][3].get<float>();
+		}
+		if(fontSettingsJson.contains("rankFontPosition"))
+		{
+			rankFontData.position.x = fontSettingsJson["rankFontPosition"][0].get<float>();
+			rankFontData.position.y = fontSettingsJson["rankFontPosition"][1].get<float>();
+		}
+		if (fontSettingsJson.contains("rankFontScale"))
+		{
+			rankFontData.scale = fontSettingsJson["rankFontScale"].get<float>();
+		}
+		if (fontSettingsJson.contains("rankFontColor"))
+		{
+			rankFontData.color.x = fontSettingsJson["rankFontColor"][0].get<float>();
+			rankFontData.color.y = fontSettingsJson["rankFontColor"][1].get<float>();
+			rankFontData.color.z = fontSettingsJson["rankFontColor"][2].get<float>();
+			rankFontData.color.w = fontSettingsJson["rankFontColor"][3].get<float>();
+		}
+		if(fontSettingsJson.contains("homerunBonusFontPosition"))
+		{
+			homerunBonusFontData.position.x = fontSettingsJson["homerunBonusFontPosition"][0].get<float>();
+			homerunBonusFontData.position.y = fontSettingsJson["homerunBonusFontPosition"][1].get<float>();
+		}
+		if (fontSettingsJson.contains("homerunBonusFontScale"))
+		{
+			homerunBonusFontData.scale = fontSettingsJson["homerunBonusFontScale"].get<float>();
+		}
+		if (fontSettingsJson.contains("homerunBonusFontColor"))
+		{
+			homerunBonusFontData.color.x = fontSettingsJson["homerunBonusFontColor"][0].get<float>();
+			homerunBonusFontData.color.y = fontSettingsJson["homerunBonusFontColor"][1].get<float>();
+			homerunBonusFontData.color.z = fontSettingsJson["homerunBonusFontColor"][2].get<float>();
+			homerunBonusFontData.color.w = fontSettingsJson["homerunBonusFontColor"][3].get<float>();
+		}
+		if(fontSettingsJson.contains("breakingBallBonusFontPosition"))
+		{
+			breakingBallBonusFontData.position.x = fontSettingsJson["breakingBallBonusFontPosition"][0].get<float>();
+			breakingBallBonusFontData.position.y = fontSettingsJson["breakingBallBonusFontPosition"][1].get<float>();
+		}
+		if (fontSettingsJson.contains("breakingBallBonusFontScale"))
+		{
+			breakingBallBonusFontData.scale = fontSettingsJson["breakingBallBonusFontScale"].get<float>();
+		}
+		if (fontSettingsJson.contains("breakingBallBonusFontColor"))
+		{
+			breakingBallBonusFontData.color.x = fontSettingsJson["breakingBallBonusFontColor"][0].get<float>();
+			breakingBallBonusFontData.color.y = fontSettingsJson["breakingBallBonusFontColor"][1].get<float>();
+			breakingBallBonusFontData.color.z = fontSettingsJson["breakingBallBonusFontColor"][2].get<float>();
+			breakingBallBonusFontData.color.w = fontSettingsJson["breakingBallBonusFontColor"][3].get<float>();
+		}
+		if(fontSettingsJson.contains("passiveFontPosition"))
+		{
+			passiveFontData.position.x = fontSettingsJson["passiveFontPosition"][0].get<float>();
+			passiveFontData.position.y = fontSettingsJson["passiveFontPosition"][1].get<float>();
+		}
+		if (fontSettingsJson.contains("passiveFontScale"))
+		{
+			passiveFontData.scale = fontSettingsJson["passiveFontScale"].get<float>();
+		}
+		if (fontSettingsJson.contains("passiveFontColor"))
+		{
+			passiveFontData.color.x = fontSettingsJson["passiveFontColor"][0].get<float>();
+			passiveFontData.color.y = fontSettingsJson["passiveFontColor"][1].get<float>();
+			passiveFontData.color.z = fontSettingsJson["passiveFontColor"][2].get<float>();
+			passiveFontData.color.w = fontSettingsJson["passiveFontColor"][3].get<float>();
+		}
+		if(fontSettingsJson.contains("passiveParamFontPosition"))
+		{
+			passiveParamFontData.position.x = fontSettingsJson["passiveParamFontPosition"][0].get<float>();
+			passiveParamFontData.position.y = fontSettingsJson["passiveParamFontPosition"][1].get<float>();
+		}
+		if (fontSettingsJson.contains("passiveParamFontScale"))
+		{
+			passiveParamFontData.scale = fontSettingsJson["passiveParamFontScale"].get<float>();
+		}
+		if (fontSettingsJson.contains("passiveParamFontColor"))
+		{
+			passiveParamFontData.color.x = fontSettingsJson["passiveParamFontColor"][0].get<float>();
+			passiveParamFontData.color.y = fontSettingsJson["passiveParamFontColor"][1].get<float>();
+			passiveParamFontData.color.z = fontSettingsJson["passiveParamFontColor"][2].get<float>();
+			passiveParamFontData.color.w = fontSettingsJson["passiveParamFontColor"][3].get<float>();
 		}
 	}
 }

@@ -1416,7 +1416,7 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 			//}
 			
 			estimatedExitVelocity *= batterPowerScale;
-			//estimatedExitVelocity *= pitchPowerScale;
+			estimatedExitVelocity *= pitchPowerScale;
 			estimatedExitVelocity *= SpecialAbilityScale;
 			
 			// 2D判定の仰角を使用

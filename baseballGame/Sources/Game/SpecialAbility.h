@@ -3,7 +3,7 @@
 #include "sprite.h"
 #include "Player.h"
 
-#define ABILITY_COUNT 17
+#define ABILITY_COUNT 24
 #define BATTER_COUNT 24
 
 using json = nlohmann::json;
@@ -36,6 +36,13 @@ public:
 		Intimidation,//威圧感
 		VsFastBall,//対速球
 		VsBreakingBall,//対変化球
+		LateBloomer,//大器晩成
+		RapidGrowth,//急成長
+		Excavation,//発掘
+		WindBlessing,//風の加護
+		Sale,//割引セール
+		SelectEye,//選球眼
+		IndomitableSpirit,//不屈の精神
 		Count
 	};
 	static_assert(static_cast<int>(AbilityID::Count) == ABILITY_COUNT, "ABILITY_COUNTとenumの数が一致していません");
@@ -235,6 +242,42 @@ public:
 		}
 	}
 
+	//パッシブ能力をランダムで選ぶ
+	AbilityID GetRandomPassiveAbility()
+	{
+		// パッシブ能力のIDを収集
+		std::vector<AbilityID> passiveAbilities;
+
+		for (int i = 0; i < ABILITY_COUNT; ++i)
+		{
+			//所有していないパッシブ能力のみを対象にする
+			if (!abilities[i].isOwned && abilities[i].type == AbilityType::Passive)
+			{
+				passiveAbilities.push_back(static_cast<AbilityID>(i));
+			}
+		}
+		//パッシブ能力が存在する場合はランダムで1つ選ぶ
+		if (!passiveAbilities.empty())
+		{
+			std::uniform_int_distribution<int> dist(0, static_cast<int>(passiveAbilities.size()) - 1);
+			return passiveAbilities[dist(rng)];
+
+		}
+		return AbilityID::Count; // パッシブ能力がない場合はCountを返す
+	}
+
+	//パッシブ能力の所持状態をクリアする
+	void ClearPassiveAbilities()
+	{
+		for (int i = 0; i < ABILITY_COUNT; ++i)
+		{
+			if (abilities[i].type == AbilityType::Passive)
+			{
+				abilities[i].isOwned = false;
+			}
+		}
+	}
+
 private:
 
 	//テクスチャ関連
@@ -303,6 +346,7 @@ private:
 		PowerContact, // 打撃力・ミート力系能力
 		Situation,    // 状況系能力
 		PitcherPenalty, // 投手へのペナルティ系能力
+		Passive,      // パッシブ系能力
 	};
 
 	struct AbilityData
@@ -338,6 +382,10 @@ private:
 
 		AbilityType type = AbilityType::None; // 能力のタイプ
 
+		float shopAppearanceRate = 0.0f; // ショップでの出現率
+		float shopDiscountRate = 0.0f; // ショップでの割引率
+		int addBallCount = 0; // 追加ボール数
+
 	};
 
 	AbilityData abilities[ABILITY_COUNT];
@@ -360,7 +408,9 @@ private:
 	bool ComboCount() const;//連発判定
 	bool IsLastStandCondition() const;//背水の陣判定
 	bool IsHomeRunCondition() const;//ホームラン判定
-
+	//現在のラウンドを取得する関数
+	int GetCurrentRound() const;
+	bool IsGameOver() const; // ゲームオーバー判定
 public:
 	// コンソールログへのポインタをセット
 	void SetConsoleLog(std::vector<std::string>* log) { consoleLog = log; }

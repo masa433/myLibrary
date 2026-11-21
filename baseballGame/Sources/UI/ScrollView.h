@@ -66,6 +66,8 @@ private:
 	BatterParamFontData homerunBonusFontData;
 	BatterParamFontData breakingBallBonusFontData;
 	BatterParamFontData passiveFontData;
+	BatterParamFontData passiveParamFontData;
+	BatterParamFontData notPassiveFontData;
 
 	//スクロール背景スプライトデータ
 	struct ScrollBackData
@@ -186,7 +188,7 @@ private:
 	Player::RealBatter selectedBatter = Player::RealBatter::None; // 選択されたバッターの種類
 	int selectedBatterIndex = -1; // 選択されたバッターのインデックス
 
-	DirectX::XMFLOAT2 showBatterParamPosition = { 300.0f, 100.0f }; // バッターのパラメータ表示位置
+	DirectX::XMFLOAT2 showBatterParamPosition = { 200.0f, 100.0f }; // バッターのパラメータ表示位置
 	DirectX::XMFLOAT2 showBatterParamSize = { 600.0f, 800.0f }; // バッターのパラメータ表示サイズ
 
 	bool showBatterButton = false;

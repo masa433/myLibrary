@@ -111,6 +111,17 @@ bool SpecialAbility::IsHomeRunCondition() const
 		|| Ball::Instance().GetHasCollidedWithPole();
 }
 
+//現在のラウンドを取得する関数
+int SpecialAbility::GetCurrentRound() const
+{
+	return RoundManager::Instance().GetCurrentRound();
+}
+
+bool SpecialAbility::IsGameOver() const
+{
+	return RoundManager::Instance().IsGameOver();
+}
+
 void SpecialAbility::Initialize(ID3D11Device* device)
 {
 	if (!device) return;
@@ -193,10 +204,13 @@ void SpecialAbility::InitializeAbilities(ID3D11Device* device, ID3D11DeviceConte
 		abilitySprites[i]->descriptionSprite = std::make_unique<sprite>(device, context, abilitySprites[i]->descriptionSpriteData->texturePath.c_str());
 	}
 
-	//すべての能力を未所持状態にする
+	//パッシブ以外のすべての能力を未所持にする
 	for (int i = 0; i < ABILITY_COUNT; ++i)
 	{
-		abilities[i].isOwned = false;
+		if(abilities[i].type != AbilityType::Passive)
+		{
+			abilities[i].isOwned = false;
+		}
 	}
 }
 
@@ -389,6 +403,69 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::VsBreakingBall].ballSpeedPenalty = 10.0f; // ペナルティとして球速を下げる
 	a[(int)AbilityID::VsBreakingBall].ballPenaltyCondition = [this]() { return IsFastBall(); }; // 速球の条件でペナルティ
 	a[(int)AbilityID::VsBreakingBall].type = AbilityType::PitchType;
+
+	//大器晩成
+	a[(int)AbilityID::LateBloomer].name = u8"大器晩成";
+	a[(int)AbilityID::LateBloomer].texturePath = L".\\resources\\textures\\specialAbilityList\\lateBloomer.png";
+	a[(int)AbilityID::LateBloomer].descriptionPath = L".\\resources\\textures\\abilityDescription\\lateBloomer.png";
+	a[(int)AbilityID::LateBloomer].power = 2.0f;
+	a[(int)AbilityID::LateBloomer].contact = 2.0f;
+	a[(int)AbilityID::LateBloomer].activationRate = 100.0f;
+	a[(int)AbilityID::LateBloomer].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::LateBloomer].type = AbilityType::Passive;
+
+	//急成長
+	a[(int)AbilityID::RapidGrowth].name = u8"急成長";
+	a[(int)AbilityID::RapidGrowth].texturePath = L".\\resources\\textures\\specialAbilityList\\rapidGrowth.png";
+	a[(int)AbilityID::RapidGrowth].descriptionPath = L".\\resources\\textures\\abilityDescription\\rapidGrowth.png";
+	a[(int)AbilityID::RapidGrowth].power = 5.0f;
+	a[(int)AbilityID::RapidGrowth].contact = 5.0f;
+	a[(int)AbilityID::RapidGrowth].activationRate = 100.0f;
+	a[(int)AbilityID::RapidGrowth].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::RapidGrowth].type = AbilityType::Passive;
+
+	//発掘
+	a[(int)AbilityID::Excavation].name = u8"発掘";
+	a[(int)AbilityID::Excavation].texturePath = L".\\resources\\textures\\specialAbilityList\\excavation.png";
+	a[(int)AbilityID::Excavation].descriptionPath = L".\\resources\\textures\\abilityDescription\\excavation.png";
+	a[(int)AbilityID::Excavation].shopAppearanceRate = 5.0f; // ショップでの出現率上昇値
+	a[(int)AbilityID::Excavation].activationRate = 100.0f;
+	a[(int)AbilityID::Excavation].condition = [this]() { return GetCurrentRound() <= 3; }; //3ラウンド目まで発動
+	a[(int)AbilityID::Excavation].type = AbilityType::Passive;
+
+	//風の加護
+	a[(int)AbilityID::WindBlessing].name = u8"風の加護";
+	a[(int)AbilityID::WindBlessing].texturePath = L".\\resources\\textures\\specialAbilityList\\windBlessing.png";
+	a[(int)AbilityID::WindBlessing].descriptionPath = L".\\resources\\textures\\abilityDescription\\windBlessing.png";
+	a[(int)AbilityID::WindBlessing].activationRate = 100.0f;
+	a[(int)AbilityID::WindBlessing].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::WindBlessing].type = AbilityType::Passive;
+
+	//割引セール
+	a[(int)AbilityID::Sale].name = u8"割引セール";
+	a[(int)AbilityID::Sale].texturePath = L".\\resources\\textures\\specialAbilityList\\Sale.png";
+	a[(int)AbilityID::Sale].descriptionPath = L".\\resources\\textures\\abilityDescription\\Sale.png";
+	a[(int)AbilityID::Sale].shopDiscountRate = 30.0f; // ショップでの割引率
+	a[(int)AbilityID::Sale].activationRate = 100.0f;
+	a[(int)AbilityID::Sale].condition = [this]() { return GetCurrentRound() <= 3; }; // 常に発動可能
+	a[(int)AbilityID::Sale].type = AbilityType::Passive;
+
+	//選球眼
+	a[(int)AbilityID::SelectEye].name = u8"選球眼";
+	a[(int)AbilityID::SelectEye].texturePath = L".\\resources\\textures\\specialAbilityList\\eyeForPitches.png";
+	a[(int)AbilityID::SelectEye].descriptionPath = L".\\resources\\textures\\abilityDescription\\eyeForPitches.png";
+	a[(int)AbilityID::SelectEye].activationRate = 100.0f;
+	a[(int)AbilityID::SelectEye].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::SelectEye].type = AbilityType::Passive;
+
+	//不屈の精神
+	a[(int)AbilityID::IndomitableSpirit].name = u8"不屈の精神";
+	a[(int)AbilityID::IndomitableSpirit].texturePath = L".\\resources\\textures\\specialAbilityList\\indomitableSpirit.png";
+	a[(int)AbilityID::IndomitableSpirit].descriptionPath = L".\\resources\\textures\\abilityDescription\\indomitableSpirit.png";
+	a[(int)AbilityID::IndomitableSpirit].addBallCount = 5;
+	a[(int)AbilityID::IndomitableSpirit].activationRate = 100.0f;
+	a[(int)AbilityID::IndomitableSpirit].condition = [this]() { return IsGameOver(); }; // 常に発動可能
+	a[(int)AbilityID::IndomitableSpirit].type = AbilityType::Passive;
 }
 
 void SpecialAbility::Uninitialize()

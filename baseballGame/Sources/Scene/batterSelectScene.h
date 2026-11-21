@@ -7,9 +7,13 @@
 #include "sprite.h"
 #include "Pitcher.h"
 #include "Hextransitioneffect.h"
+#include "SpecialAbility.h"
 
 #define PITCHER_IMAGE_COUNT 4 // ピッチャー画像の数
 #define PITCHER_COUNT 21 // ピッチャーの数
+
+//パッシブ能力の数
+#define PASSIVE_ABILITY_COUNT 7 // 仮の数値、実際の数に置き換えてください
 
 using json = nlohmann::json;
 
@@ -157,10 +161,10 @@ private:
 	bool isChangingScene = false; // 設定がロードされたかどうかのフラグ
 	bool isTitleChanging = false; // タイトルに戻る処理中かどうかのフラグ
 
-	DirectX::XMFLOAT2 modalPitcherPos = { 300.0f,100.0f };
+	DirectX::XMFLOAT2 modalPitcherPos = { 200.0f,150.0f };
 	DirectX::XMFLOAT2 modalPitcherSize = { 600.0f,800.0f };
 
-	DirectX::XMFLOAT2 modalBurstPosition = { 600.0f,550.0f };
+	DirectX::XMFLOAT2 modalBurstPosition = { 500.0f,550.0f };
 	DirectX::XMFLOAT2 modalBurstSize = { 700.0f,700.0f };
 
 	int currentChangePitcherCount = 0;
@@ -170,4 +174,6 @@ private:
 	bool initializationFailed = false;
 	int previousPitcherIndex = -1; // 前回のピッチャーのインデックスを保持する変数
 	bool showGUI = false; // GUIを表示するかどうかのフラグ
+
+	std::vector<SpecialAbility::AbilityID> passiveAbilities;
 };

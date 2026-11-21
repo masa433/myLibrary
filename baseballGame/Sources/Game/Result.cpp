@@ -10,6 +10,7 @@
 #include "GameModeManager.h"
 #include "ballCount.h"
 #include "SubMission.h"
+#include "SpecialAbility.h"
 
 void Result::Initialize(ID3D11Device* device)
 {
@@ -255,6 +256,7 @@ void Result::Update(float elapsedTime)
 					buttonManager.ResetTitleRequest(false);
 					currentState = State::Transition;
 					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
+					SpecialAbility::Instance().ClearPassiveAbilities(); //パッシブ能力をクリア
 
 				}
 				if (buttonManager.IsRetryRequested() && GameModeManager::Instance().GetCurrentMode() == GameMode::FreeBatting)
@@ -294,6 +296,7 @@ void Result::Update(float elapsedTime)
 					buttonManager.ResetBatterSelectRequest(false);
 					currentState = State::Transition;
 					hasEnteredResult = false; // 次のプレイでまた検知できるようにリセット
+					SpecialAbility::Instance().ClearPassiveAbilities(); //パッシブ能力をクリア
 
 				}
 			}
