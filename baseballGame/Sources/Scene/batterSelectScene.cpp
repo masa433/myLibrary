@@ -190,7 +190,10 @@ void batterSelectScene::initialize()
 	specialAbility.BuildAbility();
 	specialAbility.InitializeAbilities(device, context);
 	//選ばれた初期能力を所持する
-	specialAbility.SetOwned(specialAbility.GetRandomPassiveAbility(), true);
+
+	passiveAbilities = specialAbility.GetRandomPassiveAbility();
+
+	specialAbility.SetOwned(passiveAbilities, true);
 	if(specialAbility.GetOwnedAbilities().size() > 0)
 	{
 		OutputDebugStringA("Owned Abilities:\n");
@@ -681,7 +684,17 @@ void batterSelectScene::render(float elapsedTime)
 
 		if (currentState == SequenceState::ShowBatterParam)
 		{
+
+			//選ばれたパッシブ能力を描画する
+			SpecialAbility& specialAbility = SpecialAbility::Instance();
+			if (playerScrollView->GetBatterRank(Player::Instance().GetSelectedRealBatterRank()) <= 2)
+			{
+				specialAbility.RenderAbilityIcons(passiveAbilities, abilityIconPosition, abilityIconSize, false);
+			}
+
 			if (playerScrollView) playerScrollView->RenderBatterImage(dc, batterImageAlpha); // この中でVS/PS/InputLayoutがnullptrに戻る
+
+			
 		}
 
 		////選択されたピッチャーのスプライトを描画

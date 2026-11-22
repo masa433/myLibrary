@@ -281,11 +281,15 @@ public:
             return BatterContactRank::F; //Fランクに統一
 	}
 
+	int GetSelectedRealBatterRank() const { return realBatterRank; }
+
     struct RealArsenalInfo
     {
 		int power = 0; // 威力
         int contact = 0; // ミート
     };
+
+	int realBatterRank = 0; // 選択された実在打者のランク（1～5）
 
 	void SelectRealBatter(RealBatter batter);
 	RealBatter GetSelectedRealBatter() const { return selectedRealBatter; }
@@ -319,7 +323,7 @@ private:
 	std::vector<RealArsenalInfo> realBatterInfo;
 
 public:
-    static bool GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo>& outArsenal, bool& outIsRight, const char*& outName);
+    static bool GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo>& outArsenal, bool& outIsRight, const char*& outName, int& outRank);
 
    
 	void SetShowSwingTimingSprite(bool show) { showSwingTimingSprite = show; }
@@ -333,6 +337,7 @@ public:
         int contact;
         bool isRightBatter;
 		int id;
+		int rank;
 	};
 
 private:

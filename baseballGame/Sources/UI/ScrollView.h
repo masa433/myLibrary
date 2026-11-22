@@ -255,6 +255,21 @@ public:
 		currentState = state;
 	}
 
+	//ランクを取得
+	BatterRank GetBatterRank(int rank)
+	{
+		switch (rank)
+		{
+		case 0: return BatterRank::Rank0;
+		case 1: return BatterRank::Rank1;
+		case 2: return BatterRank::Rank2;
+		case 3: return BatterRank::Rank3;
+		case 4: return BatterRank::Rank4;
+		case 5: return BatterRank::Rank5;
+		default: return BatterRank::Rank0; // デフォルトはランク0
+		}
+	}
+
 private:
 	AudioSource* clickNameButton = nullptr;
 	AudioSource* hoverArrow = nullptr;

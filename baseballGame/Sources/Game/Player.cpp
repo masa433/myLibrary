@@ -44,6 +44,7 @@ namespace
                 data.contact = item.value().at("contact").get<int>();
                 data.isRightBatter = item.value().at("isRightBatter").get<bool>();
 				data.id = item.value().at("id").get<int>();
+				data.rank = item.value().at("rank").get<int>();
                 if(data.id <= 0 || data.id >= static_cast<int>(Player::RealBatter::Count))
                 {
                     throw std::runtime_error("Invalid id value in RealBatterData.json");
@@ -788,6 +789,13 @@ void Player::DrawGUI()
                 BatSprite::Instance().UpdateCursorSizeByContact(static_cast<int>(contact));
 			}
 		}
+        ImGui::Text(u8"バッターランク: ");
+        ImGui::SameLine();
+        for (int i = 0; i < 5; ++i)
+        {
+            ImGui::SameLine(0.0f, 2.0f);
+            ImGui::TextColored(i < realBatterRank ? ImVec4(1.0f, 1.0f, 0.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 1.0f), u8"★");
+        }
     }
 
 	ImGui::Text("currentState: %s", (current_state == State::BattingIdle) ? "BattingIdle" : (current_state == State::BeforeSwing) ? "BeforeSwing" : (current_state == State::Swinging) ? "Swinging" : (current_state == State::StepIn) ? "StepIn" : "Unknown");
@@ -1298,12 +1306,12 @@ void Player::UpdateChildrenRecursive(int nodeIndex)
 }
 
 
-bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo>& outArsenal, bool& outIsRight, const char*& outName)
+bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo>& outArsenal, bool& outIsRight, const char*& outName, int& outRank)
 {
     outArsenal.clear();
     outIsRight = true;
     outName = "";
-
+	outRank = std::clamp(outRank, 1, 5); // ランクを1～5の範囲に制限
     //JSONデータの読み込み
 	const auto& json = GetRealBatterDataMap();// JSONデータのマップを取得
     auto it = json.find(rb);
@@ -1313,6 +1321,7 @@ bool Player::GetRealBatterArsenalData(RealBatter rb, std::vector<RealArsenalInfo
 	outName = it->second.name.c_str();//バッターの名前を取得
 	outIsRight = it->second.isRightBatter;//バッターの利き手情報を取得
 	outArsenal = { { it->second.power, it->second.contact} };//バッターのパワーとミートを取得
+	outRank = it->second.rank; // バッターのランクを取得
     return true;
 
  
@@ -1324,6 +1333,7 @@ void Player::SelectRealBatter(RealBatter rb)
     if(rb == RealBatter::None)
     {
         realBatterInfo.clear();
+		realBatterRank = 0;
         if (consoleLog)
         {
             consoleLog->push_back(u8"[Info] 実在打者プリセットを解除しました\n");
@@ -1334,16 +1344,20 @@ void Player::SelectRealBatter(RealBatter rb)
 	std::vector<RealArsenalInfo> arsenal;
     bool isRight = true;
     const char* name = "";
+    int rank = 0;
     //実在打者のアーセナルデータを取得
-    if (!GetRealBatterArsenalData(rb, arsenal, isRight, name))
+	// もし取得できなければ、選択を解除する
+    if (!GetRealBatterArsenalData(rb, arsenal, isRight, name, rank))
     {
         selectedRealBatter = RealBatter::None;
         realBatterInfo.clear();
+		realBatterRank = 0;
         return;
     }
 
 	//利き手を設定
 	realBatterInfo = arsenal;
+	realBatterRank = rank;//ランクを設定
 	baseBatterPower = GetSelectedRealBatterPower();//パワーを設定
 	baseBatterContact = GetSelectedRealBatterContact();//ミートを設定
 

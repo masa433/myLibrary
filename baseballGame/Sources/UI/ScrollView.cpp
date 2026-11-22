@@ -490,9 +490,8 @@ void ScrollView::Render(float alpha)
 					break;
 			}
 
-			totalRank = static_cast<int>(powerRank) + static_cast<int>(contactRank);
-
-			switch (totalRank)
+			
+			switch (Player::Instance().GetSelectedRealBatterRank())
 			{
 			case BatterRank::Rank0:
 				homerunBonus = 1.5f;
@@ -643,7 +642,7 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 				return { x, y - textHeight / 2.0f };
 			};
 
-		const std::string rankString = u8"ƒ‰ƒ“ƒN:  " + std::to_string(totalRank);
+		const std::string rankString = u8"ƒ‰ƒ“ƒN:  " + std::to_string(Player::Instance().GetSelectedRealBatterRank());
 		DirectX::XMFLOAT2 centeredRankPos = leftAlignTextPosition(rankString, scaledRankSize, scaledRankPos.x, scaledRankPos.y);
 		paramFontRenderer.DrawTextW(dc, rankString.c_str(),
 			centeredRankPos.x, centeredRankPos.y, scaledRankSize,
@@ -668,7 +667,7 @@ void ScrollView::RenderBatterImage(ID3D11DeviceContext* dc, float alpha)
 			centeredPassiveBonusPos.x, centeredPassiveBonusPos.y, scaledPassiveSize,
 			passiveFontData.color.x, passiveFontData.color.y, passiveFontData.color.z, passiveFontData.color.w * alpha);
 
-		if(totalRank >= 3)
+		if(Player::Instance().GetSelectedRealBatterRank() >= 3)
 		{
 			const std::string notPassiveBonusString = u8"‚È‚µ";
 			DirectX::XMFLOAT2 centeredNotPassiveBonusPos = leftAlignTextPosition(notPassiveBonusString, scaledNotPassiveSize, scaledNotPassivePos.x, scaledNotPassivePos.y);

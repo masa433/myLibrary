@@ -238,10 +238,8 @@ void Money::Initialize(ID3D11Device* device)
 	Player::BatterPowerRank powerRank = Player::Instance().GetPowerRank(power);
 	Player::BatterContactRank contactRank = Player::Instance().GetContactRank(contact);
 
-	//パワーとミートのランクを足して、その合計に応じて初期倍率を変える
-	int totalRankValue = static_cast<int>(powerRank) + static_cast<int>(contactRank);
-
-	switch (totalRankValue)
+	
+	switch (Player::Instance().GetSelectedRealBatterRank())
 	{
 	case BatterRank::Rank0:
 		SetHomeRunAndBreakingBallBonus(1.5f, 1.5f);
