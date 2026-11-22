@@ -89,6 +89,12 @@ public:
 				allAbilities.push_back(static_cast<AbilityID>(i));
 			}
 
+			//パッシブは除外する
+			if(abilities[i].type == AbilityType::Passive)
+			{
+				allAbilities.erase(std::remove(allAbilities.begin(), allAbilities.end(), static_cast<AbilityID>(i)), allAbilities.end());
+			}
+
 			//方向系、高低系、球種系は同タイプのものをすでに持っていたら除外する
 			if (abilities[i].type == AbilityType::Directional)
 			{
@@ -149,6 +155,8 @@ public:
 
 	//選択画面用のアイコンを描画する関数
 	void RenderAbilityIcons(AbilityID id, const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, bool isHighlighted);
+
+	void RenderPassiveAbilityIcons(AbilityID id, const DirectX::XMFLOAT2& iconPosition, const DirectX::XMFLOAT2& iconSize,const DirectX::XMFLOAT2& descriptionPosition,const DirectX::XMFLOAT2& descriptionSize);
 
 	const std::string& GetName(AbilityID id) const { return abilities[(int)id].name; }
 
@@ -388,6 +396,9 @@ private:
 
 	};
 
+	//パッシブの効果が適用されたかどうか
+	bool isPassiveEffectApplied = false;
+
 	AbilityData abilities[ABILITY_COUNT];
 
 	std::mt19937 rng{ std::random_device{}() }; // 乱数生成器
@@ -408,6 +419,7 @@ private:
 	bool ComboCount() const;//連発判定
 	bool IsLastStandCondition() const;//背水の陣判定
 	bool IsHomeRunCondition() const;//ホームラン判定
+	bool IsRoundClear() const; //ラウンドクリア判定
 	//現在のラウンドを取得する関数
 	int GetCurrentRound() const;
 	bool IsGameOver() const; // ゲームオーバー判定

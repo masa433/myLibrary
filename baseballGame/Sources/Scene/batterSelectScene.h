@@ -179,4 +179,6 @@ private:
 
 	DirectX::XMFLOAT2 abilityIconPosition = { 1500.0f, 100.0f };
 	DirectX::XMFLOAT2 abilityIconSize = { 100.0f, 100.0f };
+	DirectX::XMFLOAT2 abilityIconTextPosition = { 1500.0f, 210.0f };
+	DirectX::XMFLOAT2 abilityIconTextSize = { 200.0f, 50.0f };
 };

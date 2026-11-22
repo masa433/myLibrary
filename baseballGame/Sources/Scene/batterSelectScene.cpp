@@ -445,6 +445,7 @@ void batterSelectScene::update(float elapsed_time)
 					else if (isTitleChanging)
 					{
 						ChangeSceneBatterSelectToTitle();
+						SpecialAbility::Instance().ClearPassiveAbilities(); // タイトルに戻るときにパッシブ能力をクリア
 					}
 				}
 			}
@@ -689,7 +690,7 @@ void batterSelectScene::render(float elapsedTime)
 			SpecialAbility& specialAbility = SpecialAbility::Instance();
 			if (playerScrollView->GetBatterRank(Player::Instance().GetSelectedRealBatterRank()) <= 2)
 			{
-				specialAbility.RenderAbilityIcons(passiveAbilities, abilityIconPosition, abilityIconSize, false);
+				specialAbility.RenderPassiveAbilityIcons(passiveAbilities, abilityIconPosition, abilityIconSize, abilityIconTextPosition, abilityIconTextSize);
 			}
 
 			if (playerScrollView) playerScrollView->RenderBatterImage(dc, batterImageAlpha); // この中でVS/PS/InputLayoutがnullptrに戻る
@@ -867,6 +868,14 @@ void batterSelectScene::DrawGUI()
 			ImGui::DragFloat2("Size", &VSSize.x, 1.0f);
 			ImGui::ColorEdit4("Color", &VSColor.x);
 		}
+		if(ImGui::CollapsingHeader("Ability Icon"))
+		{
+			ImGui::DragFloat2("Position", &abilityIconPosition.x, 1.0f);
+			ImGui::DragFloat2("Size", &abilityIconSize.x, 1.0f);
+
+			ImGui::DragFloat2("Text Position", &abilityIconTextPosition.x, 1.0f);
+			ImGui::DragFloat2("Text Size", &abilityIconTextSize.x, 1.0f);
+		}
 
 		ImGui::End();
 	}
@@ -907,6 +916,14 @@ void batterSelectScene::SaveSetting()
 	VSJson["size"] = { VSSize.x, VSSize.y };
 	VSJson["color"] = { VSColor.x, VSColor.y, VSColor.z, VSColor.w };
 	j["VS"] = VSJson;
+
+	// Ability Iconの設定も保存
+	json abilityIconJson;
+	abilityIconJson["position"] = { abilityIconPosition.x, abilityIconPosition.y };
+	abilityIconJson["size"] = { abilityIconSize.x, abilityIconSize.y };
+	abilityIconJson["textPosition"] = { abilityIconTextPosition.x, abilityIconTextPosition.y };
+	abilityIconJson["textSize"] = { abilityIconTextSize.x, abilityIconTextSize.y };
+	j["abilityIcon"] = abilityIconJson;
 
 	// ファイルに保存
 	std::ofstream file("resources\\setting\\batterSelectSettings.json");
@@ -997,6 +1014,31 @@ void batterSelectScene::LoadSetting()
 			VSColor.y = VSJson["color"][1].get<float>();
 			VSColor.z = VSJson["color"][2].get<float>();
 			VSColor.w = VSJson["color"][3].get<float>();
+		}
+	}
+
+	if(j.contains("abilityIcon") && j["abilityIcon"].is_object())
+	{
+		const auto& abilityIconJson = j["abilityIcon"];
+		if (abilityIconJson.contains("position") && abilityIconJson["position"].is_array() && abilityIconJson["position"].size() == 2)
+		{
+			abilityIconPosition.x = abilityIconJson["position"][0].get<float>();
+			abilityIconPosition.y = abilityIconJson["position"][1].get<float>();
+		}
+		if (abilityIconJson.contains("size") && abilityIconJson["size"].is_array() && abilityIconJson["size"].size() == 2)
+		{
+			abilityIconSize.x = abilityIconJson["size"][0].get<float>();
+			abilityIconSize.y = abilityIconJson["size"][1].get<float>();
+		}
+		if (abilityIconJson.contains("textPosition") && abilityIconJson["textPosition"].is_array() && abilityIconJson["textPosition"].size() == 2)
+		{
+			abilityIconTextPosition.x = abilityIconJson["textPosition"][0].get<float>();
+			abilityIconTextPosition.y = abilityIconJson["textPosition"][1].get<float>();
+		}
+		if (abilityIconJson.contains("textSize") && abilityIconJson["textSize"].is_array() && abilityIconJson["textSize"].size() == 2)
+		{
+			abilityIconTextSize.x = abilityIconJson["textSize"][0].get<float>();
+			abilityIconTextSize.y = abilityIconJson["textSize"][1].get<float>();
 		}
 	}
 }

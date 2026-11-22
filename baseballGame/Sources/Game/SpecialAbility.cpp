@@ -122,6 +122,11 @@ bool SpecialAbility::IsGameOver() const
 	return RoundManager::Instance().IsGameOver();
 }
 
+bool SpecialAbility::IsRoundClear() const
+{
+	return RoundManager::Instance().IsRoundCleared();
+}
+
 void SpecialAbility::Initialize(ID3D11Device* device)
 {
 	if (!device) return;
@@ -172,7 +177,7 @@ void SpecialAbility::Initialize(ID3D11Device* device)
 	contactRankFontData.scale = 1.0f;
 	contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-
+	isPassiveEffectApplied = false;
 	InitializeAbilities(device, context);
 	ResetActivationRate();
 }
@@ -421,7 +426,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::RapidGrowth].power = 5.0f;
 	a[(int)AbilityID::RapidGrowth].contact = 5.0f;
 	a[(int)AbilityID::RapidGrowth].activationRate = 100.0f;
-	a[(int)AbilityID::RapidGrowth].condition = [this]() { return true; }; // 常に発動可能
+	a[(int)AbilityID::RapidGrowth].condition = [this]() { return GetCurrentRound() <= 3; }; //3ラウンド目まで発動
 	a[(int)AbilityID::RapidGrowth].type = AbilityType::Passive;
 
 	//発掘
@@ -508,7 +513,18 @@ void SpecialAbility::Update(float elapsedTime)
 	
 	for (auto& ability : abilities)
 	{
-		if (ability.isOwned && ability.isActiveThisRound && ability.condition && ability.condition())
+		//大器晩成と急成長は条件を満たせば、毎ラウンド発動するので、isActiveThisRoundをtrueにする
+		if ((ability.name == u8"大器晩成" || ability.name == u8"急成長") && ability.isOwned && ability.isActiveThisRound && ability.condition && ability.condition() && !isPassiveEffectApplied)
+		{
+			if (IsRoundClear())
+			{
+				Player::Instance().IncreaseBaseBatterPower(ability.power);
+				Player::Instance().IncreaseBaseBatterContact(ability.contact);
+				isPassiveEffectApplied = true;
+			}
+
+		}
+		if (ability.type != AbilityType::Passive && ability.isOwned && ability.isActiveThisRound && ability.condition && ability.condition())
 		{
 			powerBonus += ability.power;
 			contactBonus += ability.contact;
@@ -517,6 +533,8 @@ void SpecialAbility::Update(float elapsedTime)
 			pitcherBreakPenalty += static_cast<int>(ability.pitcherBreakBallPenalty);
 
 		}
+
+		
 	}
 
 	Player::Instance().ApplyRoundStatBonus(powerBonus + comboPowerBonus, contactBonus);
@@ -554,8 +572,8 @@ void SpecialAbility::Render()
 	{
 		if (abilities[i].isOwned && abilities[i].isActiveThisRound &&
 			((abilities[i].condition && abilities[i].condition()) ||
-				(abilities[i].ballCondition && abilities[i].ballCondition()) ||
-				(abilities[i].ballPenaltyCondition && abilities[i].ballPenaltyCondition())) 
+				(abilities[i].ballCondition) ||
+				(abilities[i].ballPenaltyCondition)) 
 			&& Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch && RoundManager::Instance().IsPlaying())
 		{
 			DirectX::XMFLOAT2 scaledIconPosition = screenScaler.Scale(abilitySprites[i]->iconPosition);
@@ -737,6 +755,41 @@ void SpecialAbility::RenderAbilityIcons(AbilityID id, const DirectX::XMFLOAT2& p
 	
 }
 
+void SpecialAbility::RenderPassiveAbilityIcons(AbilityID id, 
+	const DirectX::XMFLOAT2& iconPosition, const DirectX::XMFLOAT2& iconSize,
+	const DirectX::XMFLOAT2& descriptionPosition, const DirectX::XMFLOAT2& descriptionSize)
+{
+	ScreenScaler& screenScaler = Graphics::Instance().GetScreenScaler();
+
+	int index = static_cast<int>(id);
+	if (index < 0 || index >= ABILITY_COUNT) return;
+	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+	// ハイライトの色を設定
+	DirectX::XMFLOAT4 color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	DirectX::XMFLOAT2 hoverSize = iconSize;
+
+
+	abilitySprites[index]->iconSprite->render(dc,
+		iconPosition.x - hoverSize.x / 2.0f, iconPosition.y - hoverSize.y / 2.0f,
+		hoverSize.x, hoverSize.y,
+		color.x, color.y, color.z, color.w,
+		abilitySprites[index]->spriteData->rotation);
+
+	//ホバー中に、対応している能力の説明を描画する
+	
+	DirectX::XMFLOAT2 scaledDescriptionPosition = screenScaler.Scale(descriptionPosition);
+	DirectX::XMFLOAT2 scaledDescriptionSize = screenScaler.ScaleSize(descriptionSize);
+	DirectX::XMFLOAT2 scaledDescriptionCenterPosition = { scaledDescriptionPosition.x - scaledDescriptionSize.x / 2.0f, scaledDescriptionPosition.y - scaledDescriptionSize.y / 2.0f };
+
+	abilitySprites[index]->descriptionSprite->render(dc,
+		scaledDescriptionCenterPosition.x, scaledDescriptionCenterPosition.y,
+		scaledDescriptionSize.x, scaledDescriptionSize.y,
+		color.x, color.y, color.z, color.w,
+		abilitySprites[index]->spriteData->rotation);
+	
+}
+
 bool SpecialAbility::RollActivation(float ratePercent)
 {
 	if (ratePercent >= 100.0f) return true;
@@ -822,6 +875,7 @@ void SpecialAbility::RollRoundActivation()
 		if (ability.isOwned)
 		{
 			ability.isActiveThisRound = RollActivation(ability.activationRate);
+			isPassiveEffectApplied = false; // パッシブ効果の適用フラグをリセット
 		}
 		else
 		{
@@ -916,8 +970,8 @@ void SpecialAbility::TriggerShowAbilities()
 		auto& ability = abilities[i];
 		if (ability.isOwned && ability.isActiveThisRound
 			&& ((ability.condition && ability.condition()) || 
-				(ability.ballCondition && ability.ballCondition()) || 
-				(ability.ballPenaltyCondition && ability.ballPenaltyCondition())))
+				(ability.ballCondition) || 
+				(ability.ballPenaltyCondition)))
 		{
 			abilitySprites[i]->iconPosition = { startX, 1000.0f };
 			abilitySprites[i]->iconSize = { 180.0f, 30.0f };

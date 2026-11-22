@@ -5,6 +5,7 @@
 #include "SpecialAbility.h"
 #include "../Sources/Audio/AudioSource.h"
 #include "../Sources/Audio/Audio.h"
+#include "HomeRunCount.h"
 
 using json = nlohmann::json;
 
@@ -39,6 +40,12 @@ public:
 	bool IsGameOver() const {return isGameOver;}
 	bool IsGameClear() const { return isGameClear; }
 	int GetCurrentRound() const { return currentRound; }
+
+	//ラウンドをクリアしているかどうか
+	bool IsRoundCleared() const
+	{
+		return currentState == RoundState::Shop;
+	}
 	void ResetRoundManager()
 	{
 		currentRound = 1;

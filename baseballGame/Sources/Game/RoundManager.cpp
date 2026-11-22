@@ -4,7 +4,6 @@
 #include "shader.h"
 #include "ballCount.h"
 #include "Pitcher.h"
-#include "HomeRunCount.h"
 #include <Combo.h>	
 #include "input.h"
 #include "SubMission.h"

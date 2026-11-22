@@ -4,6 +4,7 @@
 #include "shader.h"
 #include "SettingManager.h"
 #include <sceneTransition.h>
+#include "SpecialAbility.h"
 
 void Pause::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
@@ -80,6 +81,7 @@ void Pause::Update(float elapsedTime)
 			buttonManager.ResetTitleRequest(false);
 			isChangingScene = true;
 			hexTransitionEffect.Start(1.0f); // 遷移アニメーションを開始
+			SpecialAbility::Instance().ClearPassiveAbilities(); // パッシブ能力をクリア
 		}
 	}
 	else
