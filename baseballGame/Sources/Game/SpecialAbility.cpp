@@ -452,7 +452,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::Sale].descriptionPath = L".\\resources\\textures\\abilityDescription\\Sale.png";
 	a[(int)AbilityID::Sale].shopDiscountRate = 30.0f; // ショップでの割引率
 	a[(int)AbilityID::Sale].activationRate = 100.0f;
-	a[(int)AbilityID::Sale].condition = [this]() { return GetCurrentRound() <= 3; }; // 常に発動可能
+	a[(int)AbilityID::Sale].condition = [this]() { return GetCurrentRound() <= 3; }; // 3ラウンド目まで発動
 	a[(int)AbilityID::Sale].type = AbilityType::Passive;
 
 	//選球眼
@@ -469,7 +469,7 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::IndomitableSpirit].descriptionPath = L".\\resources\\textures\\abilityDescription\\indomitableSpirit.png";
 	a[(int)AbilityID::IndomitableSpirit].addBallCount = 5;
 	a[(int)AbilityID::IndomitableSpirit].activationRate = 100.0f;
-	a[(int)AbilityID::IndomitableSpirit].condition = [this]() { return IsGameOver(); }; // 常に発動可能
+	a[(int)AbilityID::IndomitableSpirit].condition = [this]() { return IsGameOver(); }; // ゲームオーバー時に発動
 	a[(int)AbilityID::IndomitableSpirit].type = AbilityType::Passive;
 }
 
@@ -923,20 +923,46 @@ float SpecialAbility::GetShopAppearanceRate() const
 	float shopRateBonus = 0.0f;
 	for (auto& ability : abilities)
 	{
-		if (ability.isOwned && ability.isActiveThisRound)
+		if (ability.isOwned)
 		{
 			//ショップ出現率ボーナスを加算する条件をチェック
-			if (ability.condition && ability.condition() && IsRoundClear())
+			if (ability.condition && ability.condition())
 			{
-				shopRateBonus += ability.shopAppearanceRate;
-				if (consoleLog)
+				if (IsRoundClear())
 				{
-					consoleLog->push_back(u8"ショップ出現率ボーナス発動: " + ability.name);
+					shopRateBonus += ability.shopAppearanceRate;
+					if (consoleLog)
+					{
+						consoleLog->push_back(u8"ショップ出現率ボーナス発動: " + ability.name);
+					}
 				}
 			}
 		}
 	}
 	return shopRateBonus;
+}
+
+float SpecialAbility::GetShopDisCountRate() const
+{
+	float shopDiscountBonus = 0.0f;
+	for(auto& ability : abilities)
+	{
+		if(ability.isOwned)
+		{
+			if(ability.condition && ability.condition())
+			{
+				if (IsRoundClear())
+				{
+					shopDiscountBonus += (ability.shopDiscountRate / 100.0f);
+					if (consoleLog)
+					{
+						consoleLog->push_back(u8"ショップ割引率ボーナス発動: " + ability.name);
+					}
+				}
+			}
+		}
+	}
+	return shopDiscountBonus;
 }
 
 float SpecialAbility::GetMoneyMakerBonus() const

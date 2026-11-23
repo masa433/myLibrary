@@ -303,6 +303,9 @@ public:
 	//ショップの出現率上昇関数
 	float GetShopAppearanceRate() const;
 
+	//ショップの商品を割引する関数
+	float GetShopDisCountRate() const;
+
 	//風の加護を所持しているかどうか
 	bool HasWindBlessing() const
 	{

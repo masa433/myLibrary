@@ -798,6 +798,10 @@ void ShopManager::UpdateShopItem()
 		DirectX::XMFLOAT2 scaledItemSize = scaler.ScaleSize(shopItemSize);
 		float itemX = scaledItemPos.x - scaledItemSize.x / 2.0f;
 		float itemY = (scaledItemPos.y + currentOffsetY) - scaledItemSize.y / 2.0f;
+
+		float discountRate = SpecialAbility::Instance().GetShopDisCountRate();
+		int discountedPrice = static_cast<int>(item.price * (1.0f - discountRate));
+
 		if(mousePos.x >= itemX && mousePos.x <= itemX + scaledItemSize.x &&
 		   mousePos.y >= itemY && mousePos.y <= itemY + scaledItemSize.y && !slotPurchased[i])
 		{
@@ -810,9 +814,12 @@ void ShopManager::UpdateShopItem()
 
 			if(clicked)
 			{
-				if(Money::Instance().GetCurrentMoney() >= item.price && !slotPurchased[i])
+				
+
+				if(Money::Instance().GetCurrentMoney() >= discountedPrice && !slotPurchased[i])
 				{
-					Money::Instance().DecreaseMoney(item.price);
+					//30%Š„ˆø‚Ì“ÁŽê”\—Í‚ª—LŒø‚Èê‡A‰¿Ši‚ð30%Š„ˆø‚µ‚Äw“ü‚·‚é
+					Money::Instance().DecreaseMoney(discountedPrice);
 					purchaseSound->PlayOneShot();
 
 					if(isHalfPriceApplied || isFreePriceApplied)
@@ -839,7 +846,7 @@ void ShopManager::UpdateShopItem()
 						item.onButtonPressed();
 					}
 				}
-				else if (Money::Instance().GetCurrentMoney() < item.price || slotPurchased[i])// ‚¨‹à‚ª‘«‚è‚È‚¢ê‡A‚Ü‚½‚Í‚·‚Å‚Éw“üÏ‚Ý‚Ìê‡
+				else if (Money::Instance().GetCurrentMoney() < discountedPrice || slotPurchased[i])// ‚¨‹à‚ª‘«‚è‚È‚¢ê‡A‚Ü‚½‚Í‚·‚Å‚Éw“üÏ‚Ý‚Ìê‡
 				{
 					notEnoughMoneySound->PlayOneShot();
 				}
@@ -1353,13 +1360,16 @@ void ShopManager::Render()
 	//ƒVƒ‡ƒbƒvƒAƒCƒeƒ€‚Ì•`‰æ
 	for(int slotIndex = 0; slotIndex < SHOP_ITEM_DISPLAY_COUNT; ++slotIndex)
 	{
-
+		
 
 		if (slotIndex >= static_cast<int>(currentShopItemIndices.size())) break;
 
 		int itemIndex = currentShopItemIndices[slotIndex];
 		const ShopData& item = shopItems[itemIndex];
 		
+		float disCountRate = SpecialAbility::Instance().GetShopDisCountRate();
+		int discountedPrice = static_cast<int>(item.price * (1.0f - disCountRate));
+
 		if (!shopItemSpriteObjects[itemIndex]) continue;
 
 		DirectX::XMFLOAT2 scaledItemPos = screenScaler.Scale(shopItemPositions[slotIndex]);
@@ -1368,7 +1378,7 @@ void ShopManager::Render()
 		float drawY = (scaledItemPos.y + currentOffsetY) - scaledItemSize.y / 2.0f;
 
 		//ƒzƒo[Žž‚©w“ü‚Å‚«‚È‚¢ó‘Ô‚ÌŽž‚©w“üÏ‚Ý‚ÉF‚ð•Ï‚¦‚é
-		bool canPurchase = Money::Instance().GetCurrentMoney() >= item.price && !slotPurchased[slotIndex];
+		bool canPurchase = Money::Instance().GetCurrentMoney() >= discountedPrice && !slotPurchased[slotIndex];
 
 		float colorRGB = slotHover[slotIndex] ? 0.7f : (canPurchase ? 1.0f : 0.7f);
 
@@ -1382,7 +1392,7 @@ void ShopManager::Render()
 		//ƒAƒCƒeƒ€‚Ì‰¿Ši‚ð•`‰æ
 
 		float priceWidth, priceHeight;
-		std::string priceText = std::to_string(item.price);
+		std::string priceText = std::to_string(discountedPrice);
 
 		const float scaledPriceFontScale = priceFontScale * screenScaler.GetUniformScale();
 
