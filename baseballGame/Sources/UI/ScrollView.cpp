@@ -894,7 +894,7 @@ void ScrollView::Update(float elapsedTime)
 
 				//選ばれた初期能力を所持する
 				SpecialAbility& specialAbility = SpecialAbility::Instance();
-				if (Player::Instance().GetSelectedRealBatterRank() < 3)
+				if (Player::Instance().GetSelectedRealBatterRank() <= 2)
 				{
 					passiveAbilities = specialAbility.GetRandomPassiveAbility();
 
@@ -903,10 +903,23 @@ void ScrollView::Update(float elapsedTime)
 					{
 						OutputDebugStringA("Owned Abilities:\n");
 					}
+
+					
 				}
-				else 
+				else if (Player::Instance().GetSelectedRealBatterRank() > 2)
 				{
 					specialAbility.SetOwned(passiveAbilities, false);
+				}
+
+				//すでにパッシブ能力を持っていたら、現在のものと入れ替える
+				if (Player::Instance().GetSelectedRealBatterRank() <= 2 && specialAbility.GetOwnedAbilities().size() > 0)
+				{
+					specialAbility.SetOwned(passiveAbilities, false);
+					specialAbility.ReplacePassiveAbility(passiveAbilities);
+				}
+				else if(Player::Instance().GetSelectedRealBatterRank() > 2 && specialAbility.GetOwnedAbilities().size() > 0)
+				{
+					specialAbility.ClearPassiveAbilities();
 				}
 			}
 

@@ -863,6 +863,8 @@ void batterSelectScene::DrawGUI()
 			ImGui::DragFloat2("Text Size", &abilityIconTextSize.x, 1.0f);
 		}
 
+		SpecialAbility::Instance().DrawGUI();
+
 		ImGui::End();
 	}
 

@@ -918,6 +918,27 @@ float SpecialAbility::GetBallVelocityBonus() const
 	return ballSpeedBonus;
 }
 
+float SpecialAbility::GetShopAppearanceRate() const
+{
+	float shopRateBonus = 0.0f;
+	for (auto& ability : abilities)
+	{
+		if (ability.isOwned && ability.isActiveThisRound)
+		{
+			//ショップ出現率ボーナスを加算する条件をチェック
+			if (ability.condition && ability.condition() && IsRoundClear())
+			{
+				shopRateBonus += ability.shopAppearanceRate;
+				if (consoleLog)
+				{
+					consoleLog->push_back(u8"ショップ出現率ボーナス発動: " + ability.name);
+				}
+			}
+		}
+	}
+	return shopRateBonus;
+}
+
 float SpecialAbility::GetMoneyMakerBonus() const
 {
 	float moneyBonus = 0.0f;

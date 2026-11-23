@@ -207,6 +207,20 @@ public:
 		return ownedAbilities;
 	}
 
+	//すでに所持しているパッシブ能力があれば、現在のものと入れ替える関数
+	void ReplacePassiveAbility(AbilityID newAbilityId)
+	{
+		for (int i = 0; i < ABILITY_COUNT; ++i)
+		{
+			if (abilities[i].type == AbilityType::Passive && abilities[i].isOwned)
+			{
+				abilities[i].isOwned = false; // 既存のパッシブ能力を削除
+				break; // 1つだけ削除する
+			}
+		}
+		abilities[static_cast<int>(newAbilityId)].isOwned = true; // 新しいパッシブ能力を追加
+	}
+
 	static constexpr float maxActivationRate = 50.0f; // 最大発動率の定数
 
 	//発動率を増加させられる能力があるかどうかを判定する関数
@@ -285,6 +299,9 @@ public:
 			}
 		}
 	}
+
+	//ショップの出現率上昇関数
+	float GetShopAppearanceRate() const;
 
 private:
 

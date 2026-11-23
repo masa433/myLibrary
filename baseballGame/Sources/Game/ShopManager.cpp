@@ -1596,6 +1596,27 @@ void ShopManager::DrawGUI()
 		ImGui::DragFloat2("nextButtonPosition", &nextRoundButtonPosition.x, 1.0f, 0.0f);
 		ImGui::DragFloat2("nextButtonSize", &nextRoundButtonSize.x, 1.0f, 0.0f);
 	}
+
+	if (ImGui::Begin("ShopItemList"))
+	{
+		for(int i = 0; i < SHOP_ITEM_COUNT; ++i)
+		{
+			ImGui::PushID(i);
+			ImGui::Text("Item %d: %s, Price: %d", i, shopItems[i].name.c_str(), shopItems[i].price);
+			ImGui::Text("Appearance Rate: %.2f%%", shopItems[i].appearanceRate);
+			
+			//w“üƒ{ƒ^ƒ“‚ð’Ç‰Á(–³—¿‚Åw“ü‚µ•ú‘è)
+			if(ImGui::Button("Purchase"))
+			{
+				if (shopItems[i].onButtonPressed)
+				{
+					shopItems[i].onButtonPressed();
+				}
+			}
+			ImGui::PopID();
+		}
+	}
+	ImGui::End();
 }
 
 void ShopManager::SaveToJson(json& j)

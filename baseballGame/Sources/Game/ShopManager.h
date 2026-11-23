@@ -196,12 +196,20 @@ public:
 		}
 		
 		std::vector<int> result;
+		float bonusRate = SpecialAbility::Instance().GetShopAppearanceRate();
 		for (int pick = 0; pick < count && !allItems.empty(); ++pick)
 		{
-			std::vector<float> weights;
+			std::vector<float> weights;		
 			for (int idx : allItems)
 			{
-				weights.push_back(shopItems[idx].appearanceRate);
+				float rate = shopItems[idx].appearanceRate;
+				//出現率増加の能力を所持していれば、元の出現率が10%未満のアイテムの出現率を増加させる
+				if(rate <= 10.0f)
+				{
+					rate += bonusRate;
+				}
+
+				weights.push_back(rate);
 			}
 
 			std::discrete_distribution<size_t> dist(weights.begin(), weights.end());
