@@ -175,8 +175,6 @@ private:
 	int previousPitcherIndex = -1; // 前回のピッチャーのインデックスを保持する変数
 	bool showGUI = false; // GUIを表示するかどうかのフラグ
 
-	SpecialAbility::AbilityID passiveAbilities;
-
 	DirectX::XMFLOAT2 abilityIconPosition = { 1500.0f, 100.0f };
 	DirectX::XMFLOAT2 abilityIconSize = { 100.0f, 100.0f };
 	DirectX::XMFLOAT2 abilityIconTextPosition = { 1500.0f, 210.0f };

@@ -185,20 +185,6 @@ void batterSelectScene::initialize()
 	isChangingScene = false;
 	isTitleChanging = false;
 
-	SpecialAbility& specialAbility = SpecialAbility::Instance();
-
-	specialAbility.BuildAbility();
-	specialAbility.InitializeAbilities(device, context);
-	//選ばれた初期能力を所持する
-
-	passiveAbilities = specialAbility.GetRandomPassiveAbility();
-
-	specialAbility.SetOwned(passiveAbilities, true);
-	if(specialAbility.GetOwnedAbilities().size() > 0)
-	{
-		OutputDebugStringA("Owned Abilities:\n");
-	}
-
 	SelectRandomPitcher(); // ランダムにピッチャーを選択
 	LoadSetting(); // 設定をロード
 }
@@ -690,7 +676,7 @@ void batterSelectScene::render(float elapsedTime)
 			SpecialAbility& specialAbility = SpecialAbility::Instance();
 			if (playerScrollView->GetBatterRank(Player::Instance().GetSelectedRealBatterRank()) <= 2)
 			{
-				specialAbility.RenderPassiveAbilityIcons(passiveAbilities, abilityIconPosition, abilityIconSize, abilityIconTextPosition, abilityIconTextSize);
+				specialAbility.RenderPassiveAbilityIcons(playerScrollView->GetPassiveAbilities(), abilityIconPosition, abilityIconSize, abilityIconTextPosition, abilityIconTextSize);
 			}
 
 			if (playerScrollView) playerScrollView->RenderBatterImage(dc, batterImageAlpha); // この中でVS/PS/InputLayoutがnullptrに戻る

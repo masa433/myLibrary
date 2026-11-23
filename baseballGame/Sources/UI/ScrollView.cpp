@@ -4,6 +4,7 @@
 #include <shader.h>
 #include "Money.h"
 
+
 std::string FormatBonusFloat(float value)
 {
 
@@ -246,6 +247,12 @@ ScrollView::ScrollView(ID3D11Device* device, float topX, float topY, float width
 	clickNameButton = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\ClickBatterName.wav",SoundType::SE);
 	hoverArrow = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\SE\\HoverButton.wav",SoundType::SE);
 	initialized = vertex_shader && pixel_shader && input_layout;
+
+	SpecialAbility& specialAbility = SpecialAbility::Instance();
+
+	specialAbility.BuildAbility();
+	specialAbility.InitializeAbilities(device, context);
+	
 }
 
 ScrollView::~ScrollView()
@@ -883,6 +890,23 @@ void ScrollView::Update(float elapsedTime)
 				{
 					
 					clickNameButton->PlayOneShot();
+				}
+
+				//‘I‚Î‚ê‚½‰Šú”\—Í‚ğŠ‚·‚é
+				SpecialAbility& specialAbility = SpecialAbility::Instance();
+				if (Player::Instance().GetSelectedRealBatterRank() < 3)
+				{
+					passiveAbilities = specialAbility.GetRandomPassiveAbility();
+
+					specialAbility.SetOwned(passiveAbilities, true);
+					if (specialAbility.GetOwnedAbilities().size() > 0)
+					{
+						OutputDebugStringA("Owned Abilities:\n");
+					}
+				}
+				else 
+				{
+					specialAbility.SetOwned(passiveAbilities, false);
 				}
 			}
 

@@ -6,6 +6,7 @@
 #include "FontRenderer.h"
 #include "..\Sources\Audio\AudioSource.h"
 #include "..\Sources\Audio\Audio.h"
+#include "SpecialAbility.h"
 
 #define BATTER_IMAGE_COUNT 6
 #define BATTER_COUNT 24
@@ -270,6 +271,11 @@ public:
 		}
 	}
 
+	SpecialAbility::AbilityID GetPassiveAbilities() const
+	{
+		return passiveAbilities;
+	}
+
 private:
 	AudioSource* clickNameButton = nullptr;
 	AudioSource* hoverArrow = nullptr;
@@ -278,4 +284,6 @@ private:
 
 	//ÉzÉoÅ[âπÇ™ñ¬Ç¡ÇΩÇ©Ç«Ç§Ç©
 	bool hoverSoundPlayed = false;
+
+	SpecialAbility::AbilityID passiveAbilities;
 };
