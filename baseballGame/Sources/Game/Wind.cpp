@@ -9,6 +9,7 @@
 #include "TrackingData.h"
 #include "ShopManager.h"
 #include <ctime>
+#include "SpecialAbility.h"
 
 void Wind::Initialize()
 {
@@ -91,29 +92,65 @@ void Wind::Initialize()
 	windHeight = 20.0f; // 風の流線の高さ
 	windThickness = 50.0f; // 風の流線の厚み
 
-	//風の向きと強さを毎回ランダムで決定
-	windDirection.x = static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f; // -1.0f ～ 1.0f
-	windDirection.y = 0.0f; // Y軸方向は固定
-	windDirection.z = static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f; // -1.0f ～ 1.0f
-
-	// 風向きベクトルを正規化
-	float length = std::sqrt(windDirection.x * windDirection.x + windDirection.y * windDirection.y + windDirection.z * windDirection.z);
-	if (length > 0.0001f)
+	if (SpecialAbility::Instance().HasWindBlessing())
 	{
-		windDirection.x /= length;
-		windDirection.y /= length;
-		windDirection.z /= length;
+		
+		if(Player::Instance().IsRightBatter())
+		{
+			//風のx方向を-1.0～0.0の範囲でランダムに決定
+			windDirection.x = -1.0f + static_cast<float>(rand()) / RAND_MAX * 0.5f; // -1.0f ～ -0.5f
+		}
+		else
+		{
+			//風のx方向を0.0～1.0の範囲でランダムに決定
+			windDirection.x = 0.5f + static_cast<float>(rand()) / RAND_MAX * 0.5f; // 0.5f ～ 1.0f
+		}
+		windDirection.y = 0.0f; // Y軸方向は固定
+		windDirection.z = 0.5f + std::abs(static_cast<float>(rand()) / RAND_MAX * 0.5f);// 0.5f ～ 1.0f (前方方向のみ)
+
+		// 風向きベクトルを正規化
+		float length = std::sqrt(windDirection.x * windDirection.x + windDirection.y * windDirection.y + windDirection.z * windDirection.z);
+		if (length > 0.0001f)
+		{
+			windDirection.x /= length;
+			windDirection.y /= length;
+			windDirection.z /= length;
+		}
+		else
+		{
+			windDirection.x = 0.0f;
+			windDirection.y = 0.0f;
+			windDirection.z = -1.0f; // デフォルトの風向き
+		}
+
+		windStrength = 5.0f + static_cast<float>(rand()) / RAND_MAX * 5.0f; // 5.0f ～ 10.0f
 	}
 	else
 	{
-		windDirection.x = 0.0f;
-		windDirection.y = 0.0f;
-		windDirection.z = -1.0f; // デフォルトの風向き
+		//風の向きと強さを毎回ランダムで決定
+		windDirection.x = static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f; // -1.0f ～ 1.0f
+		windDirection.y = 0.0f; // Y軸方向は固定
+		windDirection.z = static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f; // -1.0f ～ 1.0f
+
+		// 風向きベクトルを正規化
+		float length = std::sqrt(windDirection.x * windDirection.x + windDirection.y * windDirection.y + windDirection.z * windDirection.z);
+		if (length > 0.0001f)
+		{
+			windDirection.x /= length;
+			windDirection.y /= length;
+			windDirection.z /= length;
+		}
+		else
+		{
+			windDirection.x = 0.0f;
+			windDirection.y = 0.0f;
+			windDirection.z = -1.0f; // デフォルトの風向き
+		}
+
+		// 風の強さをランダムで決定
+
+		windStrength = static_cast<float>(rand()) / RAND_MAX * 7.0f; // 0.0f ～ 7.0f
 	}
-
-	// 風の強さをランダムで決定
-
-	windStrength = static_cast<float>(rand()) / RAND_MAX * 7.0f; // 0.0f ～ 7.0f
 }
 
 void Wind::Uninitialize()

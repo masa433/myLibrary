@@ -303,6 +303,12 @@ public:
 	//ショップの出現率上昇関数
 	float GetShopAppearanceRate() const;
 
+	//風の加護を所持しているかどうか
+	bool HasWindBlessing() const
+	{
+		return abilities[static_cast<int>(AbilityID::WindBlessing)].isOwned;
+	}
+
 private:
 
 	//テクスチャ関連
