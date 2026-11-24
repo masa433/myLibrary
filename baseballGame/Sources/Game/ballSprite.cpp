@@ -324,7 +324,7 @@ void ballSprite::Initialize(ID3D11Device* device)
 	eyeForPitchDotSpriteData = std::make_unique<Sprite>();
 	eyeForPitchDotSpriteData->texturePath = L".\\resources\\textures\\eyeForPitchesDot.png";
 	eyeForPitchDotSpriteData->position = { 1100.0f, 400.0f };
-	eyeForPitchDotSpriteData->size = { 15.0f, 15.0f };
+	eyeForPitchDotSpriteData->size = { 10.0f, 10.0f };
 	eyeForPitchDotSpriteData->rotation = 0.0f;
 	eyeForPitchDotSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	eyeForPitchDotSprite = std::make_unique<sprite>(device, context, eyeForPitchDotSpriteData->texturePath.c_str());
@@ -1099,8 +1099,9 @@ void ballSprite::Render()
 			// AIターゲットのドットを描画する(ストレートの時は描画しない)
 			if (eyeForPitchDotSprite && eyeForPitchDotSpriteData && !Pitcher::Instance().GetIsBallThrown() && SpecialAbility::Instance().HasSelectEye())
 			{
-				const int dotCount = GetDotCountFromPitchBreakGrade(Pitcher::Instance().GetCurrentPitchBreakGrade());
+				const int dotCount = GetDotCountFromPitchBreakGrade(Pitcher::Instance().GetCurrentPitchBreakGrade());// 変化量の大きさに応じてドットの数を決定
 
+				// 変化量がある場合のみドットを描画
 				if (dotCount > 0)
 				{
 					ballBreak2D scaledBreak = pitchBreaks[currentPitchIndex];// 変化量をスケーリング
@@ -1108,6 +1109,7 @@ void ballSprite::Render()
 					scaledBreak.breakX *= breakScale;// 変化量をスケーリング
 					scaledBreak.breakY *= breakScale;
 
+					//ピッチャーが真ん中に投げるときは、変化球でも変化させない
 					if (Pitcher::Instance().GetIsThrowingFromCenter())
 					{
 						scaledBreak.breakX = 0.0f;
@@ -1124,6 +1126,7 @@ void ballSprite::Render()
 						0.0f, // t=0で開始点を取得
 						Pitcher::Instance().IsRightPitcher());
 
+					//ドットのY方向の移動量を調整するために、ストライクゾーンの中心Y座標を取得
 					float dotCenterY = strikeZoneSpriteData->position.y + strikeZoneSpriteData->size.y * 0.5f;
 					float dotYMoveScale = GetYMoveScale(currentPitchIndex, targetPos.y, startPos.y, dotCenterY);
 
@@ -1132,7 +1135,7 @@ void ballSprite::Render()
 
 					for (int i = 0; i < dotCount; ++i)
 					{
-						//開始位置と終了位置を取得
+						// ドットの位置を線形補間で計算
 						float t = (dotCount == 1)
 							? 0.5f
 							: static_cast<float>(i) / static_cast<float>(dotCount - 1);
@@ -1140,8 +1143,8 @@ void ballSprite::Render()
 						//終了位置のドットはサイズを1.2倍にする
 						if(i == dotCount - 1)
 						{
-							scaledDotSize.x *= 1.2f;
-							scaledDotSize.y *= 1.2f;
+							scaledDotSize.x *= 1.5f;
+							scaledDotSize.y *= 1.5f;
 						}
 
 
