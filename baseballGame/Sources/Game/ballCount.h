@@ -59,6 +59,15 @@ public:
 		initialBalls += amount;
 	}
 
+	void IncreaseRemainingBalls(int amount)
+	{
+		remainingBalls += amount;
+		if (remainingBalls > initialBalls)
+		{
+			remainingBalls = initialBalls;
+		}
+	}
+
 	FontRenderer pitchInfoFont; // 球種名と球速表示用のフォントレンダラー
 private:
 	

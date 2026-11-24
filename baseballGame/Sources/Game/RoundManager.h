@@ -40,6 +40,7 @@ public:
 	bool IsGameOver() const {return isGameOver;}
 	bool IsGameClear() const { return isGameClear; }
 	int GetCurrentRound() const { return currentRound; }
+	void SetGameOver(bool gameOver) { isGameOver = gameOver; }
 
 	//ラウンドをクリアしているかどうか
 	bool IsRoundCleared() const

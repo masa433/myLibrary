@@ -178,6 +178,7 @@ void SpecialAbility::Initialize(ID3D11Device* device)
 	contactRankFontData.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	isPassiveEffectApplied = false;
+	indomitableSpiritActivationCount = 0;
 	InitializeAbilities(device, context);
 	ResetActivationRate();
 }
@@ -468,6 +469,8 @@ void SpecialAbility::BuildAbility()
 	a[(int)AbilityID::IndomitableSpirit].texturePath = L".\\resources\\textures\\specialAbilityList\\indomitableSpirit.png";
 	a[(int)AbilityID::IndomitableSpirit].descriptionPath = L".\\resources\\textures\\abilityDescription\\indomitableSpirit.png";
 	a[(int)AbilityID::IndomitableSpirit].addBallCount = 5;
+	a[(int)AbilityID::IndomitableSpirit].power = 10.0f;
+	a[(int)AbilityID::IndomitableSpirit].contact = 10.0f;
 	a[(int)AbilityID::IndomitableSpirit].activationRate = 100.0f;
 	a[(int)AbilityID::IndomitableSpirit].condition = [this]() { return IsGameOver(); }; // ゲームオーバー時に発動
 	a[(int)AbilityID::IndomitableSpirit].type = AbilityType::Passive;
@@ -523,6 +526,45 @@ void SpecialAbility::Update(float elapsedTime)
 				isPassiveEffectApplied = true;
 			}
 
+		}
+		if(ability.name == u8"不屈の精神"&& ability.isOwned && ability.isActiveThisRound && ability.condition && ability.condition())
+		{
+			if (indomitableSpiritActivationCount <= 0)
+			{
+				ballCount::Instance().IncreaseRemainingBalls(ability.addBallCount);
+				isPassiveEffectApplied = true;
+
+				
+				indomitableSpiritActivationCount++;
+			}
+			
+
+			if(IsGameOver() && indomitableSpiritActivationCount > 0)
+			{
+				
+				powerBonus += ability.power;
+				contactBonus += ability.contact;
+
+				Player::Instance().ApplyRoundStatBonus(powerBonus + comboPowerBonus, contactBonus);
+
+				if (ballCount::Instance().GetRemainingBalls() <= 0)
+				{
+					//不屈の精神発動後に、目標ホームラン数に達していたら、ゲームオーバー状態を解除する
+					if(HomeRunCount::Instance().IsHomeRunCountExceeded(RoundManager::Instance().GetCurrentTarget()))
+					{
+						RoundManager::Instance().SetGameOver(false); // ゲームオーバー状態を解除する
+						ability.isActiveThisRound = false; // ラウンド中の発動状態も解除する
+					}
+					//不屈の精神発動後に、目標ホームラン数に達していなかったら、ゲームオーバー状態を維持する
+					else
+					{
+						if (Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch)
+						{
+							ability.isActiveThisRound = false; // ラウンド中の発動状態も解除する
+						}
+					}
+				}
+			}
 		}
 		if (ability.type != AbilityType::Passive && ability.isOwned && ability.isActiveThisRound && ability.condition && ability.condition())
 		{

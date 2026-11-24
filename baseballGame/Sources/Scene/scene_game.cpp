@@ -420,7 +420,7 @@ void scene_game::update(float elapsed_time)
 
     Physics::Instance().UpdateFadeOut(elapsed_time); //効果音をフェードアウトして止める
 
-    if (isGameFinished)
+    if (isGameFinished && !SpecialAbility::Instance().HasIndomitableSpirit())
     {
         Result::Instance().Update(elapsed_time);
 

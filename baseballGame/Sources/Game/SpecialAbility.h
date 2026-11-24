@@ -312,6 +312,18 @@ public:
 		return abilities[static_cast<int>(AbilityID::WindBlessing)].isOwned;
 	}
 
+	//不屈の精神を発動しているかどうか
+	bool HasIndomitableSpirit() const
+	{
+		return abilities[static_cast<int>(AbilityID::IndomitableSpirit)].isActiveThisRound;
+	}
+
+	int GetIndomitableSpiritActivationCount() const
+	{
+		return indomitableSpiritActivationCount;
+	}
+
+
 private:
 
 	//テクスチャ関連
@@ -424,6 +436,10 @@ private:
 
 	//パッシブの効果が適用されたかどうか
 	bool isPassiveEffectApplied = false;
+	
+	//不屈の精神が発動された回数
+	int indomitableSpiritActivationCount = 0;
+
 
 	AbilityData abilities[ABILITY_COUNT];
 
