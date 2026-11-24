@@ -266,7 +266,7 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
         dc->UpdateSubresource(constant_buffer.Get(), 0, 0, &scene, 0, 0);
         dc->VSSetConstantBuffers(1, 1, constant_buffer.GetAddressOf());
 
-        stage::Instance().render(rc, modelRenderer);
+        //stage::Instance().render(rc, modelRenderer);
         Pitcher::Instance().RenderModel(rc, modelRenderer,true);
         Player::Instance().Render(rc, modelRenderer);
 		Catcher::Instance().Render(rc, modelRenderer, nullptr);

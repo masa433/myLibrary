@@ -80,7 +80,7 @@ private:
 		DirectX::XMFLOAT3 dummy; // 4の倍数にするためのダミー
         DirectX::XMUINT4	light_count{ 0, 0, 0, 0 };	//	x : 空き, y : ポイントライト数, z : スポットライト数, w : 空き。
         ShadowRenderer::point_lights point_light[light_max]; // 最大36のポイントライト
-        ShadowRenderer::spot_lights spot_light[6]; // 最大6つのスポットライト
+        ShadowRenderer::spot_lights spot_light[11]; // 最大11つのスポットライト
 
     };
 

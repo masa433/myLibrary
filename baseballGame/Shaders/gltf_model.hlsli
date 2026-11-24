@@ -54,7 +54,7 @@ cbuffer LIGHT_CONSTANT_BUFFER : register(b3)
     float3 dummy; // 4の倍数にするためのダミー
     uint4 light_count; // y : 点光源の数, z : スポットライトの数
     point_lights pointLights[36];
-    spot_lights spotLights[6];
+    spot_lights spotLights[11];
     
 };
 

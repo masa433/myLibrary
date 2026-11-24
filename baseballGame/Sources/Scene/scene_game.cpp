@@ -266,7 +266,7 @@ void scene_game::initialize()
         }
     }
 
-    shadowRenderer.GetSpotLights().resize(6);
+    shadowRenderer.GetSpotLights().resize(11);
 
     // 位置
     shadowRenderer.GetSpotLights()[0].position = { 80.0f, 95.0f, -80.0f, 1.0f };
@@ -275,19 +275,29 @@ void scene_game::initialize()
     shadowRenderer.GetSpotLights()[3].position = { 150.0f, 95.0f, 40.0f, 1.0f };
     shadowRenderer.GetSpotLights()[4].position = { 75.0f, 80.0f, 135.0f, 1.0f };
     shadowRenderer.GetSpotLights()[5].position = { -75.0f, 80.0f, 135.0f, 1.0f };
+    shadowRenderer.GetSpotLights()[6].position = { 0.0f, 95.0f, -80.0f, 1.0f };
+    shadowRenderer.GetSpotLights()[7].position = { 0.0f, 95.0f, 40.0f, 1.0f };
+    shadowRenderer.GetSpotLights()[8].position = { 75.0f, 80.0f, 0.0f, 1.0f };
+    shadowRenderer.GetSpotLights()[9].position = { -75.0f, 80.0f, 0.0f, 1.0f };
+    shadowRenderer.GetSpotLights()[10].position = { 0.0f, 80.0f, 135.0f, 1.0f };
 
     // 狙う場所
-    DirectX::XMFLOAT3 targets[6] =
+    DirectX::XMFLOAT3 targets[11] =
     {
         {  5.0f, 0.0f,  5.0f },
         { -5.0f, 0.0f,  5.0f },
         {  5.0f, 0.0f, 37.5f },
         { -5.0f, 0.0f, 37.5f },
         { 5.0f, 0.0f, 10.0f },
-        {-5.0f, 0.0f, 10.0f }
+        {-5.0f, 0.0f, 10.0f },
+        { 0.0f, 0.0f, 5.0f },
+        { 0.0f, 0.0f, 37.5f },
+        { 5.0f, 0.0f, 10.0f },
+        {-5.0f, 0.0f, 10.0f },
+		{ 0.0f, 0.0f, 10.0f }
     };
 
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 11; ++i)
     {
         DirectX::XMVECTOR pos =
             DirectX::XMLoadFloat4(&shadowRenderer.GetSpotLights()[i].position);
@@ -774,7 +784,7 @@ void scene_game::render(float elapsedTime)
 			shadowRenderer.RenderShadowMap(elapsedTime);    
         }
             */
-        else
+       
         {
             shadowRenderer.spot_shadow_frame_count++;
             if (shadowRenderer.spot_shadow_frame_count >= shadowRenderer.spot_shadow_update_interval)

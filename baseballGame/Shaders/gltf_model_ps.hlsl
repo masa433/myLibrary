@@ -343,7 +343,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
 
         // スポットライト
         [unroll]
-        for (int j = 0; j < 6; ++j)
+        for (int j = 0; j < 11; ++j)
         {
             if (j >= (int) light_count.z)
                 break;
@@ -386,6 +386,21 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
                             break;
                         case 5:
                             sd_depth = spot_shadow_map[5].Sample(shadow_sampler_state, uv).r;
+                            break;
+                        case 6:
+                            sd_depth = spot_shadow_map[6].Sample(shadow_sampler_state, uv).r;
+                            break;
+                        case 7:
+                            sd_depth = spot_shadow_map[7].Sample(shadow_sampler_state, uv).r;
+                            break;
+                        case 8:
+                            sd_depth = spot_shadow_map[8].Sample(shadow_sampler_state, uv).r;
+                            break;
+                        case 9:
+                            sd_depth = spot_shadow_map[9].Sample(shadow_sampler_state, uv).r;
+                            break;
+                        case 10:
+                            sd_depth = spot_shadow_map[10].Sample(shadow_sampler_state, uv).r;
                             break;
                     }
                     if (lpos.z - sd_depth > spot_shadow_bias)
