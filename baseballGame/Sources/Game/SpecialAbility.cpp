@@ -973,10 +973,6 @@ float SpecialAbility::GetShopAppearanceRate() const
 				if (IsRoundClear())
 				{
 					shopRateBonus += ability.shopAppearanceRate;
-					if (consoleLog)
-					{
-						consoleLog->push_back(u8"ショップ出現率ボーナス発動: " + ability.name);
-					}
 				}
 			}
 		}
@@ -996,10 +992,6 @@ float SpecialAbility::GetShopDisCountRate() const
 				if (IsRoundClear())
 				{
 					shopDiscountBonus += (ability.shopDiscountRate / 100.0f);
-					if (consoleLog)
-					{
-						consoleLog->push_back(u8"ショップ割引率ボーナス発動: " + ability.name);
-					}
 				}
 			}
 		}

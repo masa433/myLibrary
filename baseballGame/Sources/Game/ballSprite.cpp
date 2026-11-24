@@ -10,6 +10,7 @@
 #include "Player.h"
 #include "Combo.h"
 #include "misc.h"
+#include <SpecialAbility.h>
 
 namespace
 {
@@ -43,6 +44,7 @@ namespace
 		};
 	}
 
+	// 2Dスクリーン座標上での投球変化量を考慮した軌道計算
 	DirectX::XMFLOAT2 EvalPitchBreakScreenPath(
 		const DirectX::XMFLOAT2& targetScreenPos,
 		const ballSprite::ballBreak2D& breakData,
@@ -317,6 +319,15 @@ void ballSprite::Initialize(ID3D11Device* device)
 	ballTargetSpriteData->rotation = 0.0f;
 	ballTargetSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	ballTargetSprite = std::make_unique<sprite>(device, context, ballTargetSpriteData->texturePath.c_str());
+
+	//選球眼用ドットの初期化
+	eyeForPitchDotSpriteData = std::make_unique<Sprite>();
+	eyeForPitchDotSpriteData->texturePath = L".\\resources\\textures\\eyeForPitchesDot.png";
+	eyeForPitchDotSpriteData->position = { 1100.0f, 400.0f };
+	eyeForPitchDotSpriteData->size = { 15.0f, 15.0f };
+	eyeForPitchDotSpriteData->rotation = 0.0f;
+	eyeForPitchDotSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	eyeForPitchDotSprite = std::make_unique<sprite>(device, context, eyeForPitchDotSpriteData->texturePath.c_str());
 
 	// added: pitch info font init (日本語対応版)
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
@@ -763,6 +774,9 @@ void ballSprite::Update(float elapsedTime)
 		ApplyTagetSpritePosition(snapPos);
 		ballTrail2D.clear();
 
+		//落ちる系の球種
+		yMoveScale = GetYMoveScale(currentPitchIndex, finalScreenPos.y, startScreenPos.y, zoneCenterY);
+
 	}
 	prevPitchingState = pitchingState;
 
@@ -1082,6 +1096,75 @@ void ballSprite::Render()
 		}
 		else if(display == BallDisplayMode::Target)
 		{
+			// AIターゲットのドットを描画する(ストレートの時は描画しない)
+			if (eyeForPitchDotSprite && eyeForPitchDotSpriteData && !Pitcher::Instance().GetIsBallThrown() && SpecialAbility::Instance().HasSelectEye())
+			{
+				const int dotCount = GetDotCountFromPitchBreakGrade(Pitcher::Instance().GetCurrentPitchBreakGrade());
+
+				if (dotCount > 0)
+				{
+					ballBreak2D scaledBreak = pitchBreaks[currentPitchIndex];// 変化量をスケーリング
+					float breakScale = GetCurrentPitchBreakScale();// 変化量のスケーリング係数を取得
+					scaledBreak.breakX *= breakScale;// 変化量をスケーリング
+					scaledBreak.breakY *= breakScale;
+
+					if (Pitcher::Instance().GetIsThrowingFromCenter())
+					{
+						scaledBreak.breakX = 0.0f;
+						scaledBreak.breakY = 0.0f;
+					}
+
+					//開始位置と目標位置を取得
+					DirectX::XMFLOAT2 targetPos = {aiTargetScreen.x, aiTargetScreen.y};
+					DirectX::XMFLOAT2 startPos = EvalPitchBreakScreenPath(
+						targetPos,
+						scaledBreak,
+						strikeZoneSpriteData->size,
+						currentPitchIndex,
+						0.0f, // t=0で開始点を取得
+						Pitcher::Instance().IsRightPitcher());
+
+					float dotCenterY = strikeZoneSpriteData->position.y + strikeZoneSpriteData->size.y * 0.5f;
+					float dotYMoveScale = GetYMoveScale(currentPitchIndex, targetPos.y, startPos.y, dotCenterY);
+
+
+					DirectX::XMFLOAT2 scaledDotSize = screenScaler.ScaleSize(eyeForPitchDotSpriteData->size);
+
+					for (int i = 0; i < dotCount; ++i)
+					{
+						//開始位置と終了位置を取得
+						float t = (dotCount == 1)
+							? 0.5f
+							: static_cast<float>(i) / static_cast<float>(dotCount - 1);
+
+						//終了位置のドットはサイズを1.2倍にする
+						if(i == dotCount - 1)
+						{
+							scaledDotSize.x *= 1.2f;
+							scaledDotSize.y *= 1.2f;
+						}
+
+
+						DirectX::XMFLOAT2 ballStartPos =
+						{
+							startPos.x + (targetPos.x - startPos.x) * t,
+							startPos.y + (targetPos.y - startPos.y) * t * dotYMoveScale
+						};
+
+						DirectX::XMFLOAT2 scaledPos = screenScaler.Scale(ballStartPos);
+						const float drawX = scaledPos.x - scaledDotSize.x * 0.5f;
+						const float drawY = scaledPos.y - scaledDotSize.y * 0.5f;
+
+						eyeForPitchDotSprite->render(dc,
+							drawX, drawY,
+							scaledDotSize.x, scaledDotSize.y,
+							eyeForPitchDotSpriteData->color.x, eyeForPitchDotSpriteData->color.y,
+							eyeForPitchDotSpriteData->color.z, eyeForPitchDotSpriteData->color.w,
+							eyeForPitchDotSpriteData->rotation);
+					}
+				}
+			}
+
 			if(ballTargetSprite && ballTargetSpriteData && hasAITarget)
 			{
 				DirectX::XMFLOAT2 scaledBallTargetPos = screenScaler.Scale(ballTargetSpriteData->position);

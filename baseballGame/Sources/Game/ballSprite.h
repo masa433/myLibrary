@@ -31,6 +31,12 @@ public:
 
 	void SetIntroSequence(const GameIntroSequence* sequence) { intro = sequence; }
 
+	//変化量可視化のためのドットの数
+	int GetDotCountFromPitchBreakGrade(Pitcher::BreakGrade grade)
+	{
+		return static_cast<int>(grade) + 1; // F=1, E=2, D=3, C=4, B=5, A=6, S=7
+	}
+
 private:
 	//スプライトデータ
 	struct Sprite
@@ -50,6 +56,8 @@ private:
 	std::unique_ptr<Sprite> ballBoardSpriteData;
 	std::unique_ptr<sprite> ballTargetSprite;
 	std::unique_ptr<Sprite> ballTargetSpriteData;
+	std::unique_ptr<sprite> eyeForPitchDotSprite;
+	std::unique_ptr<Sprite> eyeForPitchDotSpriteData;
 
 	bool showBallBoard = false;
 	

@@ -318,9 +318,10 @@ public:
 		return abilities[static_cast<int>(AbilityID::IndomitableSpirit)].isActiveThisRound;
 	}
 
-	int GetIndomitableSpiritActivationCount() const
+	//‘I‹…Šá‚ğŠ‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©
+	bool HasSelectEye() const
 	{
-		return indomitableSpiritActivationCount;
+		return abilities[static_cast<int>(AbilityID::SelectEye)].isOwned;
 	}
 
 
