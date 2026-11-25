@@ -56,7 +56,7 @@ private:
 	static constexpr int ShadowBufferSize = 4;
 
 	// スポットライトシャドウマップ関連
-	static constexpr int SpotShadowCount = 4; // light_max と一致させる
+	static constexpr int SpotShadowCount = 11; // light_max と一致させる
 
 	//	シーン用定数バッファ構造体（stageのシェーダーが要求するレイアウトに合わせる）
 	struct scene_constants

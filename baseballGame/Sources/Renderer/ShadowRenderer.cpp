@@ -235,6 +235,13 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
     const int count = static_cast<int>(spotLights.size());
     for (int i = 0; i < count && i < SpotShadowCount; ++i)
     {
+        float sunHeight = directional_light_direction.y;
+        constexpr float kShadowStartHeight = -0.1f; // 影の開始高さ
+        constexpr float kShadowEndHeight = -0.2f;   // 影の終了高さ
+
+        shadow_day_factor = (sunHeight - kShadowStartHeight) / (kShadowEndHeight - kShadowStartHeight);// 0.0～1.0の範囲に正規化
+        shadow_day_factor = std::clamp(shadow_day_factor, 0.0f, 1.0f); // 0.0～1.0の範囲に制限
+
         // DSVクリア & バインド
         dc->ClearDepthStencilView(spot_shadowmap_depth_stencil_views[i].Get(),
             D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -270,7 +277,7 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
         Pitcher::Instance().RenderModel(rc, modelRenderer,true);
         Player::Instance().Render(rc, modelRenderer);
 		Catcher::Instance().Render(rc, modelRenderer, nullptr);
-		BallNet::Instance().Render(rc, modelRenderer);
+		//BallNet::Instance().Render(rc, modelRenderer);
     }
 }
 
@@ -732,4 +739,14 @@ void ShadowRenderer::Uninitialize()
     shadowmap_caster_vertex_shader.Reset();
     shadowmap_caster_input_layout.Reset();
     constant_buffer.Reset();
+}
+
+void ShadowRenderer::DrawGUI()
+{
+    //スポットライトシャドウの設定
+    if (ImGui::CollapsingHeader("Spot Shadow Settings"))
+    {
+        ImGui::SliderFloat("Spot Shadow Bias", &spot_shadow_constant.shadow_bias, 0.0001f, 0.01f);
+        ImGui::SliderFloat("Spot Shadow Attenuation", &spot_shadow_constant.shadow_attenuation, 0.1f, 1.0f);
+	}
 }

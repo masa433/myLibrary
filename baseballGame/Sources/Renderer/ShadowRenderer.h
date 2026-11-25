@@ -11,10 +11,10 @@ class ShadowRenderer
 {
 	// シャドウマップのサイズ定数
 	static constexpr UINT ShadowmapSize = 4096;
-	static constexpr UINT SpotShadowmapSize = 4096;
+	static constexpr UINT SpotShadowmapSize = 8192;
 	static constexpr float ShadowmapDrawRect = 60.0f;
 	static constexpr int ShadowBufferSize = 4; // カスケードシャドウマップの数
-	static constexpr int SpotShadowCount = 4; // スポットシャドウマップの数
+	static constexpr int SpotShadowCount = 11; // スポットシャドウマップの数
 
 public:
 	//定数バッファ構造体
@@ -51,9 +51,9 @@ public:
     //スポットシャドウマップ用定数バッファ
     struct spot_shadowmap_constants
     {
-        DirectX::XMFLOAT4X4 light_view_projection[SpotShadowCount];
-        float shadow_attenuation{ 0.5f };
-        float shadow_bias{ 0.005f };
+		DirectX::XMFLOAT4X4 light_view_projection[SpotShadowCount];// ライトの位置から見た射影行列
+		float shadow_attenuation{ 0.6f };// 影色
+		float shadow_bias{ 0.001f };// 深度比較用のオフセット値
         DirectX::XMFLOAT2 dummy;
     };
 
@@ -106,6 +106,8 @@ public:
     //ライト配列へのアクセス
 	std::vector<point_lights>& GetPointLights() { return pointLights; }
 	std::vector<spot_lights>& GetSpotLights() { return spotLights; }
+
+	void DrawGUI();
 
     // scene_game から直接触る公開パラメータ
     bool   use_cascade_shadow_map = true;

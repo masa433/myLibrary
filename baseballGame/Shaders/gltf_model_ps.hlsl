@@ -342,6 +342,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
         }
 
         // スポットライト
+        float spot_shadow_min = 1.0f;// スポットライトのシャドウ係数の最小値を求める（複数スポットライトが重なる場合に対応）
         [unroll]
         for (int j = 0; j < 11; ++j)
         {
@@ -405,6 +406,8 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
                     }
                     if (lpos.z - sd_depth > spot_shadow_bias)
                         sp_shadow = spot_shadow_attenuation;
+                    
+                    spot_shadow_min = min(spot_shadow_min, lerp(1.0f, sp_shadow, saturate(att * 2.0f)));
                 }
             }
 
@@ -426,8 +429,9 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
         // 既存のambient_color / 半球ライトはIBLと併用（要求どおり加算）
         float3 legacy_ambient = ambient;
 
-        // 
+        // 環境光の強さをシャドウ係数に応じて調整（影が濃いほど間接光を弱める）
         float indirect_shadow_scale = lerp(0.8f, 1.0f, shadow_factor);
+        indirect_shadow_scale *= lerp(0.1f, 1.0f, spot_shadow_min);
 
 
         float3 indirect_lighting = (ibl_diffuse + legacy_ambient * diffuse_color) * ao * indirect_shadow_scale;
@@ -436,7 +440,7 @@ float4 main(VS_OUT pin, bool is_front_face : SV_IsFrontFace) : SV_TARGET
         float3 ambient_floor = diffuse_color * 0.03f; // 好みで 0.02～0.05 あたりに調整
         indirect_lighting = max(indirect_lighting, ambient_floor);
         
-        color.rgb = direct_lighting + indirect_lighting + emmisive;
+        color.rgb = (direct_lighting + indirect_lighting + emmisive) * spot_shadow_min;
     }
 
     //	フォグ（両モード共通）

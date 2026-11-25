@@ -642,7 +642,20 @@ void scene_game::update(float elapsed_time)
         }
         for (auto& sl : shadowRenderer.GetSpotLights())
         {
-            sl.intensity = 5.0f;
+            //最初の2つは強さを3にする
+            if (&sl - &shadowRenderer.GetSpotLights()[0] < 2)
+            {
+				sl.intensity = 0.2f;
+            }
+            else if(&sl - &shadowRenderer.GetSpotLights()[0] < 4)
+            {
+                sl.intensity = 0.5f;
+			}
+           
+            else
+            {
+                sl.intensity = 5.0f;
+            }
         }
     }
 
@@ -1318,6 +1331,8 @@ void scene_game::DrawGUI()
         if (ImGui::CollapsingHeader("Particle Renderer")) { particleRenderer.DrawGUI(); }
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Audience")) { Audience::Instance().DrawGUI(); }
+        ImGui::Separator();
+		if (ImGui::CollapsingHeader("Shadow Renderer")) { shadowRenderer.DrawGUI(); }
 
         ImGui::End();
 
