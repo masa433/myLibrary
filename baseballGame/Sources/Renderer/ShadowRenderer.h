@@ -52,8 +52,8 @@ public:
     struct spot_shadowmap_constants
     {
 		DirectX::XMFLOAT4X4 light_view_projection[SpotShadowCount];// ライトの位置から見た射影行列
-		float shadow_attenuation{ 0.5f };// 影色
-		float shadow_bias{ 0.0015f };// 深度比較用のオフセット値
+		float shadow_attenuation{ 0.7f };// 影色
+		float shadow_bias{ 0.001f };// 深度比較用のオフセット値
         DirectX::XMFLOAT2 dummy;
     };
 
