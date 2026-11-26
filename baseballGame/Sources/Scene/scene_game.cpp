@@ -134,8 +134,8 @@ void scene_game::initialize()
         static std::mt19937 rng(std::random_device{}());
         std::uniform_int_distribution<int> dist(0, 1);
 
-		//skyRenderer.time_of_day = (dist(rng) == 0) ? 14.0f : 21.0f;
-        skyRenderer.time_of_day = 21.0f;
+		skyRenderer.time_of_day = (dist(rng) == 0) ? 14.0f : 21.0f;
+        //skyRenderer.time_of_day = 21.0f;
     }
 
   

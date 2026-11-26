@@ -1488,6 +1488,19 @@ void Physics::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 				else                                     hitResult = u8"ライト方向";//+15～+45
 			}
 
+
+			//角度が48度以上の時はすぐにファウル判定にする
+			if(hitDirectionAngleDeg >= 48.0f)
+			{
+				hitResult = u8"ファウル";
+				Ball::Instance().SetIsFoulConfirmed(true);
+
+				if (foulSound && Ball::Instance().GetHasCollidedWithBat() && !isFoulSoundPlayed)
+				{
+					foulSound->PlayOneShot();
+					isFoulSoundPlayed = true;
+				}
+			}
 			
 
 			float finalExitVelocityKmh = newBallVelocity.magnitude() * 3.6f;
