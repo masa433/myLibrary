@@ -68,6 +68,7 @@ void Pause::Update(float elapsedTime)
 			//リスタートボタンが押されたときの処理
 			buttonManager.ResetRestartRequest(false);
 			ClosePauseScreen();
+			SetPauseSoundPlayed(false); // ポーズ音の再生フラグをリセット
 		}
 		if (buttonManager.IsSettingsRequested())
 		{

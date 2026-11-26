@@ -383,6 +383,8 @@ void scene_game::initialize()
     cheerSound = Audio::Instance().LoadAudioSource("resources/sounds/BGM/Cheer.wav",SoundType::BGM);
 	isCheerSoundPlaying = false;
 	isOneShotFadeStarted = false;
+
+	pauseSound = Audio::Instance().LoadAudioSource("resources/sounds/SE/Hit.wav", SoundType::SE);
    
     // 設定のロード
     LoadSetting();
@@ -457,6 +459,13 @@ void scene_game::update(float elapsed_time)
         if((!isGameFinished && gameIntroSequence.IsPlaying() && Pitcher::Instance().GetCurrentState() == Pitcher::State::SelectingPitch))
         {
             Pause::Instance().OpenPauseScreen();
+
+            if(pauseSound && !Pause::Instance().IsPauseSoundPlayed())
+            {
+                pauseSound->PlayOneShot();
+				Pause::Instance().SetPauseSoundPlayed(true);
+			}
+
         }
     }
     
@@ -1250,7 +1259,7 @@ void scene_game::uninitialize()
     fast_approximate_anti_aliasing_pixel_shader.Reset();
 	fast_approximate_anti_aliasing_sprite.reset();
 	delete cheerSound;
-   
+	delete pauseSound;
 }
 
 void scene_game::DrawGUI()

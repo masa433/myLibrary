@@ -28,6 +28,9 @@ public:
 	bool IsPauseScreenOpen() const { return isPauseOpen; }
 	bool IsSceneChanging() const { return isChangingScene; }
 
+	bool IsPauseSoundPlayed() const { return isPauseSoundPlayed; }
+	void SetPauseSoundPlayed(bool played) { isPauseSoundPlayed = played; }
+
 private:
 	bool isPauseOpen = false; // ポーズ画面が開いているかどうかのフラグ
 
@@ -59,4 +62,5 @@ private:
 
 	bool isChangingScene = false; // シーン遷移中かどうかのフラグ
 
+	bool isPauseSoundPlayed = false; // ポーズ音が再生されたかどうかのフラグ
 };

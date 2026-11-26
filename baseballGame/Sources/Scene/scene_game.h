@@ -234,5 +234,6 @@ private:
     float near_clip_distance{ 0.1f };
     float far_clip_distance{ 1000.0f };
 
+	AudioSource* pauseSound = nullptr;
 
 };
