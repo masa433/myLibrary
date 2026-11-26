@@ -1,5 +1,5 @@
 #include "Lights.hlsli"
-#define SPOT_SHADOW_COUNT 11
+#define SPOT_SHADOW_COUNT 4
 #define ShadowBufferSize 4
 
 

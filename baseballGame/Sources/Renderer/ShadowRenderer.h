@@ -14,7 +14,7 @@ class ShadowRenderer
 	static constexpr UINT SpotShadowmapSize = 8192;
 	static constexpr float ShadowmapDrawRect = 60.0f;
 	static constexpr int ShadowBufferSize = 4; // カスケードシャドウマップの数
-	static constexpr int SpotShadowCount = 11; // スポットシャドウマップの数
+	static constexpr int SpotShadowCount = 4; // スポットシャドウマップの数
 
 public:
 	//定数バッファ構造体
@@ -52,8 +52,8 @@ public:
     struct spot_shadowmap_constants
     {
 		DirectX::XMFLOAT4X4 light_view_projection[SpotShadowCount];// ライトの位置から見た射影行列
-		float shadow_attenuation{ 0.6f };// 影色
-		float shadow_bias{ 0.001f };// 深度比較用のオフセット値
+		float shadow_attenuation{ 0.5f };// 影色
+		float shadow_bias{ 0.0015f };// 深度比較用のオフセット値
         DirectX::XMFLOAT2 dummy;
     };
 

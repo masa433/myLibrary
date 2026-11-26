@@ -217,6 +217,13 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
     rc.deviceContext = dc;
     rc.renderState = renderState;
 
+    float sunHeight = directional_light_direction.y;
+    constexpr float kShadowStartHeight = -0.1f; // 影の開始高さ
+    constexpr float kShadowEndHeight = -0.2f;   // 影の終了高さ
+
+    shadow_day_factor = (sunHeight - kShadowStartHeight) / (kShadowEndHeight - kShadowStartHeight);// 0.0～1.0の範囲に正規化
+    shadow_day_factor = std::clamp(shadow_day_factor, 0.0f, 1.0f); // 0.0～1.0の範囲に制限
+
     // ビューポートはシャドウマップサイズに固定
     D3D11_VIEWPORT viewport{};
     viewport.Width = static_cast<float>(SpotShadowmapSize);
@@ -233,15 +240,19 @@ void ShadowRenderer::RenderSpotShadowMap(float elapsedTime)
     dc->PSSetShader(nullptr, nullptr, 0);
 
     const int count = static_cast<int>(spotLights.size());
+    if (shadow_day_factor > 0.0f)
+    {
+        for (int index = 0; index < count && index < SpotShadowCount; ++index)
+        {
+            //SRVのバインドを解除
+            dc->ClearDepthStencilView(spot_shadowmap_depth_stencil_views[index].Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+        }
+        return;
+    }
+
     for (int i = 0; i < count && i < SpotShadowCount; ++i)
     {
-        float sunHeight = directional_light_direction.y;
-        constexpr float kShadowStartHeight = -0.1f; // 影の開始高さ
-        constexpr float kShadowEndHeight = -0.2f;   // 影の終了高さ
-
-        shadow_day_factor = (sunHeight - kShadowStartHeight) / (kShadowEndHeight - kShadowStartHeight);// 0.0～1.0の範囲に正規化
-        shadow_day_factor = std::clamp(shadow_day_factor, 0.0f, 1.0f); // 0.0～1.0の範囲に制限
-
+        
         // DSVクリア & バインド
         dc->ClearDepthStencilView(spot_shadowmap_depth_stencil_views[i].Get(),
             D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
