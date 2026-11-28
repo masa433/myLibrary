@@ -58,6 +58,12 @@ private:
 	std::unique_ptr<Sprite> ballTargetSpriteData;
 	std::unique_ptr<sprite> eyeForPitchDotSprite;
 	std::unique_ptr<Sprite> eyeForPitchDotSpriteData;
+	std::unique_ptr<sprite> timingCircleSprite;
+	std::unique_ptr<Sprite> timingCircleSpriteData;
+
+	DirectX::XMFLOAT2 timingCircleStartSize = { 150.0f, 150.0f };
+	DirectX::XMFLOAT2 timingCircleTargetSize = { 30.0f, 30.0f };
+	DirectX::XMFLOAT2 timingCircleCurrentSize = timingCircleStartSize;
 
 	bool showBallBoard = false;
 	

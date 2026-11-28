@@ -11,6 +11,8 @@
 #include "ButtonManager.h" 
 #include "BloomRenderer.h"
 #include "UiEasing.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 
 using json = nlohmann::json;
@@ -187,4 +189,7 @@ private:
 	bool is_fast_approximate_anti_aliasing = true;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> fast_approximate_anti_aliasing_pixel_shader;
 	std::unique_ptr<sprite> fast_approximate_anti_aliasing_sprite;
+
+	AudioSource* titleBGM = nullptr;
+	bool isBGMPlaying = false;
 };

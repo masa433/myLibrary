@@ -329,6 +329,15 @@ void ballSprite::Initialize(ID3D11Device* device)
 	eyeForPitchDotSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	eyeForPitchDotSprite = std::make_unique<sprite>(device, context, eyeForPitchDotSpriteData->texturePath.c_str());
 
+	//タイミングサークルの初期化
+	timingCircleSpriteData = std::make_unique<Sprite>();
+	timingCircleSpriteData->texturePath = L".\\resources\\textures\\timingCircle.png";
+	timingCircleSpriteData->position = { 1100.0f, 400.0f };
+	timingCircleSpriteData->size = timingCircleCurrentSize;
+	timingCircleSpriteData->rotation = 0.0f;
+	timingCircleSpriteData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	timingCircleSprite = std::make_unique<sprite>(device, context, timingCircleSpriteData->texturePath.c_str());
+
 	// added: pitch info font init (日本語対応版)
 	const int screenWidth = static_cast<int>(Graphics::Instance().GetScreenWidth());
 	const int screenHeight = static_cast<int>(Graphics::Instance().GetScreenHeight());
@@ -479,13 +488,11 @@ void ballSprite::Uninitialize()
 	ballBoardSprite.reset();
 	ballBoardSpriteData.reset();
 	ballTargetSprite.reset();
-	pitchInfoFont.Uninitialize();
-	TrackingData::Instance().Uninitialize();
-	consoleLog = nullptr;
-	spriteVS.Reset();
-	spritePS.Reset();
-	spriteInputLayout.Reset();
 	ballTargetSpriteData.reset();
+	timingCircleSprite.reset();
+	timingCircleSpriteData.reset();
+	eyeForPitchDotSprite.reset();
+	eyeForPitchDotSpriteData.reset();
 
 	straightFlip.sprite.reset();
 	straightFlip.spriteData.reset();
@@ -503,6 +510,13 @@ void ballSprite::Uninitialize()
 
 	scissorRasterizerState.Reset();
 	intro = nullptr;
+	pitchInfoFont.Uninitialize();
+	TrackingData::Instance().Uninitialize();
+	consoleLog = nullptr;
+	spriteVS.Reset();
+	spritePS.Reset();
+	spriteInputLayout.Reset();
+	
 
 	delete catchSound;
 	delete catchStrongSound;
@@ -852,6 +866,15 @@ void ballSprite::Update(float elapsedTime)
 		AddTrailPoint(currentScreenPos);
 		ApplyBallSpritePosition(currentScreenPos);
 		ApplyTagetSpritePosition(currentScreenPos);
+
+
+		//タイミングサークルのサイズをベジェ曲線の残り時間によって変化させる
+		
+		timingCircleCurrentSize = {
+			timingCircleStartSize.x + (timingCircleTargetSize.x - timingCircleStartSize.x) * t,
+			timingCircleStartSize.y + (timingCircleTargetSize.y - timingCircleStartSize.y) * t
+		};
+
 	}
 
 	if(wp.z < -1.5f && wp.z > -2.0f && !Ball::Instance().GetHasCollidedWithBat())
@@ -1075,6 +1098,28 @@ void ballSprite::Render()
 
 		if(display == BallDisplayMode::Ball)
 		{
+			//タイミングサークルの描画
+			//ボールの位置に追従して描画する
+			if(timingCircleSprite && timingCircleSpriteData)
+			{
+				DirectX::XMFLOAT2 scaledCirclePos = screenScaler.Scale(ballDebugSpriteData->position);
+				DirectX::XMFLOAT2 scaledTimingCircleSize = screenScaler.ScaleSize(timingCircleCurrentSize);
+
+				DirectX::XMFLOAT2 scaledCircleCenterPos = {
+					scaledCirclePos.x + ballDebugSpriteData->size.x * 0.5f - scaledTimingCircleSize.x * 0.5f,
+					scaledCirclePos.y + ballDebugSpriteData->size.y * 0.5f - scaledTimingCircleSize.y * 0.5f
+				};
+
+				timingCircleSprite->render(dc,
+					scaledCircleCenterPos.x, scaledCircleCenterPos.y,
+					scaledTimingCircleSize.x, scaledTimingCircleSize.y,
+					timingCircleSpriteData->color.x, timingCircleSpriteData->color.y,
+					timingCircleSpriteData->color.z, timingCircleSpriteData->color.w,
+					timingCircleSpriteData->rotation);
+			}
+
+
+
 			DirectX::XMFLOAT2 scaledBallDebugPos = screenScaler.Scale(ballDebugSpriteData->position);
 			DirectX::XMFLOAT2 scaledBallDebugSize = screenScaler.ScaleSize(ballDebugSpriteData->size);
 

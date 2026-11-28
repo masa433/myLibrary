@@ -172,6 +172,9 @@ void scene_title::initialize()
 	
 	//devmidiInit();
 
+	titleBGM = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\BGM\\TitleBGM.wav", SoundType::BGM);
+	isBGMPlaying = false;
+
 	LoadSetting();
 }
 
@@ -184,6 +187,18 @@ void scene_title::update(float elapsed_time)
 	{
 		SaveSetting();
 	}
+
+	/*if (titleBGM && !isBGMPlaying)
+	{
+		titleBGM->StartFadeIn(0.5f, true);
+		isBGMPlaying = true;
+	}
+
+	if(titleBGM)
+	{
+		titleBGM->Update();
+		titleBGM->UpdateFadeIn(elapsed_time);
+	}*/
 
 	//HOMEキーを押したらIMGUIの表示・非表示を切り替える
 	static bool prevHomePressed = false;
@@ -554,6 +569,7 @@ void scene_title::uninitialize()
 	fast_approximate_anti_aliasing_pixel_shader.Reset();
 	fast_approximate_anti_aliasing_sprite.reset();
 	buttonManager.Uninitialize();
+	delete titleBGM;
 }
 
 void scene_title::DrawGUI()

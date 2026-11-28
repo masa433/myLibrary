@@ -185,6 +185,8 @@ void batterSelectScene::initialize()
 	isChangingScene = false;
 	isTitleChanging = false;
 
+	batterSelectBGM = Audio::Instance().LoadAudioSource(".\\resources\\sounds\\BGM\\バッターセレクト.wav", SoundType::BGM);
+	isBGMPlaying = false;
 	SelectRandomPitcher(); // ランダムにピッチャーを選択
 	LoadSetting(); // 設定をロード
 }
@@ -197,6 +199,19 @@ void batterSelectScene::update(float elapsed_time)
 	{
 		SaveSetting();
 	}
+
+	/*if(batterSelectBGM && !isBGMPlaying)
+	{
+		batterSelectBGM->StartFadeIn(0.5f,true);
+		isBGMPlaying = true;
+	}
+
+	if (batterSelectBGM)
+	{
+		batterSelectBGM->Update();
+		batterSelectBGM->UpdateFadeIn(elapsed_time);
+	}*/
+
 
 	//HOMEキーを押したらIMGUIの表示・非表示を切り替える
 	static bool prevHomePressed = false;
@@ -781,6 +796,7 @@ void batterSelectScene::uninitialize()
 
 	// ボタンマネージャーの解放
 	buttonManager.Uninitialize();
+	delete batterSelectBGM;
 }
 
 void batterSelectScene::DrawGUI()

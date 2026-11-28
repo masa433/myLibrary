@@ -8,6 +8,8 @@
 #include "Pitcher.h"
 #include "Hextransitioneffect.h"
 #include "SpecialAbility.h"
+#include "..\Sources\Audio\AudioSource.h"
+#include "..\Sources\Audio\Audio.h"
 
 #define PITCHER_IMAGE_COUNT 4 // ピッチャー画像の数
 #define PITCHER_COUNT 21 // ピッチャーの数
@@ -179,4 +181,7 @@ private:
 	DirectX::XMFLOAT2 abilityIconSize = { 100.0f, 100.0f };
 	DirectX::XMFLOAT2 abilityIconTextPosition = { 1500.0f, 210.0f };
 	DirectX::XMFLOAT2 abilityIconTextSize = { 200.0f, 50.0f };
+
+	AudioSource* batterSelectBGM = nullptr;
+	bool isBGMPlaying = false; // BGMが再生中かどうかのフラグ
 };
