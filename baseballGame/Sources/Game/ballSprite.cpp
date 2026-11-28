@@ -1105,6 +1105,7 @@ void ballSprite::Render()
 				DirectX::XMFLOAT2 scaledCirclePos = screenScaler.Scale(ballDebugSpriteData->position);
 				DirectX::XMFLOAT2 scaledTimingCircleSize = screenScaler.ScaleSize(timingCircleCurrentSize);
 
+				// サークルの中心をボールの中心に合わせる
 				DirectX::XMFLOAT2 scaledCircleCenterPos = {
 					scaledCirclePos.x + ballDebugSpriteData->size.x * 0.5f - scaledTimingCircleSize.x * 0.5f,
 					scaledCirclePos.y + ballDebugSpriteData->size.y * 0.5f - scaledTimingCircleSize.y * 0.5f

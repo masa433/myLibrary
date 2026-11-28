@@ -188,7 +188,7 @@ void scene_title::update(float elapsed_time)
 		SaveSetting();
 	}
 
-	/*if (titleBGM && !isBGMPlaying)
+	if (titleBGM && !isBGMPlaying)
 	{
 		titleBGM->StartFadeIn(0.5f, true);
 		isBGMPlaying = true;
@@ -198,7 +198,7 @@ void scene_title::update(float elapsed_time)
 	{
 		titleBGM->Update();
 		titleBGM->UpdateFadeIn(elapsed_time);
-	}*/
+	}
 
 	//HOMEキーを押したらIMGUIの表示・非表示を切り替える
 	static bool prevHomePressed = false;

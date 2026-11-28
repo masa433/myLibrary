@@ -200,7 +200,7 @@ void batterSelectScene::update(float elapsed_time)
 		SaveSetting();
 	}
 
-	/*if(batterSelectBGM && !isBGMPlaying)
+	if(batterSelectBGM && !isBGMPlaying)
 	{
 		batterSelectBGM->StartFadeIn(0.5f,true);
 		isBGMPlaying = true;
@@ -210,7 +210,7 @@ void batterSelectScene::update(float elapsed_time)
 	{
 		batterSelectBGM->Update();
 		batterSelectBGM->UpdateFadeIn(elapsed_time);
-	}*/
+	}
 
 
 	//HOMEキーを押したらIMGUIの表示・非表示を切り替える
